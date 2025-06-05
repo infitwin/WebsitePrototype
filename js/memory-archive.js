@@ -202,11 +202,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Navigation functions
 function proceedToSignup() {
-    // Store current state and navigate to signup
-    console.log('Proceeding to signup...');
-    
-    // Show signup options (this could be a modal or new page)
-    showSignupModal();
+    // Navigate to auth page with action parameter
+    window.location.href = '../pages/auth.html?action=build-archive';
 }
 
 function exploreFeatures() {

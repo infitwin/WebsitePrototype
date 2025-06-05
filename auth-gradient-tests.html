@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Background Gradient Tests</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+        .gradient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .gradient-container {
+            position: relative;
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .gradient-label {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .form-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            padding: 30px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .form-preview h3 {
+            margin: 0 0 20px 0;
+            color: #2C1810;
+        }
+        .form-preview input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .form-preview button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            background: #FFD700;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 40px;">Auth Background Gradient Tests</h1>
+    
+    <div class="gradient-grid">
+        <!-- Option 1: Morning Light -->
+        <div class="gradient-container">
+            <svg width="100%" height="100%" style="position: absolute;">
+                <defs>
+                    <linearGradient id="morningLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1" />
+                        <stop offset="20%" style="stop-color:#FFEFD5;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#FFFAF0;stop-opacity:1" />
+                        <stop offset="80%" style="stop-color:#E6F3FF;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#B0E0E6;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#morningLight)" />
+            </svg>
+            <div class="gradient-label">Morning Light</div>
+            <div class="form-preview">
+                <h3>Welcome Back</h3>
+                <input type="email" placeholder="Email">
+                <input type="password" placeholder="Password">
+                <button>Sign In</button>
+            </div>
+        </div>
+
+        <!-- Option 2: Soft Horizon -->
+        <div class="gradient-container">
+            <svg width="100%" height="100%" style="position: absolute;">
+                <defs>
+                    <linearGradient id="softHorizon" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFF5E6;stop-opacity:1" />
+                        <stop offset="35%" style="stop-color:#FFF8DC;stop-opacity:1" />
+                        <stop offset="65%" style="stop-color:#F0F8FF;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#ADD8E6;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#softHorizon)" />
+            </svg>
+            <div class="gradient-label">Soft Horizon</div>
+            <div class="form-preview">
+                <h3>Welcome Back</h3>
+                <input type="email" placeholder="Email">
+                <input type="password" placeholder="Password">
+                <button>Sign In</button>
+            </div>
+        </div>
+
+        <!-- Option 3: Van Gogh Echo -->
+        <div class="gradient-container">
+            <svg width="100%" height="100%" style="position: absolute;">
+                <defs>
+                    <linearGradient id="vanGoghEcho" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                        <stop offset="30%" style="stop-color:#B0E0E6;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#FFF8DC;stop-opacity:1" />
+                        <stop offset="70%" style="stop-color:#FFE4B5;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#F4A460;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#vanGoghEcho)" />
+            </svg>
+            <div class="gradient-label">Van Gogh Echo (Flipped)</div>
+            <div class="form-preview">
+                <h3>Welcome Back</h3>
+                <input type="email" placeholder="Email">
+                <input type="password" placeholder="Password">
+                <button>Sign In</button>
+            </div>
+        </div>
+
+        <!-- Option 4: Dawn Mist -->
+        <div class="gradient-container">
+            <svg width="100%" height="100%" style="position: absolute;">
+                <defs>
+                    <linearGradient id="dawnMist" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFE4E1;stop-opacity:1" />
+                        <stop offset="40%" style="stop-color:#FFF0F5;stop-opacity:1" />
+                        <stop offset="60%" style="stop-color:#F0FFFF;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#B0C4DE;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#dawnMist)" />
+            </svg>
+            <div class="gradient-label">Dawn Mist</div>
+            <div class="form-preview">
+                <h3>Welcome Back</h3>
+                <input type="email" placeholder="Email">
+                <input type="password" placeholder="Password">
+                <button>Sign In</button>
+            </div>
+        </div>
+
+        <!-- Option 5: Cream Dream -->
+        <div class="gradient-container">
+            <svg width="100%" height="100%" style="position: absolute;">
+                <defs>
+                    <linearGradient id="creamDream" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFF8E7;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#FFFEF9;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#E7F3FF;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#creamDream)" />
+            </svg>
+            <div class="gradient-label">Cream Dream (Subtle)</div>
+            <div class="form-preview">
+                <h3>Welcome Back</h3>
+                <input type="email" placeholder="Email">
+                <input type="password" placeholder="Password">
+                <button>Sign In</button>
+            </div>
+        </div>
+
+        <!-- Option 6: Memory Glow -->
+        <div class="gradient-container">
+            <svg width="100%" height="100%" style="position: absolute;">
+                <defs>
+                    <radialGradient id="memoryGlow" cx="50%" cy="40%" r="80%">
+                        <stop offset="0%" style="stop-color:#FFFAF0;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#FFF5E6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#E6F2FF;stop-opacity:1" />
+                    </radialGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#memoryGlow)" />
+            </svg>
+            <div class="gradient-label">Memory Glow (Radial)</div>
+            <div class="form-preview">
+                <h3>Welcome Back</h3>
+                <input type="email" placeholder="Email">
+                <input type="password" placeholder="Password">
+                <button>Sign In</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 40px; text-align: center;">
+        <h2>Winner Recommendation: Soft Horizon</h2>
+        <p>Clean, optimistic, perfect contrast for forms, subtle Van Gogh color connection</p>
+    </div>
+</body>
+</html>
