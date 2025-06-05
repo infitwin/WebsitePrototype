@@ -169,6 +169,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleQuickResponse(response) {
         addMessageToChat('user', response);
         hideQuickResponses();
+        
+        // Check if user wants to save to archive
+        if (response.toLowerCase().includes('save this memory')) {
+            const lastUserMessage = Array.from(document.querySelectorAll('.user-message')).pop();
+            if (lastUserMessage) {
+                const memoryContent = lastUserMessage.querySelector('p').textContent;
+                addWinstonMessage("Splendid! Let me save this precious memory to your archive. *tips hat* Off we go to see your growing collection!");
+                setTimeout(() => {
+                    saveToArchive(memoryContent);
+                }, 2000);
+                return;
+            }
+        }
+        
         handleUserResponse(response);
     }
     
@@ -254,6 +268,21 @@ document.addEventListener('DOMContentLoaded', function() {
             "Tell me what happens next"
         ];
         showQuickResponses(saveOptions);
+    }
+    
+    // Handle save to archive
+    function saveToArchive(memoryContent) {
+        // Store the memory for the archive page
+        localStorage.setItem('capturedMemory', JSON.stringify({
+            content: memoryContent,
+            timestamp: new Date().toISOString(),
+            source: 'winston'
+        }));
+        
+        // Navigate to memory archive
+        setTimeout(() => {
+            window.location.href = 'memory-archive.html';
+        }, 1000);
     }
     
     // Show input area
