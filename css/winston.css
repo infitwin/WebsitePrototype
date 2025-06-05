@@ -2,7 +2,9 @@
 
 .winston-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #FF7F50 0%, #D2691E 30%, #B8860B 70%, #DAA520 100%);
+    background: 
+        url('../assets/images/gauguin-polynesian.png') center/cover no-repeat,
+        linear-gradient(135deg, #FF7F50 0%, #D2691E 30%, #B8860B 70%, #DAA520 100%);
     position: relative;
     overflow: hidden;
 }
