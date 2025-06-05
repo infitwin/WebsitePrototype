@@ -30,7 +30,8 @@ function initAnimations() {
 function handleCTAClick(e) {
     e.preventDefault();
     console.log('Starting the journey to build a living archive...');
-    // TODO: Add navigation to sign-up or next step
+    // Navigate to the capture first memory experience
+    window.location.href = 'pages/capture-first-memory.html';
 }
 
 // Handle curator orb interaction
