@@ -2,12 +2,12 @@
 
 .winston-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #2C1810 0%, #4A2C1A 30%, #6B3E2A 100%);
+    background: linear-gradient(135deg, #FF7F50 0%, #D2691E 30%, #B8860B 70%, #DAA520 100%);
     position: relative;
     overflow: hidden;
 }
 
-/* Cozy fireplace-like background */
+/* Gauguin tropical paradise background */
 .cozy-background {
     position: absolute;
     top: 0;
@@ -15,26 +15,27 @@
     right: 0;
     bottom: 0;
     background: 
-        radial-gradient(ellipse at 30% 70%, rgba(255, 140, 0, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, rgba(255, 180, 50, 0.1) 0%, transparent 60%),
-        radial-gradient(ellipse at 50% 90%, rgba(255, 100, 0, 0.2) 0%, transparent 40%);
-    animation: fireplaceGlow 8s ease-in-out infinite;
+        radial-gradient(ellipse at 20% 30%, rgba(72, 209, 204, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 60%, rgba(255, 127, 80, 0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 80%, rgba(218, 165, 32, 0.25) 0%, transparent 40%),
+        radial-gradient(ellipse at 70% 20%, rgba(153, 50, 204, 0.1) 0%, transparent 30%);
+    animation: tropicalGlow 12s ease-in-out infinite;
 }
 
-@keyframes fireplaceGlow {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 1; }
+@keyframes tropicalGlow {
+    0%, 100% { opacity: 0.8; transform: scale(1) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.05) rotate(2deg); }
 }
 
-/* Floating warm particles */
+/* Floating tropical particles */
 .warm-particle {
     position: absolute;
-    width: 6px;
-    height: 6px;
-    background: rgba(255, 180, 80, 0.7);
+    width: 8px;
+    height: 8px;
+    background: rgba(72, 209, 204, 0.8);
     border-radius: 50%;
-    animation: warmFloat 12s ease-in-out infinite;
-    box-shadow: 0 0 10px rgba(255, 180, 80, 0.5);
+    animation: tropicalFloat 15s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(72, 209, 204, 0.6);
 }
 
 .p1 { left: 20%; bottom: 10%; animation-delay: 0s; }
@@ -42,20 +43,20 @@
 .p3 { left: 60%; bottom: 5%; animation-delay: 6s; }
 .p4 { left: 40%; bottom: 8%; animation-delay: 9s; }
 
-@keyframes warmFloat {
+@keyframes tropicalFloat {
     0% { 
-        transform: translateY(0) translateX(0) scale(0);
+        transform: translateY(0) translateX(0) scale(0) rotate(0deg);
         opacity: 0;
     }
     10% {
-        transform: scale(1);
+        transform: scale(1) rotate(45deg);
         opacity: 1;
     }
     90% {
         opacity: 0.8;
     }
     100% { 
-        transform: translateY(-400px) translateX(50px) scale(0.3);
+        transform: translateY(-450px) translateX(80px) scale(0.2) rotate(180deg);
         opacity: 0;
     }
 }
@@ -84,11 +85,12 @@
     position: relative;
     width: 120px;
     height: 120px;
-    background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #CD853F 100%);
+    background: linear-gradient(135deg, #D2691E 0%, #FF7F50 50%, #DAA520 100%);
     border-radius: 50%;
     box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.3),
-        inset 0 5px 15px rgba(255, 255, 255, 0.1);
+        0 10px 30px rgba(0, 0, 0, 0.2),
+        inset 0 5px 15px rgba(255, 255, 255, 0.3),
+        0 0 20px rgba(72, 209, 204, 0.3);
     animation: winstonBreathe 4s ease-in-out infinite;
 }
 
@@ -115,9 +117,10 @@
 .eye {
     width: 12px;
     height: 12px;
-    background: #2C1810;
+    background: #4A2C2A;
     border-radius: 50%;
     animation: winstonBlink 5s ease-in-out infinite;
+    box-shadow: 0 0 3px rgba(153, 50, 204, 0.4);
 }
 
 @keyframes winstonBlink {
@@ -132,9 +135,9 @@
     transform: translateX(-50%);
     width: 25px;
     height: 8px;
-    background: #4A4A4A;
+    background: #8B4513;
     border-radius: 0 0 15px 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .winston-mouth {
@@ -144,7 +147,7 @@
     transform: translateX(-50%);
     width: 8px;
     height: 4px;
-    background: #2C1810;
+    background: #4A2C2A;
     border-radius: 0 0 8px 8px;
     animation: winstonTalk 3s ease-in-out infinite;
 }
@@ -160,7 +163,7 @@
     top: 50%;
     width: 30px;
     height: 4px;
-    background: #8B4513;
+    background: #D2691E;
     border-radius: 2px;
     transform: rotate(-15deg);
 }
@@ -172,9 +175,9 @@
     top: -6px;
     width: 12px;
     height: 12px;
-    background: #654321;
+    background: #B8860B;
     border-radius: 50%;
-    border: 2px solid #8B4513;
+    border: 2px solid #D2691E;
 }
 
 .winston-aura {
@@ -184,13 +187,13 @@
     right: -20px;
     bottom: -20px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-    animation: auraGlow 6s ease-in-out infinite;
+    background: radial-gradient(circle, rgba(72, 209, 204, 0.15) 0%, rgba(255, 127, 80, 0.1) 50%, transparent 70%);
+    animation: tropicalAuraGlow 8s ease-in-out infinite;
 }
 
-@keyframes auraGlow {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(1.1); }
+@keyframes tropicalAuraGlow {
+    0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+    50% { opacity: 0.7; transform: scale(1.1) rotate(5deg); }
 }
 
 /* Chat interface */
@@ -199,12 +202,14 @@
     border-radius: 20px;
     padding: 30px;
     box-shadow: 
-        0 15px 40px rgba(0, 0, 0, 0.2),
-        inset 0 0 20px rgba(255, 215, 0, 0.1);
+        0 15px 40px rgba(0, 0, 0, 0.15),
+        inset 0 0 20px rgba(72, 209, 204, 0.1),
+        0 0 30px rgba(255, 127, 80, 0.2);
     backdrop-filter: blur(10px);
     min-height: 400px;
     display: flex;
     flex-direction: column;
+    border: 2px solid rgba(218, 165, 32, 0.3);
 }
 
 .messages-container {
@@ -241,10 +246,11 @@
 .winston-mini-avatar {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #8B4513 0%, #CD853F 100%);
+    background: linear-gradient(135deg, #D2691E 0%, #FF7F50 50%, #DAA520 100%);
     border-radius: 50%;
     flex-shrink: 0;
     position: relative;
+    box-shadow: 0 0 10px rgba(72, 209, 204, 0.3);
 }
 
 .winston-mini-avatar::after {
@@ -295,12 +301,12 @@
 }
 
 .user-bubble {
-    background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+    background: linear-gradient(135deg, #48D1CC 0%, #20B2AA 100%);
     color: #2C1810;
     padding: 16px 20px;
     border-radius: 20px 20px 5px 20px;
     max-width: 80%;
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 4px 12px rgba(72, 209, 204, 0.4);
 }
 
 /* Typing indicator */
@@ -322,7 +328,7 @@
 .typing-dot {
     width: 8px;
     height: 8px;
-    background: #8B4513;
+    background: #D2691E;
     border-radius: 50%;
     animation: typingBounce 1.5s ease-in-out infinite;
 }
@@ -369,7 +375,7 @@
 .send-btn {
     width: 44px;
     height: 44px;
-    background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+    background: linear-gradient(135deg, #FF7F50 0%, #D2691E 100%);
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -377,12 +383,12 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 127, 80, 0.4);
 }
 
 .send-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
+    box-shadow: 0 6px 16px rgba(255, 127, 80, 0.5);
 }
 
 .send-icon {
