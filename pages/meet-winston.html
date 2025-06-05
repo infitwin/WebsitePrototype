@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meet Winston - Your Story Curator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/winston.css">
+</head>
+<body>
+    <div class="winston-container">
+        <!-- Warm background -->
+        <div class="cozy-background"></div>
+        
+        <!-- Winston's study environment -->
+        <div class="study-environment">
+            <!-- Floating warm particles -->
+            <div class="warm-particle p1"></div>
+            <div class="warm-particle p2"></div>
+            <div class="warm-particle p3"></div>
+            <div class="warm-particle p4"></div>
+            
+            <!-- Winston character -->
+            <div class="winston-character">
+                <div class="winston-avatar">
+                    <div class="winston-face">
+                        <div class="winston-eyes">
+                            <div class="eye left-eye"></div>
+                            <div class="eye right-eye"></div>
+                        </div>
+                        <div class="winston-mustache"></div>
+                        <div class="winston-mouth"></div>
+                    </div>
+                    <div class="winston-pipe"></div>
+                </div>
+                <div class="winston-aura"></div>
+            </div>
+            
+            <!-- Chat interface -->
+            <div class="chat-interface">
+                <!-- Messages container -->
+                <div class="messages-container" id="messages">
+                    <!-- Messages will be added here by JavaScript -->
+                </div>
+                
+                <!-- Input area -->
+                <div class="input-area" id="input-area" style="display: none;">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="user-input" 
+                            placeholder="Type your response here..."
+                            rows="2"
+                        ></textarea>
+                        <button class="send-btn" id="send-btn">
+                            <span class="send-icon">→</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick response buttons -->
+                <div class="quick-responses" id="quick-responses" style="display: none;">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Audio toggle -->
+        <button class="audio-toggle" id="audio-toggle">
+            <span class="audio-icon">🔊</span>
+            <span class="audio-text">Winston's Voice</span>
+        </button>
+    </div>
+    
+    <script src="../js/winston.js"></script>
+</body>
+</html>
