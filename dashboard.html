@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Symphony - Conductor Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+        
+        /* Main Layout */
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Navigation Rail */
+        .nav-rail {
+            width: 70px;
+            background: linear-gradient(180deg, #1a237e 0%, #3949ab 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            gap: 15px;
+            transition: width 0.3s ease;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .nav-rail:hover {
+            width: 200px;
+        }
+        
+        .nav-item {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+        
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-label {
+            position: absolute;
+            left: 70px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .nav-rail:hover .nav-label {
+            opacity: 1;
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* AI Suggestion Layer */
+        .ai-suggestion {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: linear-gradient(135deg, #7c4dff, #536dfe);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(124, 77, 255, 0.3);
+            z-index: 50;
+        }
+        
+        .ai-suggestion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 77, 255, 0.4);
+        }
+        
+        .ai-suggestion::before {
+            content: "✨ ";
+        }
+        
+        /* Knowledge Graph Container */
+        .graph-container {
+            height: 400px;
+            background: radial-gradient(circle at center, rgba(30, 136, 229, 0.1), transparent);
+            border: 2px solid #1e88e5;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+            cursor: move;
+        }
+        
+        .graph-container:hover {
+            border-color: #2196f3;
+            box-shadow: 0 0 30px rgba(33, 150, 243, 0.2);
+        }
+        
+        /* Graph Nodes Animation */
+        .graph-nodes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #4caf50;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .node:nth-child(1) { top: 50%; left: 50%; width: 20px; height: 20px; }
+        .node:nth-child(2) { top: 25%; left: 35%; animation-delay: 0.5s; }
+        .node:nth-child(3) { top: 75%; left: 65%; animation-delay: 1s; }
+        .node:nth-child(4) { top: 45%; left: 75%; animation-delay: 1.5s; }
+        .node:nth-child(5) { top: 55%; left: 25%; animation-delay: 2s; }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        /* Connection Lines */
+        .connection {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #4caf50, transparent);
+            transform-origin: left center;
+            opacity: 0.3;
+        }
+        
+        /* Graph Label */
+        .graph-label {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            z-index: 10;
+            position: relative;
+        }
+        
+        /* Memory Stream */
+        .memory-stream {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: #333 transparent;
+        }
+        
+        .memory-stream::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .memory-stream::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .memory-stream::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        .memory-card {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 16px;
+            min-width: 200px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #333;
+        }
+        
+        .memory-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: #1e88e5;
+        }
+        
+        .memory-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .memory-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .nav-rail {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                padding: 10px;
+                order: 2;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                justify-content: space-around;
+                gap: 10px;
+            }
+            
+            .nav-rail:hover {
+                width: 100%;
+            }
+            
+            .nav-item {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .nav-label {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 20px;
+                padding-bottom: 80px;
+            }
+            
+            .ai-suggestion {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+                display: block;
+                text-align: center;
+            }
+            
+            .graph-container {
+                height: 300px;
+            }
+            
+            .memory-stream {
+                flex-wrap: wrap;
+            }
+            
+            .memory-card {
+                min-width: calc(50% - 10px);
+            }
+            
+            .fab {
+                bottom: 90px;
+                right: 20px;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top-color: #1e88e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loadingScreen">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Main Dashboard -->
+    <div class="dashboard-container">
+        <!-- Navigation Rail -->
+        <nav class="nav-rail">
+            <div class="nav-item active" data-section="memories">
+                🎼
+                <span class="nav-label">Memories</span>
+            </div>
+            <div class="nav-item" data-section="explore">
+                🎵
+                <span class="nav-label">Explore</span>
+            </div>
+            <div class="nav-item" data-section="create">
+                🎸
+                <span class="nav-label">Create</span>
+            </div>
+            <div class="nav-item" data-section="share">
+                🎹
+                <span class="nav-label">Share</span>
+            </div>
+            <div class="nav-item" data-section="insights">
+                🎭
+                <span class="nav-label">Insights</span>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- AI Suggestion -->
+            <div class="ai-suggestion" id="aiSuggestion">
+                Explore memories from your creative projects
+            </div>
+            
+            <!-- Knowledge Graph -->
+            <div class="graph-container" id="graphContainer">
+                <div class="graph-nodes">
+                    <div class="node"></div>
+                    <div class="node"></div>
+                    <div class="node"></div>
+                    <div class="node"></div>
+                    <div class="node"></div>
+                    <!-- Connection lines will be dynamically generated -->
+                </div>
+                <div class="graph-label">Knowledge Symphony</div>
+            </div>
+            
+            <!-- Memory Stream -->
+            <div class="memory-stream">
+                <div class="memory-card" data-type="recent">
+                    <div class="memory-icon">📸</div>
+                    <div>Recent Memories</div>
+                    <div class="memory-label">Last 7 days</div>
+                </div>
+                <div class="memory-card" data-type="moments">
+                    <div class="memory-icon">✨</div>
+                    <div>Key Moments</div>
+                    <div class="memory-label">Life highlights</div>
+                </div>
+                <div class="memory-card" data-type="people">
+                    <div class="memory-icon">👥</div>
+                    <div>People</div>
+                    <div class="memory-label">Connections</div>
+                </div>
+                <div class="memory-card" data-type="places">
+                    <div class="memory-icon">🗺️</div>
+                    <div>Places</div>
+                    <div class="memory-label">Locations visited</div>
+                </div>
+                <div class="memory-card" data-type="projects">
+                    <div class="memory-icon">🚀</div>
+                    <div>Projects</div>
+                    <div class="memory-label">Achievements</div>
+                </div>
+                <div class="memory-card" data-type="insights">
+                    <div class="memory-icon">💡</div>
+                    <div>Insights</div>
+                    <div class="memory-label">Patterns & themes</div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Floating Action Button -->
+        <div class="fab" id="fab">+</div>
+    </div>
+    
+    <script>
+        // Hide loading screen after page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 1000);
+        });
+        
+        // Navigation handling
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Here you would load different content based on the section
+                const section = this.dataset.section;
+                console.log(`Loading ${section} section`);
+            });
+        });
+        
+        // AI Suggestion rotation
+        const suggestions = [
+            "Explore memories from your creative projects",
+            "View connections from Spring 2023",
+            "Discover patterns in your daily routines",
+            "Revisit moments with close friends",
+            "See how your interests evolved this year"
+        ];
+        
+        let suggestionIndex = 0;
+        const aiSuggestion = document.getElementById('aiSuggestion');
+        
+        setInterval(() => {
+            suggestionIndex = (suggestionIndex + 1) % suggestions.length;
+            aiSuggestion.style.opacity = '0';
+            setTimeout(() => {
+                aiSuggestion.textContent = suggestions[suggestionIndex];
+                aiSuggestion.style.opacity = '1';
+            }, 300);
+        }, 5000);
+        
+        // Memory card interactions
+        const memoryCards = document.querySelectorAll('.memory-card');
+        memoryCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const type = this.dataset.type;
+                console.log(`Opening ${type} memories`);
+                // Here you would navigate to the specific memory type
+            });
+        });
+        
+        // FAB click handler
+        document.getElementById('fab').addEventListener('click', () => {
+            console.log('Opening memory creation interface');
+            // Here you would open a modal or navigate to create new memory
+        });
+        
+        // Graph interaction (basic)
+        const graphContainer = document.getElementById('graphContainer');
+        let isDragging = false;
+        let startX, startY;
+        
+        graphContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            graphContainer.style.cursor = 'grabbing';
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            // Here you would implement graph panning
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            // Update graph position
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            graphContainer.style.cursor = 'move';
+        });
+        
+        // Draw connection lines between nodes
+        function drawConnections() {
+            const nodes = document.querySelectorAll('.node');
+            const graphNodes = document.querySelector('.graph-nodes');
+            
+            // Clear existing connections
+            document.querySelectorAll('.connection').forEach(c => c.remove());
+            
+            // Draw lines between center node and others
+            const centerNode = nodes[0];
+            const centerRect = centerNode.getBoundingClientRect();
+            const containerRect = graphNodes.getBoundingClientRect();
+            
+            for (let i = 1; i < nodes.length; i++) {
+                const node = nodes[i];
+                const nodeRect = node.getBoundingClientRect();
+                
+                const connection = document.createElement('div');
+                connection.className = 'connection';
+                
+                const x1 = centerRect.left - containerRect.left + centerRect.width / 2;
+                const y1 = centerRect.top - containerRect.top + centerRect.height / 2;
+                const x2 = nodeRect.left - containerRect.left + nodeRect.width / 2;
+                const y2 = nodeRect.top - containerRect.top + nodeRect.height / 2;
+                
+                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                connection.style.width = length + 'px';
+                connection.style.left = x1 + 'px';
+                connection.style.top = y1 + 'px';
+                connection.style.transform = `rotate(${angle}deg)`;
+                
+                graphNodes.appendChild(connection);
+            }
+        }
+        
+        // Draw connections after load
+        setTimeout(drawConnections, 1500);
+        
+        // Redraw on window resize
+        window.addEventListener('resize', drawConnections);
+    </script>
+</body>
+</html>
