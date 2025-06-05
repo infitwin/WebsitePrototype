@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout 4: Conductor's View</title>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: Inter, sans-serif; 
+            background: radial-gradient(circle at center, #FFF8DC 0%, #F0F8FF 50%, #E6E6FA 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* Concert Hall */
+        .concert-hall {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Conductor's Podium (Central Neo4j Graph) */
+        .conductors-podium {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+            border: 4px solid rgba(255, 215, 0, 0.6);
+            z-index: 10;
+        }
+        
+        /* Neo4j Style Graph in Center */
+        .knowledge-graph {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFF8DC, #F0F8FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Central User Node */
+        .central-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FFD700, #FF6B47);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+            box-shadow: 0 8px 24px rgba(255, 215, 0, 0.4);
+            animation: conductorPulse 3s infinite;
+        }
+        
+        .central-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        
+        /* Graph Nodes Around Center */
+        .graph-node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .graph-node:hover {
+            transform: scale(1.3);
+            z-index: 20;
+        }
+        
+        /* Graph node positioning in circle */
+        .node-1 { top: 10%; left: 50%; transform: translateX(-50%); background: #87CEEB; }
+        .node-2 { top: 25%; right: 15%; background: #FFD700; }
+        .node-3 { top: 50%; right: 5%; background: #98FB98; }
+        .node-4 { bottom: 25%; right: 15%; background: #FF6B47; }
+        .node-5 { bottom: 10%; left: 50%; transform: translateX(-50%); background: #DDA0DD; }
+        .node-6 { bottom: 25%; left: 15%; background: #F0E68C; }
+        .node-7 { top: 50%; left: 5%; background: #FFB6C1; }
+        .node-8 { top: 25%; left: 15%; background: #20B2AA; }
+        
+        /* Connection Lines */
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.3));
+            transform-origin: center;
+            animation: connectionPulse 4s infinite;
+        }
+        
+        /* Orchestra Sections Around Podium */
+        .orchestra-section {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .orchestra-section:hover {
+            transform: translateY(-8px) scale(1.05);
+            border-color: rgba(255, 215, 0, 0.6);
+            z-index: 5;
+        }
+        
+        /* Strings Section (Top Left) */
+        .strings-section {
+            top: 8%;
+            left: 8%;
+            width: 280px;
+            border-left: 4px solid #87CEEB;
+        }
+        
+        /* Brass Section (Top Right) */
+        .brass-section {
+            top: 8%;
+            right: 8%;
+            width: 280px;
+            border-left: 4px solid #FFD700;
+        }
+        
+        /* Woodwinds Section (Bottom Left) */
+        .woodwinds-section {
+            bottom: 8%;
+            left: 8%;
+            width: 280px;
+            border-left: 4px solid #98FB98;
+        }
+        
+        /* Percussion Section (Bottom Right) */
+        .percussion-section {
+            bottom: 8%;
+            right: 8%;
+            width: 280px;
+            border-left: 4px solid #FF6B47;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .strings-section .section-icon { background: #87CEEB; }
+        .brass-section .section-icon { background: #FFD700; }
+        .woodwinds-section .section-icon { background: #98FB98; }
+        .percussion-section .section-icon { background: #FF6B47; }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2C1810;
+        }
+        
+        .section-count {
+            color: #6B3E2A;
+            font-size: 0.9rem;
+        }
+        
+        .memory-preview {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .memory-chip {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #2C1810;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Conductor Controls */
+        .conductor-controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1.5rem 3rem;
+            border-radius: 50px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            z-index: 30;
+        }
+        
+        .control-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .primary-control {
+            background: linear-gradient(135deg, #FFD700, #FF6B47);
+            color: white;
+        }
+        
+        .primary-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 107, 71, 0.3);
+        }
+        
+        .secondary-control {
+            background: white;
+            color: #2C1810;
+            border: 2px solid #E5E7EB;
+        }
+        
+        .secondary-control:hover {
+            border-color: #FFD700;
+            background: #FFFBF0;
+        }
+        
+        /* Symphony Info */
+        .symphony-info {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1.5rem 3rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            z-index: 30;
+        }
+        
+        .symphony-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2C1810;
+            margin-bottom: 0.5rem;
+        }
+        
+        .graph-stats {
+            color: #6B3E2A;
+            font-size: 0.9rem;
+        }
+        
+        /* Audience Seating (Stats) */
+        .audience-stats {
+            position: absolute;
+            top: 50%;
+            left: 2rem;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-item {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #FFD700;
+        }
+        
+        .stat-label {
+            color: #6B3E2A;
+            font-size: 0.8rem;
+        }
+        
+        /* Recent Activity */
+        .recent-activity {
+            position: absolute;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 250px;
+        }
+        
+        .activity-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+        }
+        
+        .activity-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .activity-text {
+            font-size: 0.8rem;
+            color: #2C1810;
+        }
+        
+        /* Animations */
+        @keyframes conductorPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(255, 215, 0, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 12px 36px rgba(255, 215, 0, 0.6); }
+        }
+        
+        @keyframes connectionPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .orchestra-section { width: 240px; padding: 1rem; }
+            .audience-stats, .recent-activity { position: relative; margin: 1rem auto; }
+        }
+        
+        @media (max-width: 768px) {
+            .conductors-podium { width: 300px; height: 300px; }
+            .knowledge-graph { width: 240px; height: 240px; }
+            .orchestra-section { position: relative; margin: 1rem; width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="concert-hall">
+        <!-- Symphony Info -->
+        <div class="symphony-info">
+            <h1 class="symphony-title">🎼 John's Life Symphony</h1>
+            <div class="graph-stats">Knowledge Graph: 17 nodes, 42 edges • Conducted with passion</div>
+        </div>
+        
+        <!-- Conductor's Podium (Central Neo4j Graph) -->
+        <div class="conductors-podium">
+            <div class="knowledge-graph">
+                <!-- Central User Node -->
+                <div class="central-node">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=FFD700&color=2C1810" 
+                         alt="Conductor" class="central-avatar">
+                </div>
+                
+                <!-- Graph Nodes -->
+                <div class="graph-node node-1" title="Family">👨‍👩‍👧‍👦</div>
+                <div class="graph-node node-2" title="Career">💼</div>
+                <div class="graph-node node-3" title="Education">🎓</div>
+                <div class="graph-node node-4" title="Adventures">🌍</div>
+                <div class="graph-node node-5" title="Wisdom">📚</div>
+                <div class="graph-node node-6" title="Achievements">🏆</div>
+                <div class="graph-node node-7" title="Love">❤️</div>
+                <div class="graph-node node-8" title="Friends">👥</div>
+            </div>
+        </div>
+        
+        <!-- Orchestra Sections -->
+        
+        <!-- Strings Section (Family & Relationships) -->
+        <div class="orchestra-section strings-section">
+            <div class="section-header">
+                <div class="section-icon">🎻</div>
+                <div>
+                    <div class="section-title">Strings</div>
+                    <div class="section-count">12 memories</div>
+                </div>
+            </div>
+            <div class="memory-preview">
+                <div class="memory-chip">Wedding</div>
+                <div class="memory-chip">First Child</div>
+                <div class="memory-chip">Family Trips</div>
+            </div>
+        </div>
+        
+        <!-- Brass Section (Achievements) -->
+        <div class="orchestra-section brass-section">
+            <div class="section-header">
+                <div class="section-icon">🎺</div>
+                <div>
+                    <div class="section-title">Brass</div>
+                    <div class="section-count">8 memories</div>
+                </div>
+            </div>
+            <div class="memory-preview">
+                <div class="memory-chip">CEO Role</div>
+                <div class="memory-chip">Awards</div>
+                <div class="memory-chip">Graduation</div>
+            </div>
+        </div>
+        
+        <!-- Woodwinds Section (Personal Growth) -->
+        <div class="orchestra-section woodwinds-section">
+            <div class="section-header">
+                <div class="section-icon">🎷</div>
+                <div>
+                    <div class="section-title">Woodwinds</div>
+                    <div class="section-count">15 memories</div>
+                </div>
+            </div>
+            <div class="memory-preview">
+                <div class="memory-chip">Meditation</div>
+                <div class="memory-chip">Reading</div>
+                <div class="memory-chip">Reflection</div>
+            </div>
+        </div>
+        
+        <!-- Percussion Section (Adventures) -->
+        <div class="orchestra-section percussion-section">
+            <div class="section-header">
+                <div class="section-icon">🥁</div>
+                <div>
+                    <div class="section-title">Percussion</div>
+                    <div class="section-count">12 memories</div>
+                </div>
+            </div>
+            <div class="memory-preview">
+                <div class="memory-chip">Mountain Climb</div>
+                <div class="memory-chip">Skydiving</div>
+                <div class="memory-chip">Travel</div>
+            </div>
+        </div>
+        
+        <!-- Audience Stats -->
+        <div class="audience-stats">
+            <div class="stat-item">
+                <div class="stat-number">47</div>
+                <div class="stat-label">Total Memories</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Family Members</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">15</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3 class="activity-title">Recent Symphony</h3>
+            
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #87CEEB;">👨‍👩‍👧‍👦</div>
+                <div class="activity-text">Sarah added family photo</div>
+            </div>
+            
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #FFD700;">🏆</div>
+                <div class="activity-text">Completed "First Job" story</div>
+            </div>
+            
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #98FB98;">📚</div>
+                <div class="activity-text">Added wisdom note</div>
+            </div>
+            
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #FF6B47;">🌍</div>
+                <div class="activity-text">New adventure planned</div>
+            </div>
+        </div>
+        
+        <!-- Conductor Controls -->
+        <div class="conductor-controls">
+            <button class="control-btn primary-control">
+                🎙️ Compose Memory
+            </button>
+            <button class="control-btn secondary-control">
+                📊 Full Score
+            </button>
+            <button class="control-btn secondary-control">
+                🎵 Play Symphony
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Add interaction to graph nodes
+        document.querySelectorAll('.graph-node').forEach(node => {
+            node.addEventListener('click', function() {
+                const title = this.getAttribute('title');
+                alert(`Exploring ${title} memories...`);
+            });
+        });
+        
+        // Add interaction to orchestra sections
+        document.querySelectorAll('.orchestra-section').forEach(section => {
+            section.addEventListener('click', function() {
+                const title = this.querySelector('.section-title').textContent;
+                alert(`Opening ${title} section...`);
+            });
+        });
+        
+        // Control buttons
+        document.querySelector('.primary-control').addEventListener('click', () => {
+            alert('Starting memory composition with Winston...');
+        });
+        
+        document.querySelectorAll('.secondary-control')[0].addEventListener('click', () => {
+            alert('Opening full Neo4j knowledge graph...');
+        });
+        
+        document.querySelectorAll('.secondary-control')[1].addEventListener('click', () => {
+            // Play symphony animation
+            playSymphony();
+        });
+        
+        function playSymphony() {
+            const sections = document.querySelectorAll('.orchestra-section');
+            const graphNodes = document.querySelectorAll('.graph-node');
+            
+            // Highlight sections in sequence
+            sections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.style.transform = 'translateY(-8px) scale(1.1)';
+                    section.style.borderColor = 'rgba(255, 215, 0, 0.8)';
+                    
+                    setTimeout(() => {
+                        section.style.transform = '';
+                        section.style.borderColor = 'transparent';
+                    }, 800);
+                }, index * 400);
+            });
+            
+            // Pulse graph nodes
+            setTimeout(() => {
+                graphNodes.forEach((node, index) => {
+                    setTimeout(() => {
+                        node.style.transform = 'scale(1.5)';
+                        setTimeout(() => {
+                            node.style.transform = 'scale(1)';
+                        }, 300);
+                    }, index * 100);
+                });
+            }, 1600);
+        }
+        
+        // Add subtle parallax effect on mouse move
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            
+            document.querySelector('.conductors-podium').style.transform = 
+                `translate(${x * 0.5}px, ${y * 0.5}px)`;
+        });
+    </script>
+</body>
+</html>

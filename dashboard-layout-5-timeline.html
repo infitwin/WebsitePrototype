@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout 5: Symphony Timeline</title>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: Inter, sans-serif; 
+            background: linear-gradient(135deg, #FFF8DC 0%, #F0F8FF 100%);
+            overflow-x: hidden;
+        }
+        
+        /* Concert Program Layout */
+        .concert-program {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        /* Program Header */
+        .program-header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 3px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .concert-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #2C1810;
+            margin-bottom: 0.5rem;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .composer-name {
+            font-size: 1.5rem;
+            color: #6B3E2A;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+        
+        .performance-info {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .info-item {
+            text-align: center;
+        }
+        
+        .info-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #FFD700;
+        }
+        
+        .info-label {
+            color: #6B3E2A;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Symphony Timeline */
+        .symphony-timeline {
+            position: relative;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 3rem;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        /* Vertical Timeline Spine */
+        .timeline-spine {
+            position: absolute;
+            left: 50%;
+            top: 120px;
+            bottom: 60px;
+            width: 4px;
+            background: linear-gradient(180deg, #87CEEB 0%, #FFD700 25%, #98FB98 50%, #FF6B47 75%, #DDA0DD 100%);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        /* Movement Sections */
+        .movement {
+            position: relative;
+            margin-bottom: 4rem;
+            display: flex;
+            align-items: center;
+            min-height: 200px;
+        }
+        
+        .movement:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        
+        /* Movement Number Circle */
+        .movement-number {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            z-index: 10;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Movement Colors */
+        .movement-1 .movement-number { background: linear-gradient(135deg, #87CEEB, #4682B4); }
+        .movement-2 .movement-number { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .movement-3 .movement-number { background: linear-gradient(135deg, #98FB98, #228B22); }
+        .movement-4 .movement-number { background: linear-gradient(135deg, #FF6B47, #DC143C); }
+        
+        /* Movement Content */
+        .movement-content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 0 3rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .movement-content:hover {
+            transform: translateX(10px);
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+        
+        .movement:nth-child(even) .movement-content:hover {
+            transform: translateX(-10px);
+        }
+        
+        .movement-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .movement-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .movement-1 .movement-icon { background: #87CEEB; }
+        .movement-2 .movement-icon { background: #FFD700; }
+        .movement-3 .movement-icon { background: #98FB98; }
+        .movement-4 .movement-icon { background: #FF6B47; }
+        
+        .movement-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2C1810;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .movement-subtitle {
+            color: #6B3E2A;
+            font-style: italic;
+            margin-top: 0.25rem;
+        }
+        
+        .movement-description {
+            color: #6B3E2A;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Memory Highlights */
+        .memory-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .memory-highlight {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid currentColor;
+        }
+        
+        .highlight-title {
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 0.25rem;
+        }
+        
+        .highlight-date {
+            color: #6B3E2A;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .highlight-preview {
+            color: #6B3E2A;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
+        /* Movement border colors */
+        .movement-1 .memory-highlight { border-left-color: #87CEEB; }
+        .movement-2 .memory-highlight { border-left-color: #FFD700; }
+        .movement-3 .memory-highlight { border-left-color: #98FB98; }
+        .movement-4 .memory-highlight { border-left-color: #FF6B47; }
+        
+        /* Time Markers */
+        .time-marker {
+            position: absolute;
+            right: -100px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #6B3E2A;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .movement:nth-child(even) .time-marker {
+            right: auto;
+            left: -100px;
+        }
+        
+        /* Action Panel */
+        .action-panel {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 30;
+        }
+        
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .action-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .primary-action {
+            background: linear-gradient(135deg, #FFD700, #FF6B47);
+            color: white;
+        }
+        
+        .primary-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 107, 71, 0.3);
+        }
+        
+        .secondary-action {
+            background: white;
+            color: #2C1810;
+            border: 2px solid #E5E7EB;
+        }
+        
+        .secondary-action:hover {
+            border-color: #FFD700;
+            background: #FFFBF0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .concert-title { font-size: 2.5rem; }
+            .performance-info { grid-template-columns: repeat(2, 1fr); }
+            .movement { flex-direction: column !important; text-align: center; }
+            .movement-content { margin: 1rem 0; }
+            .time-marker { position: relative; right: auto !important; left: auto !important; margin-top: 1rem; }
+            .action-panel { position: relative; margin: 2rem auto; }
+        }
+        
+        /* Animations */
+        @keyframes timelineReveal {
+            0% { height: 0; }
+            100% { height: 100%; }
+        }
+        
+        .timeline-spine {
+            animation: timelineReveal 3s ease-out;
+        }
+        
+        @keyframes movementSlideIn {
+            0% { opacity: 0; transform: translateX(-50px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        
+        .movement {
+            animation: movementSlideIn 0.8s ease-out;
+        }
+        
+        .movement:nth-child(even) {
+            animation: movementSlideIn 0.8s ease-out;
+        }
+        
+        .movement:nth-child(1) { animation-delay: 0.2s; }
+        .movement:nth-child(2) { animation-delay: 0.4s; }
+        .movement:nth-child(3) { animation-delay: 0.6s; }
+        .movement:nth-child(4) { animation-delay: 0.8s; }
+    </style>
+</head>
+<body>
+    <div class="concert-program">
+        <!-- Program Header -->
+        <div class="program-header">
+            <h1 class="concert-title">Symphony No. 1 in Life Major</h1>
+            <p class="composer-name">Composed by John Doe</p>
+            <p style="color: #6B3E2A; margin-bottom: 2rem;">
+                A musical autobiography in four movements • Premiered 1970 • Still performing
+            </p>
+            
+            <div class="performance-info">
+                <div class="info-item">
+                    <div class="info-number">47</div>
+                    <div class="info-label">Movements Completed</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-number">52</div>
+                    <div class="info-label">Years in Performance</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-number">8</div>
+                    <div class="info-label">Supporting Orchestra</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-number">∞</div>
+                    <div class="info-label">Encore Performances</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Symphony Timeline -->
+        <div class="symphony-timeline">
+            <h2 class="timeline-title">Programme</h2>
+            
+            <!-- Timeline Spine -->
+            <div class="timeline-spine"></div>
+            
+            <!-- Movement I: Youth & Discovery -->
+            <div class="movement movement-1">
+                <div class="movement-number">I</div>
+                <div class="time-marker">1970-1990</div>
+                <div class="movement-content">
+                    <div class="movement-header">
+                        <div class="movement-icon">🌱</div>
+                        <div>
+                            <div class="movement-title">Youth & Discovery</div>
+                            <div class="movement-subtitle">Allegro con spirito</div>
+                        </div>
+                    </div>
+                    
+                    <p class="movement-description">
+                        The opening movement bursts with youthful energy and curiosity. Themes of family, 
+                        education, and first adventures weave together in a playful symphony of discovery.
+                    </p>
+                    
+                    <div class="memory-highlights">
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Childhood Home</div>
+                            <div class="highlight-date">1970-1988</div>
+                            <div class="highlight-preview">The foundation theme, establishing the musical DNA that would echo throughout...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">First Love</div>
+                            <div class="highlight-date">1987</div>
+                            <div class="highlight-preview">A tender melody that introduced the romance motif...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">College Years</div>
+                            <div class="highlight-date">1988-1992</div>
+                            <div class="highlight-preview">Complex harmonies of growth, learning, and independence...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Movement II: Building & Achieving -->
+            <div class="movement movement-2">
+                <div class="movement-number">II</div>
+                <div class="time-marker">1990-2005</div>
+                <div class="movement-content">
+                    <div class="movement-header">
+                        <div class="movement-icon">🏗️</div>
+                        <div>
+                            <div class="movement-title">Building & Achieving</div>
+                            <div class="movement-subtitle">Maestoso e triumphant</div>
+                        </div>
+                    </div>
+                    
+                    <p class="movement-description">
+                        A triumphant movement featuring bold brass sections of career achievements and 
+                        life milestones. The wedding march theme transforms into a family symphony.
+                    </p>
+                    
+                    <div class="memory-highlights">
+                        <div class="memory-highlight">
+                            <div class="highlight-title">First Job</div>
+                            <div class="highlight-date">1992</div>
+                            <div class="highlight-preview">The career theme's first powerful statement...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Wedding Day</div>
+                            <div class="highlight-date">1995</div>
+                            <div class="highlight-preview">The love theme reaches its crescendo with full orchestration...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Starting a Family</div>
+                            <div class="highlight-date">1998-2002</div>
+                            <div class="highlight-preview">New voices join the family chorus, adding richness and complexity...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Movement III: Growth & Wisdom -->
+            <div class="movement movement-3">
+                <div class="movement-number">III</div>
+                <div class="time-marker">2005-2015</div>
+                <div class="movement-content">
+                    <div class="movement-header">
+                        <div class="movement-icon">🌳</div>
+                        <div>
+                            <div class="movement-title">Growth & Wisdom</div>
+                            <div class="movement-subtitle">Andante contemplativo</div>
+                        </div>
+                    </div>
+                    
+                    <p class="movement-description">
+                        A reflective movement where earlier themes mature and deepen. The music becomes 
+                        more complex, with rich harmonies representing life experience and wisdom gained.
+                    </p>
+                    
+                    <div class="memory-highlights">
+                        <div class="memory-highlight">
+                            <div class="highlight-title">CEO Achievement</div>
+                            <div class="highlight-date">2010</div>
+                            <div class="highlight-preview">The career theme reaches its full development...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Personal Philosophy</div>
+                            <div class="highlight-date">2008-2012</div>
+                            <div class="highlight-preview">A new wisdom theme emerges, weaving through existing melodies...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Mentoring Others</div>
+                            <div class="highlight-date">2012-2015</div>
+                            <div class="highlight-preview">The teaching motif appears, sharing melodies with new musicians...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Movement IV: Adventure & Legacy -->
+            <div class="movement movement-4">
+                <div class="movement-number">IV</div>
+                <div class="time-marker">2015-Present</div>
+                <div class="movement-content">
+                    <div class="movement-header">
+                        <div class="movement-icon">🚀</div>
+                        <div>
+                            <div class="movement-title">Adventure & Legacy</div>
+                            <div class="movement-subtitle">Finale - Vivace con fuoco</div>
+                        </div>
+                    </div>
+                    
+                    <p class="movement-description">
+                        The grand finale brings together all previous themes in a spectacular celebration. 
+                        New adventures combine with the wisdom of experience, creating a legacy for future generations.
+                    </p>
+                    
+                    <div class="memory-highlights">
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Mountain Climbing</div>
+                            <div class="highlight-date">2015</div>
+                            <div class="highlight-preview">A bold new adventure theme soars above the established harmonies...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Learning to Fly</div>
+                            <div class="highlight-date">2018</div>
+                            <div class="highlight-preview">The adventure theme takes flight, literally and figuratively...</div>
+                        </div>
+                        
+                        <div class="memory-highlight">
+                            <div class="highlight-title">Grandparent Role</div>
+                            <div class="highlight-date">2020-Present</div>
+                            <div class="highlight-preview">The family theme returns in a new key, preparing for the next generation...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Panel -->
+    <div class="action-panel">
+        <h3 class="panel-title">Conductor's Notes</h3>
+        
+        <button class="action-btn primary-action">
+            🎙️ Add Movement
+        </button>
+        
+        <button class="action-btn secondary-action">
+            🎼 View Full Score
+        </button>
+        
+        <button class="action-btn secondary-action">
+            🎵 Play Symphony
+        </button>
+        
+        <button class="action-btn secondary-action">
+            📤 Share Programme
+        </button>
+    </div>
+    
+    <script>
+        // Add interaction to movements
+        document.querySelectorAll('.movement-content').forEach(movement => {
+            movement.addEventListener('click', function() {
+                const title = this.querySelector('.movement-title').textContent;
+                alert(`Exploring ${title} memories...`);
+            });
+        });
+        
+        // Add interaction to memory highlights
+        document.querySelectorAll('.memory-highlight').forEach(highlight => {
+            highlight.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const title = this.querySelector('.highlight-title').textContent;
+                alert(`Opening memory: ${title}`);
+            });
+        });
+        
+        // Action buttons
+        document.querySelector('.primary-action').addEventListener('click', () => {
+            alert('Starting new memory composition with Winston...');
+        });
+        
+        document.querySelectorAll('.secondary-action')[0].addEventListener('click', () => {
+            alert('Opening full Neo4j knowledge graph...');
+        });
+        
+        document.querySelectorAll('.secondary-action')[1].addEventListener('click', () => {
+            playSymphony();
+        });
+        
+        document.querySelectorAll('.secondary-action')[2].addEventListener('click', () => {
+            alert('Preparing programme for sharing...');
+        });
+        
+        // Symphony playback animation
+        function playSymphony() {
+            const movements = document.querySelectorAll('.movement');
+            
+            movements.forEach((movement, index) => {
+                setTimeout(() => {
+                    // Highlight movement
+                    movement.style.transform = 'scale(1.02)';
+                    movement.querySelector('.movement-content').style.borderColor = 'rgba(255, 215, 0, 0.8)';
+                    movement.querySelector('.movement-content').style.boxShadow = '0 12px 40px rgba(255, 215, 0, 0.3)';
+                    
+                    // Reset after delay
+                    setTimeout(() => {
+                        movement.style.transform = 'scale(1)';
+                        movement.querySelector('.movement-content').style.borderColor = 'transparent';
+                        movement.querySelector('.movement-content').style.boxShadow = '0 4px 24px rgba(0, 0, 0, 0.1)';
+                    }, 1500);
+                }, index * 800);
+            });
+        }
+        
+        // Add scroll-triggered animations
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '0px 0px -100px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe movements for scroll animations
+        document.querySelectorAll('.movement').forEach(movement => {
+            movement.style.opacity = '0';
+            movement.style.transform = 'translateY(50px)';
+            movement.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            observer.observe(movement);
+        });
+    </script>
+</body>
+</html>

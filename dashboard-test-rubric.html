@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Orchestra Dashboard - Evaluation Rubric</title>
+    <style>
+        body { font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .rubric-section { background: #f8f9fa; padding: 2rem; margin: 2rem 0; border-radius: 12px; }
+        .criteria { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .criterion { background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid #3b82f6; }
+        .score { font-weight: bold; color: #059669; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f3f4f6; font-weight: 600; }
+        .layout-preview { width: 100px; height: 60px; background: #e5e7eb; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🎼 Memory Orchestra Dashboard Evaluation Rubric</h1>
+    
+    <div class="rubric-section">
+        <h2>Evaluation Framework</h2>
+        <p><strong>Scoring:</strong> Each criterion scored 1-10 (10 = Excellent, 1 = Poor)</p>
+        <p><strong>Total Score:</strong> Sum of all criteria scores (Max = 100)</p>
+        
+        <div class="criteria">
+            <div class="criterion">
+                <h3>🎵 Musical Flow (10 pts)</h3>
+                <p>Does the layout create a sense of rhythm and movement? Do elements feel harmoniously connected like instruments in an orchestra?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>🎭 Emotional Resonance (10 pts)</h3>
+                <p>Does it evoke the right emotions? Self-reflection, adventure, passion, sharing? Does it feel warm and inspiring?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>🏛️ Museum Quality (10 pts)</h3>
+                <p>Does it maintain the artistic, sophisticated aesthetic we've established? Would it fit in our museum journey?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>📊 Information Hierarchy (10 pts)</h3>
+                <p>Is important information prominent? Can users quickly understand their memory progress and key actions?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>🎯 User Engagement (10 pts)</h3>
+                <p>Does it encourage interaction? Are call-to-actions clear? Would users want to explore more?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>🧭 Navigation Clarity (10 pts)</h3>
+                <p>Is it easy to understand where to go next? Are the orchestral sections clearly defined?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>📱 Responsive Design (10 pts)</h3>
+                <p>Does it work beautifully on all screen sizes? Does the musical metaphor translate to mobile?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>🔗 Memory Connections (10 pts)</h3>
+                <p>How well does it show the Neo4j graph concept? Do memory relationships feel tangible?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>⚡ Performance Feel (10 pts)</h3>
+                <p>Do animations feel smooth and musical? Are loading states elegant? Does it feel fast?</p>
+            </div>
+            
+            <div class="criterion">
+                <h3>🎨 Visual Innovation (10 pts)</h3>
+                <p>Is it visually unique and memorable? Does it stand out from typical dashboards?</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="rubric-section">
+        <h2>Layout Variations to Test</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Layout</th>
+                    <th>Concept</th>
+                    <th>Musical Flow</th>
+                    <th>Emotional</th>
+                    <th>Museum Quality</th>
+                    <th>Info Hierarchy</th>
+                    <th>Engagement</th>
+                    <th>Navigation</th>
+                    <th>Responsive</th>
+                    <th>Connections</th>
+                    <th>Performance</th>
+                    <th>Innovation</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="scores-table">
+                <tr>
+                    <td><div class="layout-preview"></div>Symphonic Spiral</td>
+                    <td>Memories spiral outward from center like symphony movements</td>
+                    <td class="score" data-score="musical-flow-1">-</td>
+                    <td class="score" data-score="emotional-1">-</td>
+                    <td class="score" data-score="museum-1">-</td>
+                    <td class="score" data-score="hierarchy-1">-</td>
+                    <td class="score" data-score="engagement-1">-</td>
+                    <td class="score" data-score="navigation-1">-</td>
+                    <td class="score" data-score="responsive-1">-</td>
+                    <td class="score" data-score="connections-1">-</td>
+                    <td class="score" data-score="performance-1">-</td>
+                    <td class="score" data-score="innovation-1">-</td>
+                    <td class="score" data-total="1">-</td>
+                </tr>
+                <tr>
+                    <td><div class="layout-preview"></div>Orchestral Sections</td>
+                    <td>Clear sections like orchestra: strings, brass, woodwinds, percussion</td>
+                    <td class="score" data-score="musical-flow-2">-</td>
+                    <td class="score" data-score="emotional-2">-</td>
+                    <td class="score" data-score="museum-2">-</td>
+                    <td class="score" data-score="hierarchy-2">-</td>
+                    <td class="score" data-score="engagement-2">-</td>
+                    <td class="score" data-score="navigation-2">-</td>
+                    <td class="score" data-score="responsive-2">-</td>
+                    <td class="score" data-score="connections-2">-</td>
+                    <td class="score" data-score="performance-2">-</td>
+                    <td class="score" data-score="innovation-2">-</td>
+                    <td class="score" data-total="2">-</td>
+                </tr>
+                <tr>
+                    <td><div class="layout-preview"></div>Musical Staff</td>
+                    <td>Memories arranged on staff lines like musical notes</td>
+                    <td class="score" data-score="musical-flow-3">-</td>
+                    <td class="score" data-score="emotional-3">-</td>
+                    <td class="score" data-score="museum-3">-</td>
+                    <td class="score" data-score="hierarchy-3">-</td>
+                    <td class="score" data-score="engagement-3">-</td>
+                    <td class="score" data-score="navigation-3">-</td>
+                    <td class="score" data-score="responsive-3">-</td>
+                    <td class="score" data-score="connections-3">-</td>
+                    <td class="score" data-score="performance-3">-</td>
+                    <td class="score" data-score="innovation-3">-</td>
+                    <td class="score" data-total="3">-</td>
+                </tr>
+                <tr>
+                    <td><div class="layout-preview"></div>Conductor's View</td>
+                    <td>Neo4j graph central with memory "instruments" around it</td>
+                    <td class="score" data-score="musical-flow-4">-</td>
+                    <td class="score" data-score="emotional-4">-</td>
+                    <td class="score" data-score="museum-4">-</td>
+                    <td class="score" data-score="hierarchy-4">-</td>
+                    <td class="score" data-score="engagement-4">-</td>
+                    <td class="score" data-score="navigation-4">-</td>
+                    <td class="score" data-score="responsive-4">-</td>
+                    <td class="score" data-score="connections-4">-</td>
+                    <td class="score" data-score="performance-4">-</td>
+                    <td class="score" data-score="innovation-4">-</td>
+                    <td class="score" data-total="4">-</td>
+                </tr>
+                <tr>
+                    <td><div class="layout-preview"></div>Symphony Timeline</td>
+                    <td>Vertical timeline like a symphony program with movements</td>
+                    <td class="score" data-score="musical-flow-5">-</td>
+                    <td class="score" data-score="emotional-5">-</td>
+                    <td class="score" data-score="museum-5">-</td>
+                    <td class="score" data-score="hierarchy-5">-</td>
+                    <td class="score" data-score="engagement-5">-</td>
+                    <td class="score" data-score="navigation-5">-</td>
+                    <td class="score" data-score="responsive-5">-</td>
+                    <td class="score" data-score="connections-5">-</td>
+                    <td class="score" data-score="performance-5">-</td>
+                    <td class="score" data-score="innovation-5">-</td>
+                    <td class="score" data-total="5">-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="rubric-section">
+        <h2>Testing Process</h2>
+        <ol>
+            <li><strong>Create 5 layout prototypes</strong> - Each representing a different musical metaphor</li>
+            <li><strong>Score each against rubric</strong> - Rate 1-10 for each criterion</li>
+            <li><strong>Calculate totals</strong> - Sum scores for overall ranking</li>
+            <li><strong>Build winning concept</strong> - Implement highest-scoring layout</li>
+            <li><strong>Hybrid optimization</strong> - Combine best elements from multiple layouts</li>
+        </ol>
+    </div>
+    
+    <script>
+        // This will be populated as we test each layout
+        const layoutScores = {};
+        
+        function updateScore(layout, criterion, score) {
+            if (!layoutScores[layout]) layoutScores[layout] = {};
+            layoutScores[layout][criterion] = score;
+            
+            // Update display
+            const cell = document.querySelector(`[data-score="${criterion}-${layout}"]`);
+            if (cell) {
+                cell.textContent = score;
+                cell.style.backgroundColor = score >= 8 ? '#dcfce7' : score >= 6 ? '#fef3c7' : '#fee2e2';
+            }
+            
+            // Calculate total
+            const total = Object.values(layoutScores[layout]).reduce((a, b) => a + b, 0);
+            const totalCell = document.querySelector(`[data-total="${layout}"]`);
+            if (totalCell) {
+                totalCell.textContent = total;
+                totalCell.style.fontWeight = 'bold';
+            }
+        }
+        
+        // Example scoring (we'll fill this in as we test)
+        console.log('Rubric loaded. Ready to test dashboard layouts!');
+    </script>
+</body>
+</html>
