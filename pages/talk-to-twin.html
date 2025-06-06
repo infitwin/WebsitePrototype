@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talk to Twin - Infitwin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        /* Talk to Twin Specific Styles */
+        .talk-container {
+            background: linear-gradient(180deg, #FFF8E7 0%, #FFFEF7 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation */
+        .talk-nav {
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: none;
+            border: 1px solid #E5E7EB;
+            color: #6B7280;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .nav-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2C1810;
+            margin: 0;
+        }
+
+        .mode-switcher {
+            display: flex;
+            gap: 8px;
+            background: #F3F4F6;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6B7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #2C1810;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Twin Header */
+        .twin-header {
+            background: white;
+            padding: 24px 32px;
+            border-bottom: 1px solid #E5E7EB;
+            text-align: center;
+        }
+
+        .twin-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            margin: 0 auto 16px;
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+        }
+
+        .twin-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2C1810;
+            margin: 0 0 4px 0;
+        }
+
+        .twin-subtitle {
+            font-size: 16px;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* Suggested Questions */
+        .suggested-questions {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestions-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-chip {
+            background: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            color: #374151;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-chip:hover {
+            background: #FFD700;
+            border-color: #FFD700;
+            color: white;
+        }
+
+        /* Chat Messages Area */
+        .chat-messages {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .twin-message-avatar {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .user-message-avatar {
+            background: #3B82F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+        }
+
+        .message-bubble {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 16px;
+            border-top-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-bubble {
+            background: #3B82F6;
+            color: white;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 4px;
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #9CA3AF;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .message.user .message-time {
+            text-align: right;
+        }
+
+        /* Related Memories Indicator */
+        .related-memories {
+            background: #F3F4F6;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6B7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .related-memories:hover {
+            background: #E5E7EB;
+            color: #374151;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .typing-indicator.show {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 16px;
+            border-top-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #9CA3AF;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; transform: scale(1); }
+            30% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Input Area */
+        .input-area {
+            background: white;
+            border-top: 1px solid #E5E7EB;
+            padding: 20px 32px;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .input-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px 48px 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 24px;
+            font-size: 14px;
+            resize: none;
+            line-height: 1.5;
+            min-height: 48px;
+            max-height: 120px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .voice-btn {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            background: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6B7280;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .voice-btn.recording {
+            background: #EF4444;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Voice Recording Indicator */
+        .recording-indicator {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #EF4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .recording-indicator.show {
+            display: flex;
+        }
+
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .talk-nav {
+                padding: 0 16px;
+            }
+
+            .nav-title {
+                font-size: 18px;
+            }
+
+            .mode-switcher {
+                display: none;
+            }
+
+            .twin-header {
+                padding: 20px 16px;
+            }
+
+            .chat-container {
+                padding: 0 8px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .input-area {
+                padding: 16px;
+            }
+
+            .suggestion-chip {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+<body class="talk-container">
+    <!-- Navigation -->
+    <nav class="talk-nav">
+        <div class="nav-left">
+            <a href="dashboard.html" class="back-btn">
+                <span>←</span>
+                Back
+            </a>
+            <h1 class="nav-title">Talk to Your Twin</h1>
+        </div>
+        <div class="mode-switcher">
+            <button class="mode-btn active" data-mode="text">Text</button>
+            <button class="mode-btn" data-mode="voice">Voice</button>
+        </div>
+    </nav>
+
+    <!-- Twin Header -->
+    <header class="twin-header">
+        <div class="twin-avatar">🧠</div>
+        <h2 class="twin-name">John's Digital Twin</h2>
+        <p class="twin-subtitle">Ask me anything</p>
+    </header>
+
+    <!-- Chat Container -->
+    <main class="chat-container">
+        <!-- Suggested Questions -->
+        <section class="suggested-questions" id="suggestedQuestions">
+            <h3 class="suggestions-title">Try asking about:</h3>
+            <div class="suggestion-chips">
+                <button class="suggestion-chip" onclick="askQuestion('What was your happiest moment?')">What was your happiest moment?</button>
+                <button class="suggestion-chip" onclick="askQuestion('Tell me about grandma')">Tell me about grandma</button>
+                <button class="suggestion-chip" onclick="askQuestion('What advice would you give me?')">What advice would you give me?</button>
+                <button class="suggestion-chip" onclick="askQuestion('Describe your childhood')">Describe your childhood</button>
+            </div>
+        </section>
+
+        <!-- Chat Messages Area -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- Welcome Message -->
+            <div class="message twin">
+                <div class="message-avatar twin-message-avatar">🧠</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p class="message-text">Hello! I'm your digital twin. I have access to all your memories and experiences. What would you like to know about your life story?</p>
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+
+            <!-- Empty state when no messages -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">💭</div>
+                <h3 class="empty-title">Start a conversation</h3>
+                <p class="empty-text">Ask your twin about memories, experiences, or life advice</p>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="message-avatar twin-message-avatar">🧠</div>
+            <div class="typing-dots">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Input Area -->
+    <footer class="input-area">
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Ask your twin anything..." 
+                    rows="1"
+                ></textarea>
+                <button class="voice-btn" id="voiceBtn" title="Hold to record">🎤</button>
+            </div>
+            <button class="send-btn" id="sendBtn" disabled>→</button>
+        </div>
+        <div class="recording-indicator" id="recordingIndicator">
+            <span class="recording-dot"></span>
+            Recording... Tap to stop
+        </div>
+    </footer>
+
+    <!-- TODO: Twin AI API integration for responses -->
+    <!-- TODO: Speech-to-text integration for voice input -->
+    <!-- TODO: Related memories API connection -->
+    <!-- TODO: Message persistence and session management -->
+
+    <script>
+        // Talk to Twin JavaScript Functionality
+        let isRecording = false;
+        let messageHistory = [];
+        let currentMode = 'text';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTalkToTwin();
+            setupEventListeners();
+        });
+
+        function initializeTalkToTwin() {
+            console.log('Talk to Twin initialized');
+            
+            // Load twin name from localStorage
+            const twinName = localStorage.getItem('twinName') || "Your Digital Twin";
+            document.querySelector('.twin-name').textContent = twinName;
+            
+            // Setup auto-resize for textarea
+            setupAutoResize();
+            
+            // Check for empty state
+            updateEmptyState();
+        }
+
+        function setupEventListeners() {
+            // Mode switcher
+            const modeBtns = document.querySelectorAll('.mode-btn');
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+            });
+
+            // Chat input
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            chatInput.addEventListener('input', handleInputChange);
+            chatInput.addEventListener('keydown', handleKeyDown);
+            sendBtn.addEventListener('click', sendMessage);
+
+            // Voice button
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            // Desktop: hold to record
+            voiceBtn.addEventListener('mousedown', startRecording);
+            voiceBtn.addEventListener('mouseup', stopRecording);
+            voiceBtn.addEventListener('mouseleave', stopRecording);
+            
+            // Mobile: tap to toggle
+            voiceBtn.addEventListener('touchstart', handleTouchStart);
+            voiceBtn.addEventListener('touchend', handleTouchEnd);
+
+            // Scroll to bottom on new messages
+            const messagesContainer = document.getElementById('chatMessages');
+            const observer = new MutationObserver(() => scrollToBottom());
+            observer.observe(messagesContainer, { childList: true });
+        }
+
+        // Mode Switching
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            
+            const voiceBtn = document.getElementById('voiceBtn');
+            const chatInput = document.getElementById('chatInput');
+            
+            if (mode === 'voice') {
+                voiceBtn.style.display = 'flex';
+                chatInput.placeholder = 'Tap microphone to speak...';
+            } else {
+                voiceBtn.style.display = 'flex';
+                chatInput.placeholder = 'Ask your twin anything...';
+            }
+        }
+
+        // Input Handling
+        function handleInputChange(e) {
+            const value = e.target.value.trim();
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = value.length === 0;
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function setupAutoResize() {
+            const input = document.getElementById('chatInput');
+            input.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+
+        // Message Handling
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addUserMessage(message);
+                input.value = '';
+                input.style.height = 'auto';
+                document.getElementById('sendBtn').disabled = true;
+                
+                // Hide suggestions after first message
+                const suggestions = document.getElementById('suggestedQuestions');
+                if (suggestions) {
+                    suggestions.style.display = 'none';
+                }
+                
+                // Simulate twin response
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    generateTwinResponse(message);
+                }, 1500 + Math.random() * 1000);
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+
+        function addUserMessage(text) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageEl = createMessageElement('user', text);
+            messagesContainer.appendChild(messageEl);
+            updateEmptyState();
+            scrollToBottom();
+        }
+
+        function addTwinMessage(text, relatedMemories = null) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageEl = createMessageElement('twin', text, relatedMemories);
+            messagesContainer.appendChild(messageEl);
+            updateEmptyState();
+            scrollToBottom();
+        }
+
+        function createMessageElement(type, text, relatedMemories = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatarClass = type === 'user' ? 'user-message-avatar' : 'twin-message-avatar';
+            const avatarIcon = type === 'user' ? '👤' : '🧠';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${avatarClass}">${avatarIcon}</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p class="message-text">${text}</p>
+                    </div>
+                    ${relatedMemories ? `
+                        <div class="related-memories" onclick="showRelatedMemories()">
+                            🔗 ${relatedMemories} related memories
+                        </div>
+                    ` : ''}
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            
+            return messageDiv;
+        }
+
+        function generateTwinResponse(userMessage) {
+            // Simulate AI responses based on user input
+            const responses = {
+                'happiest': {
+                    text: "My happiest moment was the day you were born. I remember holding you for the first time and feeling an overwhelming sense of love and responsibility. The way you gripped my finger with your tiny hand... it changed everything for me.",
+                    memories: 3
+                },
+                'grandma': {
+                    text: "Your grandmother was an extraordinary woman. She had this amazing ability to make everyone feel special. I remember her Sunday dinners where the whole family would gather. She taught me that food is love, and that's why I always made sure we had family meals together.",
+                    memories: 8
+                },
+                'advice': {
+                    text: "The most important advice I can give you is to be true to yourself. Don't let others define your path. I spent too many years trying to meet others' expectations before I realized that authenticity is the key to happiness. Also, never stop learning - curiosity keeps you young.",
+                    memories: 2
+                },
+                'childhood': {
+                    text: "I grew up in a small town where everyone knew each other. Summer days were spent exploring the woods behind our house, building forts, and catching fireflies. We didn't have much, but we had imagination and freedom. Those simple times taught me to appreciate the little things in life.",
+                    memories: 12
+                },
+                'default': {
+                    text: "That's an interesting question. Let me think about that... Based on my memories and experiences, I believe every moment in life teaches us something valuable. Would you like me to share more specific memories about this?",
+                    memories: Math.floor(Math.random() * 5) + 1
+                }
+            };
+
+            // Find matching response or use default
+            let response = responses.default;
+            const lowerMessage = userMessage.toLowerCase();
+            
+            if (lowerMessage.includes('happiest') || lowerMessage.includes('happy')) {
+                response = responses.happiest;
+            } else if (lowerMessage.includes('grandma') || lowerMessage.includes('grandmother')) {
+                response = responses.grandma;
+            } else if (lowerMessage.includes('advice')) {
+                response = responses.advice;
+            } else if (lowerMessage.includes('childhood') || lowerMessage.includes('young')) {
+                response = responses.childhood;
+            }
+
+            addTwinMessage(response.text, response.memories);
+        }
+
+        // Typing Indicator
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.classList.add('show');
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.classList.remove('show');
+        }
+
+        // Voice Recording
+        function startRecording(e) {
+            e.preventDefault();
+            if (!isRecording) {
+                isRecording = true;
+                document.getElementById('voiceBtn').classList.add('recording');
+                document.getElementById('recordingIndicator').classList.add('show');
+                console.log('Recording started...');
+                
+                // Simulate recording
+                // TODO: Implement actual speech-to-text
+            }
+        }
+
+        function stopRecording(e) {
+            e.preventDefault();
+            if (isRecording) {
+                isRecording = false;
+                document.getElementById('voiceBtn').classList.remove('recording');
+                document.getElementById('recordingIndicator').classList.remove('show');
+                console.log('Recording stopped');
+                
+                // Simulate transcription
+                setTimeout(() => {
+                    const transcribedText = "What was it like growing up in your hometown?";
+                    document.getElementById('chatInput').value = transcribedText;
+                    handleInputChange({ target: document.getElementById('chatInput') });
+                }, 500);
+            }
+        }
+
+        // Touch handling for mobile
+        let touchTimer;
+        function handleTouchStart(e) {
+            e.preventDefault();
+            touchTimer = setTimeout(() => startRecording(e), 100);
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            clearTimeout(touchTimer);
+            if (isRecording) {
+                stopRecording(e);
+            }
+        }
+
+        // Utility Functions
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function updateEmptyState() {
+            const messages = document.querySelectorAll('.message');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (emptyState) {
+                emptyState.style.display = messages.length <= 1 ? 'block' : 'none';
+            }
+        }
+
+        function showRelatedMemories() {
+            // TODO: Navigate to explore screen with filtered memories
+            console.log('Show related memories');
+            alert('This would open the explore screen filtered to show related memories');
+        }
+
+        // Track page interaction
+        console.log('Talk to Twin page loaded and interactive');
+    </script>
+</body>
+</html>
