@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Infitwin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        /* Settings Page Specific Styles */
+        .settings-container {
+            background: #F9FAFB;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .dashboard-nav {
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2C1810;
+            margin: 0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-button {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #F3F4F6;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: #F9FAFB;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .user-menu:hover {
+            background: #F3F4F6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .menu-dropdown {
+            background: none;
+            border: none;
+            color: #6B7280;
+            cursor: pointer;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Sidebar */
+        .dashboard-sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #E5E7EB;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            padding: 24px 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #6B7280;
+            font-weight: 500;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #E5E7EB;
+            margin-top: auto;
+        }
+
+        .storage-info {
+            text-align: center;
+        }
+
+        .storage-label {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 8px;
+        }
+
+        .storage-bar {
+            width: 100%;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .storage-used {
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            transition: width 0.3s ease;
+        }
+
+        .storage-text {
+            font-size: 12px;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        /* Main Content */
+        .dashboard-main {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2C1810;
+            margin: 0;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        /* Settings Sections */
+        .settings-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2C1810;
+            margin: 0;
+            margin-bottom: 4px;
+        }
+
+        .section-description {
+            font-size: 14px;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .form-input:disabled {
+            background: #F9FAFB;
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 4px;
+        }
+
+        .form-error {
+            font-size: 12px;
+            color: #EF4444;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-input.error {
+            border-color: #EF4444;
+        }
+
+        .form-input.error + .form-error {
+            display: block;
+        }
+
+        /* Email Verification Badge */
+        .email-container {
+            position: relative;
+        }
+
+        .verification-badge {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #10B981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Password Strength Indicator */
+        .password-strength {
+            margin-top: 8px;
+            display: none;
+        }
+
+        .password-strength.show {
+            display: block;
+        }
+
+        .strength-bar {
+            height: 4px;
+            background: #E5E7EB;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .strength-weak .strength-fill {
+            width: 25%;
+            background: #EF4444;
+        }
+
+        .strength-fair .strength-fill {
+            width: 50%;
+            background: #F59E0B;
+        }
+
+        .strength-good .strength-fill {
+            width: 75%;
+            background: #3B82F6;
+        }
+
+        .strength-strong .strength-fill {
+            width: 100%;
+            background: #10B981;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        /* Toggle Switches */
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .toggle-info {
+            flex: 1;
+        }
+
+        .toggle-label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .toggle-description {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #E5E7EB;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active {
+            background: #3B82F6;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+
+        .toggle-input {
+            display: none;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6B7280;
+            border: 2px solid #E5E7EB;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #F9FAFB;
+            border-color: #D1D5DB;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: #3B82F6;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .btn-link:hover {
+            color: #1D4ED8;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success Message */
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10B981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .success-message.show {
+            transform: translateX(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .dashboard-sidebar {
+                width: 100%;
+                order: 2;
+            }
+
+            .dashboard-main {
+                padding: 16px;
+                order: 1;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .toggle-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                justify-content: center;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="settings-container">
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <img src="../assets/images/infitwin-logo.jpg" alt="Infitwin" class="nav-logo">
+                <h1 class="nav-title">Settings</h1>
+            </div>
+            <div class="nav-right">
+                <button class="nav-button notifications">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=FFD700&color=2C1810" alt="User" class="user-avatar">
+                    <span class="user-name">John Doe</span>
+                    <button class="menu-dropdown">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="interview.html" class="nav-item">
+                    <span class="nav-icon">🎙️</span>
+                    <span class="nav-text">New Memory</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">My Memories</span>
+                </a>
+                <a href="file-browser.html" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">My Files</span>
+                </a>
+                <a href="twin-management.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Twin Management</span>
+                </a>
+                <a href="settings.html" class="nav-item active">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="storage-info">
+                    <p class="storage-label">Memory Storage</p>
+                    <div class="storage-bar">
+                        <div class="storage-used" style="width: 35%;"></div>
+                    </div>
+                    <p class="storage-text">3.5 GB of 10 GB used</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Page Header -->
+            <header class="page-header">
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">Manage your account settings and preferences</p>
+            </header>
+
+            <!-- Account Information Section -->
+            <section class="settings-section">
+                <div class="section-header">
+                    <h2 class="section-title">Account Information</h2>
+                    <p class="section-description">Update your personal information and account details</p>
+                </div>
+
+                <form id="accountForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="displayName">Display Name</label>
+                            <input type="text" class="form-input" id="displayName" value="John Doe">
+                            <div class="form-help">Used across Infitwin</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="emailAddress">Email Address</label>
+                            <div class="email-container">
+                                <input type="email" class="form-input" id="emailAddress" value="john.doe@email.com">
+                                <span class="verification-badge">✓ Verified</span>
+                            </div>
+                            <div class="form-help">We'll email to verify any changes</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="phoneNumber">Phone Number</label>
+                            <input type="tel" class="form-input" id="phoneNumber" value="+1 (555) 123-4567">
+                            <div class="form-help">Optional - for account recovery</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="timezone">Timezone</label>
+                            <select class="form-input" id="timezone">
+                                <option value="America/New_York">Eastern Time (ET)</option>
+                                <option value="America/Chicago">Central Time (CT)</option>
+                                <option value="America/Denver">Mountain Time (MT)</option>
+                                <option value="America/Los_Angeles" selected>Pacific Time (PT)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary" id="saveAccountBtn">
+                            <span>💾</span>
+                            Save Changes
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="resetAccountForm()">Cancel</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Security Section -->
+            <section class="settings-section">
+                <div class="section-header">
+                    <h2 class="section-title">Security</h2>
+                    <p class="section-description">Manage your password and security settings</p>
+                </div>
+
+                <form id="securityForm">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label" for="currentPassword">Current Password</label>
+                            <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="newPassword">New Password</label>
+                            <input type="password" class="form-input" id="newPassword" placeholder="Enter new password">
+                            <div class="form-help">At least 8 characters</div>
+                            <div class="password-strength" id="passwordStrength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"></div>
+                                </div>
+                                <div class="strength-text">Password strength</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="confirmPassword">Confirm Password</label>
+                            <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm new password">
+                            <div class="form-error" id="passwordMismatch">Passwords do not match</div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary" id="changePasswordBtn">
+                            <span>🔒</span>
+                            Change Password
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="resetSecurityForm()">Cancel</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Notifications Section -->
+            <section class="settings-section">
+                <div class="section-header">
+                    <h2 class="section-title">Notifications</h2>
+                    <p class="section-description">Control how and when you receive notifications</p>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Email Notifications</div>
+                            <div class="toggle-description">Receive general updates and announcements via email</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="emailNotifications">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Interview Reminders</div>
+                            <div class="toggle-description">Get reminded to continue building your twin through interviews</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="interviewReminders">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Weekly Digest</div>
+                            <div class="toggle-description">Receive a weekly summary of your memory building progress</div>
+                        </div>
+                        <label class="toggle-switch" data-setting="weeklyDigest">
+                            <input type="checkbox" class="toggle-input">
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Shared Twin Alerts</div>
+                            <div class="toggle-description">Get notified when someone shares their twin with you</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="sharedTwinAlerts">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Privacy Section -->
+            <section class="settings-section">
+                <div class="section-header">
+                    <h2 class="section-title">Privacy</h2>
+                    <p class="section-description">Control your privacy and data sharing preferences</p>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Profile Visibility</div>
+                            <div class="toggle-description">Allow others to find your profile when sharing twins</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="profileVisibility">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Analytics</div>
+                            <div class="toggle-description">Help improve Infitwin by sharing anonymous usage data</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="analytics">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Memory Suggestions</div>
+                            <div class="toggle-description">Allow AI to suggest memory topics based on your existing content</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="memorySuggestions">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-link">Download My Data</button>
+                    <button type="button" class="btn-link">Delete Account</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" id="successMessage">
+        Settings saved successfully!
+    </div>
+
+    <script>
+        // Settings Page JavaScript Functionality
+        let userSettings = {
+            displayName: 'John Doe',
+            emailAddress: 'john.doe@email.com',
+            phoneNumber: '+1 (555) 123-4567',
+            timezone: 'America/Los_Angeles',
+            emailNotifications: true,
+            interviewReminders: true,
+            weeklyDigest: false,
+            sharedTwinAlerts: true,
+            profileVisibility: true,
+            analytics: true,
+            memorySuggestions: true
+        };
+
+        let originalSettings = {};
+        let hasUnsavedChanges = false;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSettings();
+            setupEventListeners();
+        });
+
+        function initializeSettings() {
+            console.log('Settings initialized');
+            
+            // Load settings from localStorage
+            const savedSettings = localStorage.getItem('userSettings');
+            if (savedSettings) {
+                userSettings = { ...userSettings, ...JSON.parse(savedSettings) };
+            }
+            
+            // Store original settings for reset functionality
+            originalSettings = { ...userSettings };
+            
+            // Populate form fields
+            populateFormFields();
+            setupToggleSwitches();
+        }
+
+        function setupEventListeners() {
+            // Account form
+            const accountForm = document.getElementById('accountForm');
+            accountForm.addEventListener('submit', handleAccountFormSubmit);
+            
+            // Security form
+            const securityForm = document.getElementById('securityForm');
+            securityForm.addEventListener('submit', handleSecurityFormSubmit);
+            
+            // Form input changes
+            const formInputs = document.querySelectorAll('.form-input');
+            formInputs.forEach(input => {
+                input.addEventListener('input', handleFormInputChange);
+            });
+            
+            // Password strength checking
+            const newPasswordInput = document.getElementById('newPassword');
+            newPasswordInput.addEventListener('input', checkPasswordStrength);
+            
+            // Confirm password validation
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+            
+            // Toggle switches
+            const toggleSwitches = document.querySelectorAll('.toggle-switch');
+            toggleSwitches.forEach(toggle => {
+                toggle.addEventListener('click', handleToggleClick);
+            });
+            
+            // Prevent form submission on toggle click
+            document.querySelectorAll('.toggle-input').forEach(input => {
+                input.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // Warn about unsaved changes
+            window.addEventListener('beforeunload', function(e) {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        function populateFormFields() {
+            document.getElementById('displayName').value = userSettings.displayName;
+            document.getElementById('emailAddress').value = userSettings.emailAddress;
+            document.getElementById('phoneNumber').value = userSettings.phoneNumber;
+            document.getElementById('timezone').value = userSettings.timezone;
+        }
+
+        function setupToggleSwitches() {
+            const toggles = document.querySelectorAll('[data-setting]');
+            toggles.forEach(toggle => {
+                const setting = toggle.dataset.setting;
+                const input = toggle.querySelector('.toggle-input');
+                const isActive = userSettings[setting];
+                
+                if (isActive) {
+                    toggle.classList.add('active');
+                    input.checked = true;
+                } else {
+                    toggle.classList.remove('active');
+                    input.checked = false;
+                }
+            });
+        }
+
+        // Form Handlers
+        function handleAccountFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const saveBtn = document.getElementById('saveAccountBtn');
+            
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Update settings
+                userSettings.displayName = document.getElementById('displayName').value;
+                userSettings.emailAddress = document.getElementById('emailAddress').value;
+                userSettings.phoneNumber = document.getElementById('phoneNumber').value;
+                userSettings.timezone = document.getElementById('timezone').value;
+                
+                saveSettings();
+                showSuccessMessage('Account settings saved!');
+                hasUnsavedChanges = false;
+                
+                // Reset button
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<span>💾</span> Save Changes';
+            }, 1500);
+        }
+
+        function handleSecurityFormSubmit(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const changeBtn = document.getElementById('changePasswordBtn');
+            
+            // Validate passwords
+            if (!currentPassword) {
+                showFieldError('currentPassword', 'Current password is required');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showFieldError('newPassword', 'Password must be at least 8 characters');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showFieldError('confirmPassword', 'Passwords do not match');
+                return;
+            }
+            
+            // Show loading state
+            changeBtn.disabled = true;
+            changeBtn.innerHTML = '<span class="spinner"></span> Changing...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                showSuccessMessage('Password changed successfully!');
+                resetSecurityForm();
+                
+                // Reset button
+                changeBtn.disabled = false;
+                changeBtn.innerHTML = '<span>🔒</span> Change Password';
+            }, 2000);
+        }
+
+        function handleFormInputChange() {
+            hasUnsavedChanges = true;
+        }
+
+        function handleToggleClick(e) {
+            const toggle = e.currentTarget;
+            const input = toggle.querySelector('.toggle-input');
+            const setting = toggle.dataset.setting;
+            
+            // Toggle state
+            const newState = !input.checked;
+            input.checked = newState;
+            
+            if (newState) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+            
+            // Save immediately
+            userSettings[setting] = newState;
+            saveSettings();
+            showSuccessMessage('Setting updated!');
+        }
+
+        // Password Strength Checker
+        function checkPasswordStrength() {
+            const password = document.getElementById('newPassword').value;
+            const strengthContainer = document.getElementById('passwordStrength');
+            const strengthText = strengthContainer.querySelector('.strength-text');
+            
+            if (password.length === 0) {
+                strengthContainer.classList.remove('show');
+                return;
+            }
+            
+            strengthContainer.classList.add('show');
+            
+            let score = 0;
+            let feedback = [];
+            
+            // Length check
+            if (password.length >= 8) score++;
+            else feedback.push('at least 8 characters');
+            
+            // Character variety checks
+            if (/[a-z]/.test(password)) score++;
+            else feedback.push('lowercase letters');
+            
+            if (/[A-Z]/.test(password)) score++;
+            else feedback.push('uppercase letters');
+            
+            if (/[0-9]/.test(password)) score++;
+            else feedback.push('numbers');
+            
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+            else feedback.push('special characters');
+            
+            // Update strength indicator
+            const strengthClasses = ['strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
+            const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
+            
+            strengthContainer.className = 'password-strength show';
+            
+            if (score <= 1) {
+                strengthContainer.classList.add('strength-weak');
+                strengthText.textContent = `${strengthLabels[0]} - Add ${feedback.slice(0, 2).join(', ')}`;
+            } else if (score === 2) {
+                strengthContainer.classList.add('strength-fair');
+                strengthText.textContent = `${strengthLabels[1]} - Add ${feedback.slice(0, 1).join(', ')}`;
+            } else if (score === 3) {
+                strengthContainer.classList.add('strength-good');
+                strengthText.textContent = `${strengthLabels[2]} - Almost there!`;
+            } else {
+                strengthContainer.classList.add('strength-strong');
+                strengthText.textContent = `${strengthLabels[3]} - Excellent password`;
+            }
+        }
+
+        function validatePasswordMatch() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const confirmInput = document.getElementById('confirmPassword');
+            
+            if (confirmPassword.length > 0 && newPassword !== confirmPassword) {
+                confirmInput.classList.add('error');
+            } else {
+                confirmInput.classList.remove('error');
+            }
+        }
+
+        // Utility Functions
+        function showFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorDiv = field.parentNode.querySelector('.form-error');
+            
+            field.classList.add('error');
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+            
+            field.focus();
+        }
+
+        function clearFieldError(fieldId) {
+            const field = document.getElementById(fieldId);
+            const errorDiv = field.parentNode.querySelector('.form-error');
+            
+            field.classList.remove('error');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function showSuccessMessage(message) {
+            const messageEl = document.getElementById('successMessage');
+            messageEl.textContent = message;
+            messageEl.classList.add('show');
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+
+        function saveSettings() {
+            localStorage.setItem('userSettings', JSON.stringify(userSettings));
+            console.log('Settings saved:', userSettings);
+        }
+
+        function resetAccountForm() {
+            // Reset to original values
+            document.getElementById('displayName').value = originalSettings.displayName;
+            document.getElementById('emailAddress').value = originalSettings.emailAddress;
+            document.getElementById('phoneNumber').value = originalSettings.phoneNumber;
+            document.getElementById('timezone').value = originalSettings.timezone;
+            
+            hasUnsavedChanges = false;
+        }
+
+        function resetSecurityForm() {
+            document.getElementById('securityForm').reset();
+            document.getElementById('passwordStrength').classList.remove('show');
+            
+            // Clear any error states
+            const passwordInputs = ['currentPassword', 'newPassword', 'confirmPassword'];
+            passwordInputs.forEach(id => clearFieldError(id));
+        }
+
+        // Data Export/Delete Functions (Placeholders)
+        function downloadData() {
+            // TODO: Implement data export
+            alert('Data export would generate a download of all your memories and settings.');
+        }
+
+        function deleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                // TODO: Implement account deletion
+                alert('Account deletion would be processed. This is a placeholder.');
+            }
+        }
+
+        // Add click handlers for data buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const dataButtons = document.querySelectorAll('.btn-link');
+            dataButtons.forEach(btn => {
+                if (btn.textContent.includes('Download')) {
+                    btn.addEventListener('click', downloadData);
+                } else if (btn.textContent.includes('Delete')) {
+                    btn.addEventListener('click', deleteAccount);
+                }
+            });
+        });
+
+        // Track page interaction
+        console.log('Settings page loaded and interactive');
+    </script>
+</body>
+</html>

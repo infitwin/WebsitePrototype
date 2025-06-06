@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twin Management - Infitwin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        /* Twin Management Specific Styles */
+        .twin-management-container {
+            background: #F9FAFB;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .dashboard-nav {
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2C1810;
+            margin: 0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-button {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #F3F4F6;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: #F9FAFB;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .user-menu:hover {
+            background: #F3F4F6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .menu-dropdown {
+            background: none;
+            border: none;
+            color: #6B7280;
+            cursor: pointer;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Sidebar */
+        .dashboard-sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #E5E7EB;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            padding: 24px 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #6B7280;
+            font-weight: 500;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #E5E7EB;
+            margin-top: auto;
+        }
+
+        .storage-info {
+            text-align: center;
+        }
+
+        .storage-label {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 8px;
+        }
+
+        .storage-bar {
+            width: 100%;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .storage-used {
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            transition: width 0.3s ease;
+        }
+
+        .storage-text {
+            font-size: 12px;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        /* Main Content */
+        .dashboard-main {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2C1810;
+            margin: 0;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            background: white;
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 32px;
+            display: flex;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6B7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* My Twin Section */
+        .twin-profile {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .twin-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .twin-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .twin-info {
+            flex: 1;
+        }
+
+        .twin-name-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .twin-name {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2C1810;
+            margin: 0;
+        }
+
+        .twin-name-input {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2C1810;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            padding: 4px 8px;
+            background: white;
+            display: none;
+        }
+
+        .edit-name-btn {
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: #6B7280;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .edit-name-btn:hover {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        .twin-meta {
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        .twin-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6B7280;
+            border: 2px solid #E5E7EB;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #F9FAFB;
+            border-color: #D1D5DB;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2C1810;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        /* Shared Twins Section */
+        .shared-twins-list {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .shared-twin-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .shared-twin-item:hover {
+            background: #F9FAFB;
+        }
+
+        .shared-twin-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .shared-twin-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #EC4899 0%, #BE185D 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .shared-twin-info {
+            flex: 1;
+        }
+
+        .shared-twin-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 4px;
+        }
+
+        .shared-twin-owner {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 2px;
+        }
+
+        .shared-twin-meta {
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+
+        .shared-twin-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid #E5E7EB;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #6B7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #F3F4F6;
+            color: #374151;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* Share Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2C1810;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6B7280;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #374151;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FFD700;
+        }
+
+        .email-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .email-chip {
+            background: #F3F4F6;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remove-chip {
+            background: none;
+            border: none;
+            color: #6B7280;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .remove-chip:hover {
+            color: #EF4444;
+        }
+
+        .current-shares {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        .current-shares h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+
+        .share-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .share-item:last-child {
+            border-bottom: none;
+        }
+
+        .share-info {
+            flex: 1;
+        }
+
+        .share-email {
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+
+        .share-status {
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .dashboard-sidebar {
+                width: 100%;
+                order: 2;
+            }
+
+            .dashboard-main {
+                padding: 16px;
+                order: 1;
+            }
+
+            .tab-navigation {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .twin-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+
+            .twin-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .shared-twin-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .shared-twin-actions {
+                align-self: stretch;
+                justify-content: space-around;
+            }
+
+            .modal-content {
+                margin: 16px;
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body class="twin-management-container">
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <img src="../assets/images/infitwin-logo.jpg" alt="Infitwin" class="nav-logo">
+                <h1 class="nav-title">Twin Management</h1>
+            </div>
+            <div class="nav-right">
+                <button class="nav-button notifications">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=FFD700&color=2C1810" alt="User" class="user-avatar">
+                    <span class="user-name">John Doe</span>
+                    <button class="menu-dropdown">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="interview.html" class="nav-item">
+                    <span class="nav-icon">🎙️</span>
+                    <span class="nav-text">New Memory</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">My Memories</span>
+                </a>
+                <a href="file-browser.html" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">My Files</span>
+                </a>
+                <a href="twin-management.html" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Twin Management</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="storage-info">
+                    <p class="storage-label">Memory Storage</p>
+                    <div class="storage-bar">
+                        <div class="storage-used" style="width: 35%;"></div>
+                    </div>
+                    <p class="storage-text">3.5 GB of 10 GB used</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Page Header -->
+            <header class="page-header">
+                <h1 class="page-title">Twin Management</h1>
+            </header>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-button active" data-tab="my-twin">My Twin</button>
+                <button class="tab-button" data-tab="shared-with-me">Shared with Me</button>
+            </div>
+
+            <!-- My Twin Tab -->
+            <div class="tab-content active" id="my-twin">
+                <!-- Twin Profile -->
+                <section class="twin-profile">
+                    <div class="twin-header">
+                        <div class="twin-avatar">🧠</div>
+                        <div class="twin-info">
+                            <div class="twin-name-container">
+                                <h2 class="twin-name" id="twinNameDisplay">John's Digital Twin</h2>
+                                <input type="text" class="twin-name-input" id="twinNameInput" value="John's Digital Twin">
+                                <button class="edit-name-btn" id="editNameBtn">✏️ Edit</button>
+                            </div>
+                            <div class="twin-meta">Created January 15, 2024 • Last updated 2 days ago</div>
+                            <div class="twin-actions">
+                                <button class="btn-primary" onclick="openShareModal()">
+                                    <span>📤</span>
+                                    Share Twin
+                                </button>
+                                <button class="btn-secondary">
+                                    <span>👁️</span>
+                                    Preview Twin
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📖</div>
+                            <div class="stat-number">47</div>
+                            <p class="stat-label">Memories</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-number">23</div>
+                            <p class="stat-label">People</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📍</div>
+                            <div class="stat-number">15</div>
+                            <p class="stat-label">Places</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔗</div>
+                            <div class="stat-number">89</div>
+                            <p class="stat-label">Connections</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Shared with Me Tab -->
+            <div class="tab-content" id="shared-with-me">
+                <section class="shared-twins-list">
+                    <!-- Sample shared twins -->
+                    <div class="shared-twin-item">
+                        <div class="shared-twin-avatar">👩</div>
+                        <div class="shared-twin-info">
+                            <div class="shared-twin-name">Margaret's Life Stories</div>
+                            <div class="shared-twin-owner">by Margaret Johnson</div>
+                            <div class="shared-twin-meta">Shared 5 days ago • Last updated yesterday</div>
+                        </div>
+                        <div class="shared-twin-actions">
+                            <button class="action-btn">👁️ View</button>
+                            <button class="action-btn">💬 Chat</button>
+                        </div>
+                    </div>
+
+                    <div class="shared-twin-item">
+                        <div class="shared-twin-avatar">👴</div>
+                        <div class="shared-twin-info">
+                            <div class="shared-twin-name">Grandpa's Memories</div>
+                            <div class="shared-twin-owner">by Robert Smith</div>
+                            <div class="shared-twin-meta">Shared 2 weeks ago • Last updated 3 days ago</div>
+                        </div>
+                        <div class="shared-twin-actions">
+                            <button class="action-btn">👁️ View</button>
+                            <button class="action-btn">💬 Chat</button>
+                        </div>
+                    </div>
+
+                    <!-- Empty state (hidden by default, shown when no shared twins) -->
+                    <div class="empty-state" id="sharedEmptyState" style="display: none;">
+                        <div class="empty-icon">👥</div>
+                        <h3 class="empty-title">No twins shared with you yet</h3>
+                        <p class="empty-text">When family members share their digital twins with you, they'll appear here.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Share Your Twin</h2>
+                <button class="close-btn" onclick="closeShareModal()">&times;</button>
+            </div>
+
+            <form id="shareForm">
+                <div class="form-group">
+                    <label class="form-label" for="emailInput">Email Address</label>
+                    <input type="email" class="form-input" id="emailInput" placeholder="family@example.com">
+                </div>
+
+                <div class="email-chips" id="emailChips">
+                    <!-- Email chips will be added here -->
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="messageInput">Personal Message (Optional)</label>
+                    <textarea class="form-input" id="messageInput" rows="3" placeholder="I'd like to share my digital twin with you..."></textarea>
+                </div>
+
+                <div class="twin-actions">
+                    <button type="submit" class="btn-primary">
+                        <span>📤</span>
+                        Send Invitations
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeShareModal()">Cancel</button>
+                </div>
+            </form>
+
+            <div class="current-shares">
+                <h3>Current Shares</h3>
+                <div class="share-item">
+                    <div class="share-info">
+                        <div class="share-email">sarah.doe@email.com</div>
+                        <div class="share-status">Invited 3 days ago • <span class="status-badge status-active">Active</span></div>
+                    </div>
+                </div>
+                <div class="share-item">
+                    <div class="share-info">
+                        <div class="share-email">mike.johnson@email.com</div>
+                        <div class="share-status">Invited 1 week ago • <span class="status-badge status-pending">Pending</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Twin Management JavaScript Functionality
+        let currentTab = 'my-twin';
+        let twinName = "John's Digital Twin";
+        let isEditingName = false;
+        let emailList = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTwinManagement();
+            setupEventListeners();
+        });
+
+        function initializeTwinManagement() {
+            console.log('Twin Management initialized');
+            
+            // Load twin data from localStorage
+            const savedTwinName = localStorage.getItem('twinName');
+            if (savedTwinName) {
+                twinName = savedTwinName;
+                document.getElementById('twinNameDisplay').textContent = twinName;
+                document.getElementById('twinNameInput').value = twinName;
+            }
+            
+            // Check if there are shared twins to show/hide empty state
+            updateSharedTwinsDisplay();
+        }
+
+        function setupEventListeners() {
+            // Tab switching
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    switchTab(tab);
+                });
+            });
+
+            // Twin name editing
+            const editNameBtn = document.getElementById('editNameBtn');
+            const twinNameDisplay = document.getElementById('twinNameDisplay');
+            const twinNameInput = document.getElementById('twinNameInput');
+
+            editNameBtn.addEventListener('click', function() {
+                if (!isEditingName) {
+                    startEditingName();
+                } else {
+                    saveNameChanges();
+                }
+            });
+
+            twinNameInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    saveNameChanges();
+                } else if (e.key === 'Escape') {
+                    cancelNameEdit();
+                }
+            });
+
+            twinNameInput.addEventListener('blur', function() {
+                if (isEditingName) {
+                    saveNameChanges();
+                }
+            });
+
+            // Share modal
+            const shareModal = document.getElementById('shareModal');
+            const shareForm = document.getElementById('shareForm');
+            const emailInput = document.getElementById('emailInput');
+
+            shareForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleShareFormSubmit();
+            });
+
+            emailInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addEmail();
+                }
+            });
+
+            // Close modal when clicking outside
+            shareModal.addEventListener('click', function(e) {
+                if (e.target === shareModal) {
+                    closeShareModal();
+                }
+            });
+
+            // Escape key to close modal
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && shareModal.classList.contains('show')) {
+                    closeShareModal();
+                }
+            });
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            
+            console.log('Switched to tab:', tabName);
+        }
+
+        // Twin Name Editing
+        function startEditingName() {
+            isEditingName = true;
+            const display = document.getElementById('twinNameDisplay');
+            const input = document.getElementById('twinNameInput');
+            const editBtn = document.getElementById('editNameBtn');
+            
+            display.style.display = 'none';
+            input.style.display = 'block';
+            input.focus();
+            input.select();
+            editBtn.textContent = '✅ Save';
+        }
+
+        function saveNameChanges() {
+            const input = document.getElementById('twinNameInput');
+            const newName = input.value.trim();
+            
+            if (newName && newName !== twinName) {
+                twinName = newName;
+                localStorage.setItem('twinName', twinName);
+                showSuccessMessage('Twin name updated successfully!');
+            }
+            
+            finishEditingName();
+        }
+
+        function cancelNameEdit() {
+            const input = document.getElementById('twinNameInput');
+            input.value = twinName; // Reset to original value
+            finishEditingName();
+        }
+
+        function finishEditingName() {
+            isEditingName = false;
+            const display = document.getElementById('twinNameDisplay');
+            const input = document.getElementById('twinNameInput');
+            const editBtn = document.getElementById('editNameBtn');
+            
+            display.textContent = twinName;
+            display.style.display = 'block';
+            input.style.display = 'none';
+            editBtn.textContent = '✏️ Edit';
+        }
+
+        // Share Modal Functions
+        function openShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // Focus on email input
+            setTimeout(() => {
+                document.getElementById('emailInput').focus();
+            }, 100);
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+            
+            // Reset form
+            document.getElementById('shareForm').reset();
+            emailList = [];
+            updateEmailChips();
+        }
+
+        function addEmail() {
+            const emailInput = document.getElementById('emailInput');
+            const email = emailInput.value.trim();
+            
+            if (validateEmail(email)) {
+                if (!emailList.includes(email)) {
+                    emailList.push(email);
+                    updateEmailChips();
+                    emailInput.value = '';
+                } else {
+                    showErrorMessage('Email already added');
+                }
+            } else {
+                showErrorMessage('Please enter a valid email address');
+            }
+        }
+
+        function removeEmail(email) {
+            emailList = emailList.filter(e => e !== email);
+            updateEmailChips();
+        }
+
+        function updateEmailChips() {
+            const container = document.getElementById('emailChips');
+            container.innerHTML = emailList.map(email => `
+                <div class="email-chip">
+                    ${email}
+                    <button type="button" class="remove-chip" onclick="removeEmail('${email}')">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function handleShareFormSubmit() {
+            const emailInput = document.getElementById('emailInput');
+            const email = emailInput.value.trim();
+            
+            // Add current email input if valid
+            if (email && validateEmail(email) && !emailList.includes(email)) {
+                emailList.push(email);
+            }
+            
+            if (emailList.length === 0) {
+                showErrorMessage('Please add at least one email address');
+                return;
+            }
+            
+            // Simulate API call
+            console.log('Sharing twin with:', emailList);
+            console.log('Message:', document.getElementById('messageInput').value);
+            
+            showSuccessMessage(`Twin shared with ${emailList.length} recipient(s)!`);
+            closeShareModal();
+            
+            // TODO: Integrate with actual sharing API
+        }
+
+        // Utility Functions
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function showSuccessMessage(message) {
+            // Create temporary success message
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10B981;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+                z-index: 1001;
+                animation: slideIn 0.3s ease;
+            `;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        function showErrorMessage(message) {
+            // Create temporary error message
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #EF4444;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+                z-index: 1001;
+                animation: slideIn 0.3s ease;
+            `;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        function updateSharedTwinsDisplay() {
+            // Check if there are shared twins (currently showing sample data)
+            const sharedTwinItems = document.querySelectorAll('.shared-twin-item');
+            const emptyState = document.getElementById('sharedEmptyState');
+            
+            if (sharedTwinItems.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        // Shared Twin Actions
+        function viewSharedTwin(twinId) {
+            console.log('Viewing shared twin:', twinId);
+            // TODO: Navigate to shared view
+            alert('This would navigate to the shared twin view');
+        }
+
+        function chatWithSharedTwin(twinId) {
+            console.log('Starting chat with shared twin:', twinId);
+            // TODO: Navigate to chat interface
+            alert('This would start a chat with the shared twin');
+        }
+
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Track page interaction
+        console.log('Twin Management page loaded and interactive');
+    </script>
+</body>
+</html>
