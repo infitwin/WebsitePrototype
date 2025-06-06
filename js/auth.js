@@ -72,7 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Simulate redirect after delay
         setTimeout(() => {
-            // Would redirect to dashboard
+            // Store user data for dashboard
+            localStorage.setItem('userName', name);
+            localStorage.setItem('userEmail', email);
+            // Redirect to dashboard
             window.location.href = './dashboard.html';
         }, 2000);
     }
@@ -89,7 +92,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Simulate redirect after delay
         setTimeout(() => {
-            // Would redirect to dashboard
+            // Store user data for dashboard (in production, get from API)
+            localStorage.setItem('userName', email.split('@')[0] || 'User');
+            localStorage.setItem('userEmail', email);
+            // Redirect to dashboard
             window.location.href = './dashboard.html';
         }, 2000);
     }
