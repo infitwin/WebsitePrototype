@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oops! Something went wrong - Infitwin</title>
+    <link rel="stylesheet" href="../styles/auth.css">
+    <link rel="stylesheet" href="../styles/error.css">
+</head>
+<body>
+    <!-- Simple Navigation -->
+    <nav class="error-nav">
+        <div class="container">
+            <a href="../dashboard.html" class="nav-brand">
+                <img src="../assets/logo.svg" alt="Infitwin" class="logo">
+            </a>
+        </div>
+    </nav>
+
+    <!-- Error Content -->
+    <main class="error-main">
+        <div class="container">
+            <div class="error-content">
+                <!-- Error Illustration -->
+                <div class="error-illustration">
+                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Robot/Twin Character -->
+                        <circle cx="100" cy="100" r="80" fill="#E8F0FE" stroke="#4285F4" stroke-width="2"/>
+                        
+                        <!-- Eyes (X marks) -->
+                        <g class="error-eyes">
+                            <path d="M70 80L80 90M80 80L70 90" stroke="#DB4437" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M120 80L130 90M130 80L120 90" stroke="#DB4437" stroke-width="3" stroke-linecap="round"/>
+                        </g>
+                        
+                        <!-- Sad mouth -->
+                        <path d="M70 130C70 130 85 115 100 115C115 115 130 130 130 130" stroke="#5F6368" stroke-width="3" stroke-linecap="round"/>
+                        
+                        <!-- Antenna with broken signal -->
+                        <line x1="100" y1="20" x2="100" y2="40" stroke="#5F6368" stroke-width="2"/>
+                        <circle cx="100" cy="15" r="5" fill="#DB4437"/>
+                        
+                        <!-- Gear (broken) -->
+                        <g transform="translate(150, 150)" class="broken-gear">
+                            <circle r="15" fill="none" stroke="#5F6368" stroke-width="2" stroke-dasharray="4 2"/>
+                            <circle r="5" fill="#5F6368"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message">
+                    <h1 class="error-title">Oops! Something went wrong</h1>
+                    <p class="error-description">
+                        Your digital twin encountered an unexpected error. Don't worry, no memories were lost!
+                    </p>
+                    <p class="error-code">Error Code: <span id="errorCode">500</span></p>
+                </div>
+
+                <!-- Recovery Actions -->
+                <div class="error-actions">
+                    <button class="btn btn-primary" onclick="window.location.reload()">
+                        Try Again
+                    </button>
+                    <a href="../dashboard.html" class="btn btn-secondary">
+                        Go to Dashboard
+                    </a>
+                    <a href="../index.html" class="btn btn-text">
+                        Return Home
+                    </a>
+                </div>
+
+                <!-- Technical Details (Collapsible) -->
+                <div class="technical-details">
+                    <button class="details-toggle" id="toggleDetails">
+                        <span>Show technical details</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="details-content" id="detailsContent" style="display: none;">
+                        <pre id="errorDetails">
+Status: 500 Internal Server Error
+Time: <span id="errorTime"></span>
+Request ID: <span id="requestId"></span>
+Path: <span id="errorPath"></span>
+
+Stack trace will appear here in production.
+Please include the Request ID when contacting support.
+                        </pre>
+                    </div>
+                </div>
+
+                <!-- Support Contact -->
+                <div class="support-section">
+                    <p>Still having trouble?</p>
+                    <a href="mailto:support@infitwin.com?subject=Error%20<span id='errorSubject'></span>" class="support-link">
+                        Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="error-footer">
+        <div class="container">
+            <p>&copy; 2024 Infitwin. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../scripts/error.js"></script>
+</body>
+</html>
