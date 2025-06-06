@@ -43,6 +43,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test timer countdown
   - Verify responsive design
   - Check accessibility
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark API endpoint for email verification
@@ -80,6 +81,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test video embed
   - Verify navigation flow
   - Check mobile experience
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Add video URL placeholder
@@ -121,6 +123,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test file upload flow
   - Verify storage calculations
   - Check bulk operations
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark file upload API endpoint
@@ -158,6 +161,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test tab navigation
   - Verify form submission
   - Check modal interactions
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark twin statistics API
@@ -195,6 +199,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test form submissions
   - Verify toggle states
   - Check validation
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark user profile API
@@ -229,6 +234,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test modal interactions
   - Verify form validation
   - Check accessibility
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark share invitation API
@@ -269,6 +275,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test graph interactions
   - Verify Winston panel
   - Check mobile experience
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark Neo4j graph integration point
@@ -306,6 +313,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test chat flow
   - Verify voice input
   - Check mobile keyboard
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark twin AI response API
@@ -345,6 +353,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test read-only restrictions
   - Verify owner attribution
   - Check conversion prompt
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark shared twin data API
@@ -381,6 +390,7 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Test error scenarios
   - Verify recovery options
   - Check mobile layout
+  - **Take screenshot verification (desktop & mobile)**
 
 #### Integration Points
 - [ ] 🔴 Mark error logging API
@@ -406,6 +416,15 @@ This is the comprehensive work list for completing all 10 remaining pages for In
 - [ ] 🔴 Accessibility audit (WAVE, axe)
 - [ ] 🔴 Performance optimization (Lighthouse)
 - [ ] 🔴 Final integration testing
+
+### Screenshot Verification Process
+**For EVERY page built, take screenshots to verify visual design:**
+- [ ] 🔴 Desktop screenshot (1200x800px viewport)
+- [ ] 🔴 Mobile screenshot (375x667px viewport)
+- [ ] 🔴 Compare against design specifications
+- [ ] 🔴 Verify responsive behavior
+- [ ] 🔴 Check loading states visually
+- [ ] 🔴 Document any visual issues found
 
 ### Documentation Updates
 - [ ] 🔴 Update README with new pages
@@ -491,6 +510,8 @@ This is the comprehensive work list for completing all 10 remaining pages for In
 - [ ] Accessibility validated (WAVE/axe clean)
 - [ ] Performance acceptable (Lighthouse >90)
 - [ ] Cross-browser tested (Chrome, Firefox, Safari)
+- [ ] **Screenshots taken and verified (desktop 1200px & mobile 375px)**
+- [ ] **Visual design matches specification**
 - [ ] Integration points documented
 - [ ] Code committed to GitHub with clear message
 - [ ] Page added to navigation/sitemap

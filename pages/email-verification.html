@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Infitwin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Email Verification Specific Styles */
+        .email-verification-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .verification-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+        }
+
+        .verification-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 12px;
+        }
+
+        .verification-subtitle {
+            font-size: 18px;
+            color: #8D6E63;
+            margin-bottom: 30px;
+        }
+
+        .email-display {
+            background: #FFFDF9;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            font-size: 16px;
+            color: #2C1810;
+        }
+
+        .email-address {
+            font-weight: 600;
+            color: #87CEEB;
+        }
+
+        .verification-instructions {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #6B7280;
+            margin-bottom: 30px;
+        }
+
+        .resend-section {
+            background: #F8F9FA;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .resend-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+
+        .resend-button {
+            background: #F3F4F6;
+            border: 2px solid #D1D5DB;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6B7280;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .resend-button.enabled {
+            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+            border: 2px solid #FFC107;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .resend-button.enabled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+        }
+
+        .countdown-timer {
+            font-size: 14px;
+            color: #8D6E63;
+            margin-top: 10px;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #6B7280;
+            line-height: 1.5;
+        }
+
+        .help-text a {
+            color: #87CEEB;
+            text-decoration: none;
+        }
+
+        .help-text a:hover {
+            text-decoration: underline;
+        }
+
+        .action-links {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        .action-link {
+            display: inline-block;
+            margin: 0 15px;
+            color: #87CEEB;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+
+        .action-link:hover {
+            color: #5A9FD4;
+            text-decoration: underline;
+        }
+
+        .security-note {
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #1E40AF;
+        }
+
+        .security-icon {
+            font-size: 16px;
+            margin-right: 8px;
+        }
+
+        /* Success State */
+        .verification-success {
+            background: #D1FAE5;
+            border: 2px solid #10B981;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .verification-success.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .success-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .success-text {
+            color: #065F46;
+            font-weight: 600;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .email-verification-container {
+                padding: 20px 15px;
+            }
+
+            .verification-title {
+                font-size: 24px;
+            }
+
+            .verification-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Soft Horizon Gradient Background -->
+    <div class="gradient-background">
+        <svg class="gradient-svg" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="softHorizon" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FFF5E6;stop-opacity:1" />
+                    <stop offset="35%" style="stop-color:#FFF8DC;stop-opacity:1" />
+                    <stop offset="65%" style="stop-color:#F0F8FF;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#ADD8E6;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#softHorizon)" />
+        </svg>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="auth-nav">
+        <a href="auth.html" class="back-link">← Back to Login</a>
+    </nav>
+
+    <!-- Email Verification Container -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="email-verification-container">
+                <!-- Email Icon -->
+                <div class="verification-icon">
+                    📧
+                </div>
+
+                <!-- Header -->
+                <h1 class="verification-title">Verify Your Email</h1>
+                <p class="verification-subtitle">Almost there!</p>
+
+                <!-- Email Display -->
+                <div class="email-display">
+                    We've sent a verification link to<br>
+                    <span class="email-address" id="userEmail">user@example.com</span>
+                </div>
+
+                <!-- Instructions -->
+                <div class="verification-instructions">
+                    Please check your email and click the verification link to continue building your memory archive.
+                </div>
+
+                <!-- Success State (Hidden by default) -->
+                <div class="verification-success" id="verificationSuccess">
+                    <span class="success-icon">✅</span>
+                    <span class="success-text">Email verified! Redirecting to your dashboard...</span>
+                </div>
+
+                <!-- Resend Section -->
+                <div class="resend-section">
+                    <div class="resend-title">Didn't receive the email?</div>
+                    <button class="resend-button" id="resendButton" disabled>
+                        Resend Email
+                    </button>
+                    <div class="countdown-timer" id="countdownTimer">
+                        Please wait 60 seconds before requesting another email
+                    </div>
+                    <div class="help-text">
+                        • Check your spam or junk folder<br>
+                        • Make sure <span id="displayEmail">user@example.com</span> is correct<br>
+                        • The link expires in 24 hours
+                    </div>
+                </div>
+
+                <!-- Action Links -->
+                <div class="action-links">
+                    <a href="#" class="action-link" onclick="changeEmail()">Wrong email address?</a>
+                    <a href="auth.html" class="action-link">Back to Login</a>
+                    <a href="#" class="action-link">Contact Support</a>
+                </div>
+
+                <!-- Security Note -->
+                <div class="security-note">
+                    <span class="security-icon">🔒</span>
+                    This helps keep your memories safe and private. We'll never share your email address.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Email Verification JavaScript
+        let countdownSeconds = 60;
+        let countdownInterval;
+        
+        // Get user email from URL params or localStorage (placeholder for now)
+        const userEmail = new URLSearchParams(window.location.search).get('email') || 'user@example.com';
+        
+        // Update email displays
+        document.getElementById('userEmail').textContent = userEmail;
+        document.getElementById('displayEmail').textContent = userEmail;
+
+        // Start countdown timer
+        function startCountdown() {
+            const resendButton = document.getElementById('resendButton');
+            const countdownTimer = document.getElementById('countdownTimer');
+            
+            resendButton.disabled = true;
+            resendButton.classList.remove('enabled');
+            
+            countdownInterval = setInterval(() => {
+                if (countdownSeconds > 0) {
+                    countdownTimer.textContent = `Please wait ${countdownSeconds} seconds before requesting another email`;
+                    countdownSeconds--;
+                } else {
+                    // Enable resend button
+                    clearInterval(countdownInterval);
+                    resendButton.disabled = false;
+                    resendButton.classList.add('enabled');
+                    resendButton.textContent = 'Resend Email';
+                    countdownTimer.textContent = 'You can now request a new verification email';
+                }
+            }, 1000);
+        }
+
+        // Resend email function
+        document.getElementById('resendButton').addEventListener('click', function() {
+            if (!this.disabled) {
+                // TODO: Call API to resend verification email
+                console.log('Resending verification email to:', userEmail);
+                
+                // Reset countdown
+                countdownSeconds = 60;
+                this.textContent = 'Email Sent!';
+                
+                // Show success feedback briefly
+                setTimeout(() => {
+                    this.textContent = 'Resend Email';
+                    startCountdown();
+                }, 2000);
+                
+                // Show toast message (placeholder)
+                showToast('Verification email sent! Check your inbox.', 'success');
+            }
+        });
+
+        // Change email function
+        function changeEmail() {
+            const newEmail = prompt('Enter your correct email address:', userEmail);
+            if (newEmail && newEmail !== userEmail && validateEmail(newEmail)) {
+                // TODO: Call API to update email and send new verification
+                console.log('Changing email to:', newEmail);
+                
+                // Update displays
+                document.getElementById('userEmail').textContent = newEmail;
+                document.getElementById('displayEmail').textContent = newEmail;
+                
+                // Update URL
+                const url = new URL(window.location);
+                url.searchParams.set('email', newEmail);
+                window.history.replaceState({}, '', url);
+                
+                showToast('Email updated! New verification sent to ' + newEmail, 'success');
+            } else if (newEmail && !validateEmail(newEmail)) {
+                showToast('Please enter a valid email address', 'error');
+            }
+        }
+
+        // Email validation
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Toast notification (simple implementation)
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+                opacity: 0;
+                transform: translateX(400px);
+                transition: all 0.3s ease;
+                max-width: 300px;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Hide toast after 4 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Check verification status (placeholder for API integration)
+        function checkVerificationStatus() {
+            // TODO: Poll API to check if email has been verified
+            // If verified, show success state and redirect
+            
+            // Placeholder for testing - simulate verification after 10 seconds
+            // Remove this in production
+            setTimeout(() => {
+                // Uncomment to test success state:
+                // simulateVerificationSuccess();
+            }, 10000);
+        }
+
+        // Simulate verification success (for testing)
+        function simulateVerificationSuccess() {
+            const successElement = document.getElementById('verificationSuccess');
+            successElement.classList.add('show');
+            
+            // Redirect after 3 seconds
+            setTimeout(() => {
+                window.location.href = 'alpha-welcome.html?email=' + encodeURIComponent(userEmail);
+            }, 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            startCountdown();
+            checkVerificationStatus();
+        });
+
+        // Handle verification link clicks (if this page is loaded with a token)
+        const urlParams = new URLSearchParams(window.location.search);
+        const verificationToken = urlParams.get('token');
+        
+        if (verificationToken) {
+            // TODO: Call API to verify the token
+            console.log('Verification token found:', verificationToken);
+            
+            // Simulate successful verification
+            setTimeout(() => {
+                simulateVerificationSuccess();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
