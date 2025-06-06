@@ -31,19 +31,23 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Copy auth.html as base template
   - Add email verification specific content
   - Include resend timer element
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (1h)
   - Apply auth page styling patterns
   - Style timer countdown display
   - Add email icon/illustration
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (1.5h)
   - 60-second countdown timer
   - Resend button enable/disable
   - Change email functionality
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test timer countdown
   - Verify responsive design
   - Check accessibility
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark API endpoint for email verification
@@ -67,21 +71,25 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Three value proposition cards
   - Video section container
   - Sample twin preview
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (2h)
   - Hero section styling
   - Card grid layout
   - Video player container
   - Mobile responsive design
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (1h)
   - Video player controls
   - Skip functionality
   - Sample twin preview
   - Navigation to dashboard
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test video embed
   - Verify navigation flow
   - Check mobile experience
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Add video URL placeholder
@@ -108,22 +116,26 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Drag-and-drop upload zone
   - File grid/list container
   - Storage indicator
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (2.5h)
   - Grid and list view styles
   - Upload zone styling
   - File card design
   - Progress indicators
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (3h)
   - Drag-and-drop file handling
   - Grid/list view toggle
   - Multi-file selection
   - Upload progress tracking
   - Delete confirmation
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test file upload flow
   - Verify storage calculations
   - Check bulk operations
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark file upload API endpoint
@@ -147,21 +159,25 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - My Twin section with stats
   - Shared with Me section
   - Share modal container
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (2h)
   - Tab navigation styles
   - Statistics cards
   - Twin list layout
   - Modal styling
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (2h)
   - Tab switching
   - Inline name editing
   - Share modal open/close
   - Form validation
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test tab navigation
   - Verify form submission
   - Check modal interactions
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark twin statistics API
@@ -185,21 +201,25 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Security settings section
   - Notification preferences
   - Privacy settings
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (1.5h)
   - Form section layouts
   - Toggle switch styles
   - Button styling
   - Success states
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (1.5h)
   - Form validation
   - Toggle interactions
   - Save functionality
   - Success feedback
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test form submissions
   - Verify toggle states
   - Check validation
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark user profile API
@@ -222,19 +242,23 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Modal overlay and container
   - Email input form
   - Current shares list
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement modal styling (1h)
   - Overlay and positioning
   - Form styling
   - List item design
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add modal functionality (0.5h)
   - Open/close behaviors
   - Email validation
   - Add multiple emails
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test modal interactions
   - Verify form validation
   - Check accessibility
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark share invitation API
@@ -260,22 +284,26 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Winston panel (collapsible)
   - Controls toolbar
   - Node preview popover
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (3h)
   - Graph visualization area
   - Winston panel design
   - Control buttons
   - Mobile adaptations
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (4h)
   - Graph placeholder interactions
   - Winston panel toggle
   - Control button behaviors
   - Filter interactions
   - "Surprise me" feature
-- [ ] 🔴 Testing & verification (1h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (1h)
   - Test graph interactions
   - Verify Winston panel
   - Check mobile experience
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark Neo4j graph integration point
@@ -299,21 +327,25 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Chat messages container
   - Input area with voice option
   - Suggested questions
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (2h)
   - Chat bubble styles
   - Input area design
   - Voice recording indicators
   - Suggestion chips
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (3h)
   - Chat message handling
   - Voice input toggle
   - Typing indicators
   - Suggestion interactions
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test chat flow
   - Verify voice input
   - Check mobile keyboard
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark twin AI response API
@@ -340,20 +372,24 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Limited navigation
   - Graph container (read-only)
   - Conversion prompt
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (1.5h)
   - Read-only indicators
   - Muted color scheme
   - Banner design
   - Disabled states
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (1h)
   - Limited interactions
   - Disabled edit functions
   - Conversion tracking
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test read-only restrictions
   - Verify owner attribution
   - Check conversion prompt
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark shared twin data API
@@ -377,20 +413,24 @@ This is the comprehensive work list for completing all 10 remaining pages for In
   - Error message content
   - Recovery action buttons
   - Technical details section
+  - **📸 Take snapshot after HTML complete**
 - [ ] 🔴 Implement CSS styling (1h)
   - Friendly error design
   - Illustration styling
   - Button layouts
   - Collapsible details
+  - **📸 Take snapshot after styling complete**
 - [ ] 🔴 Add JavaScript functionality (0.5h)
   - Toggle technical details
   - Retry functionality
   - Error code display
-- [ ] 🔴 Testing & verification (0.5h)
+  - **📸 Take snapshot after JS functionality complete**
+- [ ] 🔴 Final testing & verification (0.5h)
   - Test error scenarios
   - Verify recovery options
   - Check mobile layout
-  - **Take screenshot verification (desktop & mobile)**
+  - **📸 MANDATORY: Take final desktop (1200px) & mobile (375px) snapshots**
+  - **📸 MANDATORY: Verify visual design matches specification**
 
 #### Integration Points
 - [ ] 🔴 Mark error logging API
@@ -417,14 +457,26 @@ This is the comprehensive work list for completing all 10 remaining pages for In
 - [ ] 🔴 Performance optimization (Lighthouse)
 - [ ] 🔴 Final integration testing
 
-### Screenshot Verification Process
-**For EVERY page built, take screenshots to verify visual design:**
-- [ ] 🔴 Desktop screenshot (1200x800px viewport)
-- [ ] 🔴 Mobile screenshot (375x667px viewport)
-- [ ] 🔴 Compare against design specifications
-- [ ] 🔴 Verify responsive behavior
-- [ ] 🔴 Check loading states visually
-- [ ] 🔴 Document any visual issues found
+### 📸 SNAPSHOT VERIFICATION PROCESS - MANDATORY FOR EVERY PAGE
+**NO PAGE IS COMPLETE WITHOUT VISUAL VERIFICATION**
+
+#### Progressive Snapshots (Take at each stage):
+- [ ] 🔴 **HTML Stage**: Snapshot after basic structure complete
+- [ ] 🔴 **CSS Stage**: Snapshot after styling complete  
+- [ ] 🔴 **JS Stage**: Snapshot after functionality complete
+
+#### Final Verification Snapshots (Required before marking page complete):
+- [ ] 🔴 **Desktop Snapshot**: 1200x800px viewport - verify layout, spacing, typography
+- [ ] 🔴 **Mobile Snapshot**: 375x667px viewport - verify responsive behavior
+- [ ] 🔴 **Design Comparison**: Side-by-side with specification
+- [ ] 🔴 **Issue Documentation**: Record any visual problems found
+- [ ] 🔴 **Approval**: Visual design approved before moving to next page
+
+#### Tools to Use:
+- Browser DevTools device mode
+- Take screenshots during development
+- Compare against design briefs
+- Document issues in GitHub
 
 ### Documentation Updates
 - [ ] 🔴 Update README with new pages
@@ -503,6 +555,10 @@ This is the comprehensive work list for completing all 10 remaining pages for In
 ## DEFINITION OF DONE
 
 ### Page Complete Criteria
+- [ ] **📸 CRITICAL: Progressive snapshots taken (HTML, CSS, JS stages)**
+- [ ] **📸 CRITICAL: Final desktop snapshot (1200x800px) taken and verified**
+- [ ] **📸 CRITICAL: Final mobile snapshot (375x667px) taken and verified**
+- [ ] **📸 CRITICAL: Visual design compared against specification**
 - [ ] HTML structure follows semantic standards
 - [ ] CSS styling matches design patterns
 - [ ] JavaScript functionality works without errors
@@ -510,8 +566,6 @@ This is the comprehensive work list for completing all 10 remaining pages for In
 - [ ] Accessibility validated (WAVE/axe clean)
 - [ ] Performance acceptable (Lighthouse >90)
 - [ ] Cross-browser tested (Chrome, Firefox, Safari)
-- [ ] **Screenshots taken and verified (desktop 1200px & mobile 375px)**
-- [ ] **Visual design matches specification**
 - [ ] Integration points documented
 - [ ] Code committed to GitHub with clear message
 - [ ] Page added to navigation/sitemap
