@@ -458,25 +458,80 @@ This is the comprehensive work list for completing all 10 remaining pages for In
 - [ ] 🔴 Final integration testing
 
 ### 📸 SNAPSHOT VERIFICATION PROCESS - MANDATORY FOR EVERY PAGE
-**NO PAGE IS COMPLETE WITHOUT VISUAL VERIFICATION**
+**NO PAGE IS COMPLETE WITHOUT VISUAL VERIFICATION AND CORRECTION**
 
-#### Progressive Snapshots (Take at each stage):
-- [ ] 🔴 **HTML Stage**: Snapshot after basic structure complete
-- [ ] 🔴 **CSS Stage**: Snapshot after styling complete  
-- [ ] 🔴 **JS Stage**: Snapshot after functionality complete
+#### ⚠️ CRITICAL: CORRECTIVE ACTION REQUIRED
+**Taking snapshots is not documentation - it is QUALITY CONTROL**
+- Snapshot → Review → Identify Issues → Fix Code → Re-snapshot → Repeat until correct
+- DO NOT proceed to next stage until current stage snapshot is visually correct
+- DO NOT mark snapshot complete unless verified against design specification
 
-#### Final Verification Snapshots (Required before marking page complete):
-- [ ] 🔴 **Desktop Snapshot**: 1200x800px viewport - verify layout, spacing, typography
-- [ ] 🔴 **Mobile Snapshot**: 375x667px viewport - verify responsive behavior
-- [ ] 🔴 **Design Comparison**: Side-by-side with specification
-- [ ] 🔴 **Issue Documentation**: Record any visual problems found
-- [ ] 🔴 **Approval**: Visual design approved before moving to next page
+#### Progressive Snapshots (CORRECTIVE PROCESS at each stage):
+- [ ] 🔴 **HTML Stage**: 
+  1. Take snapshot after basic structure complete
+  2. Review against design brief layout requirements
+  3. Fix any structural/semantic issues found
+  4. Re-snapshot until layout matches specification
+  5. Only then mark HTML stage complete
+  
+- [ ] 🔴 **CSS Stage**: 
+  1. Take snapshot after styling complete
+  2. Review against design brief visual requirements
+  3. Fix any styling issues: colors, spacing, typography, responsiveness
+  4. Re-snapshot until visuals match specification
+  5. Only then mark CSS stage complete
+  
+- [ ] 🔴 **JS Stage**: 
+  1. Take snapshot after functionality complete
+  2. Test all interactive elements work correctly
+  3. Fix any broken interactions or functionality issues
+  4. Re-snapshot until all interactions work as specified
+  5. Only then mark JS stage complete
+
+#### Final Verification Snapshots (CORRECTIVE PROCESS before page complete):
+- [ ] 🔴 **Desktop Snapshot**: 
+  1. Set viewport to 1200x800px 
+  2. Take screenshot and review: layout, spacing, typography, colors
+  3. Compare side-by-side with design specification
+  4. Fix any discrepancies found
+  5. Re-snapshot until desktop view is pixel-perfect
+  
+- [ ] 🔴 **Mobile Snapshot**: 
+  1. Set viewport to 375x667px (iPhone SE)
+  2. Take screenshot and review: responsive behavior, touch targets, readability
+  3. Compare with mobile design requirements
+  4. Fix any responsive issues found
+  5. Re-snapshot until mobile view works perfectly
+  
+- [ ] 🔴 **Design Comparison**: 
+  1. Place snapshots side-by-side with design briefs
+  2. Document any remaining differences
+  3. Fix critical visual inconsistencies
+  4. Get approval for any intentional deviations
+  
+- [ ] 🔴 **Issue Documentation**: 
+  1. Record any visual problems found during process
+  2. Document fixes applied
+  3. Note any limitations or technical constraints
+  
+- [ ] 🔴 **Approval**: 
+  1. Confirm visual design matches specification
+  2. Verify responsive behavior works correctly
+  3. Test accessibility and usability
+  4. Only then approve page as complete
 
 #### Tools to Use:
-- Browser DevTools device mode
-- Take screenshots during development
-- Compare against design briefs
-- Document issues in GitHub
+- Browser DevTools device mode for viewport testing
+- Screenshot tools for visual capture
+- Design brief documents for comparison reference
+- git commits to track fixes applied during snapshot process
+
+#### Snapshot Failure Actions:
+- **Layout Issues**: Fix HTML structure, CSS positioning, responsive breakpoints
+- **Visual Issues**: Correct colors, typography, spacing, hover states
+- **Functional Issues**: Debug JavaScript, fix event handlers, test user flows
+- **Responsive Issues**: Adjust media queries, flexible layouts, touch targets
+- **Performance Issues**: Optimize loading, reduce layout shift, improve interactions
 
 ### Documentation Updates
 - [ ] 🔴 Update README with new pages
@@ -555,10 +610,10 @@ This is the comprehensive work list for completing all 10 remaining pages for In
 ## DEFINITION OF DONE
 
 ### Page Complete Criteria
-- [ ] **📸 CRITICAL: Progressive snapshots taken (HTML, CSS, JS stages)**
-- [ ] **📸 CRITICAL: Final desktop snapshot (1200x800px) taken and verified**
-- [ ] **📸 CRITICAL: Final mobile snapshot (375x667px) taken and verified**
-- [ ] **📸 CRITICAL: Visual design compared against specification**
+- [ ] **📸 CRITICAL: Progressive snapshots taken AND CORRECTED (HTML, CSS, JS stages)**
+- [ ] **📸 CRITICAL: Final desktop snapshot (1200x800px) taken, reviewed, fixed, and verified**
+- [ ] **📸 CRITICAL: Final mobile snapshot (375x667px) taken, reviewed, fixed, and verified**
+- [ ] **📸 CRITICAL: Visual design compared against specification AND ISSUES FIXED**
 - [ ] HTML structure follows semantic standards
 - [ ] CSS styling matches design patterns
 - [ ] JavaScript functionality works without errors
