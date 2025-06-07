@@ -9,12 +9,18 @@ Open each HTML file in browser and verify the specific items below. Mark ✅ PAS
 
 ## PASS/FAIL CRITERIA
 
-### ✅ PASS = Test succeeds as described
-### ❌ FAIL = Test fails, doesn't work, shows error, or missing element
+### ✅ PASS = Test succeeds as described AND visual snapshot confirms expected appearance
+### ❌ FAIL = Test fails, doesn't work, shows error, missing element, OR visual snapshot doesn't match expectations
 
-**For Visual Tests:** Take screenshots to document what you see  
-**For Interactive Tests:** Document exactly what happens when you click/interact  
-**For Bugs Found:** Create GitHub issue immediately with full details
+**MANDATORY SNAPSHOT REQUIREMENTS:**
+- 📸 **Every test MUST include a visual snapshot** 
+- 📸 **Snapshot must be reviewed against expected design**
+- 📸 **Document any visual discrepancies found**
+- 📸 **No test can be marked PASS without snapshot verification**
+
+**For Visual Tests:** Take screenshots AND compare against design expectations  
+**For Interactive Tests:** Take before/after screenshots of interactions  
+**For Bugs Found:** Include screenshots in GitHub issue with full details
 
 ---
 
