@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Page Example - Infitwin</title>
+    
+    <!-- Existing styles -->
+    <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Auth Guard Script - This should be first -->
+    <script type="module">
+        import { guardPage } from '../js/auth-guard.js';
+        
+        // Guard this page immediately
+        (async () => {
+            const allowed = await guardPage({
+                requireVerified: true,
+                redirectTo: '/pages/auth.html'
+            });
+            
+            if (allowed) {
+                // Page is accessible, show content
+                document.body.style.display = 'block';
+            }
+        })();
+    </script>
+    
+    <style>
+        /* Hide body initially to prevent flash of content */
+        body {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Your protected page content here -->
+    <div class="container">
+        <h1>Protected Content</h1>
+        <p>This page is only visible to authenticated users with verified emails.</p>
+        
+        <!-- Example of using current user data -->
+        <div id="user-info"></div>
+    </div>
+    
+    <!-- Load user data after auth check -->
+    <script type="module">
+        import { getCurrentUser } from '../js/auth-guard.js';
+        
+        async function loadUserData() {
+            const user = await getCurrentUser();
+            if (user) {
+                document.getElementById('user-info').innerHTML = `
+                    <h2>Welcome, ${user.name || user.email}!</h2>
+                    <p>Your email: ${user.email}</p>
+                `;
+            }
+        }
+        
+        // Load user data when page is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadUserData);
+        } else {
+            loadUserData();
+        }
+    </script>
+</body>
+</html>
