@@ -1,4 +1,14 @@
-// Auth Page JavaScript
+// Auth Page JavaScript with Firebase Integration
+
+import { auth } from './firebase-config.js';
+import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    GoogleAuthProvider,
+    signInWithPopup,
+    sendPasswordResetEmail
+} from 'firebase/auth';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Tab switching functionality
@@ -28,12 +38,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Google Auth Handler
     const googleButtons = document.querySelectorAll('.google-auth-button');
     googleButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', async function(e) {
             e.preventDefault();
-            // In production, this would initiate OAuth flow
-            console.log('Google auth clicked');
-            // For demo, just show message
-            showNotification('Google authentication would happen here');
+            
+            try {
+                const provider = new GoogleAuthProvider();
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                showNotification('Welcome to Infitwin! Redirecting to your dashboard...');
+                
+                // Store user data
+                localStorage.setItem('userName', user.displayName || user.email);
+                localStorage.setItem('userEmail', user.email);
+                
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = './dashboard.html';
+                }, 1500);
+            } catch (error) {
+                console.error('Google auth error:', error);
+                showNotification(getErrorMessage(error), 'error');
+            }
         });
     });
     
@@ -54,8 +80,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Handle signup
-    function handleSignup(formData) {
+    // Handle signup with Firebase
+    async function handleSignup(formData) {
         const name = formData.get('name');
         const email = formData.get('email');
         const password = formData.get('password');
@@ -66,38 +92,62 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // In production, this would make API call
-        console.log('Signup:', { name, email });
-        showNotification('Welcome to Infitwin! Redirecting to your dashboard...');
-        
-        // Simulate redirect after delay
-        setTimeout(() => {
-            // Store user data for dashboard
+        try {
+            // Create user with Firebase
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // Send verification email
+            await sendEmailVerification(user);
+            
+            // Store user data
             localStorage.setItem('userName', name);
             localStorage.setItem('userEmail', email);
-            // Redirect to dashboard
-            window.location.href = './dashboard.html';
-        }, 2000);
+            
+            showNotification('Account created! Please check your email to verify your account.');
+            
+            // Redirect to email verification page
+            setTimeout(() => {
+                window.location.href = './email-verification.html';
+            }, 2000);
+        } catch (error) {
+            console.error('Signup error:', error);
+            showNotification(getErrorMessage(error), 'error');
+        }
     }
     
-    // Handle login
-    function handleLogin(formData) {
+    // Handle login with Firebase
+    async function handleLogin(formData) {
         const email = formData.get('email');
         const password = formData.get('password');
         const remember = formData.get('remember');
         
-        // In production, this would make API call
-        console.log('Login:', { email, remember: !!remember });
-        showNotification('Welcome back! Loading your memories...');
-        
-        // Simulate redirect after delay
-        setTimeout(() => {
-            // Store user data for dashboard (in production, get from API)
-            localStorage.setItem('userName', email.split('@')[0] || 'User');
+        try {
+            // Sign in with Firebase
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // Check if email is verified
+            if (!user.emailVerified) {
+                showNotification('Please verify your email before logging in. Check your inbox.', 'error');
+                await auth.signOut();
+                return;
+            }
+            
+            // Store user data
+            localStorage.setItem('userName', user.displayName || email.split('@')[0]);
             localStorage.setItem('userEmail', email);
+            
+            showNotification('Welcome back! Loading your memories...');
+            
             // Redirect to dashboard
-            window.location.href = './dashboard.html';
-        }, 2000);
+            setTimeout(() => {
+                window.location.href = './dashboard.html';
+            }, 1500);
+        } catch (error) {
+            console.error('Login error:', error);
+            showNotification(getErrorMessage(error), 'error');
+        }
     }
     
     // Show notification
@@ -123,7 +173,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // Password visibility toggle (optional enhancement)
+    // Get user-friendly error messages
+    function getErrorMessage(error) {
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                return 'This email is already registered. Please login instead.';
+            case 'auth/invalid-email':
+                return 'Please enter a valid email address.';
+            case 'auth/weak-password':
+                return 'Password should be at least 6 characters.';
+            case 'auth/user-not-found':
+                return 'No account found with this email.';
+            case 'auth/wrong-password':
+                return 'Incorrect password. Please try again.';
+            case 'auth/network-request-failed':
+                return 'Network error. Please check your connection.';
+            case 'auth/too-many-requests':
+                return 'Too many failed attempts. Please try again later.';
+            case 'auth/popup-closed-by-user':
+                return 'Google sign-in was cancelled.';
+            default:
+                return 'An error occurred. Please try again.';
+        }
+    }
+    
+    // Password visibility toggle
     const passwordInputs = document.querySelectorAll('input[type="password"]');
     passwordInputs.forEach(input => {
         const wrapper = document.createElement('div');
@@ -152,9 +226,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Forgot password handler
     const forgotLink = document.querySelector('.forgot-link');
     if (forgotLink) {
-        forgotLink.addEventListener('click', function(e) {
+        forgotLink.addEventListener('click', async function(e) {
             e.preventDefault();
-            showNotification('Password reset functionality coming soon');
+            
+            const email = document.querySelector('.login-email').value;
+            if (!email) {
+                showNotification('Please enter your email address first', 'error');
+                return;
+            }
+            
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showNotification('Password reset email sent! Check your inbox.');
+            } catch (error) {
+                console.error('Password reset error:', error);
+                showNotification(getErrorMessage(error), 'error');
+            }
         });
     }
     

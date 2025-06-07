@@ -5,25 +5,20 @@
  * unauthenticated users to the login page.
  */
 
-// TODO: Import Firebase auth when SDK is added
-// import { auth } from './firebase-config.js';
-// import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase-config.js';
+import { onAuthStateChanged } from 'firebase/auth';
 
 /**
  * Check if user is authenticated
  * @returns {Promise<boolean>} True if authenticated, false otherwise
  */
 export async function isAuthenticated() {
-    // TODO: Replace with Firebase auth check
-    // return new Promise((resolve) => {
-    //     onAuthStateChanged(auth, (user) => {
-    //         resolve(!!user);
-    //     });
-    // });
-    
-    // Temporary: Check localStorage (to be replaced)
-    const authData = localStorage.getItem('infitwin_auth');
-    return Promise.resolve(!!authData);
+    return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe(); // Unsubscribe after first check
+            resolve(!!user);
+        });
+    });
 }
 
 /**
@@ -31,15 +26,12 @@ export async function isAuthenticated() {
  * @returns {Promise<boolean>} True if verified, false otherwise
  */
 export async function isEmailVerified() {
-    // TODO: Replace with Firebase check
-    // return new Promise((resolve) => {
-    //     onAuthStateChanged(auth, (user) => {
-    //         resolve(user ? user.emailVerified : false);
-    //     });
-    // });
-    
-    // Temporary implementation
-    return Promise.resolve(true);
+    return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe(); // Unsubscribe after first check
+            resolve(user ? user.emailVerified : false);
+        });
+    });
 }
 
 /**
@@ -47,11 +39,13 @@ export async function isEmailVerified() {
  * @param {Object} options - Guard options
  * @param {boolean} options.requireVerified - Require email verification
  * @param {string} options.redirectTo - Custom redirect URL
+ * @param {boolean} options.allowUnverified - Allow unverified emails (for verification page)
  */
 export async function guardPage(options = {}) {
     const {
         requireVerified = true,
-        redirectTo = '/pages/auth.html'
+        redirectTo = '/pages/auth.html',
+        allowUnverified = false
     } = options;
     
     try {
@@ -63,7 +57,7 @@ export async function guardPage(options = {}) {
             return false;
         }
         
-        if (requireVerified) {
+        if (requireVerified && !allowUnverified) {
             const verified = await isEmailVerified();
             if (!verified) {
                 // Redirect to email verification
@@ -85,23 +79,25 @@ export async function guardPage(options = {}) {
  * @returns {Promise<Object|null>} User object or null
  */
 export async function getCurrentUser() {
-    // TODO: Replace with Firebase implementation
-    // return new Promise((resolve) => {
-    //     onAuthStateChanged(auth, (user) => {
-    //         resolve(user);
-    //     });
-    // });
-    
-    // Temporary implementation
-    const authData = localStorage.getItem('infitwin_auth');
-    if (authData) {
-        try {
-            return JSON.parse(authData);
-        } catch {
-            return null;
-        }
-    }
-    return null;
+    return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe(); // Unsubscribe after first check
+            if (user) {
+                // Return sanitized user data
+                resolve({
+                    uid: user.uid,
+                    email: user.email,
+                    emailVerified: user.emailVerified,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    // Include custom user data from localStorage if available
+                    name: localStorage.getItem('userName') || user.displayName || user.email
+                });
+            } else {
+                resolve(null);
+            }
+        });
+    });
 }
 
 /**
@@ -110,29 +106,36 @@ export async function getCurrentUser() {
  * @returns {Function} Unsubscribe function
  */
 export function onAuthStateChange(callback) {
-    // TODO: Replace with Firebase implementation
-    // return onAuthStateChanged(auth, callback);
-    
-    // Temporary implementation
-    const checkAuth = () => {
-        const authData = localStorage.getItem('infitwin_auth');
-        callback(authData ? JSON.parse(authData) : null);
-    };
-    
-    // Check immediately
-    checkAuth();
-    
-    // Check on storage events
-    const handler = (e) => {
-        if (e.key === 'infitwin_auth') {
-            checkAuth();
+    return onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Pass sanitized user data
+            callback({
+                uid: user.uid,
+                email: user.email,
+                emailVerified: user.emailVerified,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                name: localStorage.getItem('userName') || user.displayName || user.email
+            });
+        } else {
+            callback(null);
         }
-    };
-    
-    window.addEventListener('storage', handler);
-    
-    // Return unsubscribe function
-    return () => {
-        window.removeEventListener('storage', handler);
-    };
+    });
+}
+
+/**
+ * Sign out the current user
+ */
+export async function signOut() {
+    try {
+        await auth.signOut();
+        // Clear any local storage
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userEmail');
+        // Redirect to home
+        window.location.href = '/';
+    } catch (error) {
+        console.error('Sign out error:', error);
+        throw error;
+    }
 }

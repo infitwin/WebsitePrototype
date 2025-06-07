@@ -1,10 +1,25 @@
 // Dashboard JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Simulate user data (in production, this would come from authentication)
+import { guardPage, getCurrentUser, signOut } from './auth-guard.js';
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // Check authentication
+    const allowed = await guardPage({
+        requireVerified: true,
+        redirectTo: '/pages/auth.html'
+    });
+    
+    if (!allowed) {
+        return; // Stop execution if not authenticated
+    }
+    
+    // Get current user from Firebase
+    const currentUser = await getCurrentUser();
+    
+    // Prepare user data
     const userData = {
-        name: localStorage.getItem('userName') || 'John',
-        email: localStorage.getItem('userEmail') || 'john.doe@example.com',
+        name: currentUser?.name || 'User',
+        email: currentUser?.email || 'user@example.com',
         memoryCount: 47,
         photoCount: 234,
         familyCount: 8,
@@ -126,7 +141,10 @@ function handleNavigation(navItem) {
             showToast('Life Timeline feature coming soon!', 'info');
             break;
         case 'Settings':
-            showToast('Settings page coming soon!', 'info');
+            // For now, show logout option
+            if (confirm('Would you like to logout?')) {
+                signOut();
+            }
             break;
     }
 }

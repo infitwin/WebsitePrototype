@@ -23,8 +23,9 @@
   "author": "Infitwin Team",
   "license": "UNLICENSED",
   "private": true,
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "firebase": "^11.9.0"
+  },
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"

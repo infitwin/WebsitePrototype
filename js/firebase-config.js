@@ -2,30 +2,32 @@
  * Firebase Configuration
  * 
  * This file initializes Firebase for the Infitwin application.
- * Configuration values should be stored in environment variables for security.
  */
+
+import { initializeApp } from 'firebase/app';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 // Firebase configuration object
 const firebaseConfig = {
-    // TODO: Replace with actual Firebase project configuration
-    // These values should come from environment variables in production
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+    authDomain: "infitwin.firebaseapp.com",
+    projectId: "infitwin",
+    storageBucket: "infitwin.firebasestorage.app",
+    messagingSenderId: "833139648849",
+    appId: "1:833139648849:web:2768d8e37cf2a318018b70"
 };
 
 // Initialize Firebase
-// TODO: Uncomment when Firebase SDK is added
-// import { initializeApp } from 'firebase/app';
-// import { getAuth } from 'firebase/auth';
-// import { getFirestore } from 'firebase/firestore';
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
-// const app = initializeApp(firebaseConfig);
-// export const auth = getAuth(app);
-// export const db = getFirestore(app);
+// Optional: Connect to emulators for local development
+// Uncomment these lines to use Firebase emulators
+// if (location.hostname === "localhost") {
+//     connectAuthEmulator(auth, "http://localhost:9099");
+//     connectFirestoreEmulator(db, 'localhost', 8080);
+// }
 
-// For now, export empty config
 export default firebaseConfig;

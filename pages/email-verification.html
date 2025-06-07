@@ -195,6 +195,55 @@
                 transform: translateY(0);
             }
         }
+        
+        .check-inbox-button {
+            margin-top: 10px;
+            background: #6366F1;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .check-inbox-button:hover {
+            background: #4F46E5;
+            transform: translateY(-1px);
+        }
+        
+        .verification-notification {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .verification-notification.show {
+            opacity: 1;
+        }
+        
+        .verification-notification.success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #6EE7B7;
+        }
+        
+        .verification-notification.error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FCA5A5;
+        }
+        
+        .verification-notification.info {
+            background: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #93C5FD;
+        }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
@@ -251,7 +300,7 @@
                 <!-- Email Display -->
                 <div class="email-display">
                     We've sent a verification link to<br>
-                    <span class="email-address" id="userEmail">user@example.com</span>
+                    <span class="email-address user-email">user@example.com</span>
                 </div>
 
                 <!-- Instructions -->
@@ -268,15 +317,16 @@
                 <!-- Resend Section -->
                 <div class="resend-section">
                     <div class="resend-title">Didn't receive the email?</div>
-                    <button class="resend-button" id="resendButton" disabled>
+                    <button class="resend-button">
                         Resend Email
                     </button>
-                    <div class="countdown-timer" id="countdownTimer">
-                        Please wait 60 seconds before requesting another email
-                    </div>
+                    <button class="check-inbox-button">
+                        I've Verified My Email
+                    </button>
+                    <div class="verification-notification"></div>
                     <div class="help-text">
                         • Check your spam or junk folder<br>
-                        • Make sure <span id="displayEmail">user@example.com</span> is correct<br>
+                        • Make sure <span class="user-email">user@example.com</span> is correct<br>
                         • The link expires in 24 hours
                     </div>
                 </div>
@@ -297,174 +347,6 @@
         </div>
     </div>
 
-    <script>
-        // Email Verification JavaScript
-        let countdownSeconds = 60;
-        let countdownInterval;
-        
-        // Get user email from URL params or localStorage (placeholder for now)
-        const userEmail = new URLSearchParams(window.location.search).get('email') || 'user@example.com';
-        
-        // Update email displays
-        document.getElementById('userEmail').textContent = userEmail;
-        document.getElementById('displayEmail').textContent = userEmail;
-
-        // Start countdown timer
-        function startCountdown() {
-            const resendButton = document.getElementById('resendButton');
-            const countdownTimer = document.getElementById('countdownTimer');
-            
-            resendButton.disabled = true;
-            resendButton.classList.remove('enabled');
-            
-            countdownInterval = setInterval(() => {
-                if (countdownSeconds > 0) {
-                    countdownTimer.textContent = `Please wait ${countdownSeconds} seconds before requesting another email`;
-                    countdownSeconds--;
-                } else {
-                    // Enable resend button
-                    clearInterval(countdownInterval);
-                    resendButton.disabled = false;
-                    resendButton.classList.add('enabled');
-                    resendButton.textContent = 'Resend Email';
-                    countdownTimer.textContent = 'You can now request a new verification email';
-                }
-            }, 1000);
-        }
-
-        // Resend email function
-        document.getElementById('resendButton').addEventListener('click', function() {
-            if (!this.disabled) {
-                // TODO: Call API to resend verification email
-                console.log('Resending verification email to:', userEmail);
-                
-                // Reset countdown
-                countdownSeconds = 60;
-                this.textContent = 'Email Sent!';
-                
-                // Show success feedback briefly
-                setTimeout(() => {
-                    this.textContent = 'Resend Email';
-                    startCountdown();
-                }, 2000);
-                
-                // Show toast message (placeholder)
-                showToast('Verification email sent! Check your inbox.', 'success');
-            }
-        });
-
-        // Change email function
-        function changeEmail() {
-            const newEmail = prompt('Enter your correct email address:', userEmail);
-            if (newEmail && newEmail !== userEmail && validateEmail(newEmail)) {
-                // TODO: Call API to update email and send new verification
-                console.log('Changing email to:', newEmail);
-                
-                // Update displays
-                document.getElementById('userEmail').textContent = newEmail;
-                document.getElementById('displayEmail').textContent = newEmail;
-                
-                // Update URL
-                const url = new URL(window.location);
-                url.searchParams.set('email', newEmail);
-                window.history.replaceState({}, '', url);
-                
-                showToast('Email updated! New verification sent to ' + newEmail, 'success');
-            } else if (newEmail && !validateEmail(newEmail)) {
-                showToast('Please enter a valid email address', 'error');
-            }
-        }
-
-        // Email validation
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        // Toast notification (simple implementation)
-        function showToast(message, type = 'info') {
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                font-size: 14px;
-                z-index: 1000;
-                opacity: 0;
-                transform: translateX(400px);
-                transition: all 0.3s ease;
-                max-width: 300px;
-            `;
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            
-            // Show toast
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Hide toast after 4 seconds
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(400px)';
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.parentNode.removeChild(toast);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        // Check verification status (placeholder for API integration)
-        function checkVerificationStatus() {
-            // TODO: Poll API to check if email has been verified
-            // If verified, show success state and redirect
-            
-            // Placeholder for testing - simulate verification after 10 seconds
-            // Remove this in production
-            setTimeout(() => {
-                // Uncomment to test success state:
-                // simulateVerificationSuccess();
-            }, 10000);
-        }
-
-        // Simulate verification success (for testing)
-        function simulateVerificationSuccess() {
-            const successElement = document.getElementById('verificationSuccess');
-            successElement.classList.add('show');
-            
-            // Redirect after 3 seconds
-            setTimeout(() => {
-                window.location.href = 'alpha-welcome.html?email=' + encodeURIComponent(userEmail);
-            }, 3000);
-        }
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            startCountdown();
-            checkVerificationStatus();
-        });
-
-        // Handle verification link clicks (if this page is loaded with a token)
-        const urlParams = new URLSearchParams(window.location.search);
-        const verificationToken = urlParams.get('token');
-        
-        if (verificationToken) {
-            // TODO: Call API to verify the token
-            console.log('Verification token found:', verificationToken);
-            
-            // Simulate successful verification
-            setTimeout(() => {
-                simulateVerificationSuccess();
-            }, 1000);
-        }
-    </script>
+    <script type="module" src="../js/email-verification.js"></script>
 </body>
 </html>

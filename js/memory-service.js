@@ -5,21 +5,21 @@
  * validation, and interaction with Firestore.
  */
 
-// TODO: Import Firebase when SDK is added
-// import { db } from './firebase-config.js';
-// import { 
-//     collection, 
-//     doc, 
-//     setDoc, 
-//     getDoc, 
-//     getDocs, 
-//     updateDoc, 
-//     deleteDoc, 
-//     query, 
-//     where, 
-//     orderBy, 
-//     limit 
-// } from 'firebase/firestore';
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    doc, 
+    setDoc, 
+    getDoc, 
+    getDocs, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    where, 
+    orderBy as firestoreOrderBy, 
+    limit,
+    serverTimestamp 
+} from 'firebase/firestore';
 
 import { validateMemory } from './utils/validators.js';
 
@@ -50,7 +50,7 @@ export function createMemoryObject(data) {
     const wordCount = data.content ? data.content.trim().split(/\s+/).length : 0;
     
     return {
-        id: data.id || generateMemoryId(),
+        id: data.id || '', // Firestore will auto-generate if empty
         userId: data.userId || '',
         content: data.content || '',
         timestamp: data.timestamp || now,
@@ -64,15 +64,6 @@ export function createMemoryObject(data) {
             lastModified: data.metadata?.lastModified || now
         }
     };
-}
-
-/**
- * Generate a unique memory ID
- * @returns {string} Unique ID
- */
-function generateMemoryId() {
-    // Simple ID generation - in production, Firestore auto-generates IDs
-    return `memory_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
@@ -91,19 +82,47 @@ export async function saveMemory(memoryData) {
             throw new Error(`Invalid memory: ${validation.errors.join(', ')}`);
         }
         
-        // TODO: Save to Firestore
-        // const docRef = doc(db, 'users', memory.userId, 'memories', memory.id);
-        // await setDoc(docRef, memory);
+        // Get or create document reference
+        const memoriesRef = collection(db, 'users', memory.userId, 'memories');
+        const docRef = memory.id ? 
+            doc(memoriesRef, memory.id) : 
+            doc(memoriesRef); // Auto-generate ID
         
-        // Temporary: Save to localStorage
+        // Update ID if auto-generated
+        if (!memory.id) {
+            memory.id = docRef.id;
+        }
+        
+        // Add server timestamp
+        const dataToSave = {
+            ...memory,
+            serverTimestamp: serverTimestamp()
+        };
+        
+        // Save to Firestore
+        await setDoc(docRef, dataToSave);
+        
+        console.log('Memory saved to Firestore:', memory.id);
+        
+        // Also save to localStorage as backup
         const memories = getLocalMemories();
         memories[memory.id] = memory;
         localStorage.setItem('infitwin_memories', JSON.stringify(memories));
         
-        console.log('Memory saved:', memory);
         return memory;
     } catch (error) {
         console.error('Error saving memory:', error);
+        
+        // Fallback to localStorage only
+        if (error.code === 'permission-denied') {
+            console.warn('Firestore permission denied, saving to localStorage only');
+            const memory = createMemoryObject(memoryData);
+            const memories = getLocalMemories();
+            memories[memory.id] = memory;
+            localStorage.setItem('infitwin_memories', JSON.stringify(memories));
+            return memory;
+        }
+        
         throw error;
     }
 }
@@ -116,17 +135,26 @@ export async function saveMemory(memoryData) {
  */
 export async function getMemory(userId, memoryId) {
     try {
-        // TODO: Get from Firestore
-        // const docRef = doc(db, 'users', userId, 'memories', memoryId);
-        // const docSnap = await getDoc(docRef);
-        // return docSnap.exists() ? docSnap.data() : null;
+        // Get from Firestore
+        const docRef = doc(db, 'users', userId, 'memories', memoryId);
+        const docSnap = await getDoc(docRef);
         
-        // Temporary: Get from localStorage
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Remove server timestamp field
+            delete data.serverTimestamp;
+            return data;
+        }
+        
+        // Fallback to localStorage
         const memories = getLocalMemories();
         return memories[memoryId] || null;
     } catch (error) {
         console.error('Error getting memory:', error);
-        throw error;
+        
+        // Fallback to localStorage
+        const memories = getLocalMemories();
+        return memories[memoryId] || null;
     }
 }
 
@@ -145,40 +173,59 @@ export async function getUserMemories(userId, options = {}) {
             filterType = null
         } = options;
         
-        // TODO: Query Firestore
-        // const memoriesRef = collection(db, 'users', userId, 'memories');
-        // let q = query(memoriesRef, orderBy(orderField, orderDirection), limit(limitCount));
-        // 
-        // if (filterType) {
-        //     q = query(q, where('type', '==', filterType));
-        // }
-        // 
-        // const querySnapshot = await getDocs(q);
-        // return querySnapshot.docs.map(doc => doc.data());
+        // Query Firestore
+        const memoriesRef = collection(db, 'users', userId, 'memories');
+        let constraints = [
+            firestoreOrderBy(orderField, orderDirection),
+            limit(limitCount)
+        ];
         
-        // Temporary: Get from localStorage
+        if (filterType) {
+            constraints.unshift(where('type', '==', filterType));
+        }
+        
+        const q = query(memoriesRef, ...constraints);
+        const querySnapshot = await getDocs(q);
+        
+        const memories = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            // Remove server timestamp field
+            delete data.serverTimestamp;
+            memories.push(data);
+        });
+        
+        // Sync with localStorage
+        const localMemories = getLocalMemories();
+        memories.forEach(memory => {
+            localMemories[memory.id] = memory;
+        });
+        localStorage.setItem('infitwin_memories', JSON.stringify(localMemories));
+        
+        return memories;
+    } catch (error) {
+        console.error('Error getting user memories:', error);
+        
+        // Fallback to localStorage
         const memories = getLocalMemories();
         let userMemories = Object.values(memories).filter(m => m.userId === userId);
         
         // Apply filters
-        if (filterType) {
-            userMemories = userMemories.filter(m => m.type === filterType);
+        if (options.filterType) {
+            userMemories = userMemories.filter(m => m.type === options.filterType);
         }
         
         // Sort
         userMemories.sort((a, b) => {
-            const aVal = a[orderField];
-            const bVal = b[orderField];
-            return orderDirection === 'desc' ? 
+            const aVal = a[options.orderBy || 'timestamp'];
+            const bVal = b[options.orderBy || 'timestamp'];
+            return (options.orderDirection || 'desc') === 'desc' ? 
                 (bVal > aVal ? 1 : -1) : 
                 (aVal > bVal ? 1 : -1);
         });
         
         // Limit
-        return userMemories.slice(0, limitCount);
-    } catch (error) {
-        console.error('Error getting user memories:', error);
-        throw error;
+        return userMemories.slice(0, options.limitCount || 50);
     }
 }
 
@@ -214,11 +261,14 @@ export async function updateMemory(userId, memoryId, updates) {
             throw new Error(`Invalid memory update: ${validation.errors.join(', ')}`);
         }
         
-        // TODO: Update in Firestore
-        // const docRef = doc(db, 'users', userId, 'memories', memoryId);
-        // await updateDoc(docRef, updated);
+        // Update in Firestore
+        const docRef = doc(db, 'users', userId, 'memories', memoryId);
+        await updateDoc(docRef, {
+            ...updated,
+            serverTimestamp: serverTimestamp()
+        });
         
-        // Temporary: Update in localStorage
+        // Update in localStorage
         const memories = getLocalMemories();
         memories[memoryId] = updated;
         localStorage.setItem('infitwin_memories', JSON.stringify(memories));
@@ -226,6 +276,30 @@ export async function updateMemory(userId, memoryId, updates) {
         return updated;
     } catch (error) {
         console.error('Error updating memory:', error);
+        
+        // Fallback to localStorage only
+        if (error.code === 'permission-denied' || error.code === 'not-found') {
+            const memories = getLocalMemories();
+            const existing = memories[memoryId];
+            if (!existing) {
+                throw new Error('Memory not found');
+            }
+            
+            const updated = {
+                ...existing,
+                ...updates,
+                metadata: {
+                    ...existing.metadata,
+                    ...updates.metadata,
+                    lastModified: new Date().toISOString()
+                }
+            };
+            
+            memories[memoryId] = updated;
+            localStorage.setItem('infitwin_memories', JSON.stringify(memories));
+            return updated;
+        }
+        
         throw error;
     }
 }
@@ -238,21 +312,54 @@ export async function updateMemory(userId, memoryId, updates) {
  */
 export async function deleteMemory(userId, memoryId) {
     try {
-        // TODO: Delete from Firestore
-        // const docRef = doc(db, 'users', userId, 'memories', memoryId);
-        // await deleteDoc(docRef);
+        // Delete from Firestore
+        const docRef = doc(db, 'users', userId, 'memories', memoryId);
+        await deleteDoc(docRef);
         
-        // Temporary: Delete from localStorage
+        // Delete from localStorage
         const memories = getLocalMemories();
         delete memories[memoryId];
         localStorage.setItem('infitwin_memories', JSON.stringify(memories));
     } catch (error) {
         console.error('Error deleting memory:', error);
+        
+        // Fallback to localStorage only
+        if (error.code === 'permission-denied' || error.code === 'not-found') {
+            const memories = getLocalMemories();
+            delete memories[memoryId];
+            localStorage.setItem('infitwin_memories', JSON.stringify(memories));
+            return;
+        }
+        
         throw error;
     }
 }
 
-// Temporary helper for localStorage
+/**
+ * Search memories by content
+ * @param {string} userId - User ID
+ * @param {string} searchTerm - Search term
+ * @returns {Promise<Memory[]>} Matching memories
+ */
+export async function searchMemories(userId, searchTerm) {
+    try {
+        // For now, get all memories and filter client-side
+        // In production, use Algolia or Firebase Extensions for full-text search
+        const allMemories = await getUserMemories(userId, { limitCount: 1000 });
+        
+        const lowerSearch = searchTerm.toLowerCase();
+        return allMemories.filter(memory => 
+            memory.content.toLowerCase().includes(lowerSearch) ||
+            memory.metadata.tags.some(tag => tag.toLowerCase().includes(lowerSearch)) ||
+            memory.entities.some(entity => entity.toLowerCase().includes(lowerSearch))
+        );
+    } catch (error) {
+        console.error('Error searching memories:', error);
+        return [];
+    }
+}
+
+// Helper for localStorage
 function getLocalMemories() {
     try {
         const data = localStorage.getItem('infitwin_memories');
