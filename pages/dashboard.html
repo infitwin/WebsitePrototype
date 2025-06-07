@@ -12,8 +12,38 @@
 </head>
 <body>
     <div class="symphony-dashboard">
-        <!-- Navigation -->
-        <nav class="symphony-nav">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <div class="sidebar-nav-item active" data-page="dashboard">
+                <span style="font-size: 24px;">🏠</span>
+                <span class="sidebar-tooltip">Dashboard</span>
+            </div>
+            <div class="sidebar-nav-item" data-page="memories">
+                <span style="font-size: 24px;">📚</span>
+                <span class="sidebar-tooltip">My Memories</span>
+            </div>
+            <div class="sidebar-nav-item" data-page="people">
+                <span style="font-size: 24px;">👥</span>
+                <span class="sidebar-tooltip">People</span>
+            </div>
+            <div class="sidebar-nav-item" data-page="explore">
+                <span style="font-size: 24px;">🔍</span>
+                <span class="sidebar-tooltip">Explore</span>
+            </div>
+            <div class="sidebar-nav-item" data-page="talk">
+                <span style="font-size: 24px;">💬</span>
+                <span class="sidebar-tooltip">Talk to Twin</span>
+            </div>
+            <div class="sidebar-nav-item" data-page="settings">
+                <span style="font-size: 24px;">⚙️</span>
+                <span class="sidebar-tooltip">Settings</span>
+            </div>
+        </nav>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Top Navigation -->
+            <nav class="symphony-nav">
             <div class="nav-container">
                 <div class="nav-brand">
                     <img src="../assets/images/infitwin-logo.jpg" alt="Infitwin" class="nav-logo">
@@ -102,11 +132,12 @@
             </section>
         </main>
 
-        <!-- Floating Action Button -->
-        <button class="fab-add-memory" id="addMemoryBtn" aria-label="Add new memory">
-            +
-        </button>
-    </div>
+            <!-- Floating Action Button -->
+            <button class="fab-add-memory" id="addMemoryBtn" aria-label="Add new memory">
+                +
+            </button>
+        </div> <!-- End main-content-wrapper -->
+    </div> <!-- End symphony-dashboard -->
 
     <script type="module" src="../js/knowledge-symphony.js"></script>
 </body>

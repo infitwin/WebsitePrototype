@@ -101,6 +101,15 @@ function animateCount(element, finalValue) {
 
 // Setup event listeners
 function setupEventListeners() {
+    // Sidebar navigation
+    const sidebarItems = document.querySelectorAll('.sidebar-nav-item');
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const page = this.dataset.page;
+            handleSidebarNavigation(page);
+        });
+    });
+    
     // Category tiles
     const tiles = document.querySelectorAll('.category-tile');
     tiles.forEach(tile => {
@@ -120,6 +129,33 @@ function setupEventListeners() {
     const userInfo = document.querySelector('.user-info');
     if (userInfo) {
         userInfo.addEventListener('click', handleUserMenuClick);
+    }
+}
+
+// Handle sidebar navigation
+function handleSidebarNavigation(page) {
+    // Remove active class from all items
+    document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to clicked item
+    document.querySelector(`[data-page="${page}"]`).classList.add('active');
+    
+    // Navigate to appropriate page
+    const pageUrls = {
+        dashboard: '/pages/dashboard.html',
+        memories: '#', // Placeholder
+        people: '#', // Placeholder  
+        explore: '/pages/explore.html',
+        talk: '/pages/talk-to-twin.html',
+        settings: '/pages/settings.html'
+    };
+    
+    if (pageUrls[page] && pageUrls[page] !== '#') {
+        window.location.href = pageUrls[page];
+    } else {
+        showNotification(`${page.charAt(0).toUpperCase() + page.slice(1)} page coming soon!`);
     }
 }
 
