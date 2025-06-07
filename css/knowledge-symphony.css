@@ -35,6 +35,7 @@
     transition: all 0.3s ease;
     position: relative;
     color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
 }
 
 .sidebar-nav-item:hover {
@@ -148,22 +149,26 @@
 
 /* Main Content */
 .symphony-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 /* Knowledge Graph Placeholder */
 .knowledge-graph-placeholder {
-    margin-bottom: 3rem;
+    flex: 1;
+    min-height: 400px;
+    max-height: 500px;
 }
 
 .graph-container {
-    background: #FFFFFF;
-    border: 2px solid #E1E8ED;
-    border-radius: 16px;
-    padding: 3rem;
-    min-height: 400px;
+    background: #F8FAFB;
+    border: 1px solid #D1E3F0;
+    border-radius: 20px;
+    padding: 2rem;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -189,28 +194,7 @@
     position: relative;
 }
 
-/* Decorative dots for the placeholder */
-.graph-placeholder-content::before,
-.graph-placeholder-content::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background: #27AE60;
-    border-radius: 50%;
-    opacity: 0.6;
-}
-
-.graph-placeholder-content::before {
-    top: 20%;
-    left: 25%;
-}
-
-.graph-placeholder-content::after {
-    bottom: 30%;
-    right: 30%;
-}
-
+/* Green dots matching the example */
 .placeholder-dots {
     position: absolute;
     width: 100%;
@@ -219,32 +203,32 @@
 
 .placeholder-dot {
     position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #3498DB;
+    width: 16px;
+    height: 16px;
+    background: #27AE60;
     border-radius: 50%;
-    opacity: 0.4;
+    opacity: 0.8;
 }
 
-.placeholder-dot:nth-child(1) { top: 40%; left: 15%; }
-.placeholder-dot:nth-child(2) { top: 60%; right: 20%; }
-.placeholder-dot:nth-child(3) { bottom: 25%; left: 40%; }
-.placeholder-dot:nth-child(4) { top: 25%; right: 35%; }
+.placeholder-dot:nth-child(1) { top: 15%; left: 20%; }
+.placeholder-dot:nth-child(2) { top: 35%; right: 25%; }
+.placeholder-dot:nth-child(3) { bottom: 40%; left: 35%; }
+.placeholder-dot:nth-child(4) { bottom: 20%; right: 30%; }
 
 /* Category Grid */
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 4rem;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+    padding: 0 0.5rem;
 }
 
 /* Category Tiles */
 .category-tile {
     background: #FFFFFF;
     border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
     cursor: pointer;
     display: flex;
@@ -253,6 +237,7 @@
     text-align: center;
     position: relative;
     overflow: hidden;
+    min-height: 160px;
 }
 
 .category-tile:hover {
@@ -261,39 +246,39 @@
 }
 
 .category-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
     background: #F5F8FA;
 }
 
 .category-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #2C3E50;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .category-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #7F8C8D;
     margin: 0;
 }
 
 .category-count {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 0.75rem;
+    right: 0.75rem;
     background: #E8EEF5;
     color: #2C3E50;
-    padding: 0.25rem 0.75rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 500;
 }
 
@@ -384,9 +369,19 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 1024px) {
     .category-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .category-tile {
+        padding: 1.25rem 0.75rem;
     }
 }
 
