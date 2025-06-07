@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Memory Archive - Infitwin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="auth-nav">
+        <a href="../index.html" class="back-link">← Back to Home</a>
+    </nav>
+
+
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <img src="../assets/images/infitwin-logo.jpg" alt="Infitwin" class="nav-logo">
+                <h1 class="nav-title">Memory Archive</h1>
+            </div>
+            <div class="nav-right">
+                <button class="nav-button notifications">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=FFD700&color=2C1810" alt="User" class="user-avatar">
+                    <span class="user-name">John Doe</span>
+                    <button class="menu-dropdown">▼</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🎙️</span>
+                    <span class="nav-text">New Memory</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">My Memories</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👨‍👩‍👧‍👦</span>
+                    <span class="nav-text">Family Tree</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-text">Life Timeline</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="storage-info">
+                    <p class="storage-label">Memory Storage</p>
+                    <div class="storage-bar">
+                        <div class="storage-used" style="width: 35%;"></div>
+                    </div>
+                    <p class="storage-text">3.5 GB of 10 GB used</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <div class="welcome-content">
+                    <h2 class="welcome-title">Welcome back, John! 👋</h2>
+                    <p class="welcome-subtitle">Your legacy continues to grow. You've captured 47 precious memories.</p>
+                </div>
+                <div class="welcome-actions">
+                    <button class="action-button primary">
+                        <span class="button-icon">🎙️</span>
+                        Start New Memory
+                    </button>
+                    <button class="action-button secondary">
+                        <span class="button-icon">📸</span>
+                        Upload Photos
+                    </button>
+                </div>
+            </section>
+
+            <!-- Stats Grid -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon memories">📖</div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">47</h3>
+                        <p class="stat-label">Total Memories</p>
+                        <p class="stat-trend positive">+5 this month</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon photos">📸</div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">234</h3>
+                        <p class="stat-label">Photos & Videos</p>
+                        <p class="stat-trend positive">+12 this week</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon family">👥</div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">8</h3>
+                        <p class="stat-label">Family Members</p>
+                        <p class="stat-trend">2 pending invites</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon streak">🔥</div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">15</h3>
+                        <p class="stat-label">Day Streak</p>
+                        <p class="stat-trend positive">Keep it going!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Memories -->
+            <section class="recent-memories">
+                <div class="section-header">
+                    <h3 class="section-title">Recent Memories</h3>
+                    <a href="#" class="view-all-link">View all →</a>
+                </div>
+                
+                <div class="memories-grid">
+                    <div class="memory-card">
+                        <div class="memory-image" style="background-image: url('https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400');"></div>
+                        <div class="memory-content">
+                            <h4 class="memory-title">Summer at Grandpa's Farm</h4>
+                            <p class="memory-date">June 15, 1985</p>
+                            <p class="memory-excerpt">The best summers were always spent at grandpa's farm. I remember the smell of fresh hay and...</p>
+                            <div class="memory-tags">
+                                <span class="tag">Childhood</span>
+                                <span class="tag">Family</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="memory-card">
+                        <div class="memory-image" style="background-image: url('https://images.unsplash.com/photo-1519741497674-611481863552?w=400');"></div>
+                        <div class="memory-content">
+                            <h4 class="memory-title">Our Wedding Day</h4>
+                            <p class="memory-date">September 3, 1995</p>
+                            <p class="memory-excerpt">The church bells were ringing, and I couldn't stop smiling. Sarah looked absolutely stunning in...</p>
+                            <div class="memory-tags">
+                                <span class="tag">Love</span>
+                                <span class="tag">Milestone</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="memory-card">
+                        <div class="memory-image" style="background-image: url('https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=400');"></div>
+                        <div class="memory-content">
+                            <h4 class="memory-title">First Day as CEO</h4>
+                            <p class="memory-date">March 1, 2010</p>
+                            <p class="memory-excerpt">Walking into the office that morning, I felt the weight of responsibility but also incredible excitement...</p>
+                            <div class="memory-tags">
+                                <span class="tag">Career</span>
+                                <span class="tag">Achievement</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <h3 class="section-title">Quick Actions</h3>
+                <div class="actions-grid">
+                    <button class="quick-action-card">
+                        <div class="action-icon">🎤</div>
+                        <h4>Voice Memory</h4>
+                        <p>Record a story with Winston</p>
+                    </button>
+                    
+                    <button class="quick-action-card">
+                        <div class="action-icon">✍️</div>
+                        <h4>Write Memory</h4>
+                        <p>Type out your thoughts</p>
+                    </button>
+                    
+                    <button class="quick-action-card">
+                        <div class="action-icon">🗂️</div>
+                        <h4>Organize</h4>
+                        <p>Sort memories by theme</p>
+                    </button>
+                    
+                    <button class="quick-action-card">
+                        <div class="action-icon">🎁</div>
+                        <h4>Share</h4>
+                        <p>Invite family members</p>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Activity Timeline -->
+            <section class="activity-timeline">
+                <h3 class="section-title">Recent Activity</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <p class="timeline-text"><strong>Sarah</strong> added a photo to "Summer Vacation 1998"</p>
+                            <p class="timeline-time">2 hours ago</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <p class="timeline-text"><strong>You</strong> completed the interview "My First Job"</p>
+                            <p class="timeline-time">Yesterday</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <p class="timeline-text"><strong>Michael</strong> joined your family archive</p>
+                            <p class="timeline-time">3 days ago</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Achievement Toast (Hidden by default) -->
+    <div class="achievement-toast" id="achievement-toast">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-content">
+            <h4>Memory Keeper!</h4>
+            <p>You've captured 50 memories!</p>
+        </div>
+    </div>
+
+    <script type="module" src="../js/dashboard.js"></script>
+</body>
+</html>
