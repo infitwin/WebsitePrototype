@@ -1,30 +1,63 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
-build/
+# Environment variables
+.env
+.env.local
+.env.*.local
 
-# IDE files
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Logs
+# Test artifacts
+coverage/
 *.log
-npm-debug.log*
 
-# Environment variables
-.env
-.env.local
-.env.production
+# Build artifacts
+dist/
+build/
+
+# Local development
+*.local
+.cache/
 
 # Temporary files
+tmp/
+temp/
 *.tmp
-*.temp
+
+# Test screenshots (keep only production snapshots)
+test-*.png
+*-test-*.png
+back-navigation-test-results/
+fix-verification-snapshots/
+interactive-test-results/
+cross-browser-results/
+
+# Test scripts (keep only production code)
+test-*.js
+test-*.py
+test-*.html
+*-test.js
+*-test.html
+
+# Development helpers
+screenshot-test.html
+testing-helper.html
+take-screenshot.html
+verify-*.js
+fix-*.py

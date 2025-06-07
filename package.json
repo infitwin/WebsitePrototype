@@ -1,0 +1,32 @@
+{
+  "name": "infitwin-alpha",
+  "version": "1.0.0",
+  "description": "Infitwin Phase 1 Alpha - Memory preservation platform",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "echo \"No tests configured yet\"",
+    "lint": "echo \"No linting configured yet\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infitwin/WebsitePrototype.git"
+  },
+  "keywords": [
+    "memory",
+    "preservation",
+    "AI",
+    "interview",
+    "firebase"
+  ],
+  "author": "Infitwin Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
