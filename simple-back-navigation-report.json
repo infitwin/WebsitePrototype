@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-06-07T02:25:01.434Z",
+  "backButtons": {
+    "pages/auth.html": [
+      {
+        "tag": "a",
+        "text": "← Back to Home",
+        "href": "../index.html",
+        "onclick": null,
+        "className": "back-link"
+      }
+    ],
+    "pages/email-verification.html": [
+      {
+        "tag": "a",
+        "text": "← Back to Login",
+        "href": "auth.html",
+        "onclick": null,
+        "className": "back-link"
+      },
+      {
+        "tag": "a",
+        "text": "Back to Login",
+        "href": "auth.html",
+        "onclick": null,
+        "className": "action-link"
+      }
+    ],
+    "pages/talk-to-twin.html": [
+      {
+        "tag": "a",
+        "text": "←\n                Back",
+        "href": "dashboard.html",
+        "onclick": null,
+        "className": "back-btn"
+      }
+    ],
+    "pages/explore.html": [
+      {
+        "tag": "a",
+        "text": "←\n                Back to Dashboard",
+        "href": "dashboard.html",
+        "onclick": null,
+        "className": "back-btn"
+      }
+    ]
+  },
+  "browserBackTests": [
+    {
+      "name": "Simple navigation: index → auth → back",
+      "steps": [],
+      "passed": true
+    },
+    {
+      "name": "Deep navigation: index → auth → dashboard → back → back",
+      "steps": [],
+      "passed": true
+    },
+    {
+      "name": "Form state: auth page form fill → navigate → back",
+      "steps": [],
+      "passed": true
+    }
+  ],
+  "summary": {
+    "pagesWithBackButtons": 4,
+    "pagesWithoutBackButtons": 8,
+    "browserBackTestsPassed": 3,
+    "browserBackTestsTotal": 3,
+    "breadcrumbsFound": 0
+  }
+}

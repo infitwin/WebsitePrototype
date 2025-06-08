@@ -1,5 +1,22 @@
 # CLAUDE.md - AI Assistant Instructions
 
+## PROJECT COLOR SCHEME
+
+The Infitwin website uses a consistent color palette across all pages:
+
+- **Primary Purple (Sidebar)**: #6B46C1 (deep purple)
+- **Background**: #F3F4F6 (light gray)
+- **Card Background**: #FFFFFF (white) with subtle shadows
+- **Success/Progress Green**: #10B981
+- **Warning/Accent Yellow**: #FFD700 (golden yellow)
+- **Info/Action Blue**: #3B82F6
+- **Error Red**: #EF4444
+- **Text Primary**: #374151 (dark gray)
+- **Text Secondary**: #6B7280 (medium gray)
+- **Border Color**: #E5E7EB (light gray)
+
+Always use these colors when implementing new features to maintain visual consistency.
+
 ## COMPRESSION INSTRUCTIONS
 
 ### Code: C1 (Coding Handoff)

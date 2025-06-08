@@ -42,6 +42,10 @@
                 <span style="font-size: 24px;">💬</span>
                 <span class="sidebar-tooltip">Talk to Twin</span>
             </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="files">
+                <span style="font-size: 24px;">📁</span>
+                <span class="sidebar-tooltip">My Files</span>
+            </a>
             <a href="settings.html" class="sidebar-nav-item" data-page="settings">
                 <span style="font-size: 24px;">⚙️</span>
                 <span class="sidebar-tooltip">Settings</span>
@@ -119,6 +123,26 @@
                     <p class="category-subtitle">Patterns & themes</p>
                 </div>
             </section>
+
+            <!-- Dashboard Widgets -->
+            <section class="dashboard-widgets">
+                <div class="widgets-grid">
+                    <!-- Storage Widget -->
+                    <div id="storageWidget" class="widget-container">
+                        <!-- Storage widget will be rendered here -->
+                    </div>
+                    
+                    <!-- Activity Feed Widget -->
+                    <div id="activityWidget" class="widget-container">
+                        <!-- Activity widget will be rendered here -->
+                    </div>
+                    
+                    <!-- Quick Actions Widget -->
+                    <div id="quickActionsWidget" class="widget-container">
+                        <!-- Quick actions widget will be rendered here -->
+                    </div>
+                </div>
+            </section>
         </main>
 
             <!-- Floating Action Button -->
@@ -128,6 +152,57 @@
         </div> <!-- End main-content-wrapper -->
     </div> <!-- End symphony-dashboard -->
 
+    <style>
+        /* Dashboard Widgets */
+        .dashboard-widgets {
+            margin-top: 2rem;
+        }
+
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .widget-container {
+            min-height: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .widgets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
     <script type="module" src="../js/knowledge-symphony.js"></script>
+    <script type="module">
+        import { createStorageMeterWidget } from '../js/storage-ui.js';
+        import { createActivityFeedWidget } from '../js/dashboard-widgets.js';
+        import { createQuickActionsWidget } from '../js/dashboard-widgets.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize widgets
+            createStorageMeterWidget('storageWidget');
+            
+            // Placeholder for other widgets until implemented
+            document.getElementById('activityWidget').innerHTML = `
+                <div style="background: #FFFFFF; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); text-align: center; color: #6B7280;">
+                    <div style="font-size: 32px; margin-bottom: 1rem;">📋</div>
+                    <h4 style="color: #374151; margin: 0 0 0.5rem 0;">Activity Feed</h4>
+                    <p style="margin: 0;">Coming soon...</p>
+                </div>
+            `;
+            
+            document.getElementById('quickActionsWidget').innerHTML = `
+                <div style="background: #FFFFFF; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); text-align: center; color: #6B7280;">
+                    <div style="font-size: 32px; margin-bottom: 1rem;">⚡</div>
+                    <h4 style="color: #374151; margin: 0 0 0.5rem 0;">Quick Actions</h4>
+                    <p style="margin: 0;">Coming soon...</p>
+                </div>
+            `;
+        });
+    </script>
 </body>
 </html>

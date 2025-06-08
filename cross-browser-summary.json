@@ -1,0 +1,136 @@
+{
+  "generated": "2025-06-07T03:21:01.815Z",
+  "overview": {
+    "browsersTestd": [
+      "Chromium/Chrome",
+      "Firefox",
+      "WebKit/Safari"
+    ],
+    "pagesTestd": [
+      "index",
+      "auth",
+      "dashboard"
+    ],
+    "viewportsTested": [
+      "Desktop (1920x1080)",
+      "Mobile (390x844)"
+    ],
+    "testTypes": [
+      "Functional",
+      "Visual",
+      "Performance",
+      "Interactive"
+    ]
+  },
+  "results": {
+    "functional": {
+      "total": 18,
+      "passed": 6,
+      "failed": 12,
+      "successRate": "33.3%"
+    },
+    "visual": {},
+    "performance": {},
+    "interactive": {}
+  },
+  "criticalIssues": [
+    {
+      "severity": "high",
+      "browser": "chromium",
+      "page": "auth_desktop",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "chromium",
+      "page": "auth_mobile",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "chromium",
+      "page": "dashboard_desktop",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "chromium",
+      "page": "dashboard_mobile",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "firefox",
+      "page": "auth_desktop",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "firefox",
+      "page": "auth_mobile",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "firefox",
+      "page": "dashboard_desktop",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "firefox",
+      "page": "dashboard_mobile",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "webkit",
+      "page": "auth_desktop",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "webkit",
+      "page": "auth_mobile",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "webkit",
+      "page": "dashboard_desktop",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    },
+    {
+      "severity": "high",
+      "browser": "webkit",
+      "page": "dashboard_mobile",
+      "issue": "Page failed to load",
+      "details": "Unknown error"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "medium",
+      "category": "Testing",
+      "recommendation": "Implement continuous cross-browser testing",
+      "details": "Set up automated testing in CI/CD pipeline to catch issues early."
+    },
+    {
+      "priority": "low",
+      "category": "Performance",
+      "recommendation": "Optimize for slower browsers",
+      "details": "Some browsers may have slower JavaScript engines. Profile and optimize critical paths."
+    }
+  ]
+}
