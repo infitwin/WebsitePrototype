@@ -456,12 +456,91 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Thumbnail Styles */
+        .file-thumbnail {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #F8F9FA;
+        }
+
+        .thumbnail-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .thumbnail-fallback {
+            font-size: 2.5rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-grid-thumbnail {
+            margin-bottom: 0.75rem;
+        }
+
+        /* Update file grid item styling for thumbnails */
+        .file-grid-item {
+            padding: 1rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            background: #FFFFFF;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .file-grid-item:hover {
+            border-color: #FFD700;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .file-checkbox {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 2;
+        }
+
+        .file-grid-name {
+            font-weight: 500;
+            color: #2C3E50;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
+            font-size: 0.875rem;
+        }
+
+        .file-grid-size {
+            color: #6B7280;
+            font-size: 0.75rem;
+        }
+
+        /* Lazy loading optimization */
+        .thumbnail-image[loading="lazy"] {
+            transition: opacity 0.3s ease;
+        }
+
+        .thumbnail-image[loading="lazy"]:not([src]) {
+            opacity: 0;
+        }
     </style>
 
     <script type="module">
         import { initializeDragDrop, createUploadQueue, processFilesForUpload, showNotification } from '../js/file-ui.js';
         import { getUserFiles, deleteFile, calculateStorageUsed } from '../js/file-service.js';
         import { guardPage } from '../js/auth-guard.js';
+        import { createThumbnailElement, getFallbackIcon } from '../js/thumbnail-generator.js';
 
         document.addEventListener('DOMContentLoaded', async function() {
             // Check authentication
@@ -649,12 +728,19 @@
                 item.className = 'file-grid-item';
                 item.dataset.fileId = file.id;
                 
+                // Create thumbnail element
+                const thumbnailElement = createThumbnailElement(file);
+                
                 item.innerHTML = `
                     <input type="checkbox" class="file-checkbox">
-                    <div class="file-grid-icon">${getFileIcon(file.fileType)}</div>
+                    <div class="file-grid-thumbnail"></div>
                     <div class="file-grid-name">${file.fileName}</div>
                     <div class="file-grid-size">${formatFileSize(file.fileSize)}</div>
                 `;
+                
+                // Insert thumbnail element
+                const thumbnailContainer = item.querySelector('.file-grid-thumbnail');
+                thumbnailContainer.appendChild(thumbnailElement);
 
                 // Add click handlers
                 item.addEventListener('click', (e) => {
@@ -695,7 +781,7 @@
                         <input type="checkbox" class="file-checkbox">
                     </div>
                     <div class="file-list-name">
-                        <span class="file-list-icon">${getFileIcon(file.fileType)}</span>
+                        <span class="file-list-icon">${getFallbackIcon(file.fileType)}</span>
                         ${file.fileName}
                     </div>
                     <div class="file-list-type">${file.category}</div>
@@ -796,15 +882,7 @@
             };
         }
 
-        // Helper functions
-        function getFileIcon(mimeType) {
-            if (mimeType.startsWith('image/')) return '🖼️';
-            if (mimeType.includes('pdf')) return '📄';
-            if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
-            if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
-            if (mimeType.includes('epub')) return '📚';
-            return '📎';
-        }
+        // Helper functions (getFileIcon removed - using getFallbackIcon from thumbnail-generator.js)
 
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';

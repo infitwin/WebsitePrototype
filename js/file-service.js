@@ -14,6 +14,7 @@ import {
     listAll,
     getMetadata
 } from 'firebase/storage';
+import { createAndUploadThumbnail } from './thumbnail-generator.js';
 import { 
     collection, 
     doc, 
@@ -165,9 +166,12 @@ export async function uploadFile(file, onProgress, onError) {
                         // Get download URL
                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                         
-                        // Create metadata object
+                        // Generate unique file ID
+                        const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        
+                        // Create base metadata object
                         const fileMetadata = {
-                            id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                            id: fileId,
                             userId: user.uid,
                             fileName: file.name,
                             fileType: file.type,
@@ -177,6 +181,17 @@ export async function uploadFile(file, onProgress, onError) {
                             uploadedAt: new Date().toISOString(),
                             category: getFileCategory(file.type)
                         };
+                        
+                        // Generate thumbnail for images
+                        try {
+                            const thumbnailURL = await createAndUploadThumbnail(file, fileId);
+                            if (thumbnailURL) {
+                                fileMetadata.thumbnailURL = thumbnailURL;
+                            }
+                        } catch (thumbnailError) {
+                            console.warn('Thumbnail generation failed:', thumbnailError);
+                            // Continue without thumbnail - not critical
+                        }
                         
                         // Save metadata to Firestore
                         await saveFileMetadata(fileMetadata);
