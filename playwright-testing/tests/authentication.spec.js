@@ -97,21 +97,23 @@ test.describe('Authentication Tests', () => {
   });
 
   test('should show/hide password toggle', async ({ page }) => {
-    const passwordInput = page.locator('input[type="password"]').first();
-    const toggleButton = page.locator('.password-toggle, .toggle-password, button[aria-label*="password"]').first();
+    // Get the first password input by its ID or class
+    const passwordInput = page.locator('#signup-password, #password').first();
+    const toggleButton = page.locator('.password-toggle').first();
     
-    if (await toggleButton.isVisible()) {
-      // Check initial state
-      await expect(passwordInput).toHaveAttribute('type', 'password');
-      
-      // Toggle to show password
-      await toggleButton.click();
-      await expect(passwordInput).toHaveAttribute('type', 'text');
-      
-      // Toggle back to hide
-      await toggleButton.click();
-      await expect(passwordInput).toHaveAttribute('type', 'password');
-    }
+    // Check that toggle button exists
+    await expect(toggleButton).toBeVisible();
+    
+    // Check initial state
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+    
+    // Toggle to show password
+    await toggleButton.click();
+    await expect(passwordInput).toHaveAttribute('type', 'text');
+    
+    // Toggle back to hide
+    await toggleButton.click();
+    await expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
   test('should handle social login options', async ({ page }) => {

@@ -157,7 +157,79 @@
 
     <script type="module" src="../js/auth.js"></script>
     
+    <!-- Fallback password toggle implementation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add password toggle functionality as fallback
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            
+            passwordInputs.forEach(input => {
+                // Check if toggle already exists (from auth.js)
+                const existingWrapper = input.parentElement.classList.contains('password-wrapper');
+                if (!existingWrapper) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'password-wrapper';
+                    input.parentNode.insertBefore(wrapper, input);
+                    wrapper.appendChild(input);
+                    
+                    const toggle = document.createElement('button');
+                    toggle.type = 'button';
+                    toggle.className = 'password-toggle';
+                    toggle.innerHTML = '👁️';
+                    toggle.setAttribute('aria-label', 'Toggle password visibility');
+                    wrapper.appendChild(toggle);
+                    
+                    toggle.addEventListener('click', function() {
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            toggle.innerHTML = '👁️‍🗨️';
+                        } else {
+                            input.type = 'password';
+                            toggle.innerHTML = '👁️';
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    
     <style>
+        /* Password Toggle Styles */
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            padding: 0.5rem;
+            z-index: 1;
+        }
+        
+        .password-toggle:hover {
+            opacity: 0.8;
+        }
+        
+        .password-toggle:focus {
+            outline: 2px solid #FFD700;
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        
+        /* Ensure password inputs have proper padding */
+        .password-wrapper input[type="password"],
+        .password-wrapper input[type="text"] {
+            padding-right: 3rem;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .auth-container {
