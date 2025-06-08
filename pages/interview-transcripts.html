@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Transcripts - Infitwin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/knowledge-symphony.css">
+</head>
+<body>
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
+                <span style="font-size: 24px;">🏠</span>
+                <span class="sidebar-tooltip">Dashboard</span>
+            </a>
+            <a href="memory-archive.html" class="sidebar-nav-item" data-page="memories">
+                <span style="font-size: 24px;">📚</span>
+                <span class="sidebar-tooltip">My Memories</span>
+            </a>
+            <a href="twin-management.html" class="sidebar-nav-item" data-page="twin">
+                <span style="font-size: 24px;">👥</span>
+                <span class="sidebar-tooltip">Twin Management</span>
+            </a>
+            <a href="explore.html" class="sidebar-nav-item" data-page="explore">
+                <span style="font-size: 24px;">🔍</span>
+                <span class="sidebar-tooltip">Explore</span>
+            </a>
+            <a href="interview.html" class="sidebar-nav-item" data-page="interview">
+                <span style="font-size: 24px;">🎤</span>
+                <span class="sidebar-tooltip">Interview</span>
+            </a>
+            <a href="interview-transcripts.html" class="sidebar-nav-item active" data-page="transcripts">
+                <span style="font-size: 24px;">📝</span>
+                <span class="sidebar-tooltip">Transcripts</span>
+            </a>
+            <a href="artifact-uploader.html" class="sidebar-nav-item" data-page="uploader">
+                <span style="font-size: 24px;">📤</span>
+                <span class="sidebar-tooltip">Artifact Uploader</span>
+            </a>
+            <a href="talk-to-twin.html" class="sidebar-nav-item" data-page="talk">
+                <span style="font-size: 24px;">💬</span>
+                <span class="sidebar-tooltip">Talk to Twin</span>
+            </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="files">
+                <span style="font-size: 24px;">📁</span>
+                <span class="sidebar-tooltip">My Files</span>
+            </a>
+            <a href="settings.html" class="sidebar-nav-item" data-page="settings">
+                <span style="font-size: 24px;">⚙️</span>
+                <span class="sidebar-tooltip">Settings</span>
+            </a>
+        </nav>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Main Content -->
+            <main class="symphony-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-left">
+                        <h1>Interview Transcripts</h1>
+                        <p class="page-subtitle">Review and manage your interview sessions</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="new-interview-btn" onclick="window.location.href='interview.html'">
+                            <span>🎤</span>
+                            Start New Interview
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sessions Overview -->
+                <section class="sessions-overview">
+                    <div class="overview-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalSessions">0</div>
+                            <div class="stat-label">Total Sessions</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalDuration">0h 0m</div>
+                            <div class="stat-label">Total Duration</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalMessages">0</div>
+                            <div class="stat-label">Total Messages</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="lastSession">Never</div>
+                            <div class="stat-label">Last Session</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sessions List -->
+                <section class="sessions-list">
+                    <div class="section-header">
+                        <h2>Your Interview Sessions</h2>
+                        <div class="list-controls">
+                            <select id="sortBy" class="sort-select">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="duration-desc">Longest First</option>
+                                <option value="duration-asc">Shortest First</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="interviewSessionsList" class="sessions-container">
+                        <!-- Sessions will be loaded here -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Transcript Modal -->
+    <div id="transcriptModal" class="transcript-modal">
+        <div class="transcript-modal-content">
+            <button class="modal-close">✕</button>
+            <div class="transcript-content">
+                <!-- Transcript content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #374151;
+        }
+
+        .page-subtitle {
+            margin: 0.5rem 0 0 0;
+            color: #6B7280;
+        }
+
+        .new-interview-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #FFD700;
+            color: #374151;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .new-interview-btn:hover {
+            background: #FFC107;
+            transform: translateY(-1px);
+        }
+
+        /* Sessions Overview */
+        .sessions-overview {
+            margin-bottom: 2rem;
+        }
+
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        /* Sessions List */
+        .sessions-list {
+            background: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            color: #374151;
+        }
+
+        .sort-select {
+            padding: 0.5rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            background: #FFFFFF;
+            cursor: pointer;
+        }
+
+        .sessions-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .overview-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .overview-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script type="module">
+        import { initializeInterviewPage, createInterviewSessionsList } from '../js/interview-ui.js';
+        import { getInterviewSessions } from '../js/interview-service.js';
+        import { guardPage } from '../js/auth-guard.js';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication
+            const allowed = await guardPage({
+                requireVerified: true,
+                redirectTo: '/pages/auth.html'
+            });
+            
+            if (!allowed) {
+                return;
+            }
+
+            // Initialize the interview transcripts page
+            initializeInterviewPage();
+            await updateSessionsOverview();
+            setupSorting();
+        });
+
+        async function updateSessionsOverview() {
+            try {
+                const sessions = await getInterviewSessions();
+                
+                // Calculate stats
+                const totalSessions = sessions.length;
+                const totalDuration = sessions.reduce((sum, session) => sum + (session.duration || 0), 0);
+                const totalMessages = sessions.reduce((sum, session) => sum + (session.messageCount || 0), 0);
+                const lastSession = sessions.length > 0 ? sessions[0].createdAt : null;
+                
+                // Update UI
+                document.getElementById('totalSessions').textContent = totalSessions;
+                document.getElementById('totalDuration').textContent = formatDurationHours(totalDuration);
+                document.getElementById('totalMessages').textContent = totalMessages.toLocaleString();
+                document.getElementById('lastSession').textContent = lastSession ? 
+                    formatDateAgo(lastSession) : 'Never';
+                    
+            } catch (error) {
+                console.error('Error updating overview:', error);
+            }
+        }
+
+        function setupSorting() {
+            const sortSelect = document.getElementById('sortBy');
+            sortSelect.addEventListener('change', () => {
+                createInterviewSessionsList(sortSelect.value);
+            });
+        }
+
+        function formatDurationHours(milliseconds) {
+            const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+            const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+            return `${hours}h ${minutes}m`;
+        }
+
+        function formatDateAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+            
+            if (diffInHours < 24) {
+                return `${diffInHours}h ago`;
+            } else if (diffInHours < 24 * 7) {
+                const days = Math.floor(diffInHours / 24);
+                return `${days}d ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+    </script>
+</body>
+</html>

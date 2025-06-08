@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Handling Demo - Infitwin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/knowledge-symphony.css">
+</head>
+<body>
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
+                <span style="font-size: 24px;">🏠</span>
+                <span class="sidebar-tooltip">Dashboard</span>
+            </a>
+            <a href="memory-archive.html" class="sidebar-nav-item" data-page="memories">
+                <span style="font-size: 24px;">📚</span>
+                <span class="sidebar-tooltip">My Memories</span>
+            </a>
+            <a href="twin-management.html" class="sidebar-nav-item" data-page="twin">
+                <span style="font-size: 24px;">👥</span>
+                <span class="sidebar-tooltip">Twin Management</span>
+            </a>
+            <a href="explore.html" class="sidebar-nav-item" data-page="explore">
+                <span style="font-size: 24px;">🔍</span>
+                <span class="sidebar-tooltip">Explore</span>
+            </a>
+            <a href="interview.html" class="sidebar-nav-item" data-page="interview">
+                <span style="font-size: 24px;">🎤</span>
+                <span class="sidebar-tooltip">Interview</span>
+            </a>
+            <a href="interview-transcripts.html" class="sidebar-nav-item" data-page="transcripts">
+                <span style="font-size: 24px;">📝</span>
+                <span class="sidebar-tooltip">Transcripts</span>
+            </a>
+            <a href="artifact-uploader.html" class="sidebar-nav-item" data-page="uploader">
+                <span style="font-size: 24px;">📤</span>
+                <span class="sidebar-tooltip">Artifact Uploader</span>
+            </a>
+            <a href="talk-to-twin.html" class="sidebar-nav-item" data-page="talk">
+                <span style="font-size: 24px;">💬</span>
+                <span class="sidebar-tooltip">Talk to Twin</span>
+            </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="files">
+                <span style="font-size: 24px;">📁</span>
+                <span class="sidebar-tooltip">My Files</span>
+            </a>
+            <a href="error-demo.html" class="sidebar-nav-item active" data-page="error-demo">
+                <span style="font-size: 24px;">⚠️</span>
+                <span class="sidebar-tooltip">Error Demo</span>
+            </a>
+            <a href="settings.html" class="sidebar-nav-item" data-page="settings">
+                <span style="font-size: 24px;">⚙️</span>
+                <span class="sidebar-tooltip">Settings</span>
+            </a>
+        </nav>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Main Content -->
+            <main class="symphony-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>Error Handling Demo</h1>
+                    <p class="page-subtitle">Test toast notifications, modal dialogs, and form validation</p>
+                </div>
+
+                <!-- Toast Notifications Section -->
+                <section class="demo-section">
+                    <h2>Toast Notifications</h2>
+                    <p>Click the buttons below to see different types of toast notifications:</p>
+                    
+                    <div class="demo-buttons">
+                        <button class="demo-btn success" onclick="showSuccessNotification()">
+                            ✅ Success Toast
+                        </button>
+                        <button class="demo-btn error" onclick="showErrorNotification()">
+                            ❌ Error Toast
+                        </button>
+                        <button class="demo-btn warning" onclick="showWarningNotification()">
+                            ⚠️ Warning Toast
+                        </button>
+                        <button class="demo-btn info" onclick="showInfoNotification()">
+                            ℹ️ Info Toast
+                        </button>
+                        <button class="demo-btn action" onclick="showActionNotification()">
+                            🔄 Toast with Actions
+                        </button>
+                        <button class="demo-btn persistent" onclick="showPersistentNotification()">
+                            📌 Persistent Toast
+                        </button>
+                        <button class="demo-btn clear" onclick="clearAllToasts()">
+                            🗑️ Clear All
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Modal Dialogs Section -->
+                <section class="demo-section">
+                    <h2>Modal Error Dialogs</h2>
+                    <p>Click the buttons below to see different types of error modals:</p>
+                    
+                    <div class="demo-buttons">
+                        <button class="demo-btn error" onclick="showBasicErrorModal()">
+                            ⚠️ Basic Error Modal
+                        </button>
+                        <button class="demo-btn error" onclick="showDetailedErrorModal()">
+                            📋 Detailed Error Modal
+                        </button>
+                        <button class="demo-btn error" onclick="showTechnicalErrorModal()">
+                            🔧 Technical Error Modal
+                        </button>
+                        <button class="demo-btn error" onclick="showCriticalErrorModal()">
+                            🚨 Critical Error Modal
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Form Validation Section -->
+                <section class="demo-section">
+                    <h2>Form Validation</h2>
+                    <p>Test real-time form validation with different field types:</p>
+                    
+                    <form class="demo-form" id="validationForm">
+                        <div class="form-group">
+                            <label for="nameField">Name (Required)</label>
+                            <input type="text" id="nameField" class="form-input" placeholder="Enter your name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emailField">Email (Required, Valid Email)</label>
+                            <input type="email" id="emailField" class="form-input" placeholder="Enter your email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="passwordField">Password (Min 8 characters)</label>
+                            <input type="password" id="passwordField" class="form-input" placeholder="Enter password">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bioField">Bio (Max 200 characters)</label>
+                            <textarea id="bioField" class="form-input" placeholder="Tell us about yourself" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fileField">Profile Picture (Max 5MB, Images only)</label>
+                            <input type="file" id="fileField" class="form-input">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="demo-btn success">Submit Form</button>
+                            <button type="button" class="demo-btn secondary" onclick="clearFormErrors()">Clear Errors</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Integration Tests Section -->
+                <section class="demo-section">
+                    <h2>Integration Tests</h2>
+                    <p>Test how the error system works with different scenarios:</p>
+                    
+                    <div class="demo-buttons">
+                        <button class="demo-btn info" onclick="simulateFileUploadError()">
+                            📁 File Upload Error
+                        </button>
+                        <button class="demo-btn info" onclick="simulateNetworkError()">
+                            🌐 Network Error
+                        </button>
+                        <button class="demo-btn info" onclick="simulateValidationErrors()">
+                            📝 Multiple Validation Errors
+                        </button>
+                        <button class="demo-btn info" onclick="simulatePermissionError()">
+                            🔒 Permission Error
+                        </button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <style>
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #374151;
+        }
+
+        .page-subtitle {
+            margin: 0.5rem 0 0 0;
+            color: #6B7280;
+        }
+
+        /* Demo Sections */
+        .demo-section {
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .demo-section h2 {
+            margin: 0 0 1rem 0;
+            color: #374151;
+            font-size: 1.5rem;
+        }
+
+        .demo-section p {
+            margin: 0 0 1.5rem 0;
+            color: #6B7280;
+        }
+
+        /* Demo Buttons */
+        .demo-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .demo-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .demo-btn.success {
+            background: #10B981;
+            color: white;
+        }
+
+        .demo-btn.error {
+            background: #EF4444;
+            color: white;
+        }
+
+        .demo-btn.warning {
+            background: #FFD700;
+            color: #374151;
+        }
+
+        .demo-btn.info {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .demo-btn.action {
+            background: #6B46C1;
+            color: white;
+        }
+
+        .demo-btn.persistent {
+            background: #374151;
+            color: white;
+        }
+
+        .demo-btn.clear {
+            background: #6B7280;
+            color: white;
+        }
+
+        .demo-btn.secondary {
+            background: #F3F4F6;
+            color: #374151;
+            border: 1px solid #E5E7EB;
+        }
+
+        /* Demo Form */
+        .demo-form {
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .demo-buttons {
+                flex-direction: column;
+            }
+
+            .demo-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <script type="module">
+        import { 
+            showNotification,
+            clearAllNotifications,
+            showErrorModal,
+            showFieldError,
+            clearFieldError,
+            validateField,
+            validators
+        } from '../js/error-handler.js';
+
+        // Toast notification demos
+        window.showSuccessNotification = () => {
+            showNotification(
+                'Operation completed successfully!',
+                'success',
+                { details: 'Your file has been uploaded and processed.' }
+            );
+        };
+
+        window.showErrorNotification = () => {
+            showNotification(
+                'Upload failed',
+                'error',
+                { details: 'The file could not be uploaded. Please try again.' }
+            );
+        };
+
+        window.showWarningNotification = () => {
+            showNotification(
+                'Storage space running low',
+                'warning',
+                { details: 'You have used 85% of your available storage.' }
+            );
+        };
+
+        window.showInfoNotification = () => {
+            showNotification(
+                'New feature available',
+                'info',
+                { details: 'Check out the new interview transcripts feature!' }
+            );
+        };
+
+        window.showActionNotification = () => {
+            showNotification(
+                'Update available',
+                'info',
+                {
+                    details: 'A new version of the application is available.',
+                    actions: [
+                        { id: 'update', label: 'Update Now' },
+                        { id: 'later', label: 'Later' }
+                    ],
+                    onAction: (actionId) => {
+                        if (actionId === 'update') {
+                            showNotification('Update started...', 'info');
+                        } else {
+                            showNotification('Update postponed', 'info');
+                        }
+                    }
+                }
+            );
+        };
+
+        window.showPersistentNotification = () => {
+            showNotification(
+                'Important notice',
+                'warning',
+                {
+                    details: 'This notification will stay until you dismiss it.',
+                    duration: 0 // Persistent
+                }
+            );
+        };
+
+        window.clearAllToasts = () => {
+            clearAllNotifications();
+        };
+
+        // Modal dialog demos
+        window.showBasicErrorModal = () => {
+            showErrorModal(
+                'Something went wrong',
+                'An unexpected error occurred while processing your request.'
+            );
+        };
+
+        window.showDetailedErrorModal = () => {
+            showErrorModal(
+                'Upload Failed',
+                'The file could not be uploaded to the server.',
+                {
+                    details: 'This might be due to a network issue or server maintenance. Please check your connection and try again.',
+                    primaryAction: {
+                        label: 'Retry Upload',
+                        handler: () => {
+                            showNotification('Retrying upload...', 'info');
+                        }
+                    }
+                }
+            );
+        };
+
+        window.showTechnicalErrorModal = () => {
+            showErrorModal(
+                'Database Connection Failed',
+                'Unable to connect to the database server.',
+                {
+                    details: 'The application cannot connect to the database. This may be a temporary issue.',
+                    technicalInfo: 'Error Code: DB_CONNECTION_TIMEOUT\\nHost: db.infitwin.com:5432\\nTimeout: 30000ms\\nRetries: 3',
+                    primaryAction: {
+                        label: 'Reload Application',
+                        handler: () => {
+                            window.location.reload();
+                        }
+                    }
+                }
+            );
+        };
+
+        window.showCriticalErrorModal = () => {
+            showErrorModal(
+                'Critical System Error',
+                'A critical error has occurred that requires immediate attention.',
+                {
+                    icon: '🚨',
+                    details: 'The application has encountered a critical error and needs to be restarted. All unsaved work may be lost.',
+                    technicalInfo: 'Stack trace:\\n  at uploadFile (file-service.js:45)\\n  at processFiles (file-ui.js:128)\\n  at handleDrop (file-ui.js:89)',
+                    primaryAction: {
+                        label: 'Restart Application',
+                        handler: () => {
+                            window.location.reload();
+                        }
+                    },
+                    closeLabel: 'Cancel'
+                }
+            );
+        };
+
+        // Form validation demo
+        const form = document.getElementById('validationForm');
+        const nameField = document.getElementById('nameField');
+        const emailField = document.getElementById('emailField');
+        const passwordField = document.getElementById('passwordField');
+        const bioField = document.getElementById('bioField');
+        const fileField = document.getElementById('fileField');
+
+        // Setup real-time validation
+        nameField.addEventListener('blur', () => {
+            validateField(nameField, [validators.required]);
+        });
+
+        emailField.addEventListener('blur', () => {
+            validateField(emailField, [validators.required, validators.email]);
+        });
+
+        passwordField.addEventListener('blur', () => {
+            validateField(passwordField, [validators.minLength(8)]);
+        });
+
+        bioField.addEventListener('input', () => {
+            validateField(bioField, [validators.maxLength(200)]);
+        });
+
+        fileField.addEventListener('change', () => {
+            validateField(fileField, [
+                validators.fileSize(5),
+                validators.fileType(['image/jpeg', 'image/png', 'image/gif'])
+            ]);
+        });
+
+        // Form submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const isValid = [
+                validateField(nameField, [validators.required]),
+                validateField(emailField, [validators.required, validators.email]),
+                validateField(passwordField, [validators.minLength(8)]),
+                validateField(bioField, [validators.maxLength(200)]),
+                validateField(fileField, [
+                    validators.fileSize(5),
+                    validators.fileType(['image/jpeg', 'image/png', 'image/gif'])
+                ])
+            ].every(Boolean);
+
+            if (isValid) {
+                showNotification('Form submitted successfully!', 'success');
+            } else {
+                showNotification('Please fix the errors below', 'error');
+            }
+        });
+
+        window.clearFormErrors = () => {
+            [nameField, emailField, passwordField, bioField, fileField].forEach(clearFieldError);
+        };
+
+        // Integration test demos
+        window.simulateFileUploadError = () => {
+            showNotification('Starting file upload...', 'info');
+            
+            setTimeout(() => {
+                showErrorModal(
+                    'Upload Failed',
+                    'The file upload failed due to a network error.',
+                    {
+                        details: 'Please check your internet connection and try again.',
+                        primaryAction: {
+                            label: 'Retry Upload',
+                            handler: () => {
+                                showNotification('Upload retried successfully!', 'success');
+                            }
+                        }
+                    }
+                );
+            }, 2000);
+        };
+
+        window.simulateNetworkError = () => {
+            showNotification(
+                'Network connection lost',
+                'error',
+                {
+                    details: 'Your internet connection appears to be offline.',
+                    actions: [
+                        { id: 'retry', label: 'Retry' },
+                        { id: 'offline', label: 'Work Offline' }
+                    ],
+                    onAction: (actionId) => {
+                        if (actionId === 'retry') {
+                            showNotification('Connection restored!', 'success');
+                        } else {
+                            showNotification('Working in offline mode', 'info');
+                        }
+                    }
+                }
+            );
+        };
+
+        window.simulateValidationErrors = () => {
+            showFieldError(nameField, 'Name is required');
+            showFieldError(emailField, 'Please enter a valid email address');
+            showFieldError(passwordField, 'Password must be at least 8 characters');
+            
+            showNotification(
+                'Multiple form errors detected',
+                'error',
+                { details: 'Please fix the highlighted fields and try again.' }
+            );
+        };
+
+        window.simulatePermissionError = () => {
+            showErrorModal(
+                'Access Denied',
+                'You do not have permission to perform this action.',
+                {
+                    icon: '🔒',
+                    details: 'This feature requires administrator privileges. Please contact your system administrator.',
+                    primaryAction: {
+                        label: 'Contact Admin',
+                        handler: () => {
+                            showNotification('Admin contact form opened', 'info');
+                        }
+                    }
+                }
+            );
+        };
+    </script>
+</body>
+</html>

@@ -24,7 +24,9 @@ import {
     query, 
     where, 
     orderBy,
-    serverTimestamp 
+    serverTimestamp,
+    limit,
+    startAfter
 } from 'firebase/firestore';
 
 // File size limits (Phase 2 spec: 10MB, but UI shows 50MB)
@@ -217,10 +219,70 @@ async function saveFileMetadata(metadata) {
 }
 
 /**
- * Get all files for current user
+ * Get files for current user with pagination
+ * @param {Object} options - Pagination and filtering options
+ * @returns {Promise<{files: FileMetadata[], hasMore: boolean, lastDoc: any}>} Paginated file results
+ */
+export async function getUserFiles(options = {}) {
+    const {
+        pageSize = 20,
+        lastDoc = null,
+        sortBy = 'uploadedAt',
+        sortOrder = 'desc',
+        filterType = null
+    } = options;
+    
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error('User must be authenticated');
+    }
+    
+    try {
+        const filesRef = collection(db, 'users', user.uid, 'files');
+        let q = query(
+            filesRef,
+            orderBy(sortBy, sortOrder),
+            limit(pageSize)
+        );
+        
+        // Add type filter if specified
+        if (filterType && filterType !== 'all') {
+            q = query(q, where('category', '==', filterType));
+        }
+        
+        // Add pagination cursor if provided
+        if (lastDoc) {
+            q = query(q, startAfter(lastDoc));
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        const files = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            delete data.serverTimestamp; // Remove server field
+            files.push({
+                ...data,
+                _doc: doc // Store doc reference for pagination
+            });
+        });
+        
+        return {
+            files,
+            hasMore: files.length === pageSize,
+            lastDoc: files.length > 0 ? files[files.length - 1]._doc : null
+        };
+    } catch (error) {
+        console.error('Error getting files:', error);
+        return { files: [], hasMore: false, lastDoc: null };
+    }
+}
+
+/**
+ * Get all files for current user (backward compatibility)
  * @returns {Promise<FileMetadata[]>} Array of file metadata
  */
-export async function getUserFiles() {
+export async function getAllUserFiles() {
     const user = auth.currentUser;
     if (!user) {
         throw new Error('User must be authenticated');
@@ -276,6 +338,6 @@ export async function deleteFile(fileId, storagePath) {
  * @returns {Promise<number>} Total bytes used
  */
 export async function calculateStorageUsed() {
-    const files = await getUserFiles();
+    const files = await getAllUserFiles();
     return files.reduce((total, file) => total + (file.fileSize || 0), 0);
 }

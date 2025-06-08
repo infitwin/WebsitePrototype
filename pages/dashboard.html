@@ -34,6 +34,10 @@
                 <span style="font-size: 24px;">🎤</span>
                 <span class="sidebar-tooltip">Interview</span>
             </a>
+            <a href="interview-transcripts.html" class="sidebar-nav-item" data-page="transcripts">
+                <span style="font-size: 24px;">📝</span>
+                <span class="sidebar-tooltip">Transcripts</span>
+            </a>
             <a href="artifact-uploader.html" class="sidebar-nav-item" data-page="uploader">
                 <span style="font-size: 24px;">📤</span>
                 <span class="sidebar-tooltip">Artifact Uploader</span>
@@ -183,25 +187,10 @@
         import { createQuickActionsWidget } from '../js/dashboard-widgets.js';
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize widgets
+            // Initialize all widgets
             createStorageMeterWidget('storageWidget');
-            
-            // Placeholder for other widgets until implemented
-            document.getElementById('activityWidget').innerHTML = `
-                <div style="background: #FFFFFF; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); text-align: center; color: #6B7280;">
-                    <div style="font-size: 32px; margin-bottom: 1rem;">📋</div>
-                    <h4 style="color: #374151; margin: 0 0 0.5rem 0;">Activity Feed</h4>
-                    <p style="margin: 0;">Coming soon...</p>
-                </div>
-            `;
-            
-            document.getElementById('quickActionsWidget').innerHTML = `
-                <div style="background: #FFFFFF; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); text-align: center; color: #6B7280;">
-                    <div style="font-size: 32px; margin-bottom: 1rem;">⚡</div>
-                    <h4 style="color: #374151; margin: 0 0 0.5rem 0;">Quick Actions</h4>
-                    <p style="margin: 0;">Coming soon...</p>
-                </div>
-            `;
+            createActivityFeedWidget('activityWidget');
+            createQuickActionsWidget('quickActionsWidget');
         });
     </script>
 </body>

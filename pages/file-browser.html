@@ -417,6 +417,45 @@
             overflow: auto;
             max-height: 80vh;
         }
+
+        /* Load More Button */
+        .load-more-container {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+        }
+
+        .load-more-btn {
+            background: #FFD700;
+            color: #374151;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .load-more-btn:hover:not(:disabled) {
+            background: #FFC107;
+            transform: translateY(-1px);
+        }
+
+        .load-more-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .load-more-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 
     <script type="module">
@@ -454,7 +493,7 @@
 
             // Load existing files
             try {
-                await loadFiles();
+                await loadFiles(true); // Reset pagination on initial load
                 await updateStorageInfo();
             } catch (error) {
                 console.error('Error initializing:', error);
@@ -467,36 +506,129 @@
             setupEventListeners();
         }
 
-        async function loadFiles() {
+        // Pagination state
+        let currentPage = {
+            files: [],
+            hasMore: false,
+            lastDoc: null,
+            loading: false
+        };
+
+        async function loadFiles(reset = false) {
             const container = document.getElementById('filesContainer');
             const emptyState = document.getElementById('emptyState');
             const loadingState = document.getElementById('loadingState');
 
-            // Show loading
-            loadingState.style.display = 'block';
-            emptyState.style.display = 'none';
-            container.innerHTML = '';
+            // Reset pagination if requested
+            if (reset) {
+                currentPage = {
+                    files: [],
+                    hasMore: false,
+                    lastDoc: null,
+                    loading: false
+                };
+                container.innerHTML = '';
+            }
+
+            // Prevent multiple concurrent loads
+            if (currentPage.loading) return;
+            currentPage.loading = true;
+
+            // Show loading on first load
+            if (reset) {
+                loadingState.style.display = 'block';
+                emptyState.style.display = 'none';
+            }
 
             try {
-                const files = await getUserFiles();
+                // Get filter values
+                const filterType = document.getElementById('fileTypeFilter').value;
+                const sortBy = document.getElementById('sortBy').value;
+                const [sortField, sortOrder] = sortBy.split('-');
+
+                const result = await getUserFiles({
+                    pageSize: 20,
+                    lastDoc: reset ? null : currentPage.lastDoc,
+                    sortBy: sortField,
+                    sortOrder: sortOrder,
+                    filterType: filterType
+                });
+                
+                // Update pagination state
+                if (reset) {
+                    currentPage.files = result.files;
+                } else {
+                    currentPage.files = [...currentPage.files, ...result.files];
+                }
+                currentPage.hasMore = result.hasMore;
+                currentPage.lastDoc = result.lastDoc;
+                currentPage.loading = false;
                 
                 loadingState.style.display = 'none';
 
-                if (files.length === 0) {
+                if (currentPage.files.length === 0) {
                     emptyState.style.display = 'block';
                     return;
                 }
 
                 // Render files based on current view
                 const currentView = document.querySelector('.view-btn.active').dataset.view;
-                renderFiles(files, currentView);
+                renderFiles(currentPage.files, currentView);
+
+                // Show load more button if there are more files
+                updateLoadMoreButton();
 
             } catch (error) {
                 console.error('Error loading files:', error);
                 showNotification('Failed to load files', 'error');
                 loadingState.style.display = 'none';
+                currentPage.loading = false;
             }
         }
+
+        function updateLoadMoreButton() {
+            const container = document.getElementById('filesContainer');
+            let loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            // Remove existing button
+            if (loadMoreBtn) {
+                loadMoreBtn.remove();
+            }
+            
+            // Add load more button if there are more files
+            if (currentPage.hasMore) {
+                loadMoreBtn = document.createElement('div');
+                loadMoreBtn.id = 'loadMoreBtn';
+                loadMoreBtn.className = 'load-more-container';
+                loadMoreBtn.innerHTML = `
+                    <button class="load-more-btn" onclick="loadMoreFiles()">
+                        <span class="load-more-text">Load More Files</span>
+                        <span class="load-more-spinner" style="display: none;">⟳</span>
+                    </button>
+                `;
+                container.parentNode.appendChild(loadMoreBtn);
+            }
+        }
+
+        window.loadMoreFiles = async function() {
+            const btn = document.querySelector('.load-more-btn');
+            const text = btn.querySelector('.load-more-text');
+            const spinner = btn.querySelector('.load-more-spinner');
+            
+            // Show loading state
+            text.style.display = 'none';
+            spinner.style.display = 'inline';
+            btn.disabled = true;
+            
+            try {
+                await loadFiles(false); // Load next page
+            } finally {
+                // Reset button state
+                text.style.display = 'inline';
+                spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        };
 
         function renderFiles(files, view) {
             const container = document.getElementById('filesContainer');
@@ -602,7 +734,10 @@
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    loadFiles();
+                    // Re-render current files with new view
+                    const currentView = btn.dataset.view;
+                    renderFiles(currentPage.files, currentView);
+                    updateLoadMoreButton();
                 });
             });
 
@@ -615,9 +750,13 @@
                 }, 300);
             });
 
-            // Filters
-            document.getElementById('fileTypeFilter').addEventListener('change', loadFiles);
-            document.getElementById('sortBy').addEventListener('change', loadFiles);
+            // Filters - reset pagination when filters change
+            document.getElementById('fileTypeFilter').addEventListener('change', () => {
+                loadFiles(true); // Reset pagination
+            });
+            document.getElementById('sortBy').addEventListener('change', () => {
+                loadFiles(true); // Reset pagination
+            });
         }
 
         function previewFile(file) {
