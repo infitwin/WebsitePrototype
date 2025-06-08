@@ -118,6 +118,40 @@
     font-size: 18px;
 }
 
+/* Memory Cards Section */
+.memory-cards-section {
+    margin: 32px auto;
+    max-width: 800px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2C2416;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    color: #6D4C41;
+    margin: 0;
+}
+
 .archive-title {
     font-size: 3.5rem;
     font-weight: 700;
