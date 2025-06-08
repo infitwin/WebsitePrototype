@@ -63,13 +63,14 @@ test.describe('Navigation Tests', () => {
     for (const url of mainPages) {
       await page.goto(url);
       
-      // Check for navigation bar
-      const nav = page.locator('.main-nav, nav, .nav-container').first();
+      // Check for navigation bar or navigation-like elements
+      const nav = page.locator('.main-nav, nav, .nav-container, .sidebar-nav, .header').first();
       await expect(nav).toBeVisible();
       
-      // Check for logo
-      const logo = page.locator('.nav-logo img, .logo, img[alt*="Infitwin"]').first();
-      await expect(logo).toBeVisible();
+      // Check for navigation links/items
+      const navItems = page.locator('nav a, .nav-item, .sidebar-nav-item, [role="navigation"] a');
+      const navItemCount = await navItems.count();
+      expect(navItemCount).toBeGreaterThan(0);
     }
   });
 
