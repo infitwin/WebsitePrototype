@@ -111,6 +111,14 @@
                     </div>
                     <div id="interviewSessionsList" class="sessions-container">
                         <!-- Sessions will be loaded here -->
+                        <div class="empty-state" id="emptySessions" style="display: block;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">🎤</div>
+                            <h3>No Interview Sessions Yet</h3>
+                            <p>No transcripts available. Start your first interview to begin building your digital twin</p>
+                            <button class="btn-primary" onclick="window.location.href='interview.html'" style="margin-top: 20px;">
+                                Start Your First Interview
+                            </button>
+                        </div>
                     </div>
                 </section>
             </main>
@@ -118,7 +126,7 @@
     </div>
 
     <!-- Transcript Modal -->
-    <div id="transcriptModal" class="transcript-modal">
+    <div id="transcriptModal" class="transcript-modal" style="display: none;">
         <div class="transcript-modal-content">
             <button class="modal-close">✕</button>
             <div class="transcript-content">
@@ -250,6 +258,41 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: #FFFFFF;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+        
+        .empty-state h3 {
+            color: #374151;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .empty-state p {
+            color: #6B7280;
+            margin: 0;
+        }
+        
+        .btn-primary {
+            background: #FFD700;
+            color: #374151;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
     </style>
 
     <script type="module">
@@ -323,6 +366,48 @@
                 return date.toLocaleDateString();
             }
         }
+    </script>
+    
+    <script>
+        // Fallback for when modules fail to load
+        window.addEventListener('error', function(e) {
+            if (e.message && e.message.includes('Failed to fetch dynamically imported module')) {
+                console.warn('Module loading failed, using fallback');
+                
+                // Show empty state
+                const sessionsList = document.getElementById('interviewSessionsList');
+                const emptyState = document.getElementById('emptySessions');
+                
+                if (sessionsList && emptyState) {
+                    sessionsList.innerHTML = '';
+                    emptyState.style.display = 'block';
+                    sessionsList.appendChild(emptyState);
+                }
+                
+                // Set default values
+                document.getElementById('totalSessions').textContent = '0';
+                document.getElementById('totalDuration').textContent = '0h 0m';
+                document.getElementById('totalMessages').textContent = '0';
+                document.getElementById('lastSession').textContent = 'Never';
+            }
+        });
+        
+        // Ensure empty state shows if no sessions after page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const sessionsList = document.getElementById('interviewSessionsList');
+                const emptyState = document.getElementById('emptySessions');
+                
+                // If sessions list is empty (only contains the empty state), show it
+                if (sessionsList && emptyState && sessionsList.children.length <= 1) {
+                    emptyState.style.display = 'block';
+                }
+                
+                if (sessionsList && sessionsList.children.length <= 1 && emptyState) {
+                    emptyState.style.display = 'block';
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>
