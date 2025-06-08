@@ -705,10 +705,10 @@
                 <p class="page-subtitle">Manage your account settings and preferences</p>
             </header>
 
-            <!-- Account Information Section -->
-            <section class="settings-section">
+            <!-- Profile Section -->
+            <section class="settings-section profile-section" data-section="profile">
                 <div class="section-header">
-                    <h2 class="section-title">Account Information</h2>
+                    <h2 class="section-title">Profile</h2>
                     <p class="section-description">Update your personal information and account details</p>
                 </div>
 
@@ -800,7 +800,7 @@
             </section>
 
             <!-- Notifications Section -->
-            <section class="settings-section">
+            <section class="settings-section notification-section" data-section="notifications">
                 <div class="section-header">
                     <h2 class="section-title">Notifications</h2>
                     <p class="section-description">Control how and when you receive notifications</p>
@@ -850,7 +850,7 @@
             </section>
 
             <!-- Privacy Section -->
-            <section class="settings-section">
+            <section class="settings-section privacy-section" data-section="privacy">
                 <div class="section-header">
                     <h2 class="section-title">Privacy</h2>
                     <p class="section-description">Control your privacy and data sharing preferences</p>
@@ -972,10 +972,24 @@
                 toggle.addEventListener('click', handleToggleClick);
             });
             
-            // Prevent form submission on toggle click
+            // Handle direct clicks on toggle inputs
             document.querySelectorAll('.toggle-input').forEach(input => {
-                input.addEventListener('click', function(e) {
-                    e.stopPropagation();
+                input.addEventListener('change', function(e) {
+                    const toggle = this.closest('.toggle-switch');
+                    const setting = toggle.dataset.setting;
+                    const newState = this.checked;
+                    
+                    // Update visual state
+                    if (newState) {
+                        toggle.classList.add('active');
+                    } else {
+                        toggle.classList.remove('active');
+                    }
+                    
+                    // Save immediately
+                    userSettings[setting] = newState;
+                    saveSettings();
+                    showSuccessMessage('Setting updated!');
                 });
             });
             
@@ -1085,6 +1099,7 @@
         }
 
         function handleToggleClick(e) {
+            e.preventDefault();
             const toggle = e.currentTarget;
             const input = toggle.querySelector('.toggle-input');
             const setting = toggle.dataset.setting;
@@ -1093,6 +1108,7 @@
             const newState = !input.checked;
             input.checked = newState;
             
+            // Update visual state
             if (newState) {
                 toggle.classList.add('active');
             } else {
