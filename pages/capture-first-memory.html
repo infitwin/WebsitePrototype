@@ -48,29 +48,41 @@
                 <div class="memory-input-area">
                     <textarea 
                         id="memory-input" 
-                        class="memory-textarea"
+                        class="memory-textarea memory-input"
                         placeholder="For example: 'Take more risks when you're young. The biggest regrets come from chances not taken...'"
                         rows="6"
+                        maxlength="500"
+                        aria-label="Memory input"
+                        aria-describedby="char-count input-tips"
                     ></textarea>
                     <div class="input-footer">
-                        <span class="char-count">0 / 500</span>
-                        <div class="input-tips">
+                        <span class="char-count character-count" id="char-count" aria-live="polite">0 / 500</span>
+                        <div class="input-tips" id="input-tips">
                             <span class="tip">💡 Tip: Be authentic, speak from your heart</span>
                         </div>
                     </div>
                 </div>
                 
+                <!-- File Upload Section -->
+                <div class="file-upload-section">
+                    <input type="file" id="memory-file" accept="image/*,.pdf,.doc,.docx" style="display: none;">
+                    <button class="upload-button" onclick="document.getElementById('memory-file').click()">
+                        <span class="btn-icon">📁</span>
+                        <span class="btn-text">Upload File</span>
+                    </button>
+                </div>
+                
                 <!-- Optional enhancements -->
                 <div class="memory-enhancements">
-                    <button class="enhancement-btn" data-type="voice">
+                    <button class="enhancement-btn voice-btn" data-type="voice" tabindex="0" aria-label="Record voice instead">
                         <span class="btn-icon">🎤</span>
                         <span class="btn-text">Record Instead</span>
                     </button>
-                    <button class="enhancement-btn" data-type="context">
+                    <button class="enhancement-btn context-btn" data-type="context" tabindex="0" aria-label="Add context about when and where">
                         <span class="btn-icon">📅</span>
                         <span class="btn-text">Add When/Where</span>
                     </button>
-                    <button class="enhancement-btn" data-type="photo">
+                    <button class="enhancement-btn photo-btn" data-type="photo" tabindex="0" aria-label="Add photo to memory">
                         <span class="btn-icon">📷</span>
                         <span class="btn-text">Add Photo</span>
                     </button>
@@ -78,7 +90,7 @@
             </div>
             
             <!-- Preview section (hidden initially) -->
-            <div class="memory-preview" id="memory-preview" style="display: none;">
+            <div class="memory-preview preview" id="memory-preview" style="display: none;" aria-live="polite">
                 <h3 class="preview-title">Beautiful! Here's how your memory will look:</h3>
                 <div class="preview-card">
                     <div class="preview-content">
@@ -95,7 +107,10 @@
                 <button class="btn-secondary" onclick="tryAnother()">
                     Try Another Prompt
                 </button>
-                <button class="btn-primary" id="continue-btn" disabled>
+                <button class="btn-save" id="save-memory-btn">
+                    Save Memory
+                </button>
+                <button class="btn-primary" id="continue-btn" disabled tabindex="0">
                     Continue Building →
                 </button>
             </div>
