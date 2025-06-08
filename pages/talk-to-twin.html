@@ -8,10 +8,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/knowledge-symphony.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
     <style>
         /* Talk to Twin Specific Styles */
         .talk-container {
-            background: linear-gradient(180deg, #FFF8E7 0%, #FFFEF7 100%);
+            background: linear-gradient(180deg, #F3F4F6 0%, #FFFFFF 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -518,31 +520,70 @@
         }
     </style>
 </head>
-<body class="talk-container">
-    <!-- Navigation -->
-    <nav class="talk-nav">
-        <div class="nav-left">
-            <a href="dashboard.html" class="back-btn">
-                <span>←</span>
-                Back
+<body>
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
+                <span style="font-size: 24px;">🏠</span>
+                <span class="sidebar-tooltip">Dashboard</span>
             </a>
-            <h1 class="nav-title">Talk to Your Twin</h1>
-        </div>
-        <div class="mode-switcher">
-            <button class="mode-btn active" data-mode="text">Text</button>
-            <button class="mode-btn" data-mode="voice">Voice</button>
-        </div>
-    </nav>
+            <a href="explore.html" class="sidebar-nav-item" data-page="memories">
+                <span style="font-size: 24px;">📚</span>
+                <span class="sidebar-tooltip">My Memories</span>
+            </a>
+            <a href="twin-management.html" class="sidebar-nav-item" data-page="twin">
+                <span style="font-size: 24px;">👥</span>
+                <span class="sidebar-tooltip">Twin Management</span>
+            </a>
+            <a href="explore.html" class="sidebar-nav-item" data-page="explore">
+                <span style="font-size: 24px;">🔍</span>
+                <span class="sidebar-tooltip">Explore</span>
+            </a>
+            <a href="interview.html" class="sidebar-nav-item" data-page="interview">
+                <span style="font-size: 24px;">🎤</span>
+                <span class="sidebar-tooltip">Interview</span>
+            </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="uploader">
+                <span style="font-size: 24px;">📤</span>
+                <span class="sidebar-tooltip">File Upload</span>
+            </a>
+            <a href="talk-to-twin.html" class="sidebar-nav-item active" data-page="talk">
+                <span style="font-size: 24px;">💬</span>
+                <span class="sidebar-tooltip">Talk to Twin</span>
+            </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="files">
+                <span style="font-size: 24px;">📁</span>
+                <span class="sidebar-tooltip">My Files</span>
+            </a>
+            <a href="settings.html" class="sidebar-nav-item" data-page="settings">
+                <span style="font-size: 24px;">⚙️</span>
+                <span class="sidebar-tooltip">Settings</span>
+            </a>
+        </nav>
 
-    <!-- Twin Header -->
-    <header class="twin-header">
-        <div class="twin-avatar">🧠</div>
-        <h2 class="twin-name">John's Digital Twin</h2>
-        <p class="twin-subtitle">Ask me anything</p>
-    </header>
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Talk to Your Twin</h1>
+                <div class="mode-switcher">
+                    <button class="mode-btn active" data-mode="text">Text</button>
+                    <button class="mode-btn" data-mode="voice">Voice</button>
+                </div>
+            </div>
 
-    <!-- Chat Container -->
-    <main class="chat-container">
+            <!-- Main Content -->
+            <main class="symphony-content talk-container">
+                <!-- Twin Header -->
+                <header class="twin-header">
+                    <div class="twin-avatar">🧠</div>
+                    <h2 class="twin-name">John's Digital Twin</h2>
+                    <p class="twin-subtitle">Ask me anything</p>
+                </header>
+
+                <!-- Chat Container -->
+                <div class="chat-container">
         <!-- Suggested Questions -->
         <section class="suggested-questions" id="suggestedQuestions">
             <h3 class="suggestions-title">Try asking about:</h3>
@@ -583,11 +624,11 @@
                 <span class="typing-dot"></span>
                 <span class="typing-dot"></span>
             </div>
-        </div>
-    </main>
+                </div>
+            </main>
 
-    <!-- Input Area -->
-    <footer class="input-area">
+            <!-- Input Area -->
+            <footer class="input-area">
         <div class="input-container">
             <div class="input-wrapper">
                 <textarea 
@@ -603,8 +644,10 @@
         <div class="recording-indicator" id="recordingIndicator">
             <span class="recording-dot"></span>
             Recording... Tap to stop
+            </div>
+            </footer>
         </div>
-    </footer>
+    </div>
 
     <!-- TODO: Twin AI API integration for responses -->
     <!-- TODO: Speech-to-text integration for voice input -->

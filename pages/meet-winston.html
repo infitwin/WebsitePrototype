@@ -12,6 +12,22 @@
 </head>
 <body>
     <div class="winston-container">
+        <!-- Navigation Bar -->
+        <nav class="winston-nav">
+            <div class="nav-left">
+                <a href="../index.html" class="back-link">← Back to Home</a>
+            </div>
+            <div class="nav-right">
+                <button class="skip-btn" onclick="window.location.href='auth.html'">Skip to Sign Up →</button>
+            </div>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="winston-header">
+            <h1 class="winston-title">Meet Winston</h1>
+            <p class="winston-subtitle">Your Personal Story Curator</p>
+        </div>
+
         <!-- Warm background -->
         <div class="cozy-background"></div>
         
@@ -72,6 +88,21 @@
             <span class="audio-icon">🔊</span>
             <span class="audio-text">Winston's Voice</span>
         </button>
+
+        <!-- Action buttons -->
+        <div class="winston-actions">
+            <button class="action-btn primary-btn" onclick="window.location.href='capture-first-memory.html'">
+                <span class="btn-icon">📝</span>
+                <span class="btn-text">Create My First Memory</span>
+                <span class="btn-subtitle">Let Winston help you capture a special moment</span>
+            </button>
+            
+            <button class="action-btn secondary-btn" onclick="window.location.href='auth.html'">
+                <span class="btn-icon">🚀</span>
+                <span class="btn-text">Skip to Sign Up</span>
+                <span class="btn-subtitle">I'm ready to start my digital twin journey</span>
+            </button>
+        </div>
     </div>
     
     <script src="../js/winston.js"></script>

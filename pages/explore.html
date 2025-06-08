@@ -8,11 +8,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/knowledge-symphony.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <style>
         /* Explore Screen Specific Styles */
         .explore-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6B46C1 0%, #6B46C1 100%);
             height: 100vh;
             overflow: hidden;
             position: relative;
@@ -139,7 +140,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #2C1810;
+            color: #374151;
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -209,7 +210,7 @@
         .winston-details h3 {
             font-size: 18px;
             font-weight: 600;
-            color: #2C1810;
+            color: #374151;
             margin: 0 0 4px 0;
         }
 
@@ -505,7 +506,7 @@
         .preview-title {
             font-size: 16px;
             font-weight: 600;
-            color: #2C1810;
+            color: #374151;
             margin-bottom: 8px;
         }
 
@@ -593,21 +594,58 @@
         }
     </style>
 </head>
-<body class="explore-container">
-    <!-- Minimal Navigation -->
-    <nav class="explore-nav">
-        <div class="nav-left">
-            <a href="dashboard.html" class="back-btn">
-                <span>←</span>
-                Back to Dashboard
+<body>
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
+                <span style="font-size: 24px;">🏠</span>
+                <span class="sidebar-tooltip">Dashboard</span>
             </a>
-            <h1 class="explore-title">Explore Your Memories</h1>
-        </div>
-        <div class="mode-indicator">Winston Curator Mode</div>
-    </nav>
+            <a href="explore.html" class="sidebar-nav-item" data-page="memories">
+                <span style="font-size: 24px;">📚</span>
+                <span class="sidebar-tooltip">My Memories</span>
+            </a>
+            <a href="twin-management.html" class="sidebar-nav-item" data-page="twin">
+                <span style="font-size: 24px;">👥</span>
+                <span class="sidebar-tooltip">Twin Management</span>
+            </a>
+            <a href="explore.html" class="sidebar-nav-item active" data-page="explore">
+                <span style="font-size: 24px;">🔍</span>
+                <span class="sidebar-tooltip">Explore</span>
+            </a>
+            <a href="interview.html" class="sidebar-nav-item" data-page="interview">
+                <span style="font-size: 24px;">🎤</span>
+                <span class="sidebar-tooltip">Interview</span>
+            </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="uploader">
+                <span style="font-size: 24px;">📤</span>
+                <span class="sidebar-tooltip">File Upload</span>
+            </a>
+            <a href="talk-to-twin.html" class="sidebar-nav-item" data-page="talk">
+                <span style="font-size: 24px;">💬</span>
+                <span class="sidebar-tooltip">Talk to Twin</span>
+            </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="files">
+                <span style="font-size: 24px;">📁</span>
+                <span class="sidebar-tooltip">My Files</span>
+            </a>
+            <a href="settings.html" class="sidebar-nav-item" data-page="settings">
+                <span style="font-size: 24px;">⚙️</span>
+                <span class="sidebar-tooltip">Settings</span>
+            </a>
+        </nav>
 
-    <!-- Main Explore Area -->
-    <main class="explore-main">
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Explore Your Memories</h1>
+                <div class="mode-indicator">Winston Curator Mode</div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="symphony-content explore-container">
         <!-- Graph Visualization -->
         <section class="graph-container" id="graphContainer">
             <div class="graph-placeholder">
@@ -1120,5 +1158,8 @@
         // Track page interaction
         console.log('Explore Screen loaded and interactive');
     </script>
+            </main>
+        </div>
+    </div>
 </body>
 </html>
