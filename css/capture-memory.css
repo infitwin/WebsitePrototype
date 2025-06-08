@@ -314,6 +314,60 @@
     transform: translateY(-2px);
 }
 
+.btn-save {
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    box-shadow: 
+        0 6px 20px rgba(16, 185, 129, 0.3),
+        inset 0 -2px 10px rgba(5, 150, 105, 0.2);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 25px rgba(16, 185, 129, 0.4),
+        inset 0 -2px 10px rgba(5, 150, 105, 0.3);
+}
+
+/* File Upload Section */
+.file-upload-section {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.upload-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px dashed #FFD700;
+    border-radius: 12px;
+    color: #6D4C41;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.upload-button:hover {
+    background: #FFF8E7;
+    border-color: #FFC107;
+    transform: translateY(-1px);
+}
+
+.upload-button .btn-icon {
+    font-size: 16px;
+}
+
 /* Social proof */
 .social-proof {
     text-align: center;
