@@ -58,19 +58,20 @@
             <!-- Chat interface -->
             <div class="chat-interface">
                 <!-- Messages container -->
-                <div class="messages-container" id="messages">
+                <div class="messages-container messages chat-messages conversation-messages" id="messages">
                     <!-- Messages will be added here by JavaScript -->
                 </div>
                 
                 <!-- Input area -->
-                <div class="input-area" id="input-area" style="display: none;">
+                <div class="input-area" id="input-area">
                     <div class="input-wrapper">
                         <textarea 
                             id="user-input" 
+                            class="chat-input message-input"
                             placeholder="Type your response here..."
                             rows="2"
                         ></textarea>
-                        <button class="send-btn" id="send-btn">
+                        <button class="send-btn send-button" id="send-btn">
                             <span class="send-icon">→</span>
                         </button>
                     </div>
@@ -84,7 +85,7 @@
         </div>
         
         <!-- Audio toggle -->
-        <button class="audio-toggle" id="audio-toggle">
+        <button class="audio-toggle audio-disabled" id="audio-toggle" style="position: relative; z-index: 1000;">
             <span class="audio-icon">🔊</span>
             <span class="audio-text">Winston's Voice</span>
         </button>
@@ -174,5 +175,7 @@
             }
         }
     </style>
+    
+    <script src="../js/winston.js"></script>
 </body>
 </html>

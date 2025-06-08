@@ -349,10 +349,14 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.textContent = '🔊';
             text.textContent = 'Winston\'s Voice ON';
             audioToggle.style.background = 'rgba(255, 215, 0, 0.2)';
+            audioToggle.classList.add('audio-enabled');
+            audioToggle.classList.remove('audio-disabled');
         } else {
             icon.textContent = '🔇';
             text.textContent = 'Winston\'s Voice OFF';
             audioToggle.style.background = 'rgba(255, 248, 231, 0.9)';
+            audioToggle.classList.add('audio-disabled');
+            audioToggle.classList.remove('audio-enabled');
         }
     });
     
