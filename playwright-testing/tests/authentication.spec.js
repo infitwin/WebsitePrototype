@@ -40,10 +40,15 @@ test.describe('Authentication Tests', () => {
   });
 
   test('should validate login form inputs', async ({ page }) => {
+    // Switch to login tab first
+    const loginTab = page.locator('[data-tab="login"], .tab-login, button:has-text("Log In")').first();
+    await loginTab.click();
+    await page.waitForTimeout(500);
+    
     // Find form elements
-    const emailInput = page.locator('input[type="email"], input[name="email"], #email').first();
-    const passwordInput = page.locator('input[type="password"], input[name="password"], #password').first();
-    const submitButton = page.locator('button[type="submit"], .btn-submit, button:has-text("Login")').last();
+    const emailInput = page.locator('#login-form input[type="email"], #email').first();
+    const passwordInput = page.locator('#login-form input[type="password"], #password').first();
+    const submitButton = page.locator('#login-form button[type="submit"]').first();
     
     // Try to submit empty form
     await submitButton.click();
