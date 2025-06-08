@@ -190,6 +190,32 @@
                     });
                 }
             });
+            
+            // Add tab switching functionality as fallback
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const signupForm = document.getElementById('signup-form');
+            const loginForm = document.getElementById('login-form');
+            
+            if (tabButtons.length > 0 && signupForm && loginForm) {
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const targetTab = this.getAttribute('data-tab');
+                        
+                        // Update active tab
+                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Show corresponding form
+                        if (targetTab === 'signup') {
+                            signupForm.classList.remove('hidden');
+                            loginForm.classList.add('hidden');
+                        } else {
+                            loginForm.classList.remove('hidden');
+                            signupForm.classList.add('hidden');
+                        }
+                    });
+                });
+            }
         });
     </script>
     
