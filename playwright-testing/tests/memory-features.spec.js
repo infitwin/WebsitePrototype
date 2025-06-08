@@ -18,7 +18,7 @@ test.describe('Memory Features', () => {
     expect(hasTitle || hasDescription).toBeTruthy();
     
     // Check for file upload
-    const fileUpload = page.locator('input[type="file"], button:has-text("Upload"), .upload-button').first();
+    const fileUpload = page.locator('button:has-text("Upload"), .upload-button').first();
     await expect(fileUpload).toBeVisible();
     
     // Check for save/submit button
