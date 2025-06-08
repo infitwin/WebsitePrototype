@@ -124,9 +124,21 @@
 
         .value-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr;
             gap: 30px;
             margin-bottom: 60px;
+        }
+        
+        @media (min-width: 600px) {
+            .value-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 900px) {
+            .value-cards {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
 
         .value-card {
@@ -412,7 +424,6 @@
             }
 
             .value-cards {
-                grid-template-columns: 1fr;
                 gap: 20px;
             }
 
@@ -433,7 +444,8 @@
             }
 
             .einstein-preview {
-                flex-direction: column;
+                display: flex !important;
+                flex-direction: column !important;
                 text-align: center;
             }
 
@@ -450,7 +462,8 @@
             }
 
             .cta-buttons {
-                flex-direction: column;
+                display: flex !important;
+                flex-direction: column !important;
                 align-items: center;
             }
 
@@ -461,13 +474,8 @@
                 justify-content: center;
             }
         }
-            /* Navigation *
-    <!-- Navigation -->
-    <nav class="auth-nav">
-        <a href="email-verification.html" class="back-link">← Back to Email Verification</a>
-    </nav>
-
-/
+        
+        /* Navigation */
         .auth-nav {
             padding: 20px 30px;
             background: rgba(255, 255, 255, 0.05);
@@ -615,12 +623,27 @@
     <script>
         // Get user information from URL params or localStorage
         const urlParams = new URLSearchParams(window.location.search);
-        const userEmail = urlParams.get('email') || localStorage.getItem('userEmail') || 'user@example.com';
-        const userName = urlParams.get('name') || localStorage.getItem('userName') || 'User';
+        let userEmail = urlParams.get('email') || localStorage.getItem('userEmail') || 'user@example.com';
+        let userName = urlParams.get('name') || localStorage.getItem('userName') || 'User';
+
+        // Save to localStorage immediately if from URL params
+        if (urlParams.get('email')) {
+            localStorage.setItem('userEmail', urlParams.get('email'));
+        }
+        if (urlParams.get('name')) {
+            localStorage.setItem('userName', urlParams.get('name'));
+        }
 
         // Update user display
-        document.getElementById('userName').textContent = userName;
-        document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+        const userNameElement = document.getElementById('userName');
+        const userAvatarElement = document.getElementById('userAvatar');
+        
+        if (userNameElement) {
+            userNameElement.textContent = userName;
+        }
+        if (userAvatarElement) {
+            userAvatarElement.textContent = userName.charAt(0).toUpperCase();
+        }
 
         // Video functionality
         function playVideo() {
@@ -676,6 +699,35 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Alpha Welcome page loaded for:', userName);
             trackWelcomeComplete();
+            
+            // Re-update display elements in case they were missed
+            if (userName && userName !== 'User') {
+                const nameEl = document.getElementById('userName');
+                const avatarEl = document.getElementById('userAvatar');
+                if (nameEl) nameEl.textContent = userName;
+                if (avatarEl) avatarEl.textContent = userName.charAt(0).toUpperCase();
+            }
+            
+            // Verify localStorage is working
+            const savedEmail = localStorage.getItem('userEmail');
+            const savedName = localStorage.getItem('userName');
+            console.log('LocalStorage check - Email:', savedEmail, 'Name:', savedName);
+            
+            // Update any dynamic elements that might have loaded late
+            const allUserNameElements = document.querySelectorAll('[data-user-name]');
+            allUserNameElements.forEach(el => {
+                el.textContent = userName;
+            });
+        });
+        
+        // Persist data on page unload
+        window.addEventListener('beforeunload', function() {
+            if (userEmail && userEmail !== 'user@example.com') {
+                localStorage.setItem('userEmail', userEmail);
+            }
+            if (userName && userName !== 'User') {
+                localStorage.setItem('userName', userName);
+            }
         });
     </script>
 </body>
