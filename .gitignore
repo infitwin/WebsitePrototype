@@ -26,6 +26,7 @@ Thumbs.db
 # Test artifacts
 coverage/
 *.log
+playwright-testing/tests/duplicate-tests/
 
 # Build artifacts
 dist/

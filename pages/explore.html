@@ -14,26 +14,15 @@
         /* Explore Screen Specific Styles */
         .explore-container {
             background: linear-gradient(135deg, #6B46C1 0%, #6B46C1 100%);
-            height: 100vh;
+            min-height: calc(100vh - 120px);
             overflow: hidden;
             position: relative;
+            border-radius: 12px;
         }
 
-        /* Minimal Navigation */
+        /* Remove conflicting navigation - using sidebar instead */
         .explore-nav {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-            z-index: 200;
+            display: none;
         }
 
         .nav-left {
@@ -82,11 +71,8 @@
 
         /* Main Explore Layout */
         .explore-main {
-            position: absolute;
-            top: 64px;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position: relative;
+            height: 100%;
             display: flex;
         }
 
@@ -167,13 +153,14 @@
 
         /* Winston Panel */
         .winston-panel {
-            width: 400px;
+            width: 350px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-left: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
+            border-radius: 0 12px 12px 0;
         }
 
         .winston-panel.collapsed {
@@ -646,8 +633,9 @@
 
             <!-- Main Content -->
             <main class="symphony-content explore-container">
-        <!-- Graph Visualization -->
-        <section class="graph-container" id="graphContainer">
+                <div class="explore-main">
+                    <!-- Graph Visualization -->
+                    <section class="graph-container" id="graphContainer">
             <div class="graph-placeholder">
                 <div class="graph-content">
                     <div class="graph-icon">🌐</div>
@@ -722,27 +710,25 @@
                     <button class="send-btn" onclick="sendMessage()">→</button>
                 </div>
             </div>
-        </aside>
-    </main>
-
-    <!-- Controls Toolbar -->
-    <div class="controls-toolbar">
-        <div class="control-group">
-            <button class="control-btn" title="Zoom In" onclick="zoomIn()">🔍</button>
-            <button class="control-btn" title="Zoom Out" onclick="zoomOut()">🔎</button>
-            <button class="control-btn" title="Reset View" onclick="resetView()">🎯</button>
-        </div>
-        <div class="control-group">
-            <button class="control-btn" title="Pan Mode" onclick="togglePanMode()">✋</button>
-            <button class="control-btn active" title="Select Mode" onclick="toggleSelectMode()">👆</button>
-        </div>
-        <div class="control-group">
-            <button class="control-btn" title="Filters" onclick="toggleFilters()">🎛️</button>
-            <button class="control-btn" title="Time Travel" onclick="toggleTimeSlider()">⏰</button>
-        </div>
-    </div>
-
-    <!-- Filters Panel -->
+                    </aside>
+                    
+                    <!-- Controls Toolbar -->
+                    <div class="controls-toolbar">
+                        <div class="control-group">
+                            <button class="control-btn" title="Zoom In" onclick="zoomIn()">🔍</button>
+                            <button class="control-btn" title="Zoom Out" onclick="zoomOut()">🔎</button>
+                            <button class="control-btn" title="Reset View" onclick="resetView()">🎯</button>
+                        </div>
+                        <div class="control-group">
+                            <button class="control-btn" title="Pan Mode" onclick="togglePanMode()">✋</button>
+                            <button class="control-btn active" title="Select Mode" onclick="toggleSelectMode()">👆</button>
+                        </div>
+                        <div class="control-group">
+                            <button class="control-btn" title="Filters" onclick="toggleFilters()">🎛️</button>
+                            <button class="control-btn" title="Time Travel" onclick="toggleTimeSlider()">⏰</button>
+                        </div>
+                    </div>
+                    <!-- Filters Panel -->
     <div class="filters-panel" id="filtersPanel" style="display: none;">
         <div class="filter-section">
             <div class="filter-title">Memory Types</div>
@@ -782,6 +768,22 @@
                 <span>1980s</span>
                 <span>Today</span>
             </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Slider -->
+                    <div class="time-slider" id="timeSlider" style="display: none;">
+                        <div class="slider-title">Time Period</div>
+                        <div class="slider-container">
+                            <input type="range" class="time-range" id="timeRange" min="0" max="100" value="100">
+                            <div class="time-labels">
+                                <span>1980s</span>
+                                <span>Today</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
@@ -1158,8 +1160,5 @@
         // Track page interaction
         console.log('Explore Screen loaded and interactive');
     </script>
-            </main>
-        </div>
-    </div>
 </body>
 </html>

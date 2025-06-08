@@ -106,5 +106,73 @@
     </div>
     
     <script src="../js/winston.js"></script>
+    
+    <style>
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .winston-nav {
+                padding: 15px 20px;
+            }
+            
+            .winston-title {
+                font-size: 2.5rem;
+            }
+            
+            .winston-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .winston-avatar {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .chat-interface {
+                padding: 20px;
+                min-height: 350px;
+            }
+            
+            .winston-actions {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .action-btn {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .winston-nav {
+                padding: 10px 15px;
+            }
+            
+            .winston-title {
+                font-size: 2rem;
+            }
+            
+            .winston-avatar {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .winston-actions {
+                padding: 15px;
+            }
+            
+            .action-btn {
+                padding: 16px;
+            }
+            
+            .btn-text {
+                font-size: 1rem;
+            }
+            
+            .btn-subtitle {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
 </body>
 </html>
