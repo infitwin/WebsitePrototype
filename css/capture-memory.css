@@ -368,6 +368,61 @@
     font-size: 16px;
 }
 
+/* Memory Type Selection */
+.memory-type-selection {
+    margin-bottom: 24px;
+}
+
+.memory-type-selection h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1A1510;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.type-options {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.memory-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: 2px solid #F0E6D2;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    font-weight: 500;
+    color: #6D4C41;
+}
+
+.memory-type:hover {
+    border-color: #FFD700;
+    background: #FFF8E7;
+    transform: translateY(-1px);
+}
+
+.memory-type input[type="radio"] {
+    margin: 0;
+    accent-color: #FFD700;
+}
+
+.memory-type input[type="radio"]:checked + span {
+    color: #1A1510;
+}
+
+.memory-type:has(input[type="radio"]:checked) {
+    border-color: #FFD700;
+    background: #FFF8E7;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
 /* Social proof */
 .social-proof {
     text-align: center;
