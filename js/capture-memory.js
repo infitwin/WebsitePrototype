@@ -354,4 +354,32 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // File upload handling
+    const fileInput = document.getElementById('memory-file');
+    const filePreview = document.getElementById('file-preview');
+    const fileName = filePreview ? filePreview.querySelector('.file-name') : null;
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && filePreview && fileName) {
+                fileName.textContent = file.name;
+                filePreview.style.display = 'block';
+            }
+        });
+    }
+    
+    // Clear file function
+    window.clearFile = function() {
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        if (filePreview) {
+            filePreview.style.display = 'none';
+        }
+        if (fileName) {
+            fileName.textContent = '';
+        }
+    };
 });

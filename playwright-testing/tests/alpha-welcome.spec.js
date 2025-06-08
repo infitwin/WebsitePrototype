@@ -157,12 +157,17 @@ test.describe('Alpha Welcome Page Features', () => {
     const nav = page.locator('.welcome-nav');
     await expect(nav).toBeVisible();
     
-    // Check value cards stack vertically
-    const valueCards = page.locator('.value-cards');
-    const gridColumns = await valueCards.evaluate(el => 
-      window.getComputedStyle(el).gridTemplateColumns
-    );
-    expect(gridColumns).toBe('1fr');
+    // Check value cards stack vertically (single column)
+    const valueCard1 = page.locator('.value-card').first();
+    const valueCard2 = page.locator('.value-card').nth(1);
+    
+    // Get positions of first two cards
+    const card1Box = await valueCard1.boundingBox();
+    const card2Box = await valueCard2.boundingBox();
+    
+    // Cards should be stacked vertically (card2 below card1)
+    expect(card2Box.y).toBeGreaterThan(card1Box.y);
+    expect(card1Box.x).toBeCloseTo(card2Box.x, 1); // Same x position (within 1px)
     
     // Check Einstein preview stacks
     const einsteinPreview = page.locator('.einstein-preview');

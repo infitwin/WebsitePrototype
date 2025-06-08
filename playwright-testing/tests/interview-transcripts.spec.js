@@ -127,10 +127,10 @@ test.describe('Interview Transcripts Features', () => {
     const modal = page.locator('#transcriptModal');
     await expect(modal).toBeHidden();
     
-    // Check modal structure
-    await expect(page.locator('.transcript-modal-content')).toBeVisible();
-    await expect(page.locator('.modal-close')).toBeVisible();
-    await expect(page.locator('.transcript-content')).toBeVisible();
+    // Check modal structure exists (but hidden with parent)
+    await expect(page.locator('.transcript-modal-content')).toBeAttached();
+    await expect(page.locator('.modal-close')).toBeAttached();
+    await expect(page.locator('.transcript-content')).toBeAttached();
   });
 
   test('should validate required JavaScript modules are loaded', async ({ page }) => {
