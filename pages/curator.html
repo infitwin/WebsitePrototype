@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Curator - Infitwin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #faf9f7;
+            color: #1a1a1a;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Navigation Header */
+        .interview-nav {
+            height: 50px;
+            width: 100%;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .interview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #374151;
+        }
+
+        .nav-btn:hover {
+            background: #f9fafb;
+        }
+
+        .nav-btn.primary {
+            background: #635bff;
+            color: white;
+            border-color: #635bff;
+        }
+
+        .nav-btn.primary:hover {
+            background: #4f46e5;
+        }
+
+        /* Main Layout Container */
+        .interview-container {
+            width: 100%;
+            height: calc(100vh - 50px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 1. Floating Idea Clouds Banner */
+        .idea-clouds-banner {
+            height: 60px;
+            width: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #faf9f7 0%, #f0f4ff 100%);
+            overflow: hidden;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .idea-cloud {
+            position: absolute;
+            background: 
+                radial-gradient(ellipse 80% 60% at 30% 40%, rgba(255, 255, 255, 0.95) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 80% at 70% 30%, rgba(240, 248, 255, 0.9) 0%, transparent 50%),
+                radial-gradient(ellipse 90% 50% at 50% 60%, rgba(250, 245, 255, 0.8) 0%, transparent 50%);
+            border-radius: 80% 60% 70% 50% / 60% 80% 50% 70%;
+            padding: 8px 16px;
+            font-size: 12px;
+            color: #5b21b6;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 
+                0 4px 20px rgba(139, 92, 246, 0.2),
+                0 1px 3px rgba(255, 255, 255, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: opacity 3s ease-in-out;
+            transform-origin: center center;
+            font-weight: 400;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(1px);
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .idea-cloud.visible {
+            opacity: 0.75;
+        }
+
+        .idea-cloud::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            background: 
+                radial-gradient(ellipse 120% 80% at 40% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 60%),
+                radial-gradient(ellipse 80% 120% at 60% 40%, rgba(240, 235, 255, 0.2) 0%, transparent 60%);
+            border-radius: 85% 65% 75% 55% / 65% 85% 55% 75%;
+            z-index: -1;
+        }
+
+        .idea-cloud::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.4) 0%, transparent 80%);
+            border-radius: 82% 62% 72% 52% / 62% 82% 52% 72%;
+            z-index: -1;
+        }
+
+        /* Remove bouncy animations - clouds should just fade in/out */
+
+        /* 2. Neo4j Graph Container */
+        .graph-container {
+            height: 540px;
+            width: 100%;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-placeholder {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            position: relative;
+            display: block;
+        }
+
+        /* Photo reference window (when doing photo interviews) */
+        .photo-reference {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: white;
+            border: 2px solid #635bff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(99, 91, 255, 0.2);
+            display: none;
+            overflow: hidden;
+        }
+
+        .photo-reference img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 3. Winston Chat Interface */
+        .winston-chat {
+            height: 200px;
+            width: 100%;
+            background: #ffffff;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+            height: 50px;
+        }
+
+        .chat-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: #f3f4f6;
+            border-color: #635bff;
+        }
+
+        .expand-indicator {
+            color: #6b7280;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .expand-indicator:hover {
+            color: #635bff;
+        }
+
+        /* Chat Messages Area */
+        .chat-messages {
+            flex: 1;
+            padding: 15px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .winston-orb {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .winston-orb.listening {
+            animation: pulse 2s infinite;
+        }
+
+        .winston-orb.thinking {
+            animation: spin 1s linear infinite;
+        }
+
+        .winston-orb.speaking {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .message-content {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 70%;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .user-message .message-content {
+            background: #635bff;
+            color: white;
+        }
+
+        /* Chat Input */
+        .chat-input {
+            padding: 15px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-field {
+            flex: 1;
+            border: 1px solid #d1d5db;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-field:focus {
+            border-color: #635bff;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
+
+        .mic-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: #635bff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mic-btn:hover {
+            background: #4f46e5;
+            transform: scale(1.05);
+        }
+
+        .mic-btn.recording {
+            background: #dc2626;
+            animation: pulse 1s infinite;
+        }
+
+        /* Expanded Chat Modal */
+        .chat-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .chat-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 1000px;
+            height: 600px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .chat-search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-input {
+            width: 300px;
+            padding: 8px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .search-nav {
+            display: flex;
+            gap: 5px;
+        }
+
+        .search-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .close-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .modal-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Interview Manager Sidebar */
+        .interview-manager {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            border-left: 2px solid #e5e7eb;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 500;
+            overflow-y: auto;
+        }
+
+        .interview-manager.active {
+            right: 0;
+        }
+
+        .manager-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .manager-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .manager-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #635bff;
+            background: white;
+            color: #635bff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .manager-btn:hover {
+            background: #635bff;
+            color: white;
+        }
+
+        .interview-section {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #374151;
+        }
+
+        .interview-item {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .interview-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .interview-meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .resume-btn {
+            background: #635bff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Privacy Modal */
+        .privacy-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .privacy-modal.active {
+            display: flex;
+        }
+
+        .privacy-content {
+            width: 400px;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .privacy-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .privacy-text {
+            line-height: 1.6;
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        .privacy-btn {
+            background: #635bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .privacy-btn:hover {
+            background: #4f46e5;
+        }
+
+        /* Overlay for modals */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Connection status */
+        .connection-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #dc2626;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            z-index: 1500;
+            display: none;
+        }
+
+        .connection-banner.active {
+            display: block;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1200;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.active {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc2626;
+        }
+
+        .toast.success {
+            border-left: 4px solid #10b981;
+        }
+        
+        /* Interview Question Area */
+        .interview-question-area {
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .question-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .question-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .interview-question {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+        
+        .response-area {
+            width: 100%;
+            resize: vertical;
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection Status Banner -->
+    <div class="connection-banner" id="connectionBanner">
+        Connection lost. Attempting to reconnect...
+    </div>
+
+    <!-- Privacy Notice Modal -->
+    <div class="privacy-modal active" id="privacyModal">
+        <div class="privacy-content">
+            <h3 class="privacy-title">Welcome to Memory Curator</h3>
+            <div class="privacy-text">
+                Only share what you're comfortable sharing.<br>
+                You can skip any question by saying 'next question'.<br>
+                All memories are private by default.
+            </div>
+            <button class="privacy-btn" onclick="startInterview()">I Understand - Start Curating</button>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <nav class="interview-nav">
+        <div class="nav-left">
+            <a href="../dashboard.html" class="back-btn">← Dashboard</a>
+            <h1 class="interview-title">Memory Curator with Winston</h1>
+        </div>
+        <div class="nav-right">
+            <button class="nav-btn" onclick="saveAndExit()">Save & Exit</button>
+            <button class="nav-btn" onclick="toggleInterviewManager()">Interviews</button>
+            <button class="nav-btn primary" onclick="newInterview()">New Interview</button>
+        </div>
+    </nav>
+
+    <!-- Main Interview Container -->
+    <div class="interview-container">
+        <!-- 1. Floating Idea Clouds Banner -->
+        <div class="idea-clouds-banner" id="ideaClouds">
+            <!-- Clouds will be dynamically inserted here -->
+        </div>
+
+        <!-- 2. Neo4j Graph Container -->
+        <div class="graph-container">
+            <div class="graph-placeholder" id="interview-neo4j-container">
+                <!-- Neo4j Graph Visualization will be rendered here -->
+            </div>
+            
+            <!-- Photo Reference Window (hidden by default) -->
+            <div class="photo-reference" id="photoReference">
+                <img src="" alt="Interview photo reference" id="photoImg">
+            </div>
+        </div>
+
+        <!-- 3. Winston Chat Interface -->
+        <div class="winston-chat" id="winstonChat">
+            <div class="chat-header">
+                <div class="chat-controls">
+                    <button class="control-btn" onclick="toggleInterviewManager()">≡ Interview Manager</button>
+                    <button class="control-btn" onclick="stopSession()">|| Stop Session</button>
+                </div>
+                <div class="expand-indicator" onclick="expandChat()">
+                    ↑ Click to expand chat
+                </div>
+            </div>
+
+            <!-- Interview Question Display -->
+            <div class="interview-question-area">
+                <div class="question-container">
+                    <h3 class="question-label">Current Question:</h3>
+                    <p class="interview-question">What's your earliest childhood memory that still brings you joy?</p>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message">
+                    <div class="winston-orb">🎩</div>
+                    <div class="message-content">
+                        Hello! I'm Winston, your story curator. I'm here to help you capture and organize your precious memories. What would you like to talk about today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <textarea class="response-area input-field" placeholder="Share your response here..." id="messageInput" rows="3"></textarea>
+                <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expanded Chat Modal -->
+    <div class="chat-modal" id="chatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Chat History</h3>
+                <div class="chat-search">
+                    <input type="text" class="search-input" placeholder="🔍 Search chat..." id="searchInput">
+                    <div class="search-nav">
+                        <button class="search-btn">↑</button>
+                        <button class="search-btn">↓</button>
+                    </div>
+                    <span style="font-size: 12px; color: #6b7280;">2 of 5</span>
+                </div>
+                <button class="close-btn" onclick="collapseChat()">×</button>
+            </div>
+            <div class="modal-messages" id="modalMessages">
+                <!-- Full chat history will be populated here -->
+            </div>
+            <div class="chat-input">
+                <input type="text" class="input-field" placeholder="Continue the conversation..." id="modalInput">
+                <button class="mic-btn" onclick="toggleRecording()">🎤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Manager Sidebar -->
+    <div class="interview-manager" id="interviewManager">
+        <div class="manager-header">
+            <div class="manager-buttons">
+                <button class="manager-btn" onclick="newInterview()">+ New Interview</button>
+                <button class="manager-btn" onclick="photoInterview()">Interview about Photo</button>
+            </div>
+        </div>
+
+        <div class="interview-section">
+            <h4 class="section-title">OPEN INTERVIEWS</h4>
+            <div class="interview-item">
+                <div class="interview-title">Family Stories (12/25)</div>
+                <div class="interview-meta">2 days ago</div>
+                <button class="resume-btn" onclick="resumeInterview('family')">Resume</button>
+            </div>
+            <div class="interview-item">
+                <div class="interview-title">Career Journey (5/30)</div>
+                <div class="interview-meta">1 week ago</div>
+                <button class="resume-btn" onclick="resumeInterview('career')">Resume</button>
+            </div>
+        </div>
+
+        <div class="interview-section">
+            <h4 class="section-title">COMPLETED</h4>
+            <div class="interview-item" style="opacity: 0.7;">
+                <div class="interview-title">Wedding Day ✓</div>
+                <div class="interview-meta">1 month ago</div>
+                <button class="resume-btn" style="background: #6b7280;" onclick="viewInterview('wedding')">View</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for sidebar -->
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div id="toastMessage"></div>
+    </div>
+
+    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/neo4j-init.js"></script>
+    
+    <!-- Load Firebase Configuration and Services -->
+    <script type="module" src="../js/config/firebase-config.js"></script>
+    <script src="../js/services/auth.js"></script>
+    
+    <!-- Load Audio and WebSocket Services -->
+    <script src="../js/utils/audio-logger.js"></script>
+    <script src="../js/services/websocket-manager.js"></script>
+    <script src="../js/services/audio-recorder.js"></script>
+    <script src="../js/services/tts-player.js"></script>
+    <script src="../js/services/orchestrator-websocket.js"></script>
+    <script src="../js/config/orchestration-endpoints.js"></script>
+    <script src="../js/utils/message-builder.js"></script>
+
+    <script>
+        // Initialize Neo4j Graph Visualization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 Initializing Neo4j in interview page...');
+            const graphContainer = document.getElementById('interview-neo4j-container');
+            
+            if (graphContainer) {
+                console.log('✅ Interview Neo4j container found');
+                
+                try {
+                    const neo4jViz = new Neo4jVisualization(graphContainer, {
+                        width: graphContainer.offsetWidth || 1200,
+                        height: 540, // Match the graph-container height
+                        showFilters: true,
+                        showSearch: true
+                    });
+                    console.log('✅ Interview Neo4j visualization created successfully');
+                    
+                    // Store globally for debugging
+                    window.interviewNeo4jViz = neo4jViz;
+                    
+                } catch (error) {
+                    console.error('❌ Failed to initialize interview Neo4j visualization:', error);
+                }
+            } else {
+                console.error('❌ Interview Neo4j container not found!');
+            }
+        });
+
+        // WebsitePrototype Audio Services Integration
+        let audioRecorder = null;
+        let ttsPlayer = null;
+        let orchestratorWebSocket = null;
+        let currentInterviewId = null;
+        let isInterviewActive = false;
+
+        // Initialize WebsitePrototype services
+        async function initializeServices() {
+            try {
+                console.log('Initializing WebsitePrototype audio services...');
+                
+                // Initialize Audio Recorder
+                audioRecorder = new AudioRecorder({
+                    chunkInterval: 100,
+                    audioBitsPerSecond: 16000
+                });
+                await audioRecorder.initialize();
+                
+                // Initialize TTS Player
+                ttsPlayer = new TTSAudioPlayer({
+                    volume: 1.0,
+                    playbackRate: 1.0
+                });
+                await ttsPlayer.initialize();
+                
+                // Set up TTS callbacks
+                ttsPlayer.onPlaybackStart = (item) => {
+                    setWinstonState('speaking');
+                    console.log('Winston started speaking:', item.id);
+                };
+                
+                ttsPlayer.onPlaybackEnd = (item) => {
+                    setWinstonState('idle');
+                    console.log('Winston finished speaking:', item?.id);
+                };
+                
+                ttsPlayer.onError = (error) => {
+                    console.error('TTS playback error:', error);
+                    showToast('Audio playback error: ' + error.message, 'error');
+                };
+                
+                // Initialize Orchestrator WebSocket
+                orchestratorWebSocket = new OrchestratorWebSocketService();
+                
+                // Set up orchestrator callbacks
+                orchestratorWebSocket.onInterviewStarted = (data) => {
+                    console.log('Interview started:', data);
+                    currentInterviewId = data.interviewId;
+                    isInterviewActive = true;
+                    showToast('Interview session started with Winston', 'success');
+                };
+                
+                orchestratorWebSocket.onQuestionReceived = (data) => {
+                    console.log('Question received:', data);
+                    updateInterviewQuestion(data.question);
+                    
+                    // If TTS audio is provided, play it
+                    if (data.audioChunks && data.audioChunks.length > 0) {
+                        ttsPlayer.addToQueue(data.audioChunks, {
+                            turnId: data.turnId || `question-${Date.now()}`,
+                            type: 'interview-question'
+                        });
+                    }
+                };
+                
+                orchestratorWebSocket.onAudioChunkRequested = (data) => {
+                    console.log('Audio chunk requested:', data);
+                    // This would typically trigger more detailed audio processing
+                };
+                
+                orchestratorWebSocket.onError = (error) => {
+                    console.error('Orchestrator WebSocket error:', error);
+                    showToast('Connection error: ' + error.message, 'error');
+                    showConnectionBanner(true);
+                };
+                
+                orchestratorWebSocket.onReconnected = () => {
+                    console.log('Orchestrator WebSocket reconnected');
+                    showToast('Connection restored', 'success');
+                    showConnectionBanner(false);
+                };
+                
+                console.log('✅ All WebsitePrototype services initialized successfully');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Service initialization failed:', error);
+                showToast('Failed to initialize audio services: ' + error.message, 'error');
+                return false;
+            }
+        }
+        
+        // Update interview question display
+        function updateInterviewQuestion(question) {
+            const questionElement = document.querySelector('.interview-question');
+            if (questionElement && question) {
+                questionElement.textContent = question;
+            }
+        }
+        
+        // Show/hide connection banner
+        function showConnectionBanner(show) {
+            const banner = document.getElementById('connectionBanner');
+            if (show) {
+                banner.classList.add('active');
+            } else {
+                banner.classList.remove('active');
+            }
+        }
+        
+        // Enhanced startInterview function
+        async function startInterviewWithOrchestrator() {
+            try {
+                if (!orchestratorWebSocket) {
+                    throw new Error('Orchestrator not initialized');
+                }
+                
+                setWinstonState('thinking');
+                showToast('Connecting to interview orchestrator...', 'success');
+                
+                // Connect to WebSocket first
+                orchestratorWebSocket.connect();
+                
+                // Wait a moment for connection
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (!orchestratorWebSocket.isConnected()) {
+                    throw new Error('Failed to connect to orchestrator');
+                }
+                
+                showToast('Starting interview session...', 'success');
+                
+                // Start interview with orchestrator
+                const interviewData = {
+                    userId: 'demo-user', // In production, get from auth
+                    twinId: 'winston-interviewer',
+                    sessionType: 'memory-interview',
+                    metadata: {
+                        platform: 'WebsitePrototype',
+                        timestamp: new Date().toISOString()
+                    }
+                };
+                
+                orchestratorWebSocket.startInterview(interviewData);
+                
+                setWinstonState('idle');
+                
+            } catch (error) {
+                console.error('Failed to start interview:', error);
+                showToast('Failed to start interview: ' + error.message, 'error');
+                setWinstonState('idle');
+            }
+        }
+
+        // Idea Clouds Management
+        const ideaPrompts = [
+            "Tell us about your first pet",
+            "Describe a perfect day",
+            "Share a family recipe",
+            "Childhood home?",
+            "Favorite teacher",
+            "Wedding day",
+            "Travel adventure",
+            "Proudest moment?",
+            "Best friend",
+            "Family tradition"
+        ];
+
+        let cloudInterval;
+        let activeClouds = [];
+        let usedPositions = [];
+
+        function createDreamyCloud() {
+            const banner = document.getElementById('ideaClouds');
+            const prompt = ideaPrompts[Math.floor(Math.random() * ideaPrompts.length)];
+            
+            const cloud = document.createElement('div');
+            cloud.className = 'idea-cloud';
+            cloud.textContent = prompt;
+            
+            // Fixed positions to prevent overlap
+            const allPositions = [
+                { left: '8%', top: '12px' },
+                { left: '30%', top: '8px' },
+                { left: '55%', top: '15px' },
+                { left: '78%', top: '10px' }
+            ];
+            
+            // Find available position
+            const availablePositions = allPositions.filter(pos => 
+                !usedPositions.some(used => used.left === pos.left)
+            );
+            
+            if (availablePositions.length === 0) return; // No space
+            
+            const pos = availablePositions[Math.floor(Math.random() * availablePositions.length)];
+            cloud.style.left = pos.left;
+            cloud.style.top = pos.top;
+            
+            usedPositions.push(pos);
+            banner.appendChild(cloud);
+            activeClouds.push({ cloud, position: pos });
+            
+            // Gentle fade in
+            setTimeout(() => cloud.classList.add('visible'), 500);
+            
+            // Gentle fade out and remove
+            setTimeout(() => {
+                cloud.classList.remove('visible');
+                setTimeout(() => {
+                    if (banner.contains(cloud)) {
+                        banner.removeChild(cloud);
+                        activeClouds = activeClouds.filter(c => c.cloud !== cloud);
+                        usedPositions = usedPositions.filter(p => p !== pos);
+                    }
+                }, 3000); // 3 second fade out
+            }, 45000 + Math.random() * 30000); // 45-75 seconds visible
+        }
+
+        function startIdeaClouds() {
+            // Start with 2 clouds, spaced out
+            setTimeout(() => createDreamyCloud(), 1000);
+            setTimeout(() => createDreamyCloud(), 8000);
+            
+            // Add new clouds slowly
+            cloudInterval = setInterval(() => {
+                if (activeClouds.length < 3) {
+                    createDreamyCloud();
+                }
+            }, 25000); // Every 25 seconds
+        }
+
+        function saveAndExit() {
+            showToast('Interview saved. Returning to dashboard...', 'success');
+            setTimeout(() => {
+                window.location.href = '../dashboard.html';
+            }, 1500);
+        }
+
+        // Chat Management
+        let isRecording = false;
+        let recognition;
+
+        function toggleRecording() {
+            const micBtn = document.getElementById('micBtn');
+            
+            if (!isRecording) {
+                startRecording();
+                micBtn.classList.add('recording');
+                micBtn.textContent = '⏹️';
+            } else {
+                stopRecording();
+                micBtn.classList.remove('recording');
+                micBtn.textContent = '🎤';
+            }
+            
+            isRecording = !isRecording;
+        }
+
+        function startRecording() {
+            if (!audioRecorder) {
+                showToast('Audio recorder not initialized', 'error');
+                return;
+            }
+            
+            try {
+                audioRecorder.start(
+                    // onAudioChunk callback
+                    (chunk) => {
+                        console.log(`Audio chunk ${chunk.chunkNumber}: ${chunk.size} bytes`);
+                        
+                        // Send audio chunk to orchestrator if interview is active
+                        if (orchestratorWebSocket && isInterviewActive) {
+                            orchestratorWebSocket.sendAudioChunk(chunk);
+                        }
+                    },
+                    // onError callback
+                    (error) => {
+                        console.error('Recording error:', error);
+                        showToast('Recording error: ' + error.message, 'error');
+                        toggleRecording(); // Stop recording on error
+                    },
+                    // onStateChange callback
+                    (state) => {
+                        console.log('Recording state changed:', state);
+                        if (state.recording) {
+                            setWinstonState('listening');
+                        } else {
+                            setWinstonState('idle');
+                        }
+                    }
+                );
+                
+                console.log('Audio recording started');
+                setWinstonState('listening');
+                
+            } catch (error) {
+                console.error('Failed to start recording:', error);
+                showToast('Failed to start recording: ' + error.message, 'error');
+                toggleRecording(); // Reset button state
+            }
+        }
+
+        function stopRecording() {
+            if (audioRecorder) {
+                try {
+                    audioRecorder.stop();
+                    console.log('Audio recording stopped');
+                    setWinstonState('idle');
+                } catch (error) {
+                    console.error('Failed to stop recording:', error);
+                    showToast('Failed to stop recording: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function setWinstonState(state) {
+            const orb = document.querySelector('.winston-orb');
+            orb.className = 'winston-orb ' + state;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate Winston thinking
+            setWinstonState('thinking');
+            
+            // Simulate response after delay
+            setTimeout(() => {
+                const responses = [
+                    "That's a wonderful memory! Can you tell me more about how that made you feel?",
+                    "I can see this is important to you. What details stand out most in your mind?",
+                    "Thank you for sharing that. How did this experience shape who you are today?",
+                    "That sounds meaningful. Are there other people connected to this memory?",
+                    "I'm capturing this in your knowledge graph. What happened next?"
+                ];
+                
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(response, 'winston');
+                setWinstonState('idle');
+            }, 2000);
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message' + (sender === 'user' ? ' user-message' : '');
+            
+            if (sender === 'winston') {
+                messageDiv.innerHTML = `
+                    <div class="winston-orb">🎩</div>
+                    <div class="message-content">${text}</div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-content">${text}</div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // UI Controls
+        function expandChat() {
+            document.getElementById('chatModal').classList.add('active');
+            populateModalMessages();
+        }
+
+        function collapseChat() {
+            document.getElementById('chatModal').classList.remove('active');
+        }
+
+        function populateModalMessages() {
+            // Copy messages from main chat to modal
+            const mainMessages = document.getElementById('chatMessages').innerHTML;
+            document.getElementById('modalMessages').innerHTML = mainMessages;
+        }
+
+        function toggleInterviewManager() {
+            const manager = document.getElementById('interviewManager');
+            const overlay = document.getElementById('overlay');
+            
+            manager.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function closeAll() {
+            document.getElementById('interviewManager').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('chatModal').classList.remove('active');
+        }
+
+        async function startInterview() {
+            document.getElementById('privacyModal').classList.remove('active');
+            
+            // Initialize all services first
+            const servicesReady = await initializeServices();
+            if (!servicesReady) {
+                showToast('Failed to initialize services. Interview cannot start.', 'error');
+                return;
+            }
+            
+            // Start the orchestrator interview session
+            await startInterviewWithOrchestrator();
+            
+            // Start the idea clouds
+            startIdeaClouds();
+            
+            showToast('Interview ready! Click the mic to start speaking.', 'success');
+        }
+
+        function newInterview() {
+            showToast('Starting new interview...', 'success');
+            closeAll();
+        }
+
+        function photoInterview() {
+            showToast('Select a photo to discuss...', 'success');
+            closeAll();
+        }
+
+        function resumeInterview(type) {
+            showToast(`Resuming ${type} interview...`, 'success');
+            closeAll();
+        }
+
+        function viewInterview(type) {
+            showToast(`Opening ${type} interview in read-only mode...`, 'success');
+            closeAll();
+        }
+
+        function stopSession() {
+            showToast('Session paused. Progress saved.', 'success');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toast.className = `toast ${type}`;
+            toastMessage.textContent = message;
+            toast.classList.add('active');
+            
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle enter key in input
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            // Handle modal input
+            document.getElementById('modalInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const message = e.target.value.trim();
+                    if (message) {
+                        addMessage(message, 'user');
+                        e.target.value = '';
+                        // Also add to modal
+                        populateModalMessages();
+                    }
+                }
+            });
+        });
+    </script>
+    
+    <style>
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .interview-container {
+                padding: 20px;
+            }
+            
+            .winston-avatar {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .chat-interface {
+                padding: 20px;
+                min-height: 350px;
+            }
+            
+            .message-bubble {
+                max-width: 90%;
+            }
+            
+            .input-area {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .interview-header {
+                padding: 15px 20px;
+            }
+            
+            .interview-title {
+                font-size: 24px;
+            }
+            
+            .winston-avatar {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .chat-interface {
+                padding: 15px;
+            }
+        }
+    </style>
+</body>
+</html>
