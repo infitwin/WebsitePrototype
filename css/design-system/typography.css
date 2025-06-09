@@ -1,0 +1,162 @@
+/**
+ * Infitwin Design System - Typography Scale
+ * 
+ * SINGLE SOURCE OF TRUTH for all typography across the application.
+ * DO NOT use hardcoded font sizes - always use these CSS custom properties.
+ * 
+ * Based on modular scale for visual hierarchy
+ */
+
+:root {
+  /* Font Families */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  
+  /* Font Sizes (Modular Scale - 1.25 ratio) */
+  --font-size-xs: 0.75rem;   /* 12px - Small labels, captions */
+  --font-size-sm: 0.875rem;  /* 14px - Small text, secondary info */
+  --font-size-base: 1rem;    /* 16px - Body text, default */
+  --font-size-lg: 1.125rem;  /* 18px - Large body text */
+  --font-size-xl: 1.25rem;   /* 20px - Small headings */
+  --font-size-2xl: 1.5rem;   /* 24px - Medium headings */
+  --font-size-3xl: 1.875rem; /* 30px - Large headings */
+  --font-size-4xl: 2.25rem;  /* 36px - Extra large headings */
+  --font-size-5xl: 3rem;     /* 48px - Display headings */
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.25;   /* For headings */
+  --line-height-normal: 1.5;   /* For body text */
+  --line-height-relaxed: 1.75; /* For long-form content */
+  
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+}
+
+/* Typography Component Classes */
+.heading-1 {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.heading-2 {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.heading-3 {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.heading-4 {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.body-large {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+.body-base {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+.body-small {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.caption {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.label {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+.code {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-hover);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 4px;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  .heading-1 { font-size: var(--font-size-3xl); }
+  .heading-2 { font-size: var(--font-size-2xl); }
+  .heading-3 { font-size: var(--font-size-xl); }
+}
+
+@media (max-width: 480px) {
+  .heading-1 { font-size: var(--font-size-2xl); }
+  .heading-2 { font-size: var(--font-size-xl); }
+  .heading-3 { font-size: var(--font-size-lg); }
+}
+
+/**
+ * USAGE EXAMPLES:
+ * 
+ * <h1 class="heading-1">Main Page Title</h1>
+ * <h2 class="heading-2">Section Title</h2>
+ * <p class="body-base">Regular paragraph text</p>
+ * <small class="caption">Small descriptive text</small>
+ * 
+ * Or use CSS custom properties directly:
+ * .custom-component {
+ *   font-size: var(--font-size-lg);
+ *   font-weight: var(--font-weight-medium);
+ * }
+ */

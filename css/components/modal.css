@@ -1,0 +1,261 @@
+/**
+ * Unified Modal Component Styles
+ * 
+ * SINGLE SOURCE OF TRUTH for all modal/popup styling.
+ * Uses design system tokens exclusively.
+ */
+
+/* Modal Overlay - backdrop */
+.infitwin-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  
+  /* Flexbox for centering */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  
+  /* Animation */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  
+  /* Prevent body scroll */
+  overflow-y: auto;
+}
+
+.infitwin-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Modal Content Container */
+.infitwin-modal__content {
+  background-color: var(--color-background-card);
+  border-radius: var(--spacing-sm);
+  box-shadow: 0 10px 25px var(--color-shadow-dark);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  
+  /* Animation */
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.2s ease;
+  
+  /* Ensure proper positioning */
+  position: relative;
+}
+
+.infitwin-modal.show .infitwin-modal__content {
+  transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.infitwin-modal__header {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.infitwin-modal__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.infitwin-modal__close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--spacing-xs);
+  transition: all 0.2s ease;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.infitwin-modal__close:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text-primary);
+}
+
+.infitwin-modal__close:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Modal Body */
+.infitwin-modal__body {
+  padding: var(--spacing-lg);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
+}
+
+/* Modal Footer */
+.infitwin-modal__footer {
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* Modal Size Variants */
+.infitwin-modal--small .infitwin-modal__content {
+  width: 400px;
+  max-width: 90vw;
+}
+
+.infitwin-modal--medium .infitwin-modal__content {
+  width: 600px;
+  max-width: 90vw;
+}
+
+.infitwin-modal--large .infitwin-modal__content {
+  width: 800px;
+  max-width: 90vw;
+}
+
+.infitwin-modal--full .infitwin-modal__content {
+  width: 95vw;
+  height: 95vh;
+  max-width: none;
+  max-height: none;
+}
+
+/* Modal Type Variants */
+.infitwin-modal--danger .infitwin-modal__header {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-bottom-color: var(--color-error);
+}
+
+.infitwin-modal--danger .infitwin-modal__title {
+  color: var(--color-error);
+}
+
+.infitwin-modal--warning .infitwin-modal__header {
+  background-color: rgba(255, 215, 0, 0.1);
+  border-bottom-color: var(--color-warning);
+}
+
+.infitwin-modal--warning .infitwin-modal__title {
+  color: #B45309; /* Darker warning color for better contrast */
+}
+
+.infitwin-modal--info .infitwin-modal__header {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-bottom-color: var(--color-info);
+}
+
+.infitwin-modal--info .infitwin-modal__title {
+  color: var(--color-info);
+}
+
+.infitwin-modal--success .infitwin-modal__header {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-bottom-color: var(--color-success);
+}
+
+.infitwin-modal--success .infitwin-modal__title {
+  color: var(--color-success);
+}
+
+/* Loading State */
+.infitwin-modal--loading .infitwin-modal__content {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.infitwin-modal--loading .infitwin-modal__body::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .infitwin-modal {
+    padding: var(--spacing-md);
+  }
+  
+  .infitwin-modal__content {
+    width: 100% !important;
+    max-width: none;
+  }
+  
+  .infitwin-modal__header,
+  .infitwin-modal__body,
+  .infitwin-modal__footer {
+    padding: var(--spacing-md);
+  }
+  
+  .infitwin-modal__footer {
+    flex-direction: column;
+  }
+  
+  .infitwin-modal__footer .infitwin-button {
+    width: 100%;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .infitwin-modal,
+  .infitwin-modal__content {
+    transition: none;
+  }
+  
+  .infitwin-modal__content {
+    transform: none;
+  }
+  
+  .infitwin-modal.show .infitwin-modal__content {
+    transform: none;
+  }
+}
+
+/* Focus Management */
+.infitwin-modal:focus {
+  outline: none;
+}
+
+/* Ensure proper stacking */
+.infitwin-modal + .infitwin-modal {
+  z-index: 1001;
+}
+
+.infitwin-modal + .infitwin-modal + .infitwin-modal {
+  z-index: 1002;
+}

@@ -1,0 +1,101 @@
+/**
+ * Infitwin Design System - Spacing Scale
+ * 
+ * SINGLE SOURCE OF TRUTH for all spacing values across the application.
+ * DO NOT use hardcoded spacing values - always use these CSS custom properties.
+ * 
+ * Based on 4px baseline grid for mathematical consistency
+ */
+
+:root {
+  /* Base Spacing Scale (4px baseline) */
+  --spacing-xs: 4px;      /* 0.25rem - Micro spacing */
+  --spacing-sm: 8px;      /* 0.5rem  - Small spacing */
+  --spacing-md: 16px;     /* 1rem    - Medium spacing (default) */
+  --spacing-lg: 24px;     /* 1.5rem  - Large spacing */
+  --spacing-xl: 32px;     /* 2rem    - Extra large spacing */
+  --spacing-2xl: 48px;    /* 3rem    - 2x extra large */
+  --spacing-3xl: 64px;    /* 4rem    - 3x extra large */
+  --spacing-4xl: 96px;    /* 6rem    - 4x extra large */
+  
+  /* Component-Specific Spacing */
+  --spacing-component-padding: var(--spacing-md);     /* Default component internal padding */
+  --spacing-component-margin: var(--spacing-lg);      /* Default component external margin */
+  --spacing-section-gap: var(--spacing-2xl);          /* Gap between major sections */
+  --spacing-element-gap: var(--spacing-sm);           /* Gap between related elements */
+  
+  /* Layout Spacing */
+  --spacing-container-padding: var(--spacing-xl);     /* Main container padding */
+  --spacing-sidebar-padding: var(--spacing-md);       /* Sidebar internal padding */
+  --spacing-header-padding: var(--spacing-lg);        /* Header padding */
+  
+  /* Interactive Element Spacing */
+  --spacing-button-padding-x: var(--spacing-md);      /* Button horizontal padding */
+  --spacing-button-padding-y: var(--spacing-sm);      /* Button vertical padding */
+  --spacing-input-padding: var(--spacing-sm);         /* Input field padding */
+  --spacing-card-padding: var(--spacing-lg);          /* Card internal padding */
+  
+  /* Grid and Layout Gaps */
+  --spacing-grid-gap: var(--spacing-md);              /* Default grid gap */
+  --spacing-flex-gap: var(--spacing-sm);              /* Default flex gap */
+}
+
+/* Responsive Spacing Adjustments */
+@media (max-width: 768px) {
+  :root {
+    --spacing-container-padding: var(--spacing-md);
+    --spacing-section-gap: var(--spacing-xl);
+    --spacing-card-padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-container-padding: var(--spacing-sm);
+    --spacing-section-gap: var(--spacing-lg);
+    --spacing-card-padding: var(--spacing-sm);
+  }
+}
+
+/**
+ * UTILITY CLASSES for common spacing patterns
+ * Use these to maintain consistency without creating component-specific CSS
+ */
+
+/* Margin Utilities */
+.m-xs { margin: var(--spacing-xs); }
+.m-sm { margin: var(--spacing-sm); }
+.m-md { margin: var(--spacing-md); }
+.m-lg { margin: var(--spacing-lg); }
+.m-xl { margin: var(--spacing-xl); }
+
+/* Padding Utilities */
+.p-xs { padding: var(--spacing-xs); }
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+.p-xl { padding: var(--spacing-xl); }
+
+/* Gap Utilities for Flexbox/Grid */
+.gap-xs { gap: var(--spacing-xs); }
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
+.gap-xl { gap: var(--spacing-xl); }
+
+/**
+ * USAGE EXAMPLES:
+ * 
+ * .button {
+ *   padding: var(--spacing-button-padding-y) var(--spacing-button-padding-x);
+ * }
+ * 
+ * .card {
+ *   padding: var(--spacing-card-padding);
+ *   margin-bottom: var(--spacing-component-margin);
+ * }
+ * 
+ * .flex-container {
+ *   gap: var(--spacing-flex-gap);
+ * }
+ */

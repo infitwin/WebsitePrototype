@@ -32,11 +32,12 @@ export const storage = getStorage(app);
 export const functions = getFunctions(app, 'us-east4');
 
 // Connect to emulators for local development
-if (location.hostname === "localhost") {
-    connectAuthEmulator(auth, "http://localhost:9099");
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    connectFunctionsEmulator(functions, 'localhost', 5001);
-}
+// DISABLED: Using real Firebase backend for testing
+// if (location.hostname === "localhost") {
+//     connectAuthEmulator(auth, "http://localhost:9099");
+//     connectFirestoreEmulator(db, 'localhost', 8080);
+//     connectFunctionsEmulator(functions, 'localhost', 5001);
+// }
 
 // Export initialized Firebase services
 const firebaseServices = {

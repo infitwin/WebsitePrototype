@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .error { background: #ffe0e0; }
+        .success { background: #e0ffe0; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Debug Firebase Auth Issue</h1>
+    
+    <button onclick="testDirectLogin()">Test Direct Firebase Login</button>
+    <button onclick="checkAuthState()">Check Auth State</button>
+    <button onclick="clearConsole()">Clear</button>
+    
+    <div id="logs"></div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        function log(message, type = 'log') {
+            const logsDiv = document.getElementById('logs');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            logsDiv.insertBefore(logDiv, logsDiv.firstChild);
+            console.log(message);
+        }
+        
+        window.testDirectLogin = async function() {
+            log('Starting login test...');
+            
+            try {
+                log('Attempting login with weezer@yev.com / 12345');
+                const userCredential = await signInWithEmailAndPassword(auth, 'weezer@yev.com', '12345');
+                
+                log('✅ LOGIN SUCCESSFUL!', 'success');
+                log(`User ID: ${userCredential.user.uid}`, 'success');
+                log(`Email: ${userCredential.user.email}`, 'success');
+                log(`Email Verified: ${userCredential.user.emailVerified}`, 'success');
+                
+                // Store in localStorage like the app does
+                localStorage.setItem('userEmail', userCredential.user.email);
+                localStorage.setItem('userId', userCredential.user.uid);
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('userName', userCredential.user.displayName || 'Weezer');
+                
+                log('✅ Auth data stored in localStorage', 'success');
+                
+            } catch (error) {
+                log(`❌ Login failed: ${error.code}`, 'error');
+                log(`Error message: ${error.message}`, 'error');
+                
+                if (error.code === 'auth/invalid-credential') {
+                    log('The password might be wrong. Common issues:', 'error');
+                    log('- Password might be "123456" instead of "12345" (Firebase minimum)', 'error');
+                    log('- User might not exist', 'error');
+                    log('- Password might have been changed', 'error');
+                }
+            }
+        }
+        
+        window.checkAuthState = function() {
+            log('Checking current auth state...');
+            
+            if (auth.currentUser) {
+                log(`Currently signed in as: ${auth.currentUser.email}`, 'success');
+                log(`User ID: ${auth.currentUser.uid}`, 'success');
+            } else {
+                log('No user currently signed in');
+            }
+            
+            log('localStorage auth data:');
+            log(`- userEmail: ${localStorage.getItem('userEmail') || 'not set'}`);
+            log(`- userId: ${localStorage.getItem('userId') || 'not set'}`);
+            log(`- isAuthenticated: ${localStorage.getItem('isAuthenticated') || 'not set'}`);
+        }
+        
+        window.clearConsole = function() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        // Log Firebase initialization
+        log('Firebase initialized successfully', 'success');
+        log(`Project ID: ${firebaseConfig.projectId}`);
+    </script>
+</body>
+</html>

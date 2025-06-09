@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infitwin - Begin Your Memory Journey</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Import map for Firebase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/storage": "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js",
+            "firebase/functions": "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- Copy the body content from original auth.html -->
+    <!-- Soft Horizon Gradient Background -->
+    <div class="gradient-background">
+        <svg class="gradient-svg" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="softHorizon" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#F3F4F6;stop-opacity:1" />
+                    <stop offset="35%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                    <stop offset="65%" style="stop-color:#6B46C1;stop-opacity:0.1" />
+                    <stop offset="100%" style="stop-color:#6B46C1;stop-opacity:0.2" />
+                </linearGradient>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#softHorizon)" />
+        </svg>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="auth-nav">
+        <a href="../index.html" class="back-link">← Back to Home</a>
+    </nav>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Logo/Brand -->
+            <div class="auth-header">
+                <img src="../assets/images/infitwin-logo.jpg" alt="Infitwin" class="auth-logo-img">
+                <p class="auth-tagline">Begin Your Memory Journey</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <button class="tab-button active" data-tab="signup">Sign Up</button>
+                <button class="tab-button" data-tab="login">Log In</button>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div class="auth-form-container" id="signup-form">
+                <form class="auth-form">
+                    <!-- Google Sign Up -->
+                    <button type="button" class="google-auth-button">
+                        <svg class="google-icon" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+
+                    <!-- Email Sign Up -->
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" name="password" required minlength="8">
+                        <small class="form-hint">At least 8 characters</small>
+                    </div>
+
+                    <div class="error-message" id="signup-error" style="display: none; color: #EF4444; margin-bottom: 1rem;"></div>
+
+                    <button type="submit" class="auth-submit-button">Create Your Archive</button>
+                </form>
+            </div>
+
+            <!-- Log In Form -->
+            <div class="auth-form-container hidden" id="login-form">
+                <form class="auth-form">
+                    <!-- Google Log In -->
+                    <button type="button" class="google-auth-button">
+                        <svg class="google-icon" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+
+                    <!-- Email Log In -->
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="login-email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="login-password" name="password" required minlength="6">
+                    </div>
+
+                    <div class="error-message" id="login-error" style="display: none; color: #EF4444; margin-bottom: 1rem;"></div>
+
+                    <div class="form-group form-remember">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="auth-submit-button">Access Your Memories</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Journey Progress -->
+        <div class="journey-progress">
+            <div class="progress-step completed">
+                <span class="step-icon">🌾</span>
+                <span class="step-label">Discovered</span>
+            </div>
+            <div class="progress-line active"></div>
+            <div class="progress-step current">
+                <span class="step-icon">🌅</span>
+                <span class="step-label">Begin</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load auth.js with proper Firebase imports -->
+    <script type="module" src="../js/auth.js"></script>
+</body>
+</html>

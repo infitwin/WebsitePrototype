@@ -1,0 +1,325 @@
+/**
+ * Unified Button Component Styles
+ * 
+ * SINGLE SOURCE OF TRUTH for all button styling.
+ * Replaces all existing button implementations to prevent duplication.
+ * Uses design system tokens exclusively.
+ */
+
+/* Base Button Styles */
+.infitwin-button {
+  /* Reset default button styles */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+  
+  /* Base styling */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  
+  border-radius: var(--spacing-sm);
+  transition: all 0.2s ease;
+  
+  /* Default size (medium) */
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  min-height: 40px;
+  
+  /* Prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  
+  /* Ensure proper box model */
+  box-sizing: border-box;
+}
+
+/* Button States */
+.infitwin-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.infitwin-button:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Primary Button */
+.infitwin-button--primary {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-primary);
+}
+
+.infitwin-button--primary:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px var(--color-shadow-medium);
+}
+
+.infitwin-button--primary:active:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.infitwin-button--secondary {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.infitwin-button--secondary:hover:not(:disabled) {
+  background-color: var(--color-background-hover);
+  border-color: var(--color-border-dark);
+}
+
+.infitwin-button--secondary:active:not(:disabled) {
+  background-color: var(--color-background-selected);
+}
+
+/* Tertiary/Ghost Button */
+.infitwin-button--tertiary {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid transparent;
+}
+
+.infitwin-button--tertiary:hover:not(:disabled) {
+  background-color: var(--color-background-hover);
+  color: var(--color-text-primary);
+}
+
+.infitwin-button--tertiary:active:not(:disabled) {
+  background-color: var(--color-background-selected);
+}
+
+/* Danger Button */
+.infitwin-button--danger {
+  background-color: var(--color-error);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-error);
+}
+
+.infitwin-button--danger:hover:not(:disabled) {
+  background-color: #DC2626; /* Darker red */
+  border-color: #DC2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.infitwin-button--danger:active:not(:disabled) {
+  background-color: #B91C1C; /* Even darker red */
+  border-color: #B91C1C;
+  transform: translateY(0);
+}
+
+/* Success Button */
+.infitwin-button--success {
+  background-color: var(--color-success);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-success);
+}
+
+.infitwin-button--success:hover:not(:disabled) {
+  background-color: #059669; /* Darker green */
+  border-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.infitwin-button--success:active:not(:disabled) {
+  background-color: #047857; /* Even darker green */
+  border-color: #047857;
+  transform: translateY(0);
+}
+
+/* Warning Button */
+.infitwin-button--warning {
+  background-color: var(--color-warning);
+  color: #92400E; /* Dark text for better contrast on yellow */
+  border: 1px solid var(--color-warning);
+}
+
+.infitwin-button--warning:hover:not(:disabled) {
+  background-color: #FCD34D; /* Darker yellow */
+  border-color: #FCD34D;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+}
+
+.infitwin-button--warning:active:not(:disabled) {
+  background-color: #F59E0B; /* Orange-yellow */
+  border-color: #F59E0B;
+  color: var(--color-text-inverse);
+  transform: translateY(0);
+}
+
+/* Size Variants */
+.infitwin-button--small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  min-height: 32px;
+}
+
+.infitwin-button--medium {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  min-height: 40px;
+}
+
+.infitwin-button--large {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  min-height: 48px;
+}
+
+/* Icon Buttons */
+.infitwin-button--icon-only {
+  padding: var(--spacing-sm);
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+}
+
+.infitwin-button--icon-only.infitwin-button--small {
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  padding: var(--spacing-xs);
+}
+
+.infitwin-button--icon-only.infitwin-button--large {
+  min-width: 48px;
+  width: 48px;
+  height: 48px;
+  padding: var(--spacing-md);
+}
+
+/* Full Width Button */
+.infitwin-button--full-width {
+  width: 100%;
+}
+
+/* Loading State */
+.infitwin-button--loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.infitwin-button--loading .infitwin-button__text {
+  opacity: 0;
+}
+
+.infitwin-button--loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: button-spin 1s linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Button Group */
+.infitwin-button-group {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.infitwin-button-group .infitwin-button {
+  border-radius: 0;
+}
+
+.infitwin-button-group .infitwin-button:first-child {
+  border-top-left-radius: var(--spacing-sm);
+  border-bottom-left-radius: var(--spacing-sm);
+}
+
+.infitwin-button-group .infitwin-button:last-child {
+  border-top-right-radius: var(--spacing-sm);
+  border-bottom-right-radius: var(--spacing-sm);
+}
+
+.infitwin-button-group .infitwin-button:not(:first-child) {
+  border-left-width: 0;
+}
+
+.infitwin-button-group .infitwin-button:hover {
+  z-index: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .infitwin-button--large {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+    min-height: 44px;
+  }
+  
+  .infitwin-button--medium {
+    min-height: 44px; /* Larger touch targets on mobile */
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .infitwin-button {
+    transition: none;
+  }
+  
+  .infitwin-button:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .infitwin-button--loading::after {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .infitwin-button {
+    border-width: 2px;
+  }
+  
+  .infitwin-button--tertiary {
+    border-color: var(--color-border-dark);
+  }
+}
+
+/* Print styles */
+@media print {
+  .infitwin-button {
+    background: none !important;
+    color: var(--color-text-primary) !important;
+    border: 1px solid var(--color-text-primary) !important;
+    box-shadow: none !important;
+  }
+}
