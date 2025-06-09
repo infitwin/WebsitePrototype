@@ -16,10 +16,19 @@ module.exports = defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  /* Global test timeout - 10 minutes for in-depth testing */
+  timeout: 10 * 60 * 1000, // 10 minutes in milliseconds
+  
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:8357',
+
+    /* Action timeout - 2 minutes for individual actions */
+    actionTimeout: 2 * 60 * 1000, // 2 minutes
+    
+    /* Navigation timeout - 2 minutes for page loads */
+    navigationTimeout: 2 * 60 * 1000, // 2 minutes
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -29,6 +38,11 @@ module.exports = defineConfig({
     
     /* Video on failure */
     video: 'retain-on-failure',
+  },
+  
+  /* Expect timeout - 1 minute for assertions */
+  expect: {
+    timeout: 60 * 1000, // 1 minute
   },
 
   /* Configure projects for major browsers */
