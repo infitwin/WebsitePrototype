@@ -523,40 +523,7 @@
 <body>
     <div class="symphony-dashboard">
         <!-- Sidebar Navigation -->
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
-                <span style="font-size: 24px;">🏠</span>
-                <span class="sidebar-tooltip">Dashboard</span>
-            </a>
-            <a href="twin-management.html" class="sidebar-nav-item" data-page="twin">
-                <span style="font-size: 24px;">👥</span>
-                <span class="sidebar-tooltip">Twin Management</span>
-            </a>
-            <a href="interview.html" class="sidebar-nav-item" data-page="interview">
-                <span style="font-size: 24px;">🎤</span>
-                <span class="sidebar-tooltip">Interview</span>
-            </a>
-            <a href="curator.html" class="sidebar-nav-item" data-page="curator">
-                <span style="font-size: 24px;">🎨</span>
-                <span class="sidebar-tooltip">Curator</span>
-            </a>
-            <a href="interview-transcripts.html" class="sidebar-nav-item" data-page="transcripts">
-                <span style="font-size: 24px;">📝</span>
-                <span class="sidebar-tooltip">Transcripts</span>
-            </a>
-            <a href="talk-to-twin.html" class="sidebar-nav-item active" data-page="talk">
-                <span style="font-size: 24px;">💬</span>
-                <span class="sidebar-tooltip">Talk to Twin</span>
-            </a>
-            <a href="file-browser.html" class="sidebar-nav-item" data-page="files">
-                <span style="font-size: 24px;">📁</span>
-                <span class="sidebar-tooltip">My Files</span>
-            </a>
-            <a href="settings.html" class="sidebar-nav-item" data-page="settings">
-                <span style="font-size: 24px;">⚙️</span>
-                <span class="sidebar-tooltip">Settings</span>
-            </a>
-        </nav>
+        <div class="sidebar-nav-container"></div>
 
         <!-- Main Content Wrapper -->
         <div class="main-content-wrapper">
@@ -650,6 +617,7 @@
     <!-- TODO: Related memories API connection -->
     <!-- TODO: Message persistence and session management -->
 
+    <script src="../js/navigation.js"></script>
     <script>
         // Talk to Twin JavaScript Functionality
         let isRecording = false;

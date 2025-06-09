@@ -170,13 +170,264 @@
 
         /* Remove bouncy animations - clouds should just fade in/out */
 
-        /* 2. Neo4j Graph Container */
+        /* 2. Neo4j Graph Container - Dashboard Style */
         .graph-container {
             height: 540px;
             width: 100%;
-            background: #ffffff;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
+            display: flex;
+        }
+
+        /* Left Side - Neo4j Graph Section */
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        /* Graph Header with Title and Controls */
+        .graph-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+        }
+        
+        .graph-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .graph-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .graph-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .graph-control {
+            padding: 6px 10px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .graph-control:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        
+        .beautify-btn {
+            background-color: #fef3c7;
+            border-color: #fbbf24;
+            color: #92400e;
+        }
+        
+        .beautify-btn:hover {
+            background-color: #fde68a;
+            border-color: #f59e0b;
+        }
+        
+        /* Search and Filters Row */
+        .search-filters-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .hamburger-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            transition: all 0.2s;
+        }
+        
+        .hamburger-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        
+        .hamburger-line {
+            width: 18px;
+            height: 2px;
+            background-color: #666;
+        }
+        
+        /* Node Type Filters */
+        .node-filters {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        
+        .filter-btn.active {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        /* Graph Visualization Area - THE HERO */
+        .graph-visualization {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .graph-canvas {
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Neo4j container */
+        #curator-neo4j-viz {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+        
+        /* Graph Info Footer */
+        .graph-footer {
+            padding: 10px 20px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Right Side - Activity Section */
+        .activity-section {
+            width: 300px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .activity-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: white;
+        }
+        
+        .activity-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .activity-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .activity-section-box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .queue-content {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .queue-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .history-item {
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .history-item:last-child {
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .history-time {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 3px;
+        }
+        
+        .history-action {
+            font-size: 12px;
+            color: #333;
         }
 
         .graph-placeholder {
@@ -739,10 +990,84 @@
             <!-- Clouds will be dynamically inserted here -->
         </div>
 
-        <!-- 2. Neo4j Graph Container -->
+        <!-- 2. Neo4j Graph Container - Dashboard Style -->
         <div class="graph-container">
-            <div class="graph-placeholder" id="interview-neo4j-container">
-                <!-- Neo4j Graph Visualization will be rendered here -->
+            <!-- Left Side - Neo4j Graph -->
+            <div class="graph-section">
+                <!-- Graph Header -->
+                <div class="graph-header">
+                    <div class="graph-title-row">
+                        <h2 class="graph-title">Memory Knowledge Graph</h2>
+                        <div class="graph-controls">
+                            <button class="graph-control" onclick="centerGraph()">Center</button>
+                            <button class="graph-control" onclick="fitGraph()">Fit</button>
+                            <button class="graph-control" onclick="resetGraph()">Reset</button>
+                            <button class="graph-control beautify-btn" onclick="beautifyGraph()">✨ Beautify</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Search and Data Operations -->
+                    <div class="search-filters-row">
+                        <input type="text" class="search-input" placeholder="Search memories and connections...">
+                        <button class="hamburger-btn" onclick="toggleCuratorPopup()">
+                            <span class="hamburger-line"></span>
+                            <span class="hamburger-line"></span>
+                            <span class="hamburger-line"></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Node Type Filters -->
+                <div class="node-filters">
+                    <button class="filter-btn active">👤 Person</button>
+                    <button class="filter-btn active">📅 Event</button>
+                    <button class="filter-btn active">📍 Place</button>
+                    <button class="filter-btn active">💭 Memory</button>
+                    <button class="filter-btn active">🎨 Story</button>
+                </div>
+                
+                <!-- Graph Visualization - THE HERO -->
+                <div class="graph-visualization">
+                    <div class="graph-canvas">
+                        <div id="curator-neo4j-viz" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 18px;">
+                            Memory Graph Loading...
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Graph Footer -->
+                <div class="graph-footer">
+                    <span>Memories: 0 • Connections: 0 • Stories: 0</span>
+                </div>
+            </div>
+            
+            <!-- Right Side - Curation Activity -->
+            <div class="activity-section">
+                <div class="activity-header">
+                    <h3 class="activity-title">Curation Activity</h3>
+                </div>
+                
+                <div class="activity-content">
+                    <!-- Active Curation -->
+                    <div class="activity-section-box">
+                        <h4 class="section-title">Active Session</h4>
+                        <div class="queue-content">
+                            <span class="queue-status"></span>
+                            Winston is curating memories
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Stories -->
+                    <div class="activity-section-box">
+                        <h4 class="section-title">Recent Stories</h4>
+                        <div class="history-list">
+                            <div class="history-item">
+                                <div class="history-time" id="currentTime"></div>
+                                <div class="history-action">Childhood memories curated</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Photo Reference Window (hidden by default) -->
@@ -853,6 +1178,57 @@
         <div id="toastMessage"></div>
     </div>
 
+    <!-- Data Operations Popup -->
+    <div class="curator-popup-overlay" id="curatorOpsPopup" onclick="closeCuratorPopupOnOverlay(event)">
+        <div class="curator-popup-content">
+            <h2 class="curator-popup-header">Memory Operations</h2>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>📤</span>
+                <div>
+                    <div style="font-weight: 500;">Export Stories</div>
+                    <div style="font-size: 12px; color: #666;">Download your curated memories</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>🔄</span>
+                <div>
+                    <div style="font-weight: 500;">Import Memories</div>
+                    <div style="font-size: 12px; color: #666;">Upload memories to curate</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>👁️‍🗨️</span>
+                <div>
+                    <div style="font-weight: 500;">Hide Selected</div>
+                    <div style="font-size: 12px; color: #666;">Hide selected memories temporarily</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>👁️</span>
+                <div>
+                    <div style="font-weight: 500;">Show Hidden</div>
+                    <div style="font-size: 12px; color: #666;">Reveal previously hidden memories</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>🔍</span>
+                <div>
+                    <div style="font-weight: 500;">Clear Filters</div>
+                    <div style="font-size: 12px; color: #666;">Reset all active filters</div>
+                </div>
+            </button>
+            <div class="curator-popup-divider"></div>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>💾</span>
+                <div>
+                    <div style="font-weight: 500;">Memory Archive</div>
+                    <div style="font-size: 12px; color: #666;">View and manage archived stories</div>
+                </div>
+            </button>
+            <button class="curator-popup-close" onclick="closeCuratorPopup()">Close</button>
+        </div>
+    </div>
+
     <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
     <script src="../js/neo4j-init.js"></script>
     
@@ -873,28 +1249,28 @@
         // Initialize Neo4j Graph Visualization
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔍 Initializing Neo4j in interview page...');
-            const graphContainer = document.getElementById('interview-neo4j-container');
+            const graphContainer = document.getElementById('curator-neo4j-viz');
             
             if (graphContainer) {
-                console.log('✅ Interview Neo4j container found');
+                console.log('✅ Curator Neo4j container found');
                 
                 try {
                     const neo4jViz = new Neo4jVisualization(graphContainer, {
                         width: graphContainer.offsetWidth || 1200,
-                        height: 540, // Match the graph-container height
+                        height: 400, // Adjust for dashboard-style layout
                         showFilters: true,
                         showSearch: true
                     });
-                    console.log('✅ Interview Neo4j visualization created successfully');
+                    console.log('✅ Curator Neo4j visualization created successfully');
                     
                     // Store globally for debugging
-                    window.interviewNeo4jViz = neo4jViz;
+                    window.curatorNeo4jViz = neo4jViz;
                     
                 } catch (error) {
-                    console.error('❌ Failed to initialize interview Neo4j visualization:', error);
+                    console.error('❌ Failed to initialize curator Neo4j visualization:', error);
                 }
             } else {
-                console.error('❌ Interview Neo4j container not found!');
+                console.error('❌ Curator Neo4j container not found!');
             }
         });
 
@@ -1355,8 +1731,70 @@
             }, 3000);
         }
 
+        // Curator popup functions
+        function toggleCuratorPopup() {
+            document.getElementById('curatorOpsPopup').classList.add('show');
+        }
+        
+        function closeCuratorPopup() {
+            document.getElementById('curatorOpsPopup').classList.remove('show');
+        }
+        
+        function closeCuratorPopupOnOverlay(event) {
+            if (event.target.id === 'curatorOpsPopup') {
+                closeCuratorPopup();
+            }
+        }
+
+        // Graph control functions
+        function centerGraph() {
+            console.log('Centering memory graph');
+            if (window.curatorNeo4jViz) {
+                // Center the graph visualization
+                window.curatorNeo4jViz.center();
+            }
+        }
+        
+        function fitGraph() {
+            console.log('Fitting memory graph');
+            if (window.curatorNeo4jViz) {
+                // Fit graph to container
+                window.curatorNeo4jViz.fit();
+            }
+        }
+        
+        function resetGraph() {
+            console.log('Resetting memory graph');
+            if (window.curatorNeo4jViz) {
+                // Reset graph to initial state
+                window.curatorNeo4jViz.reset();
+            }
+        }
+        
+        function beautifyGraph() {
+            console.log('Beautifying memory graph');
+            if (window.curatorNeo4jViz) {
+                // Apply beautiful layout
+                window.curatorNeo4jViz.beautify();
+            }
+        }
+
+        // Initialize time display
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = timeStr;
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize time display
+            updateTime();
+            setInterval(updateTime, 60000);
+            
             // Handle enter key in input
             document.getElementById('messageInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -1381,6 +1819,83 @@
     </script>
     
     <style>
+        /* Data Operations Popup */
+        .curator-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .curator-popup-overlay.show {
+            display: flex;
+        }
+        
+        .curator-popup-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            max-width: 90%;
+            padding: 24px;
+        }
+        
+        .curator-popup-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .curator-popup-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .curator-popup-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #bbb;
+        }
+        
+        .curator-popup-divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 16px 0;
+        }
+        
+        .curator-popup-close {
+            margin-top: 16px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .curator-popup-close:hover {
+            background-color: #5a6268;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .interview-container {

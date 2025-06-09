@@ -95,7 +95,7 @@ test.describe('Dashboard Sidebar Logout Button', () => {
       { icon: '🎨', page: 'curator', expectedUrl: 'curator.html' },
       { icon: '📝', page: 'transcripts', expectedUrl: 'interview-transcripts.html' },
       { icon: '💬', page: 'talk', expectedUrl: 'talk-to-twin.html' },
-      { icon: '📁', page: 'files', expectedUrl: 'file-browser.html' },
+      { icon: '📁', page: 'files', expectedUrl: 'my-files.html' },
       { icon: '⚙️', page: 'settings', expectedUrl: 'settings.html' }
     ];
 

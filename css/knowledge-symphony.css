@@ -48,6 +48,26 @@
     color: white;
 }
 
+/* Sidebar Footer for Logout */
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.logout-item {
+    background: rgba(220, 38, 38, 0.1) !important;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.logout-item:hover {
+    background: rgba(220, 38, 38, 0.2) !important;
+    color: #FCA5A5 !important;
+}
+
 .sidebar-nav-item svg {
     width: 24px;
     height: 24px;
