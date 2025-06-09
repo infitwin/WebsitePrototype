@@ -39,6 +39,9 @@
                     <div class="header-left">
                         <h1>My Files</h1>
                         <p class="page-subtitle">Manage your documents and media files</p>
+                        <p class="user-info" id="userInfo" style="font-size: 0.875rem; color: #6B7280; margin-top: 0.25rem;">
+                            <!-- User info will be inserted here -->
+                        </p>
                     </div>
                     <div class="header-actions">
                         <div class="search-box">
@@ -634,21 +637,61 @@
         import { Modal } from '../js/components/ui/modal.js';
 
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 My Files page loading...');
+            
             // Check authentication
+            console.log('🔐 Checking authentication...');
             const allowed = await guardPage({
                 requireVerified: false,  // Temporarily disabled for testing
                 redirectTo: '/pages/auth.html'
             });
             
             if (!allowed) {
+                console.log('❌ Authentication failed');
                 return;
             }
+            
+            console.log('✅ Authentication passed');
 
             // Initialize file browser
-            initializeFileBrowser();
+            await initializeFileBrowser();
         });
 
         async function initializeFileBrowser() {
+            console.log('🔧 Initializing file browser...');
+            
+            // Check if user is authenticated with Firebase
+            const { auth } = await import('../js/firebase-config.js');
+            console.log('🔐 Firebase auth loaded, current user:', auth.currentUser ? 'Yes' : 'No');
+            
+            // If no current user, wait a bit for auth state to resolve
+            if (!auth.currentUser) {
+                console.log('⏳ Waiting for auth state...');
+                await new Promise(resolve => {
+                    const unsubscribe = auth.onAuthStateChanged(user => {
+                        if (user) {
+                            console.log('✅ Auth state resolved, user:', user.email);
+                            unsubscribe();
+                            resolve();
+                        } else {
+                            setTimeout(() => {
+                                console.log('❌ No user after waiting');
+                                unsubscribe();
+                                resolve();
+                            }, 3000);
+                        }
+                    });
+                });
+            }
+            
+            // Update user info in page header
+            if (auth.currentUser) {
+                const userInfo = document.getElementById('userInfo');
+                if (userInfo) {
+                    userInfo.textContent = `Viewing files for: ${auth.currentUser.email}`;
+                }
+            }
+            
             // Initialize drag and drop
             const dropZone = document.getElementById('dropZone');
             const uploadQueue = createUploadQueue();
@@ -662,24 +705,44 @@
             });
 
             // Initialize storage chart
-            createStorageDonutChart('storageDonutChart');
+            try {
+                createStorageDonutChart('storageDonutChart');
+                console.log('📊 Storage chart initialized');
+            } catch (error) {
+                console.warn('⚠️  Storage chart failed:', error);
+            }
 
             // Load existing files
             try {
+                console.log('🚀 Starting file loading...');
                 await loadFiles(true); // Reset pagination on initial load
                 await updateStorageInfo();
                 await updateStorageStats();
+                console.log('✅ File loading completed');
             } catch (error) {
-                console.error('Error initializing:', error);
-                // Show empty state on error
+                console.error('❌ Error initializing:', error);
+                // Show empty state on error - this is normal if no Firebase user
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('emptyState').style.display = 'block';
+                
+                // Show informative message if user not authenticated
+                if (!auth.currentUser) {
+                    const emptyState = document.getElementById('emptyState');
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">🔐</div>
+                        <h3>Authentication Required</h3>
+                        <p>Please log in to view your files</p>
+                        <button onclick="window.location.href='auth.html'" class="drop-zone-button">Go to Login</button>
+                    `;
+                }
             }
 
             // Setup event listeners
             setupEventListeners();
             setupStorageEventListeners();
             setupSelectAllFunctionality();
+            
+            console.log('🎉 File browser initialization complete');
         }
 
         // Pagination state
@@ -691,6 +754,8 @@
         };
 
         async function loadFiles(reset = false) {
+            console.log('📁 loadFiles called, reset:', reset);
+            
             const container = document.getElementById('filesContainer');
             const emptyState = document.getElementById('emptyState');
             const loadingState = document.getElementById('loadingState');
@@ -707,20 +772,35 @@
             }
 
             // Prevent multiple concurrent loads
-            if (currentPage.loading) return;
+            if (currentPage.loading) {
+                console.log('⏳ Already loading, skipping...');
+                return;
+            }
             currentPage.loading = true;
 
             // Show loading on first load
             if (reset) {
+                console.log('🔄 Showing loading state...');
                 loadingState.style.display = 'block';
                 emptyState.style.display = 'none';
             }
 
             try {
+                console.log('🔍 Getting filter values...');
                 // Get filter values
                 const filterType = document.getElementById('fileTypeFilter').value;
                 const sortBy = document.getElementById('sortBy').value;
                 const [sortField, sortOrder] = sortBy.split('-');
+
+                console.log('📊 Calling getUserFiles with:', {
+                    pageSize: 20,
+                    lastDoc: reset ? null : currentPage.lastDoc,
+                    sortBy: sortField,
+                    sortOrder: sortOrder,
+                    filterType: filterType
+                });
+
+                // No artificial delay needed - let it load naturally
 
                 const result = await getUserFiles({
                     pageSize: 20,
@@ -729,6 +809,8 @@
                     sortOrder: sortOrder,
                     filterType: filterType
                 });
+                
+                console.log('📋 getUserFiles result:', result);
                 
                 // Update pagination state
                 if (reset) {
@@ -740,13 +822,16 @@
                 currentPage.lastDoc = result.lastDoc;
                 currentPage.loading = false;
                 
+                console.log('✅ Hiding loading state...');
                 loadingState.style.display = 'none';
 
                 if (currentPage.files.length === 0) {
+                    console.log('📂 No files found, showing empty state');
                     emptyState.style.display = 'block';
                     return;
                 }
 
+                console.log('🎨 Rendering', currentPage.files.length, 'files');
                 // Render files based on current view
                 const currentView = document.querySelector('.view-btn.active').dataset.view;
                 renderFiles(currentPage.files, currentView);
@@ -755,10 +840,24 @@
                 updateLoadMoreButton();
 
             } catch (error) {
-                console.error('Error loading files:', error);
-                showNotification('Failed to load files', 'error');
+                console.error('❌ Error loading files:', error);
+                console.log('🔧 FORCING empty state due to error');
+                
+                // FORCE the loading to stop and show empty state
                 loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
                 currentPage.loading = false;
+                
+                // Show user-friendly message in empty state
+                const emptyState = document.getElementById('emptyState');
+                emptyState.innerHTML = `
+                    <div class="empty-icon">📂</div>
+                    <h3>No files yet</h3>
+                    <p>Upload your first file to get started</p>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: #6B7280;">
+                        Debug: ${error.message}
+                    </div>
+                `;
             }
         }
 
@@ -1044,20 +1143,27 @@
         function setupStorageEventListeners() {
             // Optimize button
             document.getElementById('optimizeBtn').addEventListener('click', async () => {
-                if (confirm('This will analyze your storage and suggest optimizations. Continue?')) {
-                    // Show loading state
-                    const btn = document.getElementById('optimizeBtn');
-                    const originalText = btn.querySelector('.action-text').textContent;
-                    btn.querySelector('.action-text').textContent = 'Analyzing...';
-                    btn.disabled = true;
+                const modal = Modal.confirm({
+                    title: 'Storage Optimization',
+                    message: 'This will analyze your storage and suggest optimizations. Continue?',
+                    confirmText: 'Analyze',
+                    type: 'info',
+                    onConfirm: () => {
+                        // Show loading state
+                        const btn = document.getElementById('optimizeBtn');
+                        const originalText = btn.querySelector('.action-text').textContent;
+                        btn.querySelector('.action-text').textContent = 'Analyzing...';
+                        btn.disabled = true;
 
-                    // Simulate optimization process
-                    setTimeout(() => {
-                        btn.querySelector('.action-text').textContent = originalText;
-                        btn.disabled = false;
-                        showNotification('Storage optimization complete! Check your files for potential savings.', 'success');
-                    }, 2000);
-                }
+                        // Simulate optimization process
+                        setTimeout(() => {
+                            btn.querySelector('.action-text').textContent = originalText;
+                            btn.disabled = false;
+                            showNotification('Storage optimization complete! Check your files for potential savings.', 'success');
+                        }, 2000);
+                    }
+                });
+                modal.show();
             });
 
             // Export button
@@ -1164,16 +1270,23 @@
                     return;
                 }
                 
-                if (confirm(`Are you sure you want to delete ${selectedFiles.length} files? This action cannot be undone.`)) {
-                    // Implement batch delete logic here
-                    showNotification(`Deleting ${selectedFiles.length} files...`, 'info');
-                    
-                    // Clear selections after delete
-                    setTimeout(() => {
-                        document.querySelectorAll('.file-checkbox:checked').forEach(cb => cb.checked = false);
-                        updateBatchActions();
-                    }, 1000);
-                }
+                const modal = Modal.confirm({
+                    title: 'Delete Files',
+                    message: `Are you sure you want to delete ${selectedFiles.length} files? This action cannot be undone.`,
+                    confirmText: 'Delete',
+                    type: 'danger',
+                    onConfirm: () => {
+                        // Implement batch delete logic here
+                        showNotification(`Deleting ${selectedFiles.length} files...`, 'info');
+                        
+                        // Clear selections after delete
+                        setTimeout(() => {
+                            document.querySelectorAll('.file-checkbox:checked').forEach(cb => cb.checked = false);
+                            updateBatchActions();
+                        }, 1000);
+                    }
+                });
+                modal.show();
             });
 
             function getSelectedFiles() {

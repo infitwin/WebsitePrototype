@@ -417,82 +417,6 @@
             color: #666;
         }
         
-        /* Popup */
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .popup-overlay.show {
-            display: flex;
-        }
-        
-        .popup-content {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            width: 400px;
-            max-width: 90%;
-            padding: 24px;
-        }
-        
-        .popup-header {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .popup-btn {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #ddd;
-            background-color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-            text-align: left;
-        }
-        
-        .popup-btn:hover {
-            background-color: #f8f9fa;
-            border-color: #bbb;
-        }
-        
-        .popup-divider {
-            height: 1px;
-            background-color: #e0e0e0;
-            margin: 16px 0;
-        }
-        
-        .popup-close {
-            margin-top: 16px;
-            padding: 10px 20px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 14px;
-        }
-        
-        .popup-close:hover {
-            background-color: #5a6268;
-        }
 
         /* User Dropdown Menu Styles */
         .user-dropdown-container {
@@ -804,56 +728,6 @@
         </div> <!-- End main-content-wrapper -->
     </div> <!-- End symphony-dashboard -->
     
-    <!-- Data Operations Popup -->
-    <div class="popup-overlay" id="dataOpsPopup" onclick="closePopupOnOverlay(event)">
-        <div class="popup-content">
-            <h2 class="popup-header">Data Operations</h2>
-            <button class="popup-btn" onclick="closePopup()">
-                <span>📤</span>
-                <div>
-                    <div style="font-weight: 500;">Export Data</div>
-                    <div style="font-size: 12px; color: #666;">Download your knowledge graph</div>
-                </div>
-            </button>
-            <button class="popup-btn" onclick="closePopup()">
-                <span>🔄</span>
-                <div>
-                    <div style="font-weight: 500;">Import Data</div>
-                    <div style="font-size: 12px; color: #666;">Upload data to your graph</div>
-                </div>
-            </button>
-            <button class="popup-btn" onclick="closePopup()">
-                <span>👁️‍🗨️</span>
-                <div>
-                    <div style="font-weight: 500;">Hide Selected</div>
-                    <div style="font-size: 12px; color: #666;">Hide selected items and their dependencies</div>
-                </div>
-            </button>
-            <button class="popup-btn" onclick="closePopup()">
-                <span>👁️</span>
-                <div>
-                    <div style="font-weight: 500;">Show Hidden Items</div>
-                    <div style="font-size: 12px; color: #666;">Reveal previously hidden content</div>
-                </div>
-            </button>
-            <button class="popup-btn" onclick="closePopup()">
-                <span>🔍</span>
-                <div>
-                    <div style="font-weight: 500;">Clear Filters</div>
-                    <div style="font-size: 12px; color: #666;">Reset all active filters</div>
-                </div>
-            </button>
-            <div class="popup-divider"></div>
-            <button class="popup-btn" onclick="closePopup()">
-                <span>💾</span>
-                <div>
-                    <div style="font-weight: 500;">Manage Hidden Data</div>
-                    <div style="font-size: 12px; color: #666;">View and manage all hidden items</div>
-                </div>
-            </button>
-            <button class="popup-close" onclick="closePopup()">Close</button>
-        </div>
-    </div>
 
     <!-- Load Shared Navigation -->
     <script src="../js/navigation.js"></script>
@@ -866,6 +740,7 @@
         import { createStorageMeterWidget } from '../js/storage-ui.js';
         import { createActivityFeedWidget } from '../js/dashboard-widgets.js';
         import { createQuickActionsWidget } from '../js/dashboard-widgets.js';
+        import { Modal } from '../js/components/ui/modal.js';
 
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize all widgets in the activity sidebar
@@ -876,25 +751,85 @@
             // Neo4j is already initialized by neo4j-init.js
             console.log('📋 Advanced dashboard with widgets initialized');
         });
+
+        // Data Operations Modal Function
+        window.togglePopup = function() {
+            showDataOperationsModal();
+        };
+        
+        function showDataOperationsModal() {
+            const actions = [
+                {
+                    text: '📤 Export Data',
+                    description: 'Download your knowledge graph',
+                    action: () => console.log('Export Data clicked')
+                },
+                {
+                    text: '🔄 Import Data', 
+                    description: 'Upload data to your graph',
+                    action: () => console.log('Import Data clicked')
+                },
+                {
+                    text: '👁️‍🗨️ Hide Selected',
+                    description: 'Hide selected items and their dependencies', 
+                    action: () => console.log('Hide Selected clicked')
+                },
+                {
+                    text: '👁️ Show Hidden Items',
+                    description: 'Reveal previously hidden content',
+                    action: () => console.log('Show Hidden Items clicked')
+                },
+                {
+                    text: '🔍 Clear Filters',
+                    description: 'Reset all active filters',
+                    action: () => console.log('Clear Filters clicked')
+                },
+                {
+                    text: '💾 Manage Hidden Data',
+                    description: 'View and manage all hidden items',
+                    action: () => console.log('Manage Hidden Data clicked')
+                }
+            ];
+            
+            // Create content with action buttons
+            const contentDiv = document.createElement('div');
+            actions.forEach(action => {
+                const actionBtn = document.createElement('button');
+                actionBtn.className = 'infitwin-button infitwin-button--secondary infitwin-button--full-width';
+                actionBtn.style.marginBottom = '12px';
+                actionBtn.style.textAlign = 'left';
+                actionBtn.style.justifyContent = 'flex-start';
+                actionBtn.style.gap = '10px';
+                
+                actionBtn.innerHTML = `
+                    <span>${action.text}</span>
+                    <div style="font-size: 12px; color: #666; font-weight: normal;">
+                        ${action.description}
+                    </div>
+                `;
+                
+                actionBtn.addEventListener('click', () => {
+                    action.action();
+                    modal.hide();
+                });
+                
+                contentDiv.appendChild(actionBtn);
+            });
+            
+            const modal = new Modal({
+                title: 'Data Operations',
+                content: contentDiv,
+                size: 'medium',
+                actions: [
+                    { text: 'Close', type: 'secondary' }
+                ]
+            });
+            
+            modal.show();
+        }
     </script>
     
     <script>
-        // Data Operations Popup Functions
-        function togglePopup() {
-            const popup = document.getElementById('dataOpsPopup');
-            popup.classList.add('show');
-        }
-        
-        function closePopup() {
-            const popup = document.getElementById('dataOpsPopup');
-            popup.classList.remove('show');
-        }
-        
-        function closePopupOnOverlay(event) {
-            if (event.target.id === 'dataOpsPopup') {
-                closePopup();
-            }
-        }
 
         // Populate user info from localStorage
         document.addEventListener('DOMContentLoaded', function() {

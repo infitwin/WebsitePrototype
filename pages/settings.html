@@ -1010,7 +1010,8 @@
     </script>
 
     <script src="../js/navigation.js"></script>
-    <script>
+    <script type="module">
+        import { Modal } from '../js/components/ui/modal.js';
         
         // Settings Page JavaScript Functionality
         let userSettings = {
@@ -1293,23 +1294,34 @@
         
         // Handle logout
         async function handleLogout() {
-            if (confirm('Are you sure you want to sign out?')) {
-                try {
-                    // Sign out from Firebase using v8 syntax
-                    await auth.signOut();
-                    
-                    // Clear local storage
-                    localStorage.removeItem('userName');
-                    localStorage.removeItem('userEmail');
-                    localStorage.removeItem('userSettings');
-                    
-                    // Redirect to login page
-                    window.location.href = '../auth.html';
-                } catch (error) {
-                    console.error('Logout error:', error);
-                    alert('Error signing out. Please try again.');
+            const modal = Modal.confirm({
+                title: 'Sign Out',
+                message: 'Are you sure you want to sign out?',
+                confirmText: 'Sign Out',
+                onConfirm: async () => {
+                    try {
+                        // Sign out from Firebase using v8 syntax
+                        await auth.signOut();
+                        
+                        // Clear local storage
+                        localStorage.removeItem('userName');
+                        localStorage.removeItem('userEmail');
+                        localStorage.removeItem('userSettings');
+                        
+                        // Redirect to login page
+                        window.location.href = '../auth.html';
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        const errorModal = Modal.alert({
+                            title: 'Error',
+                            message: 'Error signing out. Please try again.',
+                            type: 'danger'
+                        });
+                        errorModal.show();
+                    }
                 }
-            }
+            });
+            modal.show();
         }
 
         // Password Strength Checker
@@ -1513,14 +1525,31 @@
         // Data Export/Delete Functions (Placeholders)
         function downloadData() {
             // TODO: Implement data export
-            alert('Data export would generate a download of all your memories and settings.');
+            const modal = Modal.alert({
+                title: 'Data Export',
+                message: 'Data export would generate a download of all your memories and settings.',
+                type: 'info'
+            });
+            modal.show();
         }
 
         function deleteAccount() {
-            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-                // TODO: Implement account deletion
-                alert('Account deletion would be processed. This is a placeholder.');
-            }
+            const modal = Modal.confirm({
+                title: 'Delete Account',
+                message: 'Are you sure you want to delete your account? This action cannot be undone.',
+                confirmText: 'Delete Account',
+                type: 'danger',
+                onConfirm: () => {
+                    // TODO: Implement account deletion
+                    const successModal = Modal.alert({
+                        title: 'Account Deletion',
+                        message: 'Account deletion would be processed. This is a placeholder.',
+                        type: 'info'
+                    });
+                    successModal.show();
+                }
+            });
+            modal.show();
         }
 
         // Preferences handlers
@@ -1552,41 +1581,48 @@
         }
 
         function resetPreferences() {
-            if (confirm('Reset all preferences to their default values?')) {
-                document.getElementById('themePreference').value = 'light';
-                document.getElementById('languagePreference').value = 'en';
-                document.getElementById('dateFormat').value = 'mdy';
-                
-                // Reset toggle switches in preferences section
-                const preferencesSection = document.querySelector('.preferences-section');
-                const toggles = preferencesSection.querySelectorAll('[data-setting]');
-                toggles.forEach(toggle => {
-                    const setting = toggle.dataset.setting;
-                    const input = toggle.querySelector('.toggle-input');
+            const modal = Modal.confirm({
+                title: 'Reset Preferences',
+                message: 'Reset all preferences to their default values?',
+                confirmText: 'Reset',
+                type: 'warning',
+                onConfirm: () => {
+                    document.getElementById('themePreference').value = 'light';
+                    document.getElementById('languagePreference').value = 'en';
+                    document.getElementById('dateFormat').value = 'mdy';
                     
-                    // Set default values
-                    const defaults = {
-                        autoSaveInterviews: true,
-                        compactView: false,
-                        animationEffects: true,
-                        soundEffects: false
-                    };
+                    // Reset toggle switches in preferences section
+                    const preferencesSection = document.querySelector('.preferences-section');
+                    const toggles = preferencesSection.querySelectorAll('[data-setting]');
+                    toggles.forEach(toggle => {
+                        const setting = toggle.dataset.setting;
+                        const input = toggle.querySelector('.toggle-input');
+                        
+                        // Set default values
+                        const defaults = {
+                            autoSaveInterviews: true,
+                            compactView: false,
+                            animationEffects: true,
+                            soundEffects: false
+                        };
+                        
+                        const defaultValue = defaults[setting] !== undefined ? defaults[setting] : false;
+                        input.checked = defaultValue;
+                        
+                        if (defaultValue) {
+                            toggle.classList.add('active');
+                        } else {
+                            toggle.classList.remove('active');
+                        }
+                        
+                        userSettings[setting] = defaultValue;
+                    });
                     
-                    const defaultValue = defaults[setting] !== undefined ? defaults[setting] : false;
-                    input.checked = defaultValue;
-                    
-                    if (defaultValue) {
-                        toggle.classList.add('active');
-                    } else {
-                        toggle.classList.remove('active');
-                    }
-                    
-                    userSettings[setting] = defaultValue;
-                });
-                
-                saveSettings();
-                showSuccessMessage('Preferences reset to defaults!');
-            }
+                    saveSettings();
+                    showSuccessMessage('Preferences reset to defaults!');
+                }
+            });
+            modal.show();
         }
 
         // Add click handlers for data buttons
