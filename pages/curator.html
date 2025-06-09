@@ -156,10 +156,102 @@
             color: #1f2937;
         }
 
+        .nav-center {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
         .nav-right {
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        /* Curation Progress Indicator */
+        .curation-progress-container {
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .progress-percentage {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6B46C1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #E5E7EB;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-details {
+            display: flex;
+            justify-content: center;
+        }
+
+        .progress-count {
+            font-size: 11px;
+            color: #6B7280;
+        }
+
+        /* Responsive Design for Progress Indicator */
+        @media (max-width: 768px) {
+            .nav-center {
+                padding: 0 10px;
+            }
+            
+            .curation-progress-container {
+                min-width: 200px;
+                max-width: 250px;
+            }
+            
+            .progress-label,
+            .progress-percentage {
+                font-size: 11px;
+            }
+            
+            .progress-count {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .progress-info {
+                flex-direction: column;
+                gap: 2px;
+                margin-bottom: 6px;
+            }
+            
+            .progress-details {
+                margin-top: 2px;
+            }
         }
 
         .nav-btn {
@@ -1086,6 +1178,20 @@
             <a href="../dashboard.html" class="back-btn">← Dashboard</a>
             <h1 class="interview-title">Memory Curator with Winston</h1>
         </div>
+        <div class="nav-center">
+            <div class="curation-progress-container">
+                <div class="progress-info">
+                    <span class="progress-label">Curation Progress</span>
+                    <span class="progress-percentage" id="curationPercentage">15%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="curationProgressFill" style="width: 15%"></div>
+                </div>
+                <div class="progress-details">
+                    <span class="progress-count" id="curationCount">3 of 20 memories curated</span>
+                </div>
+            </div>
+        </div>
         <div class="nav-right">
             <button class="nav-btn" id="undoBtn" onclick="undoAction()" disabled title="Undo last action">
                 <span>↶</span> Undo
@@ -1374,6 +1480,10 @@
             undoRedoManager = new UndoRedoManager();
             console.log('✅ Undo/Redo system initialized');
             
+            // Initialize Curation Progress Manager
+            curationProgressManager = new CurationProgressManager();
+            console.log('✅ Curation progress system initialized');
+            
             // Add keyboard shortcuts for undo/redo
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -1531,6 +1641,108 @@
                 redo: redoFunction,
                 timestamp: Date.now()
             };
+        }
+
+        // Curation Progress Management System
+        class CurationProgressManager {
+            constructor() {
+                this.totalMemories = 20; // Default value, will be updated
+                this.curatedMemories = 3; // Default value
+                this.init();
+            }
+
+            init() {
+                this.updateDisplay();
+            }
+
+            setTotalMemories(total) {
+                this.totalMemories = total;
+                this.updateDisplay();
+            }
+
+            setCuratedMemories(curated) {
+                this.curatedMemories = Math.max(0, Math.min(curated, this.totalMemories));
+                this.updateDisplay();
+            }
+
+            incrementCurated() {
+                this.setCuratedMemories(this.curatedMemories + 1);
+            }
+
+            decrementCurated() {
+                this.setCuratedMemories(this.curatedMemories - 1);
+            }
+
+            getProgress() {
+                return this.totalMemories > 0 ? (this.curatedMemories / this.totalMemories) * 100 : 0;
+            }
+
+            updateDisplay() {
+                const percentage = Math.round(this.getProgress());
+                const percentageElement = document.getElementById('curationPercentage');
+                const fillElement = document.getElementById('curationProgressFill');
+                const countElement = document.getElementById('curationCount');
+
+                if (percentageElement) {
+                    percentageElement.textContent = `${percentage}%`;
+                }
+
+                if (fillElement) {
+                    fillElement.style.width = `${percentage}%`;
+                }
+
+                if (countElement) {
+                    countElement.textContent = `${this.curatedMemories} of ${this.totalMemories} memories curated`;
+                }
+
+                // Update progress bar color based on completion
+                if (fillElement) {
+                    if (percentage === 100) {
+                        fillElement.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)'; // Green when complete
+                    } else if (percentage >= 75) {
+                        fillElement.style.background = 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)'; // Blue when almost done
+                    } else {
+                        fillElement.style.background = 'linear-gradient(135deg, #6B46C1 0%, #9333EA 100%)'; // Purple default
+                    }
+                }
+            }
+
+            // Simulate progress changes for demo
+            simulateProgress() {
+                let current = 0;
+                const interval = setInterval(() => {
+                    current += Math.floor(Math.random() * 3) + 1;
+                    this.setCuratedMemories(current);
+                    
+                    if (current >= this.totalMemories) {
+                        clearInterval(interval);
+                        console.log('🎉 Curation complete!');
+                    }
+                }, 2000);
+            }
+        }
+
+        // Global progress manager
+        let curationProgressManager = null;
+
+        // Progress management functions
+        function updateCurationProgress(curated, total = null) {
+            if (curationProgressManager) {
+                if (total !== null) {
+                    curationProgressManager.setTotalMemories(total);
+                }
+                curationProgressManager.setCuratedMemories(curated);
+            }
+        }
+
+        function incrementCurationProgress() {
+            if (curationProgressManager) {
+                curationProgressManager.incrementCurated();
+            }
+        }
+
+        function getCurationProgress() {
+            return curationProgressManager ? curationProgressManager.getProgress() : 0;
         }
 
         // WebsitePrototype Audio Services Integration
