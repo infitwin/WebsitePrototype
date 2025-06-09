@@ -706,6 +706,7 @@
                                 <option value="America/Denver">Mountain Time (MT)</option>
                                 <option value="America/Los_Angeles" selected>Pacific Time (PT)</option>
                             </select>
+                            <div class="form-error">Please select a valid timezone</div>
                         </div>
                     </div>
 
@@ -1102,6 +1103,12 @@
             // Populate form fields
             populateFormFields();
             setupToggleSwitches();
+            
+            // Validate timezone on initialization
+            validateTimezone();
+            
+            // Start monitoring for programmatic changes
+            monitorTimezoneChanges();
         }
 
         function setupEventListeners() {
@@ -1147,6 +1154,10 @@
                 const element = document.getElementById(id);
                 element.addEventListener('change', handlePreferenceChange);
             });
+            
+            // Timezone validation on change
+            const timezoneSelect = document.getElementById('timezone');
+            timezoneSelect.addEventListener('change', validateTimezone);
             
             // Handle direct clicks on toggle inputs
             document.querySelectorAll('.toggle-input').forEach(input => {
@@ -1213,6 +1224,18 @@
             
             const formData = new FormData(e.target);
             const saveBtn = document.getElementById('saveAccountBtn');
+            
+            // Validate timezone
+            const timezoneValue = document.getElementById('timezone').value;
+            const validTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'];
+            
+            if (!timezoneValue || !validTimezones.includes(timezoneValue)) {
+                showFieldError('timezone', 'Please select a valid timezone');
+                return;
+            }
+            
+            // Clear any existing timezone errors
+            clearFieldError('timezone');
             
             // Show loading state
             saveBtn.disabled = true;
@@ -1397,6 +1420,80 @@
             } else {
                 confirmInput.classList.remove('error');
             }
+        }
+        
+        function validateTimezone() {
+            const timezoneSelect = document.getElementById('timezone');
+            const timezoneValue = timezoneSelect.value;
+            const validTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'];
+            
+            if (!timezoneValue || !validTimezones.includes(timezoneValue)) {
+                // Reset to default valid timezone
+                timezoneSelect.value = 'America/Los_Angeles';
+                showFieldError('timezone', 'Invalid timezone selected. Reset to Pacific Time.');
+                
+                // Auto-clear error after 3 seconds
+                setTimeout(() => {
+                    clearFieldError('timezone');
+                }, 3000);
+                
+                return false;
+            }
+            
+            clearFieldError('timezone');
+            return true;
+        }
+        
+        // Monitor for programmatic changes to timezone select
+        function monitorTimezoneChanges() {
+            const timezoneSelect = document.getElementById('timezone');
+            let lastValidValue = timezoneSelect.value || 'America/Los_Angeles';
+            const validTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'];
+            
+            // Use MutationObserver to detect attribute changes
+            const observer = new MutationObserver(() => {
+                const currentValue = timezoneSelect.value;
+                if (!currentValue || !validTimezones.includes(currentValue)) {
+                    timezoneSelect.value = lastValidValue;
+                } else {
+                    lastValidValue = currentValue;
+                }
+            });
+            
+            observer.observe(timezoneSelect, { 
+                attributes: true, 
+                attributeFilter: ['value'] 
+            });
+            
+            // Also use property descriptor to intercept direct value assignment
+            let originalValue = timezoneSelect.value;
+            Object.defineProperty(timezoneSelect, 'value', {
+                get() {
+                    return originalValue;
+                },
+                set(newValue) {
+                    if (newValue && validTimezones.includes(newValue)) {
+                        originalValue = newValue;
+                        lastValidValue = newValue;
+                    } else {
+                        originalValue = lastValidValue;
+                    }
+                    // Update the actual DOM element
+                    timezoneSelect.setAttribute('value', originalValue);
+                    // Trigger change event
+                    timezoneSelect.dispatchEvent(new Event('change'));
+                },
+                configurable: true
+            });
+            
+            // Fallback: Check periodically as well
+            setInterval(() => {
+                const currentValue = timezoneSelect.getAttribute('value') || '';
+                if (!currentValue || !validTimezones.includes(currentValue)) {
+                    timezoneSelect.value = lastValidValue;
+                    originalValue = lastValidValue;
+                }
+            }, 50);
         }
 
         // Utility Functions
