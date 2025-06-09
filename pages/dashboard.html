@@ -73,8 +73,14 @@
             <!-- Knowledge Graph Placeholder -->
             <section class="knowledge-graph-placeholder">
                 <div class="graph-container">
-                    <h2>Knowledge Symphony</h2>
-                    <div class="graph-placeholder-content" id="neo4j-graph-container">
+                    <div class="graph-placeholder-content" id="neo4j-graph-container" style="
+                        width: 100%;
+                        height: 450px;
+                        position: relative;
+                        display: block;
+                        background: #ffffff;
+                        border: 1px dashed #6B46C1;
+                    ">
                         <!-- Neo4j Graph Visualization will be rendered here -->
                     </div>
                 </div>
@@ -183,8 +189,10 @@
         }
     </style>
 
+    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/neo4j-init.js"></script>
+    
     <script type="module" src="../js/knowledge-symphony.js"></script>
-    <script src="../js/neo4j-visualization.js"></script>
     <script type="module">
         import { createStorageMeterWidget } from '../js/storage-ui.js';
         import { createActivityFeedWidget } from '../js/dashboard-widgets.js';
@@ -196,22 +204,8 @@
             createActivityFeedWidget('activityWidget');
             createQuickActionsWidget('quickActionsWidget');
             
-            // Initialize Neo4j Graph Visualization
-            const graphContainer = document.getElementById('neo4j-graph-container');
-            if (graphContainer) {
-                const neo4jViz = new Neo4jVisualization(graphContainer, {
-                    width: graphContainer.offsetWidth || 800,
-                    height: 300,
-                    showFilters: true,
-                    showSearch: true
-                });
-                
-                // Make it responsive
-                window.addEventListener('resize', () => {
-                    const newWidth = graphContainer.offsetWidth || 800;
-                    neo4jViz.resize(newWidth, 300);
-                });
-            }
+            // Neo4j is already initialized by neo4j-init.js
+            console.log('📋 Dashboard widgets initialized');
         });
     </script>
     

@@ -1,9 +1,10 @@
 /**
- * Neo4j Graph Visualization - Vanilla JavaScript Implementation
- * Adapted for WebsitePrototype integration
+ * Neo4j Initialization - Standalone Script
+ * Loads before Firebase modules to avoid conflicts
  */
 
-export class Neo4jVisualization {
+// Create Neo4j class directly in global scope
+class Neo4jVisualization {
   constructor(container, options = {}) {
     this.container = container;
     this.options = {
@@ -32,6 +33,7 @@ export class Neo4jVisualization {
   }
 
   init() {
+    console.log('🚀 Initializing Neo4j visualization...');
     this.createContainer();
     this.loadD3();
   }
@@ -204,6 +206,7 @@ export class Neo4jVisualization {
     const script = document.createElement('script');
     script.src = 'https://d3js.org/d3.v7.min.js';
     script.onload = () => {
+      console.log('✅ D3.js loaded successfully');
       this.initializeVisualization();
     };
     script.onerror = () => {
@@ -213,6 +216,7 @@ export class Neo4jVisualization {
   }
 
   initializeVisualization() {
+    console.log('🎨 Setting up D3 visualization...');
     const graphArea = this.container.querySelector('.graph-area');
     graphArea.innerHTML = '<svg width="100%" height="100%"></svg>';
     
@@ -224,7 +228,7 @@ export class Neo4jVisualization {
 
   setupVisualization() {
     const width = this.options.width;
-    const height = this.options.height - 120; // Account for controls
+    const height = this.options.height - 140; // Account for controls in taller container
 
     // Setup zoom
     this.zoom = d3.zoom()
@@ -279,6 +283,7 @@ export class Neo4jVisualization {
   }
 
   loadSampleData() {
+    console.log('📊 Loading sample data...');
     // Sample data for WebsitePrototype
     this.data = {
       nodes: [
@@ -301,8 +306,9 @@ export class Neo4jVisualization {
   }
 
   updateVisualization() {
+    console.log('🔄 Updating visualization...');
     const width = this.options.width;
-    const height = this.options.height - 120;
+    const height = this.options.height - 140; // More space for controls with taller container
 
     // Update status
     this.updateStatus();
@@ -379,6 +385,7 @@ export class Neo4jVisualization {
     });
 
     this.simulation.alpha(1).restart();
+    console.log('✅ Visualization updated successfully');
   }
 
   getNodeLabel(node) {
@@ -415,7 +422,6 @@ export class Neo4jVisualization {
 
   handleNodeClick(node) {
     console.log('Node clicked:', node);
-    // Add selection logic here
   }
 
   toggleFilter(type) {
@@ -487,22 +493,41 @@ export class Neo4jVisualization {
       </div>
     `;
   }
+}
 
-  // Public API
-  setData(data) {
-    this.data = data;
-    if (this.simulation) {
-      this.updateVisualization();
+// Global initialization function
+window.initializeNeo4jVisualization = function() {
+  console.log('🔍 Looking for Neo4j container...');
+  const graphContainer = document.getElementById('neo4j-graph-container');
+  
+  if (graphContainer) {
+    console.log('✅ Container found:', graphContainer);
+    console.log('📏 Container dimensions:', graphContainer.offsetWidth, 'x', graphContainer.offsetHeight);
+    
+    try {
+      console.log('🚀 Initializing Neo4j visualization...');
+      const neo4jViz = new Neo4jVisualization(graphContainer, {
+        width: graphContainer.offsetWidth || 800,
+        height: 450,
+        showFilters: true,
+        showSearch: true
+      });
+      console.log('✅ Neo4j visualization created successfully');
+      
+      // Store globally for debugging
+      window.neo4jViz = neo4jViz;
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize Neo4j visualization:', error);
     }
+  } else {
+    console.error('❌ Neo4j container not found!');
   }
+};
 
-  resize(width, height) {
-    this.options.width = width;
-    this.options.height = height;
-    if (this.svg) {
-      this.svg.attr('width', width).attr('height', height);
-      this.simulation.force('center', d3.forceCenter(width / 2, (height - 120) / 2));
-      this.simulation.alpha(0.3).restart();
-    }
-  }
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', window.initializeNeo4jVisualization);
+} else {
+  window.initializeNeo4jVisualization();
 }
