@@ -1359,7 +1359,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Handle enter key in input
             document.getElementById('messageInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // Prevent newline in textarea
                     sendMessage();
                 }
             });
