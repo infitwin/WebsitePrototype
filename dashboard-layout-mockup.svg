@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="900" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1400" height="900" fill="#f5f5f7"/>
+  
+  <!-- Left Sidebar (should be narrower - 50px) -->
+  <rect x="0" y="0" width="50" height="900" fill="#6b46c1"/>
+  <text x="25" y="20" text-anchor="middle" fill="white" font-size="10">50px</text>
+  
+  <!-- Main Content Area -->
+  <rect x="50" y="0" width="1350" height="900" fill="white"/>
+  
+  <!-- Quick Access Section (should be much smaller - 80px height) -->
+  <rect x="50" y="0" width="1350" height="80" fill="#f8f9fa" stroke="#e0e0e0"/>
+  <text x="725" y="40" text-anchor="middle" font-size="14" fill="#666">Quick Access - 6 small tiles (80px height total)</text>
+  
+  <!-- Quick Access Tiles (smaller) -->
+  <g transform="translate(70, 15)">
+    <rect x="0" y="0" width="50" height="50" rx="5" fill="white" stroke="#ddd"/>
+    <rect x="70" y="0" width="50" height="50" rx="5" fill="white" stroke="#ddd"/>
+    <rect x="140" y="0" width="50" height="50" rx="5" fill="white" stroke="#ddd"/>
+    <rect x="210" y="0" width="50" height="50" rx="5" fill="white" stroke="#ddd"/>
+    <rect x="280" y="0" width="50" height="50" rx="5" fill="white" stroke="#ddd"/>
+    <rect x="350" y="0" width="50" height="50" rx="5" fill="white" stroke="#ddd"/>
+  </g>
+  
+  <!-- Dashboard Container (main focus - takes up most space) -->
+  <rect x="70" y="100" width="1310" height="780" rx="15" fill="#f8f9fa" stroke="#e0e0e0" stroke-width="2"/>
+  
+  <!-- Knowledge Graph Section (70% of container width) -->
+  <rect x="90" y="120" width="900" height="740" fill="white" stroke="#e0e0e0"/>
+  <text x="540" y="150" text-anchor="middle" font-size="18" font-weight="bold">Knowledge Graph</text>
+  
+  <!-- Graph Canvas (large) -->
+  <rect x="120" y="200" width="840" height="600" rx="10" fill="#fafafa" stroke="#ddd" stroke-width="2"/>
+  <text x="540" y="500" text-anchor="middle" font-size="16" fill="#999">Neo4j Graph Visualization</text>
+  <text x="540" y="520" text-anchor="middle" font-size="14" fill="#999">(Main Focus Area)</text>
+  
+  <!-- Activity Monitor (30% of container width) -->
+  <rect x="1010" y="120" width="350" height="740" fill="#f8f9fa" stroke="#e0e0e0"/>
+  <text x="1185" y="150" text-anchor="middle" font-size="16" font-weight="bold">Activity Monitor</text>
+  
+  <!-- Annotations -->
+  <text x="25" y="450" text-anchor="middle" fill="white" font-size="8" transform="rotate(-90 25 450)">Narrow Sidebar</text>
+  <text x="700" y="40" text-anchor="middle" font-size="12" fill="#666">Small Quick Access</text>
+  <text x="540" y="850" text-anchor="middle" font-size="14" fill="#333">Large Knowledge Graph Area</text>
+  
+  <!-- Size indicators -->
+  <line x1="50" y1="890" x2="50" y2="900" stroke="red" stroke-width="2"/>
+  <line x1="0" y1="895" x2="50" y2="895" stroke="red" stroke-width="2"/>
+  <text x="25" y="915" text-anchor="middle" font-size="10" fill="red">50px</text>
+  
+  <line x1="50" y1="85" x2="1400" y2="85" stroke="red" stroke-width="1" stroke-dasharray="5,5"/>
+  <text x="1350" y="82" text-anchor="end" font-size="10" fill="red">80px height</text>
+</svg>
