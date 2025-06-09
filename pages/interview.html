@@ -182,14 +182,9 @@
         .graph-placeholder {
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 2px dashed #cbd5e1;
-            color: #64748b;
-            font-size: 16px;
-            font-weight: 500;
+            background: #ffffff;
+            position: relative;
+            display: block;
         }
 
         /* Photo reference window (when doing photo interviews) */
@@ -746,9 +741,8 @@
 
         <!-- 2. Neo4j Graph Container -->
         <div class="graph-container">
-            <div class="graph-placeholder">
-                🧠 Neo4j Knowledge Graph Component Placeholder
-                <br><small>Graph controls and visualization will be injected here</small>
+            <div class="graph-placeholder" id="interview-neo4j-container">
+                <!-- Neo4j Graph Visualization will be rendered here -->
             </div>
             
             <!-- Photo Reference Window (hidden by default) -->
@@ -859,6 +853,9 @@
         <div id="toastMessage"></div>
     </div>
 
+    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/neo4j-init.js"></script>
+    
     <!-- Load Firebase Configuration and Services -->
     <script type="module" src="../js/config/firebase-config.js"></script>
     <script src="../js/services/auth.js"></script>
@@ -873,6 +870,34 @@
     <script src="../js/utils/message-builder.js"></script>
 
     <script>
+        // Initialize Neo4j Graph Visualization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 Initializing Neo4j in interview page...');
+            const graphContainer = document.getElementById('interview-neo4j-container');
+            
+            if (graphContainer) {
+                console.log('✅ Interview Neo4j container found');
+                
+                try {
+                    const neo4jViz = new Neo4jVisualization(graphContainer, {
+                        width: graphContainer.offsetWidth || 1200,
+                        height: 540, // Match the graph-container height
+                        showFilters: true,
+                        showSearch: true
+                    });
+                    console.log('✅ Interview Neo4j visualization created successfully');
+                    
+                    // Store globally for debugging
+                    window.interviewNeo4jViz = neo4jViz;
+                    
+                } catch (error) {
+                    console.error('❌ Failed to initialize interview Neo4j visualization:', error);
+                }
+            } else {
+                console.error('❌ Interview Neo4j container not found!');
+            }
+        });
+
         // WebsitePrototype Audio Services Integration
         let audioRecorder = null;
         let ttsPlayer = null;
