@@ -9,200 +9,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/knowledge-symphony.css">
-</head>
-<body>
-    <div class="symphony-dashboard">
-        <!-- Shared Sidebar Navigation -->
-        <div class="sidebar-nav-container"></div>
-
-        <!-- Main Content Wrapper -->
-        <div class="main-content-wrapper">
-            <!-- User Header -->
-            <header class="dashboard-header">
-                <div class="user-info user-dropdown-container">
-                    <div class="user-avatar">
-                        <span id="userInitial">U</span>
-                    </div>
-                    <div class="user-details">
-                        <h1 class="user-name" id="userName">Welcome</h1>
-                        <p class="user-email" id="userEmail">user@example.com</p>
-                    </div>
-                    <button class="user-menu-toggle" id="userMenuToggle" aria-label="User menu">
-                        <span>⋮</span>
-                    </button>
-                    <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <div class="dropdown-item" onclick="handleLogout(event)">
-                            <span class="dropdown-icon">🚪</span>
-                            <span>Logout</span>
-                        </div>
-                        <div class="dropdown-item" onclick="window.location.href='settings.html'">
-                            <span class="dropdown-icon">⚙️</span>
-                            <span>Settings</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="notification-btn" aria-label="Notifications">
-                        <span style="font-size: 20px;">🔔</span>
-                    </button>
-                </div>
-            </header>
-            
-            <!-- Main Content -->
-            <main class="symphony-content">
-            <!-- Knowledge Graph Placeholder -->
-            <section class="knowledge-graph-placeholder">
-                <div class="graph-container">
-                    <div class="graph-placeholder-content" id="neo4j-graph-container" style="
-                        width: 100%;
-                        height: 450px;
-                        position: relative;
-                        display: block;
-                        background: #ffffff;
-                        border: 1px dashed #6B46C1;
-                    ">
-                        <!-- Neo4j Graph Visualization will be rendered here -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- Category Tiles Grid -->
-            <section class="category-grid">
-                <!-- Recent Memories -->
-                <div class="category-tile" data-category="recent">
-                    <div class="category-count" id="recentCount">0</div>
-                    <div class="category-icon">📷</div>
-                    <h3 class="category-title">Recent Memories</h3>
-                    <p class="category-subtitle">Last 7 days</p>
-                </div>
-
-                <!-- Key Moments -->
-                <div class="category-tile" data-category="moments">
-                    <div class="category-count" id="momentsCount">0</div>
-                    <div class="category-icon">✨</div>
-                    <h3 class="category-title">Key Moments</h3>
-                    <p class="category-subtitle">Life highlights</p>
-                </div>
-
-                <!-- People -->
-                <div class="category-tile" data-category="people">
-                    <div class="category-count" id="peopleCount">0</div>
-                    <div class="category-icon">👥</div>
-                    <h3 class="category-title">People</h3>
-                    <p class="category-subtitle">Connections</p>
-                </div>
-
-                <!-- Places -->
-                <div class="category-tile" data-category="places">
-                    <div class="category-count" id="placesCount">0</div>
-                    <div class="category-icon">📍</div>
-                    <h3 class="category-title">Places</h3>
-                    <p class="category-subtitle">Locations visited</p>
-                </div>
-
-                <!-- Projects -->
-                <div class="category-tile" data-category="projects">
-                    <div class="category-count" id="projectsCount">0</div>
-                    <div class="category-icon">🚀</div>
-                    <h3 class="category-title">Projects</h3>
-                    <p class="category-subtitle">Achievements</p>
-                </div>
-
-                <!-- Insights -->
-                <div class="category-tile" data-category="insights">
-                    <div class="category-count" id="insightsCount">0</div>
-                    <div class="category-icon">💡</div>
-                    <h3 class="category-title">Insights</h3>
-                    <p class="category-subtitle">Patterns & themes</p>
-                </div>
-            </section>
-
-            <!-- Dashboard Widgets -->
-            <section class="dashboard-widgets">
-                <div class="widgets-grid">
-                    <!-- Storage Widget -->
-                    <div id="storageWidget" class="widget-container">
-                        <!-- Storage widget will be rendered here -->
-                    </div>
-                    
-                    <!-- Activity Feed Widget -->
-                    <div id="activityWidget" class="widget-container">
-                        <!-- Activity widget will be rendered here -->
-                    </div>
-                    
-                    <!-- Quick Actions Widget -->
-                    <div id="quickActionsWidget" class="widget-container">
-                        <!-- Quick actions widget will be rendered here -->
-                    </div>
-                </div>
-            </section>
-        </main>
-
-            <!-- Floating Action Button -->
-            <button class="fab-add-memory" id="addMemoryBtn" aria-label="Add new memory">
-                +
-            </button>
-        </div> <!-- End main-content-wrapper -->
-    </div> <!-- End symphony-dashboard -->
-
     <style>
-        /* Dashboard Widgets */
-        .dashboard-widgets {
-            margin-top: 2rem;
+        /* Advanced Dashboard Redesign Styles */
+        .symphony-dashboard {
+            display: flex;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f7;
+            color: #333;
         }
-
-        .widgets-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        
+        /* Main Content Area */
+        .main-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            overflow: hidden;
         }
-
-        .widget-container {
-            min-height: 200px;
-        }
-
-        @media (max-width: 768px) {
-            .widgets-grid {
-                grid-template-columns: 1fr !important;
-                grid-template-rows: auto;
-            }
-        }
-    </style>
-
-    <!-- Load Shared Navigation -->
-    <script src="../js/navigation.js"></script>
-    
-    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
-    <script src="../js/neo4j-init.js"></script>
-    
-    <script type="module" src="../js/knowledge-symphony.js"></script>
-    <script type="module">
-        import { createStorageMeterWidget } from '../js/storage-ui.js';
-        import { createActivityFeedWidget } from '../js/dashboard-widgets.js';
-        import { createQuickActionsWidget } from '../js/dashboard-widgets.js';
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize all widgets
-            createStorageMeterWidget('storageWidget');
-            createActivityFeedWidget('activityWidget');
-            createQuickActionsWidget('quickActionsWidget');
-            
-            // Neo4j is already initialized by neo4j-init.js
-            console.log('📋 Dashboard widgets initialized');
-        });
-    </script>
-    
-    <style>
-        /* Dashboard Header Styles */
+        
+        /* User Header */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 2rem;
+            padding: 1rem 2rem;
             background: white;
             border-bottom: 1px solid #E5E7EB;
-            margin-bottom: 2rem;
         }
         
         .user-info {
@@ -255,6 +88,435 @@
         .notification-btn:hover {
             background: #F3F4F6;
             border-color: #D1D5DB;
+        }
+
+        /* Quick Access Section - At Very Top */
+        .quick-access-section {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .quick-access-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .quick-tile {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .quick-tile:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+        
+        .quick-tile-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+        }
+        
+        .quick-tile-title {
+            font-size: 11px;
+            font-weight: 500;
+            color: #333;
+            line-height: 1.2;
+        }
+        
+        .quick-tile-subtitle {
+            font-size: 9px;
+            color: #666;
+        }
+        
+        /* Icon colors */
+        .memories-icon { background: #9333ea; }
+        .moments-icon { background: #ec4899; }
+        .people-icon { background: #3b82f6; }
+        .places-icon { background: #f59e0b; }
+        .projects-icon { background: #10b981; }
+        .insights-icon { background: #06b6d4; }
+        
+        /* Main Dashboard Container */
+        .dashboard-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Knowledge Management System - The Big Container */
+        .knowledge-system {
+            background-color: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 1400px;
+            height: 90%;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Left Side - Neo4j Graph Section */
+        .graph-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        /* Graph Header with Title and Controls */
+        .graph-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+        }
+        
+        .graph-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .graph-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .graph-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .graph-control {
+            padding: 6px 10px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .graph-control:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        
+        .beautify-btn {
+            background-color: #fef3c7;
+            border-color: #fbbf24;
+            color: #92400e;
+        }
+        
+        .beautify-btn:hover {
+            background-color: #fde68a;
+            border-color: #f59e0b;
+        }
+        
+        /* Search and Filters Row */
+        .search-filters-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .hamburger-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            transition: all 0.2s;
+        }
+        
+        .hamburger-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        
+        .hamburger-line {
+            width: 18px;
+            height: 2px;
+            background-color: #666;
+        }
+        
+        /* Node Type Filters */
+        .node-filters {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        
+        .filter-btn.active {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        /* Graph Visualization Area */
+        .graph-visualization {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .graph-canvas {
+            width: 100%;
+            height: 100%;
+            max-width: min(100%, 60vh);
+            max-height: min(100%, 60vh);
+            aspect-ratio: 1 / 1;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Mock graph */
+        .mock-graph {
+            position: relative;
+            width: 80%;
+            height: 80%;
+        }
+        
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .node-1 { background-color: #f59e0b; top: 10%; left: 50%; transform: translateX(-50%); }
+        .node-2 { background-color: #8b5cf6; top: 35%; left: 20%; }
+        .node-3 { background-color: #8b5cf6; top: 35%; right: 20%; }
+        .node-4 { background-color: #10b981; bottom: 35%; left: 50%; transform: translateX(-50%); }
+        .node-5 { background-color: #3b82f6; bottom: 10%; left: 50%; transform: translateX(-50%); }
+        
+        /* Right Side - Queue and History */
+        .activity-section {
+            width: 300px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .activity-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: white;
+        }
+        
+        .activity-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .activity-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .activity-section-box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .queue-content {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .queue-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .history-item {
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .history-item:last-child {
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .history-time {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 3px;
+        }
+        
+        .history-action {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        /* Graph Info Footer */
+        .graph-footer {
+            padding: 10px 20px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Popup */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .popup-overlay.show {
+            display: flex;
+        }
+        
+        .popup-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            max-width: 90%;
+            padding: 24px;
+        }
+        
+        .popup-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .popup-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .popup-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #bbb;
+        }
+        
+        .popup-divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 16px 0;
+        }
+        
+        .popup-close {
+            margin-top: 16px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .popup-close:hover {
+            background-color: #5a6268;
         }
 
         /* User Dropdown Menu Styles */
@@ -328,9 +590,337 @@
         .dropdown-icon {
             font-size: 16px;
         }
+
+        /* Floating Action Button */
+        .fab-add-memory {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: 300;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(107, 70, 193, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab-add-memory:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(107, 70, 193, 0.5);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .quick-access-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .knowledge-system {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .activity-section {
+                width: 100%;
+                max-height: 300px;
+            }
+            
+            .dashboard-header {
+                padding: 1rem;
+            }
+        }
     </style>
+</head>
+<body>
+    <div class="symphony-dashboard">
+        <!-- Shared Sidebar Navigation -->
+        <div class="sidebar-nav-container"></div>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- User Header -->
+            <header class="dashboard-header">
+                <div class="user-info user-dropdown-container">
+                    <div class="user-avatar">
+                        <span id="userInitial">U</span>
+                    </div>
+                    <div class="user-details">
+                        <h1 class="user-name" id="userName">Welcome</h1>
+                        <p class="user-email" id="userEmail">user@example.com</p>
+                    </div>
+                    <button class="user-menu-toggle" id="userMenuToggle" aria-label="User menu">
+                        <span>⋮</span>
+                    </button>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <div class="dropdown-item" onclick="handleLogout(event)">
+                            <span class="dropdown-icon">🚪</span>
+                            <span>Logout</span>
+                        </div>
+                        <div class="dropdown-item" onclick="window.location.href='settings.html'">
+                            <span class="dropdown-icon">⚙️</span>
+                            <span>Settings</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn" aria-label="Notifications">
+                        <span style="font-size: 20px;">🔔</span>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Quick Access Icons - At Very Top -->
+            <div class="quick-access-section">
+                <div class="quick-access-grid">
+                    <div class="quick-tile" data-category="recent">
+                        <div class="quick-tile-icon memories-icon"></div>
+                        <div class="quick-tile-title">Recent Memories</div>
+                        <div class="quick-tile-subtitle">Last 7 days</div>
+                    </div>
+                    
+                    <div class="quick-tile" data-category="moments">
+                        <div class="quick-tile-icon moments-icon"></div>
+                        <div class="quick-tile-title">Key Moments</div>
+                        <div class="quick-tile-subtitle">Life highlights</div>
+                    </div>
+                    
+                    <div class="quick-tile" data-category="people">
+                        <div class="quick-tile-icon people-icon"></div>
+                        <div class="quick-tile-title">People</div>
+                        <div class="quick-tile-subtitle">Connections</div>
+                    </div>
+                    
+                    <div class="quick-tile" data-category="places">
+                        <div class="quick-tile-icon places-icon"></div>
+                        <div class="quick-tile-title">Places</div>
+                        <div class="quick-tile-subtitle">Locations visited</div>
+                    </div>
+                    
+                    <div class="quick-tile" data-category="projects">
+                        <div class="quick-tile-icon projects-icon"></div>
+                        <div class="quick-tile-title">Projects</div>
+                        <div class="quick-tile-subtitle">Achievements</div>
+                    </div>
+                    
+                    <div class="quick-tile" data-category="insights">
+                        <div class="quick-tile-icon insights-icon"></div>
+                        <div class="quick-tile-title">Insights</div>
+                        <div class="quick-tile-subtitle">Patterns & themes</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Dashboard Container -->
+            <div class="dashboard-container">
+                <!-- Knowledge Management System - One Big Container -->
+                <div class="knowledge-system">
+                    <!-- Left Side - Neo4j Graph -->
+                    <div class="graph-section">
+                        <!-- Graph Header -->
+                        <div class="graph-header">
+                            <div class="graph-title-row">
+                                <h2 class="graph-title">Knowledge Graph</h2>
+                                <div class="graph-controls">
+                                    <button class="graph-control">Center</button>
+                                    <button class="graph-control">Fit</button>
+                                    <button class="graph-control">Reset</button>
+                                    <button class="graph-control beautify-btn">✨ Beautify</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Search and Data Operations -->
+                            <div class="search-filters-row">
+                                <input type="text" class="search-input" placeholder="Search nodes and relationships...">
+                                <button class="hamburger-btn" onclick="togglePopup()">
+                                    <span class="hamburger-line"></span>
+                                    <span class="hamburger-line"></span>
+                                    <span class="hamburger-line"></span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Node Type Filters -->
+                        <div class="node-filters">
+                            <button class="filter-btn active">👤 Person</button>
+                            <button class="filter-btn active">📅 Event</button>
+                            <button class="filter-btn active">📍 Place</button>
+                            <button class="filter-btn active">💭 Memory</button>
+                        </div>
+                        
+                        <!-- Graph Visualization -->
+                        <div class="graph-visualization">
+                            <div class="graph-canvas" id="neo4j-graph-container">
+                                <div class="mock-graph">
+                                    <div class="node node-1">😊</div>
+                                    <div class="node node-2">👤</div>
+                                    <div class="node node-3">👤</div>
+                                    <div class="node node-4">⭐</div>
+                                    <div class="node node-5">📘</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Graph Footer -->
+                        <div class="graph-footer">
+                            <span>Nodes: 5 • Edges: 5 • Zoom: 100%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side - Activity Section -->
+                    <div class="activity-section">
+                        <div class="activity-header">
+                            <h3 class="activity-title">Activity Monitor</h3>
+                        </div>
+                        
+                        <div class="activity-content">
+                            <!-- Active Queue -->
+                            <div class="activity-section-box">
+                                <h4 class="section-title">Active Queue</h4>
+                                <div class="queue-content">
+                                    <span class="queue-status"></span>
+                                    No active operations
+                                </div>
+                            </div>
+                            
+                            <!-- History -->
+                            <div class="activity-section-box">
+                                <h4 class="section-title">History</h4>
+                                <div class="history-list">
+                                    <div class="history-item">
+                                        <div class="history-time">10:32</div>
+                                        <div class="history-action">Graph initialized</div>
+                                    </div>
+                                    <div class="history-item">
+                                        <div class="history-time">10:30</div>
+                                        <div class="history-action">Dashboard loaded</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Storage Widget Integration -->
+                            <div id="storageWidget" class="activity-section-box">
+                                <!-- Storage widget will be rendered here -->
+                            </div>
+                            
+                            <!-- Activity Feed Widget Integration -->
+                            <div id="activityWidget" class="activity-section-box">
+                                <!-- Activity widget will be rendered here -->
+                            </div>
+                            
+                            <!-- Quick Actions Widget Integration -->
+                            <div id="quickActionsWidget" class="activity-section-box">
+                                <!-- Quick actions widget will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Action Button -->
+            <button class="fab-add-memory" id="addMemoryBtn" aria-label="Add new memory">
+                +
+            </button>
+        </div> <!-- End main-content-wrapper -->
+    </div> <!-- End symphony-dashboard -->
+    
+    <!-- Data Operations Popup -->
+    <div class="popup-overlay" id="dataOpsPopup" onclick="closePopupOnOverlay(event)">
+        <div class="popup-content">
+            <h2 class="popup-header">Data Operations</h2>
+            <button class="popup-btn" onclick="closePopup()">
+                <span>📤</span>
+                <div>
+                    <div style="font-weight: 500;">Export Data</div>
+                    <div style="font-size: 12px; color: #666;">Download your knowledge graph</div>
+                </div>
+            </button>
+            <button class="popup-btn" onclick="closePopup()">
+                <span>🔄</span>
+                <div>
+                    <div style="font-weight: 500;">Import Data</div>
+                    <div style="font-size: 12px; color: #666;">Upload data to your graph</div>
+                </div>
+            </button>
+            <button class="popup-btn" onclick="closePopup()">
+                <span>👁️‍🗨️</span>
+                <div>
+                    <div style="font-weight: 500;">Hide Selected</div>
+                    <div style="font-size: 12px; color: #666;">Hide selected items and their dependencies</div>
+                </div>
+            </button>
+            <button class="popup-btn" onclick="closePopup()">
+                <span>👁️</span>
+                <div>
+                    <div style="font-weight: 500;">Show Hidden Items</div>
+                    <div style="font-size: 12px; color: #666;">Reveal previously hidden content</div>
+                </div>
+            </button>
+            <button class="popup-btn" onclick="closePopup()">
+                <span>🔍</span>
+                <div>
+                    <div style="font-weight: 500;">Clear Filters</div>
+                    <div style="font-size: 12px; color: #666;">Reset all active filters</div>
+                </div>
+            </button>
+            <div class="popup-divider"></div>
+            <button class="popup-btn" onclick="closePopup()">
+                <span>💾</span>
+                <div>
+                    <div style="font-weight: 500;">Manage Hidden Data</div>
+                    <div style="font-size: 12px; color: #666;">View and manage all hidden items</div>
+                </div>
+            </button>
+            <button class="popup-close" onclick="closePopup()">Close</button>
+        </div>
+    </div>
+
+    <!-- Load Shared Navigation -->
+    <script src="../js/navigation.js"></script>
+    
+    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/neo4j-init.js"></script>
+    
+    <script type="module" src="../js/knowledge-symphony.js"></script>
+    <script type="module">
+        import { createStorageMeterWidget } from '../js/storage-ui.js';
+        import { createActivityFeedWidget } from '../js/dashboard-widgets.js';
+        import { createQuickActionsWidget } from '../js/dashboard-widgets.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all widgets in the activity sidebar
+            createStorageMeterWidget('storageWidget');
+            createActivityFeedWidget('activityWidget');
+            createQuickActionsWidget('quickActionsWidget');
+            
+            // Neo4j is already initialized by neo4j-init.js
+            console.log('📋 Advanced dashboard with widgets initialized');
+        });
+    </script>
     
     <script>
+        // Data Operations Popup Functions
+        function togglePopup() {
+            const popup = document.getElementById('dataOpsPopup');
+            popup.classList.add('show');
+        }
+        
+        function closePopup() {
+            const popup = document.getElementById('dataOpsPopup');
+            popup.classList.remove('show');
+        }
+        
+        function closePopupOnOverlay(event) {
+            if (event.target.id === 'dataOpsPopup') {
+                closePopup();
+            }
+        }
+
         // Populate user info from localStorage
         document.addEventListener('DOMContentLoaded', function() {
             const userName = localStorage.getItem('userName') || 'Guest User';
@@ -346,6 +936,9 @@
 
             // Setup user dropdown menu
             setupUserDropdown();
+
+            // Add click handlers to quick tiles
+            setupQuickTileHandlers();
         });
 
         function setupUserDropdown() {
@@ -375,6 +968,40 @@
                 });
             }
         }
+
+        function setupQuickTileHandlers() {
+            const quickTiles = document.querySelectorAll('.quick-tile');
+            quickTiles.forEach(tile => {
+                tile.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    console.log(`Navigating to ${category} section`);
+                    // Add navigation logic here in the future
+                });
+            });
+        }
+
+        // Graph control handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const graphControls = document.querySelectorAll('.graph-control');
+            graphControls.forEach(control => {
+                control.addEventListener('click', function() {
+                    const action = this.textContent.trim();
+                    console.log(`Graph action: ${action}`);
+                    // Add graph control logic here
+                });
+            });
+
+            // Filter button handlers
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const filterType = this.textContent.trim();
+                    console.log(`Filter toggled: ${filterType}`);
+                    // Add filter logic here
+                });
+            });
+        });
     </script>
 </body>
 </html>
