@@ -1029,11 +1029,31 @@
         Settings saved successfully!
     </div>
 
+    <!-- Firebase SDK v8 Compatibility -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        console.log('Firebase initialized for settings');
+        const auth = firebase.auth();
+    </script>
+
     <script src="../js/navigation.js"></script>
-    <script type="module">
-        // Import Firebase auth
-        import { auth } from '../js/firebase-config.js';
-        import { signOut } from 'firebase/auth';
+    <script>
         
         // Settings Page JavaScript Functionality
         let userSettings = {
@@ -1230,8 +1250,18 @@
                 return;
             }
             
+            if (!newPassword) {
+                showFieldError('newPassword', 'New password is required');
+                return;
+            }
+            
             if (newPassword.length < 8) {
                 showFieldError('newPassword', 'Password must be at least 8 characters');
+                return;
+            }
+            
+            if (!confirmPassword) {
+                showFieldError('confirmPassword', 'Please confirm your password');
                 return;
             }
             
@@ -1286,8 +1316,8 @@
         async function handleLogout() {
             if (confirm('Are you sure you want to sign out?')) {
                 try {
-                    // Sign out from Firebase
-                    await signOut(auth);
+                    // Sign out from Firebase using v8 syntax
+                    await auth.signOut();
                     
                     // Clear local storage
                     localStorage.removeItem('userName');
