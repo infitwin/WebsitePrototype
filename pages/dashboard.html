@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/knowledge-symphony.css">
     <style>
@@ -203,33 +204,7 @@
         
         .graph-controls {
             display: flex;
-            gap: 5px;
-        }
-        
-        .graph-control {
-            padding: 6px 10px;
-            font-size: 12px;
-            border: 1px solid #ddd;
-            background-color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .graph-control:hover {
-            background-color: #f0f0f0;
-            border-color: #bbb;
-        }
-        
-        .beautify-btn {
-            background-color: #fef3c7;
-            border-color: #fbbf24;
-            color: #92400e;
-        }
-        
-        .beautify-btn:hover {
-            background-color: #fde68a;
-            border-color: #f59e0b;
+            gap: var(--spacing-xs);
         }
         
         /* Search and Filters Row */
@@ -283,24 +258,24 @@
         }
         
         .filter-btn {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            background-color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            background-color: var(--color-background-card);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: var(--font-size-sm);
             transition: all 0.2s;
         }
         
         .filter-btn:hover {
-            background-color: #f0f0f0;
-            border-color: #bbb;
+            background-color: var(--color-background-hover);
+            border-color: var(--color-border-dark);
         }
         
         .filter-btn.active {
-            background-color: #e3f2fd;
-            border-color: #2196f3;
-            color: #1976d2;
+            background-color: var(--color-background-selected);
+            border-color: var(--color-info);
+            color: var(--color-info);
         }
         
         /* Graph Visualization Area */
@@ -599,13 +574,13 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+            background: var(--gradient-primary);
             border: none;
-            color: white;
+            color: var(--color-text-inverse);
             font-size: 24px;
             font-weight: 300;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(107, 70, 193, 0.4);
+            box-shadow: 0 4px 20px var(--color-shadow-medium);
             transition: all 0.3s ease;
             z-index: 100;
         }
@@ -727,10 +702,10 @@
                             <div class="graph-title-row">
                                 <h2 class="graph-title">Knowledge Graph</h2>
                                 <div class="graph-controls">
-                                    <button class="graph-control">Center</button>
-                                    <button class="graph-control">Fit</button>
-                                    <button class="graph-control">Reset</button>
-                                    <button class="graph-control beautify-btn">✨ Beautify</button>
+                                    <button class="infitwin-button infitwin-button--secondary infitwin-button--small">Center</button>
+                                    <button class="infitwin-button infitwin-button--secondary infitwin-button--small">Fit</button>
+                                    <button class="infitwin-button infitwin-button--secondary infitwin-button--small">Reset</button>
+                                    <button class="infitwin-button infitwin-button--warning infitwin-button--small">✨ Beautify</button>
                                 </div>
                             </div>
                             
@@ -982,7 +957,7 @@
 
         // Graph control handlers
         document.addEventListener('DOMContentLoaded', function() {
-            const graphControls = document.querySelectorAll('.graph-control');
+            const graphControls = document.querySelectorAll('.graph-controls .infitwin-button');
             graphControls.forEach(control => {
                 control.addEventListener('click', function() {
                     const action = this.textContent.trim();
