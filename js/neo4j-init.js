@@ -12,6 +12,8 @@ class Neo4jVisualization {
       height: options.height || 300,
       showFilters: options.showFilters !== false,
       showSearch: options.showSearch !== false,
+      showHistory: options.showHistory !== false,  // Add history panel by default
+      showDataManager: options.showDataManager !== false,  // Add data manager by default
       nodeColors: {
         person: '#6B46C1',    // WebsitePrototype purple
         event: '#10B981',     // WebsitePrototype green
@@ -28,6 +30,10 @@ class Neo4jVisualization {
     this.simulation = null;
     this.svg = null;
     this.zoom = null;
+    this.history = [];
+    this.activeOperation = null;
+    this.selectedNode = null;
+    this.selectedEdge = null;
     
     this.init();
   }
@@ -56,24 +62,31 @@ class Neo4jVisualization {
       ">
         ${this.options.showSearch ? this.createSearchBar() : ''}
         ${this.options.showFilters ? this.createFilterBar() : ''}
-        <div class="graph-area" style="
+        <div class="main-content" style="
           flex: 1;
+          display: flex;
           position: relative;
-          background: #F8FAFB;
         ">
-          <div class="loading-indicator" style="
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #6B46C1;
-            font-size: 16px;
-            font-weight: bold;
-            background: rgba(255,255,255,0.9);
-            padding: 10px 20px;
-            border-radius: 6px;
-            border: 1px solid #6B46C1;
-          ">🔄 Loading Neo4j Graph...</div>
+          <div class="graph-area" style="
+            flex: ${this.options.showHistory ? '0.7' : '1'};
+            position: relative;
+            background: #F8FAFB;
+          ">
+            <div class="loading-indicator" style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              color: #6B46C1;
+              font-size: 16px;
+              font-weight: bold;
+              background: rgba(255,255,255,0.9);
+              padding: 10px 20px;
+              border-radius: 6px;
+              border: 1px solid #6B46C1;
+            ">🔄 Loading Neo4j Graph...</div>
+          </div>
+          ${this.options.showHistory ? this.createHistoryPanel() : ''}
         </div>
         <div class="status-bar" style="
           padding: 8px 16px;
@@ -196,6 +209,139 @@ class Neo4jVisualization {
     `;
   }
 
+  createHistoryPanel() {
+    return `
+      <div class="history-panel" style="
+        flex: 0.3;
+        border-left: 1px solid #E5E7EB;
+        background: #F8F9FA;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      ">
+        <!-- Active Operation Section -->
+        <div style="
+          padding: 10px;
+          border-bottom: 1px solid #E5E7EB;
+          background: white;
+        ">
+          <div style="
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #374151;
+          ">ACTIVE QUEUE</div>
+          <div class="active-operation" style="
+            padding: 6px;
+            background: #E0E7FF;
+            border-radius: 4px;
+            font-size: 10px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <span style="color: #6B7280; font-style: italic;">No active operations</span>
+          </div>
+        </div>
+        
+        <!-- Data Operations Section -->
+        ${this.options.showDataManager ? `
+        <div style="
+          padding: 10px;
+          border-bottom: 1px solid #E5E7EB;
+          background: white;
+        ">
+          <div style="
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+          ">DATA OPERATIONS</div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <button class="delete-selected" style="
+              padding: 6px 10px;
+              border: 1px solid #EF4444;
+              border-radius: 4px;
+              background: white;
+              color: #EF4444;
+              font-size: 11px;
+              cursor: pointer;
+              disabled: true;
+            " disabled>
+              🗑️ Delete Selected
+            </button>
+            <button class="export-data" style="
+              padding: 6px 10px;
+              border: 1px solid #6B46C1;
+              border-radius: 4px;
+              background: white;
+              color: #6B46C1;
+              font-size: 11px;
+              cursor: pointer;
+            ">
+              📥 Export Data
+            </button>
+            <button class="clear-all" style="
+              padding: 6px 10px;
+              border: 1px solid #D1D5DB;
+              border-radius: 4px;
+              background: white;
+              color: #6B7280;
+              font-size: 11px;
+              cursor: pointer;
+            ">
+              🧹 Clear All
+            </button>
+          </div>
+        </div>
+        ` : ''}
+        
+        <!-- History Section -->
+        <div style="
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        ">
+          <div style="
+            padding: 10px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+          ">
+            <div style="
+              font-size: 11px;
+              font-weight: 600;
+              color: #374151;
+            ">HISTORY</div>
+            <button class="clear-history" style="
+              padding: 4px 8px;
+              border: 1px solid #D1D5DB;
+              border-radius: 12px;
+              background: #F3F4F6;
+              color: #6B7280;
+              font-size: 10px;
+              cursor: pointer;
+              margin-left: auto;
+            ">
+              Clear
+            </button>
+          </div>
+          <div class="history-list" style="
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+          ">
+            <!-- History items will be added here -->
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   loadD3() {
     if (window.d3) {
       this.initializeVisualization();
@@ -227,7 +373,7 @@ class Neo4jVisualization {
   }
 
   setupVisualization() {
-    const width = this.options.width;
+    const width = this.options.showHistory ? this.options.width * 0.7 : this.options.width;
     const height = this.options.height - 140; // Account for controls in taller container
 
     // Setup zoom
@@ -270,6 +416,7 @@ class Neo4jVisualization {
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         this.clearFilters();
+        this.addToHistory('CLEAR FILTERS', 'All filters removed');
       });
     }
 
@@ -278,6 +425,42 @@ class Neo4jVisualization {
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         this.handleSearch(e.target.value);
+      });
+    }
+
+    // History panel buttons
+    const clearHistoryBtn = this.container.querySelector('.clear-history');
+    if (clearHistoryBtn) {
+      clearHistoryBtn.addEventListener('click', () => {
+        this.clearHistory();
+      });
+    }
+
+    // Data operations buttons
+    const deleteBtn = this.container.querySelector('.delete-selected');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', () => {
+        if (this.selectedNode) {
+          this.deleteNode(this.selectedNode);
+        } else if (this.selectedEdge) {
+          this.deleteEdge(this.selectedEdge);
+        }
+      });
+    }
+
+    const exportBtn = this.container.querySelector('.export-data');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        this.exportData();
+      });
+    }
+
+    const clearAllBtn = this.container.querySelector('.clear-all');
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all data?')) {
+          this.clearAllData();
+        }
       });
     }
   }
@@ -307,7 +490,7 @@ class Neo4jVisualization {
 
   updateVisualization() {
     console.log('🔄 Updating visualization...');
-    const width = this.options.width;
+    const width = this.options.showHistory ? this.options.width * 0.7 : this.options.width;
     const height = this.options.height - 140; // More space for controls with taller container
 
     // Update status
@@ -422,6 +605,17 @@ class Neo4jVisualization {
 
   handleNodeClick(node) {
     console.log('Node clicked:', node);
+    this.selectedNode = node;
+    this.selectedEdge = null;
+    this.addToHistory('NODE CLICK', node.name || node.id);
+    
+    // Enable delete button if we have data manager
+    const deleteBtn = this.container.querySelector('.delete-selected');
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.style.opacity = '1';
+      deleteBtn.style.cursor = 'pointer';
+    }
   }
 
   toggleFilter(type) {
@@ -431,9 +625,11 @@ class Neo4jVisualization {
     if (isActive) {
       btn.style.backgroundColor = 'white';
       btn.style.color = '#374151';
+      this.addToHistory('FILTER OFF', `Hide ${type} nodes`);
     } else {
       btn.style.backgroundColor = this.options.nodeColors[type];
       btn.style.color = 'white';
+      this.addToHistory('FILTER ON', `Show ${type} nodes`);
     }
     
     this.applyFilters();
@@ -469,6 +665,8 @@ class Neo4jVisualization {
       .style('opacity', d => {
         return d.name.toLowerCase().includes(term.toLowerCase()) ? 1 : 0.3;
       });
+      
+    this.addToHistory('SEARCH', term);
   }
 
   updateStatus() {
@@ -492,6 +690,183 @@ class Neo4jVisualization {
         Error: ${message}
       </div>
     `;
+  }
+
+  // History Management Methods
+  addToHistory(action, target, timestamp = new Date()) {
+    const historyItem = {
+      action,
+      target,
+      timestamp,
+      id: Date.now()
+    };
+    
+    this.history.unshift(historyItem);
+    if (this.history.length > 100) {
+      this.history.pop(); // Keep only last 100 items
+    }
+    
+    this.updateHistoryDisplay();
+    this.setActiveOperation(action, target);
+    
+    // Clear active operation after 2 seconds
+    setTimeout(() => {
+      this.clearActiveOperation();
+    }, 2000);
+  }
+
+  setActiveOperation(action, target) {
+    this.activeOperation = { action, target };
+    const activeOpElement = this.container.querySelector('.active-operation');
+    if (activeOpElement) {
+      activeOpElement.innerHTML = `
+        <div style="text-align: center;">
+          <div style="font-weight: 600; color: #6B46C1;">${action}</div>
+          <div style="color: #6B7280; font-size: 9px;">${target}</div>
+        </div>
+      `;
+    }
+  }
+
+  clearActiveOperation() {
+    this.activeOperation = null;
+    const activeOpElement = this.container.querySelector('.active-operation');
+    if (activeOpElement) {
+      activeOpElement.innerHTML = `<span style="color: #6B7280; font-style: italic;">No active operations</span>`;
+    }
+  }
+
+  updateHistoryDisplay() {
+    const historyList = this.container.querySelector('.history-list');
+    if (!historyList) return;
+    
+    historyList.innerHTML = this.history.map(item => `
+      <div style="
+        padding: 8px;
+        border-bottom: 1px solid #E5E7EB;
+        font-size: 10px;
+      ">
+        <div style="
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 2px;
+        ">${item.action}</div>
+        <div style="
+          color: #6B7280;
+          margin-bottom: 2px;
+        ">${item.target}</div>
+        <div style="
+          color: #9CA3AF;
+          font-size: 9px;
+        ">${this.formatTimestamp(item.timestamp)}</div>
+      </div>
+    `).join('');
+  }
+
+  formatTimestamp(date) {
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60000) { // Less than 1 minute
+      return 'Just now';
+    } else if (diff < 3600000) { // Less than 1 hour
+      const minutes = Math.floor(diff / 60000);
+      return `${minutes}m ago`;
+    } else if (diff < 86400000) { // Less than 1 day
+      const hours = Math.floor(diff / 3600000);
+      return `${hours}h ago`;
+    } else {
+      return date.toLocaleTimeString();
+    }
+  }
+
+  clearHistory() {
+    this.history = [];
+    this.updateHistoryDisplay();
+    this.addToHistory('CLEAR HISTORY', 'All history cleared');
+  }
+
+  // Data Operations Methods
+  deleteNode(node) {
+    if (!node) return;
+    
+    this.addToHistory('DELETE NODE', node.name || node.id);
+    
+    // Remove node from data
+    this.data.nodes = this.data.nodes.filter(n => n.id !== node.id);
+    
+    // Remove edges connected to this node
+    this.data.edges = this.data.edges.filter(e => 
+      e.source !== node.id && e.target !== node.id &&
+      e.source.id !== node.id && e.target.id !== node.id
+    );
+    
+    // Reset selection
+    this.selectedNode = null;
+    const deleteBtn = this.container.querySelector('.delete-selected');
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.style.opacity = '0.5';
+    }
+    
+    // Update visualization
+    this.updateVisualization();
+  }
+
+  deleteEdge(edge) {
+    if (!edge) return;
+    
+    this.addToHistory('DELETE EDGE', edge.label || 'Connection');
+    
+    // Remove edge from data
+    this.data.edges = this.data.edges.filter(e => 
+      !(e.source === edge.source && e.target === edge.target)
+    );
+    
+    // Reset selection
+    this.selectedEdge = null;
+    
+    // Update visualization
+    this.updateVisualization();
+  }
+
+  exportData() {
+    this.addToHistory('EXPORT DATA', `${this.data.nodes.length} nodes, ${this.data.edges.length} edges`);
+    
+    const exportData = {
+      nodes: this.data.nodes,
+      edges: this.data.edges,
+      timestamp: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    // Create and download JSON file
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `neo4j-data-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  clearAllData() {
+    this.addToHistory('CLEAR ALL DATA', 'All nodes and edges removed');
+    
+    this.data = { nodes: [], edges: [] };
+    this.selectedNode = null;
+    this.selectedEdge = null;
+    
+    // Disable delete button
+    const deleteBtn = this.container.querySelector('.delete-selected');
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.style.opacity = '0.5';
+    }
+    
+    this.updateVisualization();
   }
 }
 
