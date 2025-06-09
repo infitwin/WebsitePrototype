@@ -306,6 +306,11 @@
             animation: spin 1s linear infinite;
         }
 
+        .winston-orb.speaking {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
             50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
@@ -854,7 +859,175 @@
         <div id="toastMessage"></div>
     </div>
 
+    <!-- Load Firebase Configuration and Services -->
+    <script type="module" src="../js/config/firebase-config.js"></script>
+    <script src="../js/services/auth.js"></script>
+    
+    <!-- Load Audio and WebSocket Services -->
+    <script src="../js/utils/audio-logger.js"></script>
+    <script src="../js/services/websocket-manager.js"></script>
+    <script src="../js/services/audio-recorder.js"></script>
+    <script src="../js/services/tts-player.js"></script>
+    <script src="../js/services/orchestrator-websocket.js"></script>
+    <script src="../js/config/orchestration-endpoints.js"></script>
+    <script src="../js/utils/message-builder.js"></script>
+
     <script>
+        // WebsitePrototype Audio Services Integration
+        let audioRecorder = null;
+        let ttsPlayer = null;
+        let orchestratorWebSocket = null;
+        let currentInterviewId = null;
+        let isInterviewActive = false;
+
+        // Initialize WebsitePrototype services
+        async function initializeServices() {
+            try {
+                console.log('Initializing WebsitePrototype audio services...');
+                
+                // Initialize Audio Recorder
+                audioRecorder = new AudioRecorder({
+                    chunkInterval: 100,
+                    audioBitsPerSecond: 16000
+                });
+                await audioRecorder.initialize();
+                
+                // Initialize TTS Player
+                ttsPlayer = new TTSAudioPlayer({
+                    volume: 1.0,
+                    playbackRate: 1.0
+                });
+                await ttsPlayer.initialize();
+                
+                // Set up TTS callbacks
+                ttsPlayer.onPlaybackStart = (item) => {
+                    setWinstonState('speaking');
+                    console.log('Winston started speaking:', item.id);
+                };
+                
+                ttsPlayer.onPlaybackEnd = (item) => {
+                    setWinstonState('idle');
+                    console.log('Winston finished speaking:', item?.id);
+                };
+                
+                ttsPlayer.onError = (error) => {
+                    console.error('TTS playback error:', error);
+                    showToast('Audio playback error: ' + error.message, 'error');
+                };
+                
+                // Initialize Orchestrator WebSocket
+                orchestratorWebSocket = new OrchestratorWebSocketService();
+                
+                // Set up orchestrator callbacks
+                orchestratorWebSocket.onInterviewStarted = (data) => {
+                    console.log('Interview started:', data);
+                    currentInterviewId = data.interviewId;
+                    isInterviewActive = true;
+                    showToast('Interview session started with Winston', 'success');
+                };
+                
+                orchestratorWebSocket.onQuestionReceived = (data) => {
+                    console.log('Question received:', data);
+                    updateInterviewQuestion(data.question);
+                    
+                    // If TTS audio is provided, play it
+                    if (data.audioChunks && data.audioChunks.length > 0) {
+                        ttsPlayer.addToQueue(data.audioChunks, {
+                            turnId: data.turnId || `question-${Date.now()}`,
+                            type: 'interview-question'
+                        });
+                    }
+                };
+                
+                orchestratorWebSocket.onAudioChunkRequested = (data) => {
+                    console.log('Audio chunk requested:', data);
+                    // This would typically trigger more detailed audio processing
+                };
+                
+                orchestratorWebSocket.onError = (error) => {
+                    console.error('Orchestrator WebSocket error:', error);
+                    showToast('Connection error: ' + error.message, 'error');
+                    showConnectionBanner(true);
+                };
+                
+                orchestratorWebSocket.onReconnected = () => {
+                    console.log('Orchestrator WebSocket reconnected');
+                    showToast('Connection restored', 'success');
+                    showConnectionBanner(false);
+                };
+                
+                console.log('✅ All WebsitePrototype services initialized successfully');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Service initialization failed:', error);
+                showToast('Failed to initialize audio services: ' + error.message, 'error');
+                return false;
+            }
+        }
+        
+        // Update interview question display
+        function updateInterviewQuestion(question) {
+            const questionElement = document.querySelector('.interview-question');
+            if (questionElement && question) {
+                questionElement.textContent = question;
+            }
+        }
+        
+        // Show/hide connection banner
+        function showConnectionBanner(show) {
+            const banner = document.getElementById('connectionBanner');
+            if (show) {
+                banner.classList.add('active');
+            } else {
+                banner.classList.remove('active');
+            }
+        }
+        
+        // Enhanced startInterview function
+        async function startInterviewWithOrchestrator() {
+            try {
+                if (!orchestratorWebSocket) {
+                    throw new Error('Orchestrator not initialized');
+                }
+                
+                setWinstonState('thinking');
+                showToast('Connecting to interview orchestrator...', 'success');
+                
+                // Connect to WebSocket first
+                orchestratorWebSocket.connect();
+                
+                // Wait a moment for connection
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (!orchestratorWebSocket.isConnected()) {
+                    throw new Error('Failed to connect to orchestrator');
+                }
+                
+                showToast('Starting interview session...', 'success');
+                
+                // Start interview with orchestrator
+                const interviewData = {
+                    userId: 'demo-user', // In production, get from auth
+                    twinId: 'winston-interviewer',
+                    sessionType: 'memory-interview',
+                    metadata: {
+                        platform: 'WebsitePrototype',
+                        timestamp: new Date().toISOString()
+                    }
+                };
+                
+                orchestratorWebSocket.startInterview(interviewData);
+                
+                setWinstonState('idle');
+                
+            } catch (error) {
+                console.error('Failed to start interview:', error);
+                showToast('Failed to start interview: ' + error.message, 'error');
+                setWinstonState('idle');
+            }
+        }
+
         // Idea Clouds Management
         const ideaPrompts = [
             "Tell us about your first pet",
@@ -961,35 +1134,59 @@
         }
 
         function startRecording() {
-            // Initialize speech recognition
-            if ('webkitSpeechRecognition' in window) {
-                recognition = new webkitSpeechRecognition();
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = 'en-US';
+            if (!audioRecorder) {
+                showToast('Audio recorder not initialized', 'error');
+                return;
+            }
+            
+            try {
+                audioRecorder.start(
+                    // onAudioChunk callback
+                    (chunk) => {
+                        console.log(`Audio chunk ${chunk.chunkNumber}: ${chunk.size} bytes`);
+                        
+                        // Send audio chunk to orchestrator if interview is active
+                        if (orchestratorWebSocket && isInterviewActive) {
+                            orchestratorWebSocket.sendAudioChunk(chunk);
+                        }
+                    },
+                    // onError callback
+                    (error) => {
+                        console.error('Recording error:', error);
+                        showToast('Recording error: ' + error.message, 'error');
+                        toggleRecording(); // Stop recording on error
+                    },
+                    // onStateChange callback
+                    (state) => {
+                        console.log('Recording state changed:', state);
+                        if (state.recording) {
+                            setWinstonState('listening');
+                        } else {
+                            setWinstonState('idle');
+                        }
+                    }
+                );
                 
-                recognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    document.getElementById('messageInput').value = transcript;
-                    sendMessage();
-                };
-                
-                recognition.onerror = function(event) {
-                    showToast('Speech recognition error: ' + event.error, 'error');
-                    toggleRecording();
-                };
-                
-                recognition.start();
+                console.log('Audio recording started');
                 setWinstonState('listening');
-            } else {
-                showToast('Speech recognition not supported in this browser', 'error');
+                
+            } catch (error) {
+                console.error('Failed to start recording:', error);
+                showToast('Failed to start recording: ' + error.message, 'error');
+                toggleRecording(); // Reset button state
             }
         }
 
         function stopRecording() {
-            if (recognition) {
-                recognition.stop();
-                setWinstonState('idle');
+            if (audioRecorder) {
+                try {
+                    audioRecorder.stop();
+                    console.log('Audio recording stopped');
+                    setWinstonState('idle');
+                } catch (error) {
+                    console.error('Failed to stop recording:', error);
+                    showToast('Failed to stop recording: ' + error.message, 'error');
+                }
             }
         }
 
@@ -1077,10 +1274,23 @@
             document.getElementById('chatModal').classList.remove('active');
         }
 
-        function startInterview() {
+        async function startInterview() {
             document.getElementById('privacyModal').classList.remove('active');
+            
+            // Initialize all services first
+            const servicesReady = await initializeServices();
+            if (!servicesReady) {
+                showToast('Failed to initialize services. Interview cannot start.', 'error');
+                return;
+            }
+            
+            // Start the orchestrator interview session
+            await startInterviewWithOrchestrator();
+            
+            // Start the idea clouds
             startIdeaClouds();
-            showToast('Interview started! Winston is ready to listen.', 'success');
+            
+            showToast('Interview ready! Click the mic to start speaking.', 'success');
         }
 
         function newInterview() {

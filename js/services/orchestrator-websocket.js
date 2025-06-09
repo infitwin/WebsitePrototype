@@ -28,6 +28,21 @@ class OrchestratorWebSocketService {
     this.messageHandlers = new Map();
     this.eventHandlers = new Map();
     
+    // Interview state
+    this.currentInterviewId = null;
+    this.currentCorrelationId = null;
+    this.wasConnectedBefore = false;
+    
+    // Callback properties (similar to React hook pattern)
+    this.onInterviewStarted = null;
+    this.onQuestionReceived = null;
+    this.onAudioChunkRequested = null;
+    this.onError = null;
+    this.onReconnected = null;
+    
+    // Set up message handlers
+    this.setupMessageHandlers();
+    
     // Bind methods
     this.connect = this.connect.bind(this);
     this.disconnect = this.disconnect.bind(this);
@@ -36,6 +51,35 @@ class OrchestratorWebSocketService {
     this.off = this.off.bind(this);
     this.startInterview = this.startInterview.bind(this);
     this.sendHeartbeat = this.sendHeartbeat.bind(this);
+  }
+
+  /**
+   * Set up default message handlers
+   */
+  setupMessageHandlers() {
+    // Handle InterviewStarted
+    this.messageHandlers.set('InterviewStarted', (parsedMessage) => {
+      this.currentInterviewId = parsedMessage.interviewId;
+      this.currentCorrelationId = parsedMessage.correlationId;
+      
+      if (this.onInterviewStarted) {
+        this.onInterviewStarted(parsedMessage);
+      }
+    });
+    
+    // Handle SendQuestion
+    this.messageHandlers.set('SendQuestion', (parsedMessage) => {
+      if (this.onQuestionReceived) {
+        this.onQuestionReceived(parsedMessage);
+      }
+    });
+    
+    // Handle ReturnAudioChunks
+    this.messageHandlers.set('ReturnAudioChunks', (parsedMessage) => {
+      if (this.onAudioChunkRequested) {
+        this.onAudioChunkRequested(parsedMessage);
+      }
+    });
   }
 
   /**
@@ -54,9 +98,16 @@ class OrchestratorWebSocketService {
 
       this.ws.onopen = (event) => {
         console.log('Connected to Orchestrator');
+        const isReconnection = this.wasConnectedBefore;
         this.connected = true;
         this.error = null;
+        this.wasConnectedBefore = true;
         this.emit('connected', event);
+        
+        // Call onReconnected callback if this is a reconnection
+        if (isReconnection && this.onReconnected) {
+          this.onReconnected();
+        }
         
         // Fire telemetry (safe fallback)
         this.logTelemetry('Orchestrator_Connected', { url: wsUrl });
@@ -100,6 +151,11 @@ class OrchestratorWebSocketService {
         console.error('WebSocket error:', event);
         this.error = 'Connection error';
         this.emit('error', { type: 'connection', error: event });
+        
+        // Call onError callback
+        if (this.onError) {
+          this.onError(new Error('WebSocket connection error'));
+        }
         
         this.logTelemetry('Orchestrator_Error', { error: 'Connection error' });
       };
@@ -314,6 +370,42 @@ class OrchestratorWebSocketService {
       // }
     } catch (error) {
       // Silent failure - telemetry should never break functionality
+    }
+  }
+
+  /**
+   * Send audio chunk to orchestrator for processing
+   */
+  sendAudioChunk(audioChunk) {
+    if (!this.isConnected()) {
+      console.warn('Cannot send audio chunk: WebSocket not connected');
+      return false;
+    }
+
+    try {
+      const message = window.buildSendAudioChunkMessage({
+        interviewId: this.currentInterviewId,
+        correlationId: this.currentCorrelationId,
+        chunkNumber: audioChunk.chunkNumber,
+        audio: audioChunk.audio,
+        timestamp: audioChunk.timestamp,
+        size: audioChunk.size
+      });
+
+      this.send(message);
+      
+      this.logTelemetry('Send_Audio_Chunk', {
+        interviewId: this.currentInterviewId,
+        chunkNumber: audioChunk.chunkNumber,
+        size: audioChunk.size
+      });
+      
+      return true;
+      
+    } catch (error) {
+      console.error('Failed to send audio chunk:', error);
+      this.emit('error', { type: 'send_audio_chunk', error });
+      return false;
     }
   }
 
