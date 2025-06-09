@@ -634,14 +634,14 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label" for="displayName">Display Name</label>
-                            <input type="text" class="form-input" id="displayName" value="John Doe">
+                            <input type="text" class="infitwin-form__input" id="displayName" value="John Doe">
                             <div class="form-help">Used across Infitwin</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="emailAddress">Email Address</label>
                             <div class="email-container">
-                                <input type="email" class="form-input" id="emailAddress" value="john.doe@email.com">
+                                <input type="email" class="infitwin-form__input" id="emailAddress" value="john.doe@email.com">
                                 <span class="verification-badge">✓ Verified</span>
                             </div>
                             <div class="form-help">We'll email to verify any changes</div>
@@ -649,13 +649,13 @@
 
                         <div class="form-group">
                             <label class="form-label" for="phoneNumber">Phone Number</label>
-                            <input type="tel" class="form-input" id="phoneNumber" value="+1 (555) 123-4567">
+                            <input type="tel" class="infitwin-form__input" id="phoneNumber" value="+1 (555) 123-4567">
                             <div class="form-help">Optional - for account recovery</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="timezone">Timezone</label>
-                            <select class="form-input" id="timezone">
+                            <select class="infitwin-form__input" id="timezone">
                                 <option value="America/New_York">Eastern Time (ET)</option>
                                 <option value="America/Chicago">Central Time (CT)</option>
                                 <option value="America/Denver">Mountain Time (MT)</option>
@@ -743,13 +743,13 @@
                     <div class="form-grid">
                         <div class="form-group full-width">
                             <label class="form-label" for="currentPassword">Current Password</label>
-                            <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                            <input type="password" class="infitwin-form__input" id="currentPassword" placeholder="Enter current password">
                             <div class="form-error">Current password is required</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="newPassword">New Password</label>
-                            <input type="password" class="form-input" id="newPassword" placeholder="Enter new password">
+                            <input type="password" class="infitwin-form__input" id="newPassword" placeholder="Enter new password">
                             <div class="form-help">At least 8 characters</div>
                             <div class="password-strength" id="passwordStrength">
                                 <div class="strength-bar">
@@ -761,7 +761,7 @@
 
                         <div class="form-group">
                             <label class="form-label" for="confirmPassword">Confirm Password</label>
-                            <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm new password">
+                            <input type="password" class="infitwin-form__input" id="confirmPassword" placeholder="Confirm new password">
                             <div class="form-error" id="passwordMismatch">Passwords do not match</div>
                         </div>
                     </div>
@@ -799,7 +799,7 @@
                             <div class="toggle-label">Theme</div>
                             <div class="toggle-description">Choose your preferred color scheme</div>
                         </div>
-                        <select class="form-input" id="themePreference" style="width: 150px;">
+                        <select class="infitwin-form__input" id="themePreference" style="width: 150px;">
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
                             <option value="auto">Auto (System)</option>
@@ -811,7 +811,7 @@
                             <div class="toggle-label">Language</div>
                             <div class="toggle-description">Select your preferred language</div>
                         </div>
-                        <select class="form-input" id="languagePreference" style="width: 150px;">
+                        <select class="infitwin-form__input" id="languagePreference" style="width: 150px;">
                             <option value="en" selected>English</option>
                             <option value="es">Español</option>
                             <option value="fr">Français</option>
@@ -825,7 +825,7 @@
                             <div class="toggle-label">Date Format</div>
                             <div class="toggle-description">How dates are displayed throughout the app</div>
                         </div>
-                        <select class="form-input" id="dateFormat" style="width: 150px;">
+                        <select class="infitwin-form__input" id="dateFormat" style="width: 150px;">
                             <option value="mdy">MM/DD/YYYY</option>
                             <option value="dmy">DD/MM/YYYY</option>
                             <option value="ymd">YYYY-MM-DD</option>
@@ -1077,7 +1077,7 @@
             securityForm.addEventListener('submit', handleSecurityFormSubmit);
             
             // Form input changes
-            const formInputs = document.querySelectorAll('.form-input');
+            const formInputs = document.querySelectorAll('.infitwin-form__input');
             formInputs.forEach(input => {
                 input.addEventListener('input', handleFormInputChange);
             });

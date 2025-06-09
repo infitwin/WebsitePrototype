@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Infitwin - Begin Your Memory Journey</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components/form.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/auth.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -63,26 +65,34 @@
                     </div>
 
                     <!-- Email Sign Up -->
-                    <div class="form-group">
-                        <label for="signup-name">Full Name</label>
-                        <input type="text" id="signup-name" name="name" required>
+                    <div class="infitwin-form">
+                        <label for="signup-name" class="infitwin-form__label">Full Name <span class="infitwin-form__required">*</span></label>
+                        <div class="infitwin-form__input-wrapper">
+                            <input type="text" id="signup-name" name="name" class="infitwin-form__input" required>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="signup-email">Email</label>
-                        <input type="email" id="signup-email" name="email" required>
+                    <div class="infitwin-form">
+                        <label for="signup-email" class="infitwin-form__label">Email <span class="infitwin-form__required">*</span></label>
+                        <div class="infitwin-form__input-wrapper">
+                            <input type="email" id="signup-email" name="email" class="infitwin-form__input" required>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="signup-password">Password</label>
-                        <input type="password" id="signup-password" name="password" required minlength="8">
-                        <small class="form-help">At least 8 characters</small>
+                    <div class="infitwin-form">
+                        <label for="signup-password" class="infitwin-form__label">Password <span class="infitwin-form__required">*</span></label>
+                        <div class="infitwin-form__input-wrapper">
+                            <input type="password" id="signup-password" name="password" class="infitwin-form__input" required minlength="8">
+                        </div>
+                        <small class="infitwin-form__help">At least 8 characters</small>
                     </div>
 
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
-                        <small class="form-help">Re-enter your password</small>
+                    <div class="infitwin-form">
+                        <label for="confirmPassword" class="infitwin-form__label">Confirm Password <span class="infitwin-form__required">*</span></label>
+                        <div class="infitwin-form__input-wrapper">
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="infitwin-form__input" required>
+                        </div>
+                        <small class="infitwin-form__help">Re-enter your password</small>
                     </div>
 
                     <div class="error-message" id="signup-error" style="display: none; color: #EF4444; margin-bottom: 1rem;"></div>
@@ -116,21 +126,25 @@
                     </div>
 
                     <!-- Email Log In -->
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" class="login-email" name="email" required>
+                    <div class="infitwin-form">
+                        <label for="email" class="infitwin-form__label">Email <span class="infitwin-form__required">*</span></label>
+                        <div class="infitwin-form__input-wrapper">
+                            <input type="email" id="email" class="infitwin-form__input login-email" name="email" required>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" class="login-password" name="password" required minlength="6">
+                    <div class="infitwin-form">
+                        <label for="password" class="infitwin-form__label">Password <span class="infitwin-form__required">*</span></label>
+                        <div class="infitwin-form__input-wrapper">
+                            <input type="password" id="password" class="infitwin-form__input login-password" name="password" required minlength="6">
+                        </div>
                     </div>
 
                     <div class="error-message" id="login-error" style="display: none; color: #EF4444; margin-bottom: 1rem;"></div>
 
-                    <div class="form-group form-remember">
+                    <div class="infitwin-form form-remember">
                         <label class="checkbox-label">
-                            <input type="checkbox" name="remember">
+                            <input type="checkbox" name="remember" class="infitwin-form__checkbox">
                             <span>Remember me</span>
                         </label>
                         <a href="#" class="forgot-link">Forgot password?</a>
