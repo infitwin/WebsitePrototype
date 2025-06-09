@@ -1,0 +1,111 @@
+=== External Communications Survey ===
+Directory: /home/tim/current projects/ui-studio
+Date: $(date)
+Purpose: Find all code that communicates with external services
+
+
+=== WEBSOCKET AND REAL-TIME ===
+Files with WebSocket connections:
+app/src/examples/WebSocketIntegrationExample.js
+app/src/components/audio/AudioControlsProduction.js
+app/src/components/audio/ConnectionQualityMonitor.js
+app/src/components/audio/AudioWebSocketManager.js
+app/src/components/audio/AudioBuffer.js
+app/src/components/user/InterviewComponent_new.js
+app/src/components/user/InterviewComponent.js
+app/src/components/user/InterviewComponent-debug.js
+app/src/components/user/InterviewComponent-trace-context.js
+app/src/components/user/InterviewComponentRefactored.js
+app/src/utils/telemetryHelper.js
+app/src/utils/tracing.js
+app/src/utils/messageBuilder.js
+app/src/utils/safeWebSocketManager.js
+app/src/utils/audio/audioLogger.js
+app/src/utils/fireAndForgetTracing.js
+app/src/models/messageTypes.js
+app/src/pages/Home.js
+app/src/pages/WebSocketTestPage.js
+app/src/hooks/useOrchestratorWebSocket.js
+app/src/hooks/useRealTimeComm-backup.js
+app/src/hooks/useOrchestratorWebSocketRefactored.js
+app/src/hooks/useRealTimeComm-refactored.js
+app/src/hooks/audio/useAudioProcessing.js
+app/src/hooks/useRealTimeComm.js
+app/src/config/orchestrationEndpoints.js
+app/src/App.js
+
+Files with Socket.io:
+None found
+
+=== FIREBASE SERVICES ===
+Firebase initialization:
+app/src/firebaseConfig.js
+
+Firebase Auth:
+app/src/components/debug/browser-upload-tester.js
+app/src/components/admin/ArtifactManager/index_filemanager.js
+app/src/components/user/TwinChatComponent.js
+app/src/contexts/AuthContext.js
+app/src/pages/UserDashboard.js
+app/src/Login.js
+app/src/firebaseConfig.js
+app/src/services/AuditService.js
+
+Firestore Database:
+app/src/components/debug/browser-upload-tester.js
+app/src/components/global/FileUpload.js
+app/src/components/audio/AudioLevelIndicator.js
+app/src/components/audio/ConnectionQualityMonitor.js
+app/src/components/audio/TTSAudioPlayer.js
+app/src/components/audio/AudioWebSocketManager.js
+app/src/components/audio/AudioBuffer.js
+app/src/components/admin/ArtifactManager/index_filemanager.js
+app/src/components/admin/ArtifactManager/useArtifactProcessing.js
+app/src/components/admin/FileManager/index_filemanager.js
+app/src/components/user/InterviewComponent_new.js
+app/src/components/user/InterviewComponent.js
+app/src/components/user/InterviewComponent-debug.js
+app/src/components/user/TwinChatComponent.js
+app/src/components/user/FilesComponent.js
+app/src/components/user/TwinSetupComponent.js
+app/src/utils/filtered-tracing.js
+app/src/utils/tracing.js
+app/src/utils/audio/audioLogger.js
+app/src/index.js
+app/src/interview/InterviewManagerComponent.js
+app/src/Login.js
+app/src/firebaseConfig.js
+app/src/services/AuditService.js
+app/src/services/StatsService.js
+
+Firebase Storage:
+app/src/components/debug/browser-upload-tester.js
+app/src/components/global/FileUpload.js
+app/src/components/admin/FileManager/useFileProcessing.js
+app/src/firebaseConfig.js
+app/src/services/StatsService.js
+
+=== AUDIO/VIDEO STREAMING ===
+Audio Context and Streaming:
+app/src/components/audio/AudioRecorder.js
+app/src/components/audio/TTSAudioPlayer.js
+
+=== HTTP/API CALLS ===
+Fetch API calls:
+app/src/components/global/FileUpload.js
+app/src/components/user/TwinChatComponent.js
+app/src/utils/filtered-tracing.js
+
+Axios/HTTP libraries:
+None found
+
+=== THIRD-PARTY SERVICES ===
+AI Services (Gemini, OpenAI, etc):
+None found
+
+Database connections (Neo4j, etc):
+None found
+
+=== SUMMARY ===
+Total files with external communications:
+46
