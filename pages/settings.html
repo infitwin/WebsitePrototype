@@ -719,6 +719,63 @@
                 </form>
             </section>
 
+            <!-- Account Settings Section -->
+            <section class="settings-section account-settings-section" data-section="account">
+                <div class="section-header">
+                    <h2 class="section-title">Account Settings</h2>
+                    <p class="section-description">Manage your account, billing, and subscription settings</p>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Subscription Status</div>
+                            <div class="toggle-description">Current plan: Free Tier (10GB storage limit)</div>
+                        </div>
+                        <button class="btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                            Upgrade Plan
+                        </button>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Storage Usage</div>
+                            <div class="toggle-description">3.5 GB of 10 GB used (35%)</div>
+                        </div>
+                        <div style="width: 120px; height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden;">
+                            <div style="width: 35%; height: 100%; background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);"></div>
+                        </div>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Account Created</div>
+                            <div class="toggle-description">December 15, 2024</div>
+                        </div>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Data Export</div>
+                            <div class="toggle-description">Download all your memories, transcripts, and settings</div>
+                        </div>
+                        <button class="btn-secondary" style="font-size: 14px; padding: 8px 16px;" onclick="downloadData()">
+                            Export Data
+                        </button>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Delete Account</div>
+                            <div class="toggle-description">Permanently delete your account and all associated data</div>
+                        </div>
+                        <button class="btn-secondary" style="font-size: 14px; padding: 8px 16px; color: #EF4444; border-color: #EF4444;" onclick="deleteAccount()">
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+            </section>
+
             <!-- Security Section -->
             <section class="settings-section">
                 <div class="section-header">
@@ -770,6 +827,103 @@
                         <span>🚪</span>
                         Sign Out
                     </button>
+                </div>
+            </section>
+
+            <!-- Preferences Section -->
+            <section class="settings-section preferences-section" data-section="preferences">
+                <div class="section-header">
+                    <h2 class="section-title">Preferences</h2>
+                    <p class="section-description">Customize your interface, language, and application preferences</p>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Theme</div>
+                            <div class="toggle-description">Choose your preferred color scheme</div>
+                        </div>
+                        <select class="form-input" id="themePreference" style="width: 150px;">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto">Auto (System)</option>
+                        </select>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Language</div>
+                            <div class="toggle-description">Select your preferred language</div>
+                        </div>
+                        <select class="form-input" id="languagePreference" style="width: 150px;">
+                            <option value="en" selected>English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                            <option value="zh">中文</option>
+                        </select>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Date Format</div>
+                            <div class="toggle-description">How dates are displayed throughout the app</div>
+                        </div>
+                        <select class="form-input" id="dateFormat" style="width: 150px;">
+                            <option value="mdy">MM/DD/YYYY</option>
+                            <option value="dmy">DD/MM/YYYY</option>
+                            <option value="ymd">YYYY-MM-DD</option>
+                            <option value="relative">Relative (2 days ago)</option>
+                        </select>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Auto-Save Interviews</div>
+                            <div class="toggle-description">Automatically save interview responses as you type</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="autoSaveInterviews">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Compact View</div>
+                            <div class="toggle-description">Use a denser layout to show more content</div>
+                        </div>
+                        <label class="toggle-switch" data-setting="compactView">
+                            <input type="checkbox" class="toggle-input">
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Animation Effects</div>
+                            <div class="toggle-description">Enable smooth transitions and animations</div>
+                        </div>
+                        <label class="toggle-switch active" data-setting="animationEffects">
+                            <input type="checkbox" class="toggle-input" checked>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <div class="toggle-info">
+                            <div class="toggle-label">Sound Effects</div>
+                            <div class="toggle-description">Play sounds for notifications and interactions</div>
+                        </div>
+                        <label class="toggle-switch" data-setting="soundEffects">
+                            <input type="checkbox" class="toggle-input">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-primary" id="savePreferencesBtn">
+                        <span>⚙️</span>
+                        Save Preferences
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="resetPreferences()">Reset to Defaults</button>
                 </div>
             </section>
 
@@ -893,7 +1047,15 @@
             sharedTwinAlerts: true,
             profileVisibility: true,
             analytics: true,
-            memorySuggestions: true
+            memorySuggestions: true,
+            // Preferences
+            themePreference: 'light',
+            languagePreference: 'en',
+            dateFormat: 'mdy',
+            autoSaveInterviews: true,
+            compactView: false,
+            animationEffects: true,
+            soundEffects: false
         };
 
         let originalSettings = {};
@@ -955,6 +1117,17 @@
             const logoutBtn = document.getElementById('logoutBtn');
             logoutBtn.addEventListener('click', handleLogout);
             
+            // Preferences section
+            const savePreferencesBtn = document.getElementById('savePreferencesBtn');
+            savePreferencesBtn.addEventListener('click', handleSavePreferences);
+            
+            // Preference dropdown changes
+            const preferenceSelects = ['themePreference', 'languagePreference', 'dateFormat'];
+            preferenceSelects.forEach(id => {
+                const element = document.getElementById(id);
+                element.addEventListener('change', handlePreferenceChange);
+            });
+            
             // Handle direct clicks on toggle inputs
             document.querySelectorAll('.toggle-input').forEach(input => {
                 input.addEventListener('change', function(e) {
@@ -990,6 +1163,11 @@
             document.getElementById('emailAddress').value = userSettings.emailAddress;
             document.getElementById('phoneNumber').value = userSettings.phoneNumber;
             document.getElementById('timezone').value = userSettings.timezone;
+            
+            // Populate preferences
+            document.getElementById('themePreference').value = userSettings.themePreference;
+            document.getElementById('languagePreference').value = userSettings.languagePreference;
+            document.getElementById('dateFormat').value = userSettings.dateFormat;
         }
 
         function setupToggleSwitches() {
@@ -1259,6 +1437,72 @@
             if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
                 // TODO: Implement account deletion
                 alert('Account deletion would be processed. This is a placeholder.');
+            }
+        }
+
+        // Preferences handlers
+        function handleSavePreferences() {
+            const saveBtn = document.getElementById('savePreferencesBtn');
+            
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+            
+            // Update preferences from form
+            userSettings.themePreference = document.getElementById('themePreference').value;
+            userSettings.languagePreference = document.getElementById('languagePreference').value;
+            userSettings.dateFormat = document.getElementById('dateFormat').value;
+            
+            // Simulate API call
+            setTimeout(() => {
+                saveSettings();
+                showSuccessMessage('Preferences saved successfully!');
+                
+                // Reset button
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<span>⚙️</span> Save Preferences';
+            }, 1000);
+        }
+
+        function handlePreferenceChange() {
+            hasUnsavedChanges = true;
+        }
+
+        function resetPreferences() {
+            if (confirm('Reset all preferences to their default values?')) {
+                document.getElementById('themePreference').value = 'light';
+                document.getElementById('languagePreference').value = 'en';
+                document.getElementById('dateFormat').value = 'mdy';
+                
+                // Reset toggle switches in preferences section
+                const preferencesSection = document.querySelector('.preferences-section');
+                const toggles = preferencesSection.querySelectorAll('[data-setting]');
+                toggles.forEach(toggle => {
+                    const setting = toggle.dataset.setting;
+                    const input = toggle.querySelector('.toggle-input');
+                    
+                    // Set default values
+                    const defaults = {
+                        autoSaveInterviews: true,
+                        compactView: false,
+                        animationEffects: true,
+                        soundEffects: false
+                    };
+                    
+                    const defaultValue = defaults[setting] !== undefined ? defaults[setting] : false;
+                    input.checked = defaultValue;
+                    
+                    if (defaultValue) {
+                        toggle.classList.add('active');
+                    } else {
+                        toggle.classList.remove('active');
+                    }
+                    
+                    userSettings[setting] = defaultValue;
+                });
+                
+                saveSettings();
+                showSuccessMessage('Preferences reset to defaults!');
             }
         }
 
