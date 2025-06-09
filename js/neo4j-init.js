@@ -266,8 +266,8 @@ class Neo4jVisualization {
               background: white;
               color: #EF4444;
               font-size: 11px;
-              cursor: pointer;
-              disabled: true;
+              cursor: default;
+              opacity: 0.5;
             " disabled>
               🗑️ Delete Selected
             </button>
@@ -515,7 +515,22 @@ class Neo4jVisualization {
       .join('line')
       .attr('stroke', '#6B7280')
       .attr('stroke-width', 2)
-      .attr('stroke-opacity', 0.6);
+      .attr('stroke-opacity', 0.6)
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => {
+        event.stopPropagation();
+        this.handleEdgeClick(d);
+      })
+      .on('mouseover', function() {
+        d3.select(this)
+          .attr('stroke-width', 4)
+          .attr('stroke', '#6B46C1');
+      })
+      .on('mouseout', function() {
+        d3.select(this)
+          .attr('stroke-width', 2)
+          .attr('stroke', '#6B7280');
+      });
 
     // Create nodes
     const node = this.nodeGroup
@@ -609,6 +624,9 @@ class Neo4jVisualization {
     this.selectedEdge = null;
     this.addToHistory('NODE CLICK', node.name || node.id);
     
+    // Update visual selection
+    this.updateSelectionVisuals();
+    
     // Enable delete button if we have data manager
     const deleteBtn = this.container.querySelector('.delete-selected');
     if (deleteBtn) {
@@ -616,6 +634,60 @@ class Neo4jVisualization {
       deleteBtn.style.opacity = '1';
       deleteBtn.style.cursor = 'pointer';
     }
+  }
+
+  handleEdgeClick(edge) {
+    console.log('Edge clicked:', edge);
+    this.selectedEdge = edge;
+    this.selectedNode = null;
+    this.addToHistory('EDGE CLICK', edge.label || 'Connection');
+    
+    // Update visual selection
+    this.updateSelectionVisuals();
+    
+    // Enable delete button if we have data manager
+    const deleteBtn = this.container.querySelector('.delete-selected');
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.style.opacity = '1';
+      deleteBtn.style.cursor = 'pointer';
+    }
+  }
+
+  updateSelectionVisuals() {
+    // Update node selection visuals
+    this.nodeGroup.selectAll('circle')
+      .attr('stroke', d => {
+        if (this.selectedNode && d.id === this.selectedNode.id) {
+          return '#FFD700';
+        }
+        return '#ffffff';
+      })
+      .attr('stroke-width', d => {
+        if (this.selectedNode && d.id === this.selectedNode.id) {
+          return 5;
+        }
+        return 3;
+      });
+
+    // Update edge selection visuals
+    this.linkGroup.selectAll('line')
+      .attr('stroke', d => {
+        if (this.selectedEdge && 
+            ((d.source.id === this.selectedEdge.source.id && d.target.id === this.selectedEdge.target.id) ||
+             (d.source === this.selectedEdge.source && d.target === this.selectedEdge.target))) {
+          return '#FFD700';
+        }
+        return '#6B7280';
+      })
+      .attr('stroke-width', d => {
+        if (this.selectedEdge && 
+            ((d.source.id === this.selectedEdge.source.id && d.target.id === this.selectedEdge.target.id) ||
+             (d.source === this.selectedEdge.source && d.target === this.selectedEdge.target))) {
+          return 4;
+        }
+        return 2;
+      });
   }
 
   toggleFilter(type) {
@@ -818,13 +890,24 @@ class Neo4jVisualization {
     
     this.addToHistory('DELETE EDGE', edge.label || 'Connection');
     
+    // Get source and target IDs (handling D3's object structure)
+    const sourceId = edge.source.id || edge.source;
+    const targetId = edge.target.id || edge.target;
+    
     // Remove edge from data
     this.data.edges = this.data.edges.filter(e => 
-      !(e.source === edge.source && e.target === edge.target)
+      !(e.source === sourceId && e.target === targetId)
     );
     
     // Reset selection
     this.selectedEdge = null;
+    
+    // Disable delete button
+    const deleteBtn = this.container.querySelector('.delete-selected');
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.style.opacity = '0.5';
+    }
     
     // Update visualization
     this.updateVisualization();
@@ -864,6 +947,7 @@ class Neo4jVisualization {
     if (deleteBtn) {
       deleteBtn.disabled = true;
       deleteBtn.style.opacity = '0.5';
+      deleteBtn.style.cursor = 'default';
     }
     
     this.updateVisualization();
