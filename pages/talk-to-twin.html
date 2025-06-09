@@ -99,6 +99,45 @@
             padding: 24px 32px;
             border-bottom: 1px solid #E5E7EB;
             text-align: center;
+            position: relative;
+        }
+
+        .twin-selector-container {
+            position: absolute;
+            top: 20px;
+            right: 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .twin-selector-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6B7280;
+        }
+
+        .twin-selector {
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 180px;
+        }
+
+        .twin-selector:hover {
+            border-color: #FFD700;
+        }
+
+        .twin-selector:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
         }
 
         .twin-avatar {
@@ -501,6 +540,17 @@
                 padding: 20px 16px;
             }
 
+            .twin-selector-container {
+                position: static;
+                justify-content: center;
+                margin-bottom: 16px;
+            }
+
+            .twin-selector {
+                min-width: 150px;
+                font-size: 13px;
+            }
+
             .chat-container {
                 padding: 0 8px;
             }
@@ -540,6 +590,14 @@
             <main class="symphony-content talk-container">
                 <!-- Twin Header -->
                 <header class="twin-header">
+                    <div class="twin-selector-container">
+                        <label for="twinSelector" class="twin-selector-label">Talk to:</label>
+                        <select id="twinSelector" class="twin-selector">
+                            <option value="john-twin">John's Digital Twin</option>
+                            <option value="margaret-twin">Margaret's Digital Twin</option>
+                            <option value="robert-twin">Robert's Digital Twin</option>
+                        </select>
+                    </div>
                     <div class="twin-avatar">🧠</div>
                     <h2 class="twin-name">John's Digital Twin</h2>
                     <p class="twin-subtitle">Ask me anything</p>
@@ -602,7 +660,10 @@
                 ></textarea>
                 <button class="voice-btn" id="voiceBtn" title="Hold to record">🎤</button>
             </div>
-            <button class="send-btn" id="sendBtn" disabled>→</button>
+            <button class="send-btn" id="sendBtn" aria-label="Send message" title="Send message" disabled>
+                <span class="send-icon">→</span>
+                <span class="send-text" style="display: none;">Send</span>
+            </button>
         </div>
         <div class="recording-indicator" id="recordingIndicator">
             <span class="recording-dot"></span>
@@ -645,6 +706,12 @@
         }
 
         function setupEventListeners() {
+            // Twin selector
+            const twinSelector = document.getElementById('twinSelector');
+            if (twinSelector) {
+                twinSelector.addEventListener('change', handleTwinChange);
+            }
+
             // Mode switcher
             const modeBtns = document.querySelectorAll('.mode-btn');
             modeBtns.forEach(btn => {
@@ -675,6 +742,44 @@
             const messagesContainer = document.getElementById('chatMessages');
             const observer = new MutationObserver(() => scrollToBottom());
             observer.observe(messagesContainer, { childList: true });
+        }
+
+        // Twin Selection
+        function handleTwinChange(e) {
+            const selectedValue = e.target.value;
+            const twinNames = {
+                'john-twin': "John's Digital Twin",
+                'margaret-twin': "Margaret's Digital Twin",
+                'robert-twin': "Robert's Digital Twin"
+            };
+            
+            const newTwinName = twinNames[selectedValue] || "Your Digital Twin";
+            
+            // Update twin name display
+            document.querySelector('.twin-name').textContent = newTwinName;
+            
+            // Clear chat history when switching twins
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="message twin">
+                    <div class="message-avatar twin-message-avatar">🧠</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p class="message-text">Hello! I'm ${newTwinName}. I have access to all my memories and experiences. What would you like to know about my life story?</p>
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+            `;
+            
+            // Show suggestions again
+            const suggestions = document.getElementById('suggestedQuestions');
+            if (suggestions) {
+                suggestions.style.display = 'block';
+            }
+            
+            updateEmptyState();
+            console.log(`Switched to ${newTwinName}`);
         }
 
         // Mode Switching
