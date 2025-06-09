@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/knowledge-symphony.css">
     <style>
         /* Settings Page Specific Styles */
         .settings-container {
@@ -28,6 +29,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            margin-left: 80px; /* Account for fixed sidebar */
         }
 
         .nav-container {
@@ -128,18 +130,22 @@
             cursor: pointer;
         }
 
-        /* Dashboard Layout */
-        .dashboard-container {
-            display: flex;
-            min-height: calc(100vh - 64px);
+        /* Main Content Wrapper */
+        .main-content-wrapper {
+            margin-left: 80px; /* Account for fixed sidebar */
+            min-height: 100vh;
+            width: calc(100% - 80px);
         }
 
-        /* Sidebar */
+        /* Hide the old sidebar since we're using shared navigation */
         .dashboard-sidebar {
-            width: 280px;
-            background: white;
-            border-right: 1px solid #E5E7EB;
-            flex-shrink: 0;
+            display: none;
+        }
+        
+        /* Adjust main content for shared sidebar */
+        .symphony-content {
+            padding-left: 0;
+            margin-left: 0;
         }
 
         .sidebar-nav {
@@ -634,6 +640,12 @@
 </style>
 </head>
 <body class="settings-container">
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar-nav-container"></div>
+        
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
     <!-- Navigation -->
     <nav class="dashboard-nav">
         <div class="nav-container">
@@ -655,13 +667,8 @@
         </div>
     </nav>
 
-    <!-- Dashboard Container -->
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar-nav-container"></div>
-
         <!-- Main Content -->
-        <main class="dashboard-main">
+        <main class="dashboard-main symphony-content">
             <!-- Page Header -->
             <header class="page-header">
                 <h1 class="page-title">Settings</h1>
@@ -1023,6 +1030,7 @@
                 </div>
             </section>
         </main>
+        </div>
     </div>
 
     <!-- Success Message -->
