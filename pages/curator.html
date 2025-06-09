@@ -18,6 +18,99 @@
             color: #1a1a1a;
             overflow: hidden;
             height: 100vh;
+            display: flex;
+        }
+
+        /* Shared Navigation Sidebar */
+        .sidebar-nav-container {
+            width: 80px;
+            flex-shrink: 0;
+            z-index: 200;
+        }
+
+        /* Sidebar Navigation Styles */
+        .sidebar-nav {
+            width: 80px;
+            background: #6B46C1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 100;
+        }
+
+        .sidebar-nav-item {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.5rem 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+        }
+
+        .sidebar-nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar-nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .logout-item {
+            background: rgba(220, 38, 38, 0.1) !important;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .logout-item:hover {
+            background: rgba(220, 38, 38, 0.2) !important;
+            color: #FCA5A5 !important;
+        }
+
+        .sidebar-tooltip {
+            position: absolute;
+            left: 70px;
+            background: #2C3E50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .sidebar-nav-item:hover .sidebar-tooltip {
+            opacity: 1;
+        }
+
+        /* Page Content Container */
+        .page-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         /* Navigation Header */
@@ -970,7 +1063,12 @@
         </div>
     </div>
 
-    <!-- Navigation Header -->
+    <!-- Shared Sidebar Navigation -->
+    <div class="sidebar-nav-container"></div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <!-- Navigation Header -->
     <nav class="interview-nav">
         <div class="nav-left">
             <a href="../dashboard.html" class="back-btn">← Dashboard</a>
@@ -1111,6 +1209,7 @@
             </div>
         </div>
     </div>
+    </div> <!-- End page-content -->
 
     <!-- Expanded Chat Modal -->
     <div class="chat-modal" id="chatModal">
@@ -1229,6 +1328,9 @@
         </div>
     </div>
 
+    <!-- Load Shared Navigation -->
+    <script src="../js/navigation.js"></script>
+    
     <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
     <script src="../js/neo4j-init.js"></script>
     
