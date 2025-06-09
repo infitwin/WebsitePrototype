@@ -284,7 +284,7 @@ export function createQuickActionsWidget(containerId) {
                 </div>
             </div>
             <div class="actions-grid">
-                <button class="quick-action-btn" onclick="window.location.href='file-browser.html'">
+                <button class="quick-action-btn" onclick="window.location.href='my-files.html'">
                     <span class="action-emoji">📤</span>
                     <span class="action-label">Upload Files</span>
                 </button>

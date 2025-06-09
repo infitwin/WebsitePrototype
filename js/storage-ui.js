@@ -588,7 +588,7 @@ export function createStorageMeterWidget(containerId) {
                 </div>
             </div>
             <div class="widget-actions">
-                <button class="widget-btn primary" onclick="window.location.href='file-browser.html'">
+                <button class="widget-btn primary" onclick="window.location.href='my-files.html'">
                     <span>📁</span> Browse Files
                 </button>
                 <button class="widget-btn secondary" onclick="window.location.href='storage-dashboard.html'">
