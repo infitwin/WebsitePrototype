@@ -74,15 +74,8 @@
             <section class="knowledge-graph-placeholder">
                 <div class="graph-container">
                     <h2>Knowledge Symphony</h2>
-                    <div class="graph-placeholder-content">
-                        <!-- Decorative dots for visual interest -->
-                        <div class="placeholder-dots">
-                            <div class="placeholder-dot"></div>
-                            <div class="placeholder-dot"></div>
-                            <div class="placeholder-dot"></div>
-                            <div class="placeholder-dot"></div>
-                        </div>
-                        <!-- This area will be replaced with Neo4j graph visualization -->
+                    <div class="graph-placeholder-content" id="neo4j-graph-container">
+                        <!-- Neo4j Graph Visualization will be rendered here -->
                     </div>
                 </div>
             </section>
@@ -191,6 +184,7 @@
     </style>
 
     <script type="module" src="../js/knowledge-symphony.js"></script>
+    <script src="../js/neo4j-visualization.js"></script>
     <script type="module">
         import { createStorageMeterWidget } from '../js/storage-ui.js';
         import { createActivityFeedWidget } from '../js/dashboard-widgets.js';
@@ -201,6 +195,23 @@
             createStorageMeterWidget('storageWidget');
             createActivityFeedWidget('activityWidget');
             createQuickActionsWidget('quickActionsWidget');
+            
+            // Initialize Neo4j Graph Visualization
+            const graphContainer = document.getElementById('neo4j-graph-container');
+            if (graphContainer) {
+                const neo4jViz = new Neo4jVisualization(graphContainer, {
+                    width: graphContainer.offsetWidth || 800,
+                    height: 300,
+                    showFilters: true,
+                    showSearch: true
+                });
+                
+                // Make it responsive
+                window.addEventListener('resize', () => {
+                    const newWidth = graphContainer.offsetWidth || 800;
+                    neo4jViz.resize(newWidth, 300);
+                });
+            }
         });
     </script>
     

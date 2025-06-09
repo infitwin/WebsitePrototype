@@ -1,0 +1,129 @@
+{
+  "config": {
+    "configFile": "/home/tim/WebsitePrototype/playwright-testing/playwright.config.js",
+    "rootDir": "/home/tim/WebsitePrototype/playwright-testing/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/tim/WebsitePrototype/playwright-testing/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/tim/WebsitePrototype/playwright-testing/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/tim/WebsitePrototype/playwright-testing/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/home/tim/WebsitePrototype/playwright-testing/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/tim/WebsitePrototype/playwright-testing/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/home/tim/WebsitePrototype/playwright-testing/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/tim/WebsitePrototype/playwright-testing/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/home/tim/WebsitePrototype/playwright-testing/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/tim/WebsitePrototype/playwright-testing/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/home/tim/WebsitePrototype/playwright-testing/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.52.0",
+    "workers": 6,
+    "webServer": {
+      "command": "python3 -m http.server 8357 --directory /home/tim/WebsitePrototype",
+      "port": 8357,
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Cannot find module 'axe-playwright'\nRequire stack:\n- /home/tim/WebsitePrototype/playwright-testing/tests/duplicate-tests.bak/accessibility.spec.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/playwright/lib/transform/transform.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/playwright/lib/common/configLoader.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/playwright/lib/program.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/@playwright/test/cli.js",
+      "stack": "Error: Cannot find module 'axe-playwright'\nRequire stack:\n- /home/tim/WebsitePrototype/playwright-testing/tests/duplicate-tests.bak/accessibility.spec.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/playwright/lib/transform/transform.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/playwright/lib/common/configLoader.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/playwright/lib/program.js\n- /home/tim/WebsitePrototype/playwright-testing/node_modules/@playwright/test/cli.js\n    at Object.<anonymous> (/home/tim/WebsitePrototype/playwright-testing/tests/duplicate-tests.bak/accessibility.spec.js:2:34)",
+      "location": {
+        "file": "/home/tim/WebsitePrototype/playwright-testing/tests/duplicate-tests.bak/accessibility.spec.js",
+        "column": 34,
+        "line": 2
+      },
+      "snippet": "\u001b[90m   at \u001b[39mduplicate-tests.bak/accessibility.spec.js:2\n\n  1 | const { test, expect } = require('@playwright/test');\n> 2 | const { injectAxe, checkA11y } = require('axe-playwright');\n    |                                  ^\n  3 |\n  4 | test.describe('Accessibility Tests', () => {\n  5 |   test('should have proper heading hierarchy', async ({ page }) => {"
+    }
+  ],
+  "stats": {
+    "startTime": "2025-06-08T18:05:40.696Z",
+    "duration": 153.61899999999991,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
