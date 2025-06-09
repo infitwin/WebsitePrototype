@@ -17,6 +17,77 @@ The Infitwin website uses a consistent color palette across all pages:
 
 Always use these colors when implementing new features to maintain visual consistency.
 
+## UI COMPONENT ARCHITECTURE
+
+### Unified Component System (December 2024)
+
+The website has been restructured with a unified component architecture to prevent duplicate UI implementations and ensure consistency. All components use the design system tokens exclusively.
+
+**Architecture Location**: `/js/components/` and `/css/components/`
+
+**Core Principles**:
+- **Single Source of Truth**: Each component type can only be defined once
+- **Prevention-First**: ComponentRegistry prevents duplicate component types
+- **Design System Integration**: All components use CSS custom properties exclusively
+- **Consistent Patterns**: All components extend BaseComponent
+
+**Available Components**:
+
+1. **Modal System** (`/js/components/ui/modal.js`)
+   - Unified modal with customizable content, actions, and types
+   - Replaces 5+ different modal implementations
+   - Static methods: `Modal.confirm()`, `Modal.alert()`, `Modal.loading()`
+
+2. **Button System** (`/js/components/ui/button.js`)
+   - Comprehensive button component with all variants
+   - Replaces 10+ different button implementations
+   - Supports icons, loading states, sizes, and full-width variants
+
+3. **Form System** (`/js/components/ui/form.js`)
+   - Unified input component with built-in validation
+   - Replaces 5+ different form input patterns
+   - Includes FormValidator with common validation functions
+
+4. **Avatar System** (`/js/components/ui/avatar.js`)
+   - Profile pictures with image, initials, and icon fallbacks
+   - Replaces 6+ different avatar implementations
+   - Supports status indicators, sizes, shapes, and lazy loading
+
+5. **Search System** (`/js/components/ui/search.js`)
+   - Search input with suggestions, debouncing, and filters
+   - Replaces 4+ different search implementations
+   - Includes SearchWithFilters for complex search interfaces
+
+**Prevention Mechanisms**:
+- **ComponentRegistry**: Throws errors if duplicate component types are registered
+- **BaseComponent**: Enforces consistent patterns across all components
+- **Design Token Validator**: Warns in development when hardcoded values are used
+
+**Usage Example**:
+```javascript
+import { Button, Modal } from './js/components/ui/button.js';
+
+const saveButton = Button.primary({
+  text: 'Save Changes',
+  onClick: async () => {
+    const confirmed = await Modal.confirm({
+      title: 'Save Changes',
+      message: 'Are you sure?'
+    });
+    if (confirmed) saveData();
+  }
+});
+```
+
+**Developer Guidelines**:
+1. Always check for existing components before creating new ones
+2. All new components MUST extend BaseComponent
+3. Register components with ComponentRegistry to prevent duplicates
+4. Use design system tokens exclusively (no hardcoded values)
+5. Follow the patterns documented in `/js/components/README.md`
+
+This architecture ensures that future development cannot accidentally create duplicate components, maintaining consistency and reducing technical debt.
+
 ## COMPRESSION INSTRUCTIONS
 
 ### Code: C1 (Coding Handoff)
