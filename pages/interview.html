@@ -1339,7 +1339,49 @@
         }
 
         function stopSession() {
-            showToast('Session paused. Progress saved.', 'success');
+            // Show confirmation dialog
+            if (confirm('Are you sure you want to stop this interview session? Your progress will be saved.')) {
+                // Stop any active recording
+                if (isRecording) {
+                    toggleRecording();
+                }
+                
+                // Stop any active TTS playback
+                if (ttsPlayer) {
+                    ttsPlayer.stopAndClearQueue();
+                }
+                
+                // Close WebSocket connection if active
+                if (orchestratorWebSocket && isInterviewActive) {
+                    orchestratorWebSocket.endInterview();
+                    isInterviewActive = false;
+                }
+                
+                // Stop idea clouds animation
+                if (cloudInterval) {
+                    clearInterval(cloudInterval);
+                    cloudInterval = null;
+                }
+                
+                // Clear all active clouds
+                const banner = document.getElementById('ideaClouds');
+                banner.innerHTML = '';
+                activeClouds = [];
+                usedPositions = [];
+                
+                // Reset Winston state
+                setWinstonState('idle');
+                
+                // Show success message
+                showToast('Interview session stopped. Your progress has been saved.', 'success');
+                
+                // Optionally navigate back to dashboard after a delay
+                setTimeout(() => {
+                    if (confirm('Would you like to return to the dashboard?')) {
+                        window.location.href = '../dashboard.html';
+                    }
+                }, 2000);
+            }
         }
 
         function showToast(message, type = 'success') {

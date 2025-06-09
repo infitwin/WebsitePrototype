@@ -1,5 +1,16 @@
 const { test, expect } = require('@playwright/test');
 
+/**
+ * Navigation Tests - Updated per design decisions
+ * 
+ * IMPORTANT: The following navigation changes are INTENTIONAL:
+ * - "My Memories" removed from sidebar (part of hero flow)
+ * - "Artifact Uploader" removed (duplicate of My Files)
+ * - "Memory Archive" removed from navigation
+ * - "File Browser" renamed to "My Files" in UI
+ * 
+ * DO NOT add these items back when fixing navigation bugs
+ */
 test.describe('Navigation Tests', () => {
   test('should navigate from landing page to all main pages', async ({ page }) => {
     // Start from landing page
@@ -15,6 +26,8 @@ test.describe('Navigation Tests', () => {
   });
 
   test('should access all pages directly', async ({ page }) => {
+    // Updated page list - excludes removed navigation items
+    // Memory Archive removed from navigation
     const pages = [
       { url: '/pages/alpha-welcome.html', title: 'Alpha Welcome' },
       { url: '/pages/auth.html', title: 'Auth' },
@@ -23,16 +36,16 @@ test.describe('Navigation Tests', () => {
       { url: '/pages/email-verification.html', title: 'Email Verification' },
       { url: '/pages/error.html', title: 'Error' },
       { url: '/pages/explore.html', title: 'Explore' },
-      { url: '/pages/file-browser.html', title: 'File Browser' },
+      { url: '/pages/file-browser.html', title: 'My Files' }, // Updated title
       { url: '/pages/interview.html', title: 'Interview' },
       { url: '/pages/interview-transcripts.html', title: 'Interview Transcripts' },
       { url: '/pages/meet-winston.html', title: 'Meet Winston' },
-      { url: '/pages/memory-archive.html', title: 'Memory Archive' },
       { url: '/pages/settings.html', title: 'Settings' },
       { url: '/pages/shared-view.html', title: 'Shared View' },
       { url: '/pages/storage-dashboard.html', title: 'Storage Dashboard' },
       { url: '/pages/talk-to-twin.html', title: 'Talk to Twin' },
-      { url: '/pages/twin-management.html', title: 'Twin Management' }
+      { url: '/pages/twin-management.html', title: 'Twin Management' },
+      { url: '/pages/curator.html', title: 'Curator' } // Added curator page
     ];
 
     for (const pageInfo of pages) {
