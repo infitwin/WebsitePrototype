@@ -23,7 +23,7 @@ test.describe('User Experience Features', () => {
   });
 
   test('should display explore page', async ({ page }) => {
-    await page.goto('http://localhost:8357/pages/explore.html');
+    await page.goto('http://localhost:8357/pages/curator.html');
     
     // Check page header
     const header = page.locator('h1:has-text("Explore"), h2:has-text("Explore")').first();
@@ -108,7 +108,7 @@ test.describe('User Experience Features', () => {
     // Test navigation on multiple pages
     const pages = [
       'alpha-welcome.html',
-      'explore.html',
+      'curator.html',
       'settings.html'
     ];
     
