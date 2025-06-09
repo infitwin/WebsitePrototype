@@ -1,0 +1,295 @@
+/**
+ * Unified Avatar Component Styles
+ * 
+ * SINGLE SOURCE OF TRUTH for all avatar/profile picture styling.
+ * Replaces all existing avatar implementations to prevent duplication.
+ * Uses design system tokens exclusively.
+ */
+
+/* Base Avatar Styles */
+.infitwin-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
+  user-select: none;
+  flex-shrink: 0;
+  
+  /* Default size (medium) */
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  
+  /* Transition for smooth updates */
+  transition: all 0.2s ease;
+}
+
+/* Inner container for content */
+.infitwin-avatar__inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Shape Variants */
+.infitwin-avatar--circle {
+  border-radius: 50%;
+}
+
+.infitwin-avatar--square {
+  border-radius: 0;
+}
+
+.infitwin-avatar--rounded {
+  border-radius: var(--spacing-sm);
+}
+
+/* Size Variants */
+.infitwin-avatar--small {
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+}
+
+.infitwin-avatar--medium {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+}
+
+.infitwin-avatar--large {
+  width: 48px;
+  height: 48px;
+  font-size: 19px;
+}
+
+.infitwin-avatar--xlarge {
+  width: 64px;
+  height: 64px;
+  font-size: 26px;
+}
+
+/* Avatar Image */
+.infitwin-avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Avatar Initials */
+.infitwin-avatar__initials {
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Avatar Icon */
+.infitwin-avatar__icon {
+  width: 65%;
+  height: 65%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.infitwin-avatar__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Interactive States */
+.infitwin-avatar--interactive {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.infitwin-avatar--interactive:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px var(--color-shadow-medium);
+}
+
+.infitwin-avatar--interactive:active {
+  transform: scale(0.98);
+}
+
+.infitwin-avatar--interactive:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Status Indicator */
+.infitwin-avatar__status {
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  min-width: 8px;
+  min-height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--color-background-card);
+  box-sizing: border-box;
+}
+
+/* Status Positions */
+.infitwin-avatar__status--top-left {
+  top: 0;
+  left: 0;
+}
+
+.infitwin-avatar__status--top-right {
+  top: 0;
+  right: 0;
+}
+
+.infitwin-avatar__status--bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.infitwin-avatar__status--bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+/* Status Colors */
+.infitwin-avatar__status--online {
+  background-color: var(--color-success);
+}
+
+.infitwin-avatar__status--offline {
+  background-color: var(--color-text-muted);
+}
+
+.infitwin-avatar__status--busy {
+  background-color: var(--color-error);
+}
+
+.infitwin-avatar__status--away {
+  background-color: var(--color-warning);
+}
+
+/* Loading State */
+.infitwin-avatar:not(.infitwin-avatar--loaded) .infitwin-avatar__image {
+  opacity: 0;
+}
+
+.infitwin-avatar--loaded .infitwin-avatar__image {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Error State */
+.infitwin-avatar--error .infitwin-avatar__image {
+  display: none;
+}
+
+/* Avatar Group */
+.infitwin-avatar-group {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  --avatar-overlap: 0.3;
+}
+
+.infitwin-avatar-group .infitwin-avatar {
+  position: relative;
+  border: 2px solid var(--color-background-card);
+  box-sizing: content-box;
+}
+
+.infitwin-avatar-group .infitwin-avatar:not(:first-child) {
+  margin-left: calc(-1 * var(--avatar-overlap) * 100%);
+}
+
+/* Custom spacing overrides overlap */
+.infitwin-avatar-group[style*="--avatar-spacing"] .infitwin-avatar:not(:first-child) {
+  margin-left: var(--avatar-spacing);
+}
+
+/* Excess indicator */
+.infitwin-avatar-group__excess {
+  background-color: var(--color-background-secondary) !important;
+}
+
+.infitwin-avatar-group__excess .infitwin-avatar__initials {
+  font-size: 0.875em;
+  color: var(--color-text-secondary);
+}
+
+/* Hover effect for group */
+.infitwin-avatar-group:hover .infitwin-avatar {
+  margin-left: 0;
+}
+
+.infitwin-avatar-group:hover .infitwin-avatar:first-child {
+  margin-left: 0;
+}
+
+/* Animation for group hover */
+.infitwin-avatar-group {
+  transition: gap 0.3s ease;
+}
+
+.infitwin-avatar-group .infitwin-avatar {
+  transition: margin-left 0.3s ease, transform 0.2s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  /* Slightly larger touch targets on mobile */
+  .infitwin-avatar--small {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .infitwin-avatar--medium {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .infitwin-avatar,
+  .infitwin-avatar-group .infitwin-avatar {
+    transition: none;
+  }
+  
+  .infitwin-avatar--interactive:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .infitwin-avatar {
+    border: 1px solid var(--color-border);
+  }
+  
+  .infitwin-avatar__status {
+    border-width: 3px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .infitwin-avatar {
+    background: none !important;
+    border: 1px solid var(--color-text-primary) !important;
+  }
+  
+  .infitwin-avatar__initials {
+    color: var(--color-text-primary) !important;
+  }
+  
+  .infitwin-avatar__status {
+    display: none;
+  }
+}
