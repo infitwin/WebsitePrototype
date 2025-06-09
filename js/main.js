@@ -18,6 +18,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (curatorOrb) {
         curatorOrb.addEventListener('click', handleCuratorClick);
     }
+    
+    // Handle smooth scrolling for navigation links
+    const navLinks = document.querySelectorAll('a[href^="#"]');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href.startsWith('#') && href.length > 1) {
+                e.preventDefault();
+                smoothScrollTo(href);
+            }
+        });
+    });
 });
 
 // Initialize page animations
