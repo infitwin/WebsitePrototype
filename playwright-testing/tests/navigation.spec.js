@@ -36,13 +36,12 @@ test.describe('Navigation Tests', () => {
       { url: '/pages/email-verification.html', title: 'Email Verification' },
       { url: '/pages/error.html', title: 'Error' },
       { url: '/pages/explore.html', title: 'Explore' },
-      { url: '/pages/file-browser.html', title: 'My Files' }, // Updated title
+      { url: '/pages/my-files.html', title: 'My Files' }, // Updated filename
       { url: '/pages/interview.html', title: 'Interview' },
       { url: '/pages/interview-transcripts.html', title: 'Interview Transcripts' },
       { url: '/pages/meet-winston.html', title: 'Meet Winston' },
       { url: '/pages/settings.html', title: 'Settings' },
       { url: '/pages/shared-view.html', title: 'Shared View' },
-      { url: '/pages/storage-dashboard.html', title: 'Storage Dashboard' },
       { url: '/pages/talk-to-twin.html', title: 'Talk to Twin' },
       { url: '/pages/twin-management.html', title: 'Twin Management' },
       { url: '/pages/curator.html', title: 'Curator' } // Added curator page

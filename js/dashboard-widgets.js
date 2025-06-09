@@ -300,9 +300,9 @@ export function createQuickActionsWidget(containerId) {
                     <span class="action-emoji">👥</span>
                     <span class="action-label">Manage Twin</span>
                 </button>
-                <button class="quick-action-btn" onclick="window.location.href='explore.html'">
-                    <span class="action-emoji">🔍</span>
-                    <span class="action-label">Explore</span>
+                <button class="quick-action-btn" onclick="window.location.href='curator.html'">
+                    <span class="action-emoji">🎨</span>
+                    <span class="action-label">Curator</span>
                 </button>
                 <button class="quick-action-btn" onclick="shareInfitwin()">
                     <span class="action-emoji">🔗</span>

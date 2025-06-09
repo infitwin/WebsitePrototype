@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('File Management Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/pages/file-browser.html');
+    await page.goto('/pages/my-files.html');
   });
 
   test('should display file browser interface', async ({ page }) => {
@@ -258,32 +258,33 @@ test.describe('File Management Tests', () => {
     }
   });
 
-  test('should handle storage dashboard integration', async ({ page }) => {
-    // Navigate to storage dashboard
-    await page.goto('/pages/storage-dashboard.html');
+  test('should display storage information in my-files page', async ({ page }) => {
+    // Storage info is now part of my-files.html
+    await page.goto('/pages/my-files.html');
     
-    // Check for storage overview
-    await expect(page.locator('.storage-dashboard, .storage-overview, [class*="storage"]').first()).toBeVisible();
+    // Check for storage meter
+    await expect(page.locator('.storage-meter').first()).toBeVisible();
     
-    // Check for storage metrics
-    const metrics = [
-      { selector: '.storage-used, .used-space', name: 'Used Space' },
-      { selector: '.storage-available, .free-space', name: 'Available Space' },
-      { selector: '.storage-total, .total-space', name: 'Total Space' }
-    ];
+    // Check for storage stats
+    const stats = page.locator('.file-stats .stat');
+    const statCount = await stats.count();
+    expect(statCount).toBeGreaterThan(0);
     
-    for (const metric of metrics) {
-      const element = page.locator(metric.selector).first();
-      if (await element.isVisible()) {
-        const text = await element.textContent();
-        expect(text).toMatch(/\d+|GB|MB|KB|%/);
-      }
-    }
-    
-    // Check for storage visualization
-    const storageChart = page.locator('.storage-chart, .storage-graph, canvas, svg').first();
+    // Check for storage breakdown chart
+    const storageChart = page.locator('#storageChart, canvas').first();
     if (await storageChart.isVisible()) {
       await expect(storageChart).toBeVisible();
+    }
+    
+    // Check for quick actions
+    const quickActions = page.locator('.quick-actions button');
+    const actionCount = await quickActions.count();
+    if (actionCount > 0) {
+      // Verify optimize storage button
+      const optimizeBtn = page.locator('button:has-text("Optimize Storage")');
+      if (await optimizeBtn.isVisible()) {
+        await expect(optimizeBtn).toBeEnabled();
+      }
     }
   });
 });

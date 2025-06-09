@@ -148,7 +148,7 @@ test.describe('Feature Discovery Tests', () => {
   test('should discover interactive elements', async ({ page }) => {
     const interactivePages = [
       '/pages/dashboard.html',
-      '/pages/file-browser.html',
+      '/pages/my-files.html',
       '/pages/talk-to-twin.html'
     ];
     
@@ -208,7 +208,7 @@ test.describe('Feature Discovery Tests', () => {
 
   test('should discover media and file handling features', async ({ page }) => {
     const pagesWithMedia = [
-      '/pages/file-browser.html',
+      '/pages/my-files.html',
       '/pages/capture-first-memory.html'
     ];
     
@@ -329,7 +329,7 @@ test.describe('Feature Discovery Tests', () => {
     const pagesWithModals = [
       '/pages/interview-transcripts.html',
       '/pages/dashboard.html',
-      '/pages/file-browser.html'
+      '/pages/my-files.html'
     ];
     
     for (const pageUrl of pagesWithModals) {

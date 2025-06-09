@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('File Browser Batch Operations Edge Cases', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8357/pages/file-browser.html');
+    await page.goto('http://localhost:8357/pages/my-files.html');
     await page.waitForLoadState('networkidle');
   });
 

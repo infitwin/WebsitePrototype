@@ -4,7 +4,7 @@ const path = require('path');
 test.describe('File Upload Validation Edge Cases', () => {
   
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8357/pages/file-browser.html');
+    await page.goto('http://localhost:8357/pages/my-files.html');
     await page.waitForLoadState('networkidle');
   });
 
