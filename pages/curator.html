@@ -1075,6 +1075,12 @@
             <h1 class="interview-title">Memory Curator with Winston</h1>
         </div>
         <div class="nav-right">
+            <button class="nav-btn" id="undoBtn" onclick="undoAction()" disabled title="Undo last action">
+                <span>↶</span> Undo
+            </button>
+            <button class="nav-btn" id="redoBtn" onclick="redoAction()" disabled title="Redo last undone action">
+                <span>↷</span> Redo
+            </button>
             <button class="nav-btn" onclick="saveAndExit()">Save & Exit</button>
             <button class="nav-btn" onclick="toggleInterviewManager()">Interviews</button>
             <button class="nav-btn primary" onclick="newInterview()">New Interview</button>

@@ -19,9 +19,29 @@ document.addEventListener('DOMContentLoaded', function() {
         curatorOrb.addEventListener('click', handleCuratorClick);
     }
     
+    // Handle mobile menu toggle
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (mobileMenuToggle && navLinks) {
+        mobileMenuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navLinks.classList.toggle('mobile-menu-open');
+        });
+        
+        // Close mobile menu when clicking on a link
+        const navLinkItems = navLinks.querySelectorAll('.nav-link');
+        navLinkItems.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuToggle.classList.remove('active');
+                navLinks.classList.remove('mobile-menu-open');
+            });
+        });
+    }
+    
     // Handle smooth scrolling for navigation links
-    const navLinks = document.querySelectorAll('a[href^="#"]');
-    navLinks.forEach(link => {
+    const navLinkAnchors = document.querySelectorAll('a[href^="#"]');
+    navLinkAnchors.forEach(link => {
         link.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
             if (href.startsWith('#') && href.length > 1) {
