@@ -186,6 +186,18 @@
             background: #4f46e5;
         }
 
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .nav-btn:disabled:hover {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
         /* Main Layout Container */
         .interview-container {
             width: 100%;
@@ -1354,9 +1366,25 @@
     <script src="../js/utils/message-builder.js"></script>
 
     <script>
-        // Initialize Neo4j Graph Visualization
+        // Initialize Neo4j Graph Visualization and Undo/Redo System
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔍 Initializing Neo4j in interview page...');
+            
+            // Initialize Undo/Redo Manager
+            undoRedoManager = new UndoRedoManager();
+            console.log('✅ Undo/Redo system initialized');
+            
+            // Add keyboard shortcuts for undo/redo
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    undoAction();
+                } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                    e.preventDefault();
+                    redoAction();
+                }
+            });
+            
             const graphContainer = document.getElementById('curator-neo4j-viz');
             
             if (graphContainer) {
@@ -1381,6 +1409,129 @@
                 console.error('❌ Curator Neo4j container not found!');
             }
         });
+
+        // Undo/Redo System
+        class UndoRedoManager {
+            constructor() {
+                this.undoStack = [];
+                this.redoStack = [];
+                this.maxStackSize = 50;
+            }
+
+            addAction(action) {
+                // Add action to undo stack
+                this.undoStack.push(action);
+                
+                // Clear redo stack when new action is performed
+                this.redoStack = [];
+                
+                // Limit stack size
+                if (this.undoStack.length > this.maxStackSize) {
+                    this.undoStack.shift();
+                }
+                
+                this.updateButtons();
+            }
+
+            undo() {
+                if (this.undoStack.length === 0) return false;
+                
+                const action = this.undoStack.pop();
+                
+                // Execute undo function
+                if (action.undo && typeof action.undo === 'function') {
+                    action.undo();
+                    
+                    // Add to redo stack
+                    this.redoStack.push(action);
+                    this.updateButtons();
+                    
+                    console.log('Undid action:', action.description);
+                    return true;
+                }
+                
+                return false;
+            }
+
+            redo() {
+                if (this.redoStack.length === 0) return false;
+                
+                const action = this.redoStack.pop();
+                
+                // Execute redo function
+                if (action.redo && typeof action.redo === 'function') {
+                    action.redo();
+                    
+                    // Add back to undo stack
+                    this.undoStack.push(action);
+                    this.updateButtons();
+                    
+                    console.log('Redid action:', action.description);
+                    return true;
+                }
+                
+                return false;
+            }
+
+            canUndo() {
+                return this.undoStack.length > 0;
+            }
+
+            canRedo() {
+                return this.redoStack.length > 0;
+            }
+
+            updateButtons() {
+                const undoBtn = document.getElementById('undoBtn');
+                const redoBtn = document.getElementById('redoBtn');
+                
+                if (undoBtn) {
+                    undoBtn.disabled = !this.canUndo();
+                    undoBtn.title = this.canUndo() 
+                        ? `Undo: ${this.undoStack[this.undoStack.length - 1]?.description || 'last action'}`
+                        : 'Nothing to undo';
+                }
+                
+                if (redoBtn) {
+                    redoBtn.disabled = !this.canRedo();
+                    redoBtn.title = this.canRedo() 
+                        ? `Redo: ${this.redoStack[this.redoStack.length - 1]?.description || 'last undone action'}`
+                        : 'Nothing to redo';
+                }
+            }
+
+            clear() {
+                this.undoStack = [];
+                this.redoStack = [];
+                this.updateButtons();
+            }
+        }
+
+        // Global undo/redo manager
+        let undoRedoManager = null;
+
+        // Undo/Redo action functions
+        function undoAction() {
+            if (undoRedoManager) {
+                undoRedoManager.undo();
+            }
+        }
+
+        function redoAction() {
+            if (undoRedoManager) {
+                undoRedoManager.redo();
+            }
+        }
+
+        // Helper function to create undo actions for common curator operations
+        function createCuratorAction(description, undoFunction, redoFunction) {
+            return {
+                description: description,
+                undo: undoFunction,
+                redo: redoFunction,
+                timestamp: Date.now()
+            };
+        }
 
         // WebsitePrototype Audio Services Integration
         let audioRecorder = null;
