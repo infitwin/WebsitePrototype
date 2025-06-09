@@ -1,0 +1,272 @@
+/**
+ * Unified User Menu Component Styles
+ * 
+ * SINGLE SOURCE OF TRUTH for all user menu styling.
+ * Replaces all existing user menu implementations to prevent duplication.
+ * Uses design system tokens exclusively.
+ */
+
+/* Base User Menu Container */
+.infitwin-user-menu {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-family-primary);
+}
+
+/* User Menu Trigger */
+.infitwin-user-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.infitwin-user-menu__trigger:hover {
+  background: var(--color-background-secondary);
+  border-color: var(--color-border-primary);
+}
+
+.infitwin-user-menu__trigger:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+/* Avatar */
+.infitwin-user-menu__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-background-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.infitwin-user-menu__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* User Name */
+.infitwin-user-menu__name {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* Dropdown Indicator */
+.infitwin-user-menu__indicator {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.infitwin-user-menu--open .infitwin-user-menu__indicator {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.infitwin-user-menu__dropdown {
+  position: absolute;
+  top: 100%;
+  z-index: 1000;
+  min-width: 200px;
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xs) 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+}
+
+.infitwin-user-menu--open .infitwin-user-menu__dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Position variants */
+.infitwin-user-menu--top-left .infitwin-user-menu__dropdown {
+  bottom: 100%;
+  top: auto;
+  left: 0;
+  transform-origin: bottom left;
+}
+
+.infitwin-user-menu--top-right .infitwin-user-menu__dropdown {
+  bottom: 100%;
+  top: auto;
+  right: 0;
+  transform-origin: bottom right;
+}
+
+.infitwin-user-menu--bottom-left .infitwin-user-menu__dropdown {
+  top: 100%;
+  left: 0;
+  transform-origin: top left;
+}
+
+.infitwin-user-menu--bottom-right .infitwin-user-menu__dropdown {
+  top: 100%;
+  right: 0;
+  transform-origin: top right;
+}
+
+/* User Info Header */
+.infitwin-user-menu__user-info {
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.infitwin-user-menu__user-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.infitwin-user-menu__user-email {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Menu Items */
+.infitwin-user-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.infitwin-user-menu__item:hover {
+  background: var(--color-background-secondary);
+  color: var(--color-text-primary);
+}
+
+.infitwin-user-menu__item:focus {
+  outline: none;
+  background: var(--color-background-secondary);
+  box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
+.infitwin-user-menu__item--logout {
+  color: var(--color-error);
+}
+
+.infitwin-user-menu__item--logout:hover {
+  background: var(--color-error-light);
+  color: var(--color-error);
+}
+
+/* Menu Item Icon */
+.infitwin-user-menu__item-icon {
+  font-size: var(--font-size-md);
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Menu Item Text */
+.infitwin-user-menu__item-text {
+  flex: 1;
+}
+
+/* Divider */
+.infitwin-user-menu__divider {
+  height: 1px;
+  background: var(--color-border-primary);
+  margin: var(--spacing-xs) 0;
+}
+
+/* Loading State */
+.infitwin-user-menu--loading .infitwin-user-menu__avatar {
+  background: var(--color-background-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.infitwin-user-menu--loading .infitwin-user-menu__avatar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-background-accent),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .infitwin-user-menu__dropdown {
+    min-width: 180px;
+  }
+  
+  .infitwin-user-menu__name {
+    display: none;
+  }
+  
+  .infitwin-user-menu--bottom-right .infitwin-user-menu__dropdown,
+  .infitwin-user-menu--bottom-left .infitwin-user-menu__dropdown {
+    left: auto;
+    right: 0;
+    transform-origin: top right;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .infitwin-user-menu__trigger {
+    border-color: var(--color-text-primary);
+  }
+  
+  .infitwin-user-menu__dropdown {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .infitwin-user-menu__dropdown,
+  .infitwin-user-menu__indicator,
+  .infitwin-user-menu__trigger {
+    transition: none;
+  }
+  
+  .infitwin-user-menu--loading .infitwin-user-menu__avatar::after {
+    animation: none;
+  }
+}
