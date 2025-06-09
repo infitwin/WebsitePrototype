@@ -27,8 +27,21 @@ test.describe('Password Validation Edge Cases', () => {
     await changePasswordBtn.click();
     
     // Should show error for current password field
-    const errorMessage = page.locator('text=/current password.*required/i, .error:has-text("Current password"), .field-error');
-    await expect(errorMessage.first()).toBeVisible({ timeout: 3000 });
+    const errorSelectors = [
+      'text=/current password.*required/i',
+      '.error:has-text("Current password")',
+      '.field-error',
+      'text="Current password is required"'
+    ];
+    
+    let errorFound = false;
+    for (const selector of errorSelectors) {
+      if (await page.locator(selector).first().isVisible().catch(() => false)) {
+        errorFound = true;
+        break;
+      }
+    }
+    expect(errorFound).toBeTruthy();
   });
 
   test('should enforce minimum password length of 8 characters', async ({ page }) => {
@@ -52,8 +65,21 @@ test.describe('Password Validation Edge Cases', () => {
       await changePasswordBtn.click();
       
       // Should show error about minimum length
-      const errorMessage = page.locator('text=/password.*8.*characters/i, text=/at least 8/i, .error');
-      await expect(errorMessage.first()).toBeVisible({ timeout: 1000 });
+      const errorSelectors = [
+        'text=/password.*8.*characters/i',
+        'text=/at least 8/i',
+        '.error',
+        'text="Password must be at least 8 characters"'
+      ];
+      
+      let errorFound = false;
+      for (const selector of errorSelectors) {
+        if (await page.locator(selector).first().isVisible().catch(() => false)) {
+          errorFound = true;
+          break;
+        }
+      }
+      expect(errorFound).toBeTruthy();
       
       // Clear fields for next iteration
       await newPasswordField.clear();
@@ -88,8 +114,21 @@ test.describe('Password Validation Edge Cases', () => {
       await changePasswordBtn.click();
       
       // Should show mismatch error
-      const errorMessage = page.locator('text=/passwords.*not.*match/i, text=/do not match/i, .error');
-      await expect(errorMessage.first()).toBeVisible({ timeout: 1000 });
+      const errorSelectors = [
+        'text=/passwords.*not.*match/i',
+        'text=/do not match/i',
+        '.error',
+        'text="Passwords do not match"'
+      ];
+      
+      let errorFound = false;
+      for (const selector of errorSelectors) {
+        if (await page.locator(selector).first().isVisible().catch(() => false)) {
+          errorFound = true;
+          break;
+        }
+      }
+      expect(errorFound).toBeTruthy();
       
       // Clear fields for next test
       await newPasswordField.clear();
@@ -222,8 +261,18 @@ test.describe('Password Validation Edge Cases', () => {
       await page.waitForTimeout(500);
       
       // Should either succeed or show loading state (not validation error)
-      const validationError = page.locator('text=/password.*8.*characters/i, text=/passwords.*not.*match/i');
-      const hasValidationError = await validationError.first().isVisible().catch(() => false);
+      const validationErrorSelectors = [
+        'text=/password.*8.*characters/i',
+        'text=/passwords.*not.*match/i'
+      ];
+      
+      let hasValidationError = false;
+      for (const selector of validationErrorSelectors) {
+        if (await page.locator(selector).first().isVisible().catch(() => false)) {
+          hasValidationError = true;
+          break;
+        }
+      }
       
       // Should not have basic validation errors for properly formatted passwords
       expect(hasValidationError).toBeFalsy();
