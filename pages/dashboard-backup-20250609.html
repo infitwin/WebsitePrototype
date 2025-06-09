@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Symphony - Infitwin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/knowledge-symphony.css">
+</head>
+<body>
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="sidebar-nav-item active" data-page="dashboard">
+                <span style="font-size: 24px;">🏠</span>
+                <span class="sidebar-tooltip">Dashboard</span>
+            </a>
+            <a href="twin-management.html" class="sidebar-nav-item" data-page="twin">
+                <span style="font-size: 24px;">👥</span>
+                <span class="sidebar-tooltip">Twin Management</span>
+            </a>
+            <a href="interview.html" class="sidebar-nav-item" data-page="interview">
+                <span style="font-size: 24px;">🎤</span>
+                <span class="sidebar-tooltip">Interview</span>
+            </a>
+            <a href="curator.html" class="sidebar-nav-item" data-page="curator">
+                <span style="font-size: 24px;">🎨</span>
+                <span class="sidebar-tooltip">Curator</span>
+            </a>
+            <a href="interview-transcripts.html" class="sidebar-nav-item" data-page="transcripts">
+                <span style="font-size: 24px;">📝</span>
+                <span class="sidebar-tooltip">Transcripts</span>
+            </a>
+            <a href="talk-to-twin.html" class="sidebar-nav-item" data-page="talk">
+                <span style="font-size: 24px;">💬</span>
+                <span class="sidebar-tooltip">Talk to Twin</span>
+            </a>
+            <a href="file-browser.html" class="sidebar-nav-item" data-page="files">
+                <span style="font-size: 24px;">📁</span>
+                <span class="sidebar-tooltip">My Files</span>
+            </a>
+            <a href="settings.html" class="sidebar-nav-item" data-page="settings">
+                <span style="font-size: 24px;">⚙️</span>
+                <span class="sidebar-tooltip">Settings</span>
+            </a>
+        </nav>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- User Header -->
+            <header class="dashboard-header">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span id="userInitial">U</span>
+                    </div>
+                    <div class="user-details">
+                        <h1 class="user-name" id="userName">Welcome</h1>
+                        <p class="user-email" id="userEmail">user@example.com</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn" aria-label="Notifications">
+                        <span style="font-size: 20px;">🔔</span>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="symphony-content">
+            <!-- Knowledge Graph Placeholder -->
+            <section class="knowledge-graph-placeholder">
+                <div class="graph-container">
+                    <div class="graph-placeholder-content" id="neo4j-graph-container" style="
+                        width: 100%;
+                        height: 450px;
+                        position: relative;
+                        display: block;
+                        background: #ffffff;
+                        border: 1px dashed #6B46C1;
+                    ">
+                        <!-- Neo4j Graph Visualization will be rendered here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category Tiles Grid -->
+            <section class="category-grid">
+                <!-- Recent Memories -->
+                <div class="category-tile" data-category="recent">
+                    <div class="category-count" id="recentCount">0</div>
+                    <div class="category-icon">📷</div>
+                    <h3 class="category-title">Recent Memories</h3>
+                    <p class="category-subtitle">Last 7 days</p>
+                </div>
+
+                <!-- Key Moments -->
+                <div class="category-tile" data-category="moments">
+                    <div class="category-count" id="momentsCount">0</div>
+                    <div class="category-icon">✨</div>
+                    <h3 class="category-title">Key Moments</h3>
+                    <p class="category-subtitle">Life highlights</p>
+                </div>
+
+                <!-- People -->
+                <div class="category-tile" data-category="people">
+                    <div class="category-count" id="peopleCount">0</div>
+                    <div class="category-icon">👥</div>
+                    <h3 class="category-title">People</h3>
+                    <p class="category-subtitle">Connections</p>
+                </div>
+
+                <!-- Places -->
+                <div class="category-tile" data-category="places">
+                    <div class="category-count" id="placesCount">0</div>
+                    <div class="category-icon">📍</div>
+                    <h3 class="category-title">Places</h3>
+                    <p class="category-subtitle">Locations visited</p>
+                </div>
+
+                <!-- Projects -->
+                <div class="category-tile" data-category="projects">
+                    <div class="category-count" id="projectsCount">0</div>
+                    <div class="category-icon">🚀</div>
+                    <h3 class="category-title">Projects</h3>
+                    <p class="category-subtitle">Achievements</p>
+                </div>
+
+                <!-- Insights -->
+                <div class="category-tile" data-category="insights">
+                    <div class="category-count" id="insightsCount">0</div>
+                    <div class="category-icon">💡</div>
+                    <h3 class="category-title">Insights</h3>
+                    <p class="category-subtitle">Patterns & themes</p>
+                </div>
+            </section>
+
+            <!-- Dashboard Widgets -->
+            <section class="dashboard-widgets">
+                <div class="widgets-grid">
+                    <!-- Storage Widget -->
+                    <div id="storageWidget" class="widget-container">
+                        <!-- Storage widget will be rendered here -->
+                    </div>
+                    
+                    <!-- Activity Feed Widget -->
+                    <div id="activityWidget" class="widget-container">
+                        <!-- Activity widget will be rendered here -->
+                    </div>
+                    
+                    <!-- Quick Actions Widget -->
+                    <div id="quickActionsWidget" class="widget-container">
+                        <!-- Quick actions widget will be rendered here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+            <!-- Floating Action Button -->
+            <button class="fab-add-memory" id="addMemoryBtn" aria-label="Add new memory">
+                +
+            </button>
+        </div> <!-- End main-content-wrapper -->
+    </div> <!-- End symphony-dashboard -->
+
+    <style>
+        /* Dashboard Widgets */
+        .dashboard-widgets {
+            margin-top: 2rem;
+        }
+
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .widget-container {
+            min-height: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .widgets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/neo4j-init.js"></script>
+    
+    <script type="module" src="../js/knowledge-symphony.js"></script>
+    <script type="module">
+        import { createStorageMeterWidget } from '../js/storage-ui.js';
+        import { createActivityFeedWidget } from '../js/dashboard-widgets.js';
+        import { createQuickActionsWidget } from '../js/dashboard-widgets.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all widgets
+            createStorageMeterWidget('storageWidget');
+            createActivityFeedWidget('activityWidget');
+            createQuickActionsWidget('quickActionsWidget');
+            
+            // Neo4j is already initialized by neo4j-init.js
+            console.log('📋 Dashboard widgets initialized');
+        });
+    </script>
+    
+    <style>
+        /* Dashboard Header Styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            margin-bottom: 2rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+        }
+        
+        .user-details h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1F2937;
+        }
+        
+        .user-details p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .notification-btn {
+            background: none;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .notification-btn:hover {
+            background: #F3F4F6;
+            border-color: #D1D5DB;
+        }
+    </style>
+    
+    <script>
+        // Populate user info from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const userName = localStorage.getItem('userName') || 'Guest User';
+            const userEmail = localStorage.getItem('userEmail') || 'guest@example.com';
+            
+            // Update user info in header
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userEmail').textContent = userEmail;
+            
+            // Update avatar initial
+            const initial = userName.charAt(0).toUpperCase();
+            document.getElementById('userInitial').textContent = initial;
+        });
+    </script>
+</body>
+</html>
