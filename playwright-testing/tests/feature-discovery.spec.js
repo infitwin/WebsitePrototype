@@ -374,7 +374,7 @@ test.describe('Feature Discovery Tests', () => {
     const testPages = [
       '/pages/dashboard.html',
       '/pages/auth.html',
-      '/pages/explore.html'
+      '/pages/curator.html'
     ];
     
     const viewports = [

@@ -35,7 +35,7 @@ test.describe('Navigation Tests', () => {
       { url: '/pages/capture-first-memory.html', title: 'Capture First Memory' },
       { url: '/pages/email-verification.html', title: 'Email Verification' },
       { url: '/pages/error.html', title: 'Error' },
-      { url: '/pages/explore.html', title: 'Explore' },
+      { url: '/pages/curator.html', title: 'Curator' },
       { url: '/pages/my-files.html', title: 'My Files' }, // Updated filename
       { url: '/pages/interview.html', title: 'Interview' },
       { url: '/pages/interview-transcripts.html', title: 'Interview Transcripts' },
@@ -68,7 +68,7 @@ test.describe('Navigation Tests', () => {
     // Check navigation on main pages
     const mainPages = [
       '/pages/dashboard.html',
-      '/pages/explore.html',
+      '/pages/curator.html',
       '/pages/settings.html'
     ];
 
@@ -90,7 +90,7 @@ test.describe('Navigation Tests', () => {
     // Navigate through multiple pages
     await page.goto('/');
     await page.goto('/pages/dashboard.html');
-    await page.goto('/pages/explore.html');
+    await page.goto('/pages/curator.html');
     
     // Test browser back button
     await page.goBack();
