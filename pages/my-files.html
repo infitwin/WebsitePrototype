@@ -61,6 +61,12 @@
                     <!-- Filter Bar -->
                     <div class="filter-bar">
                         <div class="filter-group">
+                            <label for="selectAll">
+                                <input type="checkbox" id="selectAll">
+                                Select All
+                            </label>
+                        </div>
+                        <div class="filter-group">
                             <label for="fileTypeFilter">Type:</label>
                             <select id="fileTypeFilter" class="filter-select">
                                 <option value="all">All Files</option>
@@ -713,6 +719,7 @@
             // Setup event listeners
             setupEventListeners();
             setupStorageEventListeners();
+            setupSelectAllFunctionality();
         }
 
         // Pagination state
@@ -848,6 +855,9 @@
             } else {
                 renderListView(files);
             }
+            
+            // Set up checkbox event listeners after files are rendered
+            setupFileCheckboxListeners();
         }
 
         function renderGridView(files) {
@@ -890,9 +900,7 @@
             const header = document.createElement('div');
             header.className = 'file-list-header';
             header.innerHTML = `
-                <div>
-                    <input type="checkbox" id="selectAll">
-                </div>
+                <div>Select</div>
                 <div>Name</div>
                 <div>Type</div>
                 <div>Size</div>
@@ -1086,6 +1094,128 @@
             document.getElementById('exportBtn').addEventListener('click', () => {
                 showNotification('Storage report export feature coming soon!', 'info');
             });
+        }
+
+        // Select All Functionality
+        function setupSelectAllFunctionality() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const batchActions = document.querySelector('.batch-actions');
+            const selectedCount = document.querySelector('.selected-count');
+
+            // Handle select all checkbox change
+            selectAllCheckbox.addEventListener('change', function() {
+                const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+                const isChecked = this.checked;
+                
+                fileCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    updateFileItemSelection(checkbox);
+                });
+                
+                updateBatchActions();
+            });
+
+            // Update select all state when individual checkboxes change
+            function updateSelectAllState() {
+                const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+                const checkedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                
+                if (fileCheckboxes.length === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (checkedCheckboxes.length === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (checkedCheckboxes.length === fileCheckboxes.length) {
+                    selectAllCheckbox.checked = true;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = true;
+                }
+            }
+
+            // Update visual state of file item
+            function updateFileItemSelection(checkbox) {
+                const fileItem = checkbox.closest('.file-grid-item, .file-list-item');
+                if (fileItem) {
+                    if (checkbox.checked) {
+                        fileItem.classList.add('selected');
+                    } else {
+                        fileItem.classList.remove('selected');
+                    }
+                }
+            }
+
+            // Update batch actions visibility and count
+            function updateBatchActions() {
+                const checkedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                const count = checkedCheckboxes.length;
+                
+                if (count > 0) {
+                    batchActions.style.display = 'flex';
+                    selectedCount.textContent = `${count} selected`;
+                } else {
+                    batchActions.style.display = 'none';
+                }
+                
+                updateSelectAllState();
+            }
+
+            // Set up individual checkbox listeners (called after rendering files)
+            window.setupFileCheckboxListeners = function() {
+                document.querySelectorAll('.file-checkbox').forEach(checkbox => {
+                    // Remove existing listeners to prevent duplicates
+                    checkbox.removeEventListener('change', handleCheckboxChange);
+                    checkbox.addEventListener('change', handleCheckboxChange);
+                });
+            };
+
+            function handleCheckboxChange(event) {
+                updateFileItemSelection(event.target);
+                updateBatchActions();
+            }
+
+            // Set up batch action buttons
+            document.querySelector('.btn-batch-download').addEventListener('click', function() {
+                const selectedFiles = getSelectedFiles();
+                if (selectedFiles.length === 0) {
+                    showNotification('No files selected for download', 'error');
+                    return;
+                }
+                // Implement batch download logic here
+                showNotification(`Downloading ${selectedFiles.length} files...`, 'info');
+            });
+
+            document.querySelector('.btn-batch-delete').addEventListener('click', function() {
+                const selectedFiles = getSelectedFiles();
+                if (selectedFiles.length === 0) {
+                    showNotification('No files selected for deletion', 'error');
+                    return;
+                }
+                
+                if (confirm(`Are you sure you want to delete ${selectedFiles.length} files? This action cannot be undone.`)) {
+                    // Implement batch delete logic here
+                    showNotification(`Deleting ${selectedFiles.length} files...`, 'info');
+                    
+                    // Clear selections after delete
+                    setTimeout(() => {
+                        document.querySelectorAll('.file-checkbox:checked').forEach(cb => cb.checked = false);
+                        updateBatchActions();
+                    }, 1000);
+                }
+            });
+
+            function getSelectedFiles() {
+                const selectedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                return Array.from(selectedCheckboxes).map(checkbox => {
+                    const fileItem = checkbox.closest('.file-grid-item, .file-list-item');
+                    return {
+                        id: fileItem?.dataset.fileId,
+                        element: fileItem
+                    };
+                }).filter(file => file.id);
+            }
         }
     </script>
 </body>
