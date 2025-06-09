@@ -7,21 +7,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/knowledge-symphony.css">
     <style>
         /* Settings Page Specific Styles */
         .settings-container {
-            background: #F3F4F6;
+            background: var(--color-background);
             min-height: 100vh;
         }
 
         /* Navigation */
         .dashboard-nav {
             height: 64px;
-            background: white;
-            border-bottom: 1px solid #E5E7EB;
+            background: var(--color-background-card);
+            border-bottom: 1px solid var(--color-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -480,61 +481,8 @@
             border-top: 1px solid #E5E7EB;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #6B7280;
-            border: 2px solid #E5E7EB;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-secondary:hover {
-            background: #F3F4F6;
-            border-color: #D1D5DB;
-        }
-
-        .btn-link {
-            background: none;
-            border: none;
-            color: #3B82F6;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        .btn-link:hover {
-            color: #1D4ED8;
-        }
+        /* Custom button styles are now replaced by design-system.css */
+        /* Use .infitwin-button classes instead of .btn- classes */
 
         /* Loading Spinner */
         .spinner {
@@ -601,8 +549,8 @@
                 flex-direction: column;
             }
 
-            .btn-primary,
-            .btn-secondary {
+            .infitwin-button--primary,
+            .infitwin-button--secondary {
                 justify-content: center;
                 width: 100%;
             }
@@ -718,11 +666,11 @@
                     </div>
 
                     <div class="button-group">
-                        <button type="submit" class="btn-primary" id="saveAccountBtn">
+                        <button type="submit" class="infitwin-button infitwin-button--primary" id="saveAccountBtn">
                             <span>💾</span>
                             Save Changes
                         </button>
-                        <button type="button" class="btn-secondary" onclick="resetAccountForm()">Cancel</button>
+                        <button type="button" class="infitwin-button infitwin-button--secondary" onclick="resetAccountForm()">Cancel</button>
                     </div>
                 </form>
             </section>
@@ -740,7 +688,7 @@
                             <div class="toggle-label">Subscription Status</div>
                             <div class="toggle-description">Current plan: Free Tier (10GB storage limit)</div>
                         </div>
-                        <button class="btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                        <button class="infitwin-button infitwin-button--secondary infitwin-button--small">
                             Upgrade Plan
                         </button>
                     </div>
@@ -767,7 +715,7 @@
                             <div class="toggle-label">Data Export</div>
                             <div class="toggle-description">Download all your memories, transcripts, and settings</div>
                         </div>
-                        <button class="btn-secondary" style="font-size: 14px; padding: 8px 16px;" onclick="downloadData()">
+                        <button class="infitwin-button infitwin-button--secondary infitwin-button--small" onclick="downloadData()">
                             Export Data
                         </button>
                     </div>
@@ -777,7 +725,7 @@
                             <div class="toggle-label">Delete Account</div>
                             <div class="toggle-description">Permanently delete your account and all associated data</div>
                         </div>
-                        <button class="btn-secondary" style="font-size: 14px; padding: 8px 16px; color: #EF4444; border-color: #EF4444;" onclick="deleteAccount()">
+                        <button class="infitwin-button infitwin-button--danger infitwin-button--small" onclick="deleteAccount()">
                             Delete Account
                         </button>
                     </div>
@@ -819,11 +767,11 @@
                     </div>
 
                     <div class="button-group">
-                        <button type="submit" class="btn-primary" id="changePasswordBtn">
+                        <button type="submit" class="infitwin-button infitwin-button--primary" id="changePasswordBtn">
                             <span>🔒</span>
                             Change Password
                         </button>
-                        <button type="button" class="btn-secondary" onclick="resetSecurityForm()">Cancel</button>
+                        <button type="button" class="infitwin-button infitwin-button--secondary" onclick="resetSecurityForm()">Cancel</button>
                     </div>
                 </form>
                 
@@ -831,7 +779,7 @@
                 <div class="logout-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #E5E7EB;">
                     <h3 style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 8px;">Sign Out</h3>
                     <p style="font-size: 14px; color: #6B7280; margin-bottom: 16px;">Sign out of your Infitwin account on this device</p>
-                    <button type="button" class="btn-danger" id="logoutBtn" style="background: #EF4444; color: white;">
+                    <button type="button" class="infitwin-button infitwin-button--danger" id="logoutBtn">
                         <span>🚪</span>
                         Sign Out
                     </button>
@@ -927,11 +875,11 @@
                 </div>
 
                 <div class="button-group">
-                    <button type="button" class="btn-primary" id="savePreferencesBtn">
+                    <button type="button" class="infitwin-button infitwin-button--primary" id="savePreferencesBtn">
                         <span>⚙️</span>
                         Save Preferences
                     </button>
-                    <button type="button" class="btn-secondary" onclick="resetPreferences()">Reset to Defaults</button>
+                    <button type="button" class="infitwin-button infitwin-button--secondary" onclick="resetPreferences()">Reset to Defaults</button>
                 </div>
             </section>
 
@@ -1025,8 +973,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button type="button" class="btn-link">Download My Data</button>
-                    <button type="button" class="btn-link">Delete Account</button>
+                    <button type="button" class="infitwin-button infitwin-button--tertiary">Download My Data</button>
+                    <button type="button" class="infitwin-button infitwin-button--tertiary">Delete Account</button>
                 </div>
             </section>
         </main>
@@ -1643,7 +1591,7 @@
 
         // Add click handlers for data buttons
         document.addEventListener('DOMContentLoaded', function() {
-            const dataButtons = document.querySelectorAll('.btn-link');
+            const dataButtons = document.querySelectorAll('.infitwin-button--tertiary');
             dataButtons.forEach(btn => {
                 if (btn.textContent.includes('Download')) {
                     btn.addEventListener('click', downloadData);
