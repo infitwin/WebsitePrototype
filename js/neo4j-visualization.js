@@ -290,8 +290,6 @@ class Neo4jVisualization {
       ]
     };
 
-    // BUG: This will cause D3 force simulation to fail
-    // because edges use 'source'/'target' but D3 expects node objects
     this.updateVisualization();
   }
 
@@ -302,9 +300,13 @@ class Neo4jVisualization {
     // Update status
     this.updateStatus();
 
-    // Prepare data
+    // Prepare data - Fix D3 link format
     const nodes = this.data.nodes.map(d => ({ ...d }));
-    const links = this.data.edges.map(d => ({ ...d }));
+    const links = this.data.edges.map(d => ({ 
+      source: d.source, 
+      target: d.target, 
+      label: d.label 
+    }));
 
     // Update simulation
     this.simulation.nodes(nodes);
