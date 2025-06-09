@@ -227,49 +227,8 @@
                 });
             }
             
-            // Add form validation as fallback
-            const forms = document.querySelectorAll('.auth-form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const isSignup = form.closest('#signup-form') !== null;
-                    
-                    if (isSignup) {
-                        const password = form.querySelector('#signup-password').value;
-                        const confirmPassword = form.querySelector('#confirmPassword').value;
-                        const errorDiv = document.getElementById('signup-error');
-                        
-                        if (password !== confirmPassword) {
-                            errorDiv.textContent = 'Passwords do not match';
-                            errorDiv.style.display = 'block';
-                            return;
-                        }
-                        
-                        if (password.length < 8) {
-                            errorDiv.textContent = 'Password must be at least 8 characters';
-                            errorDiv.style.display = 'block';
-                            return;
-                        }
-                        
-                        errorDiv.style.display = 'none';
-                    } else {
-                        const password = form.querySelector('#password').value;
-                        const errorDiv = document.getElementById('login-error');
-                        
-                        if (password.length < 6) {
-                            errorDiv.textContent = 'Password must be at least 6 characters';
-                            errorDiv.style.display = 'block';
-                            return;
-                        }
-                        
-                        errorDiv.style.display = 'none';
-                    }
-                    
-                    // If validation passes, the module-based handler will take over
-                    // or form will submit normally
-                });
-            });
+            // Remove the duplicate form submit handler - auth.js handles this
+            // The module-based auth.js will handle all form submissions
         });
     </script>
     

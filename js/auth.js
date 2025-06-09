@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Redirect to dashboard
                 setTimeout(() => {
-                    window.location.href = './pages/dashboard.html';
+                    window.location.href = './dashboard.html';
                 }, 1500);
             } catch (error) {
                 console.error('Google auth error:', error);
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Redirect to dashboard
             setTimeout(() => {
-                window.location.href = './pages/dashboard.html';
+                window.location.href = './dashboard.html';
             }, 1500);
         } catch (error) {
             console.error('Login error:', error);
