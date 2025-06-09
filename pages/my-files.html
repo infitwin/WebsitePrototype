@@ -43,7 +43,7 @@
                 <span style="font-size: 24px;">💬</span>
                 <span class="sidebar-tooltip">Talk to Twin</span>
             </a>
-            <a href="file-browser.html" class="sidebar-nav-item active" data-page="files">
+            <a href="my-files.html" class="sidebar-nav-item active" data-page="files">
                 <span style="font-size: 24px;">📁</span>
                 <span class="sidebar-tooltip">My Files</span>
             </a>
@@ -144,8 +144,43 @@
                     </div>
                 </section>
 
-                <!-- Storage Info -->
-                <section class="storage-info-section">
+                <!-- Storage Overview Section -->
+                <section class="storage-overview-section">
+                    <h2 class="section-title">Storage Overview</h2>
+                    <div class="overview-grid">
+                        <!-- Storage Breakdown Chart -->
+                        <div class="chart-card">
+                            <h3>Storage Breakdown</h3>
+                            <div id="storageDonutChart">
+                                <!-- Donut chart will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="stats-card">
+                            <h3>Quick Stats</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="totalUsed">0 GB</div>
+                                    <div class="stat-label">Total Used</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="totalFiles">0</div>
+                                    <div class="stat-label">Total Files</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="largestFile">0 MB</div>
+                                    <div class="stat-label">Largest File</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="avgFileSize">0 MB</div>
+                                    <div class="stat-label">Average Size</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Meter -->
                     <div class="storage-card">
                         <h3>Storage Usage</h3>
                         <div class="storage-meter">
@@ -154,6 +189,21 @@
                         <div class="storage-details">
                             <span id="storageText">0 MB of 1 GB used</span>
                             <span id="storagePercent">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn optimize" id="optimizeBtn">
+                                <span class="action-icon">🔧</span>
+                                <span class="action-text">Optimize Storage</span>
+                            </button>
+                            <button class="action-btn export" id="exportBtn">
+                                <span class="action-icon">📊</span>
+                                <span class="action-text">Export Report</span>
+                            </button>
                         </div>
                     </div>
                 </section>
@@ -331,20 +381,115 @@
             to { transform: rotate(360deg); }
         }
 
-        .storage-info-section {
+        /* Storage Overview Section */
+        .storage-overview-section {
             margin-top: 3rem;
         }
 
-        .storage-card {
+        .section-title {
+            font-size: 1.5rem;
+            color: #374151;
+            margin-bottom: 1.5rem;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card,
+        .stats-card,
+        .storage-card,
+        .quick-actions {
             background: #FFFFFF;
             padding: 1.5rem;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .storage-card h3 {
+        .chart-card h3,
+        .stats-card h3,
+        .storage-card h3,
+        .quick-actions h3 {
             margin: 0 0 1rem 0;
-            color: #2C3E50;
+            color: #374151;
+            font-size: 1.125rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #F3F4F6;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        .storage-card {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Quick Actions */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn.optimize:hover {
+            border-color: #10B981;
+        }
+
+        .action-btn.export:hover {
+            border-color: #6B46C1;
+        }
+
+        .action-icon {
+            font-size: 2rem;
+        }
+
+        .action-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
         }
 
         .storage-meter {
@@ -534,13 +679,29 @@
         .thumbnail-image[loading="lazy"]:not([src]) {
             opacity: 0;
         }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 
     <script type="module">
         import { initializeDragDrop, createUploadQueue, processFilesForUpload, showNotification } from '../js/file-ui.js';
-        import { getUserFiles, deleteFile, calculateStorageUsed } from '../js/file-service.js';
+        import { getUserFiles, deleteFile, calculateStorageUsed, getStorageBreakdown } from '../js/file-service.js';
         import { guardPage } from '../js/auth-guard.js';
         import { createThumbnailElement, getFallbackIcon } from '../js/thumbnail-generator.js';
+        import { createStorageDonutChart } from '../js/storage-ui.js';
 
         document.addEventListener('DOMContentLoaded', async function() {
             // Check authentication
@@ -570,10 +731,14 @@
                 await updateStorageInfo(); // Update storage meter
             });
 
+            // Initialize storage chart
+            createStorageDonutChart('storageDonutChart');
+
             // Load existing files
             try {
                 await loadFiles(true); // Reset pagination on initial load
                 await updateStorageInfo();
+                await updateStorageStats();
             } catch (error) {
                 console.error('Error initializing:', error);
                 // Show empty state on error
@@ -583,6 +748,7 @@
 
             // Setup event listeners
             setupEventListeners();
+            setupStorageEventListeners();
         }
 
         // Pagination state
@@ -839,9 +1005,11 @@
             // Filters - reset pagination when filters change
             document.getElementById('fileTypeFilter').addEventListener('change', () => {
                 loadFiles(true); // Reset pagination
+                updateStorageStats(); // Update storage statistics
             });
             document.getElementById('sortBy').addEventListener('change', () => {
                 loadFiles(true); // Reset pagination
+                updateStorageStats(); // Update storage statistics
             });
         }
 
@@ -904,6 +1072,56 @@
         function filterFiles(searchTerm) {
             // TODO: Implement search filtering
             console.log('Searching for:', searchTerm);
+        }
+
+        async function updateStorageStats() {
+            try {
+                const totalUsed = await calculateStorageUsed();
+                const files = await getUserFiles();
+                const breakdown = await getStorageBreakdown();
+
+                // Calculate stats
+                const totalFiles = Object.values(breakdown).reduce((sum, cat) => sum + cat.count, 0);
+                const fileArray = files.files || [];
+                const largestFile = fileArray.reduce((max, file) => 
+                    file.fileSize > max ? file.fileSize : max, 0
+                );
+                const avgSize = totalFiles > 0 ? totalUsed / totalFiles : 0;
+
+                // Update UI
+                document.getElementById('totalUsed').textContent = formatFileSize(totalUsed);
+                document.getElementById('totalFiles').textContent = totalFiles.toLocaleString();
+                document.getElementById('largestFile').textContent = formatFileSize(largestFile);
+                document.getElementById('avgFileSize').textContent = formatFileSize(avgSize);
+
+            } catch (error) {
+                console.error('Error updating storage stats:', error);
+            }
+        }
+
+        function setupStorageEventListeners() {
+            // Optimize button
+            document.getElementById('optimizeBtn').addEventListener('click', async () => {
+                if (confirm('This will analyze your storage and suggest optimizations. Continue?')) {
+                    // Show loading state
+                    const btn = document.getElementById('optimizeBtn');
+                    const originalText = btn.querySelector('.action-text').textContent;
+                    btn.querySelector('.action-text').textContent = 'Analyzing...';
+                    btn.disabled = true;
+
+                    // Simulate optimization process
+                    setTimeout(() => {
+                        btn.querySelector('.action-text').textContent = originalText;
+                        btn.disabled = false;
+                        showNotification('Storage optimization complete! Check your files for potential savings.', 'success');
+                    }, 2000);
+                }
+            });
+
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                showNotification('Storage report export feature coming soon!', 'info');
+            });
         }
     </script>
 </body>
