@@ -93,12 +93,12 @@ test.describe('Dashboard Category Tiles Edge Cases', () => {
     // Simulate rapid count updates
     for (let i = 0; i < 10; i++) {
       for (const countId of counts) {
-        await page.evaluate((id, value) => {
+        await page.evaluate(({ id, value }) => {
           const element = document.getElementById(id);
           if (element) {
             element.textContent = value.toString();
           }
-        }, countId, Math.floor(Math.random() * 1000));
+        }, { id: countId, value: Math.floor(Math.random() * 1000) });
       }
       
       await page.waitForTimeout(50);
