@@ -1,0 +1,354 @@
+/**
+ * Orchestrator WebSocket Service - Vanilla JS Implementation
+ * 
+ * Ported from ui-studio React hook for WebsitePrototype
+ * Implements UI-Orchestrator Guide specifications:
+ * - Single /ws endpoint with no path parameters
+ * - Message type based routing
+ * - Fire-and-forget spans separate from business logic
+ */
+
+class OrchestratorWebSocketService {
+  constructor(options = {}) {
+    this.options = {
+      autoReconnect: true,
+      reconnectInterval: 5000,
+      isDevelopment: false,
+      ...options
+    };
+    
+    // State
+    this.connected = false;
+    this.error = null;
+    this.lastMessage = null;
+    
+    // Internal references
+    this.ws = null;
+    this.reconnectTimeout = null;
+    this.messageHandlers = new Map();
+    this.eventHandlers = new Map();
+    
+    // Bind methods
+    this.connect = this.connect.bind(this);
+    this.disconnect = this.disconnect.bind(this);
+    this.sendMessage = this.sendMessage.bind(this);
+    this.on = this.on.bind(this);
+    this.off = this.off.bind(this);
+    this.startInterview = this.startInterview.bind(this);
+    this.sendHeartbeat = this.sendHeartbeat.bind(this);
+  }
+
+  /**
+   * Connect to the Orchestrator WebSocket
+   */
+  connect() {
+    if (this.ws?.readyState === WebSocket.OPEN || 
+        this.ws?.readyState === WebSocket.CONNECTING) {
+      return;
+    }
+
+    const wsUrl = getBusinessWebSocketUrl(this.options.isDevelopment);
+    
+    try {
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = (event) => {
+        console.log('Connected to Orchestrator');
+        this.connected = true;
+        this.error = null;
+        this.emit('connected', event);
+        
+        // Fire telemetry (safe fallback)
+        this.logTelemetry('Orchestrator_Connected', { url: wsUrl });
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const rawMessage = JSON.parse(event.data);
+          this.lastMessage = rawMessage;
+          
+          // Parse the message for easier access
+          const parsedMessage = parseOrchestratorMessage(rawMessage);
+          
+          // Fire receive spans based on message type (safe fallback)
+          this.fireReceiveSpan(rawMessage.type, parsedMessage);
+          
+          // Emit raw message event
+          this.emit('message', rawMessage);
+          
+          // Call registered handler with both raw and parsed message
+          const handler = this.messageHandlers.get(rawMessage.type);
+          if (handler) {
+            try {
+              handler(parsedMessage, rawMessage);
+            } catch (error) {
+              console.error(`Handler error for ${rawMessage.type}:`, error);
+              this.logTelemetry('Message_Handler_Error', {
+                messageType: rawMessage.type,
+                error: error.message
+              });
+            }
+          }
+          
+        } catch (err) {
+          console.error('Failed to parse message:', err);
+          this.emit('error', { type: 'parse', error: err, data: event.data });
+        }
+      };
+
+      this.ws.onerror = (event) => {
+        console.error('WebSocket error:', event);
+        this.error = 'Connection error';
+        this.emit('error', { type: 'connection', error: event });
+        
+        this.logTelemetry('Orchestrator_Error', { error: 'Connection error' });
+      };
+
+      this.ws.onclose = (event) => {
+        console.log('WebSocket closed:', event.code, event.reason);
+        this.connected = false;
+        this.emit('disconnected', { code: event.code, reason: event.reason });
+        
+        // Fire disconnection span
+        this.logTelemetry('Orchestrator_Disconnected', { 
+          code: event.code, 
+          reason: event.reason 
+        });
+        
+        // Auto-reconnect after 5 seconds if not a normal closure
+        if (this.options.autoReconnect && event.code !== 1000) {
+          this.reconnectTimeout = setTimeout(() => {
+            console.log('Attempting to reconnect...');
+            this.connect();
+          }, this.options.reconnectInterval);
+        }
+      };
+      
+    } catch (err) {
+      console.error('Failed to create WebSocket:', err);
+      this.error = err.message;
+      this.emit('error', { type: 'creation', error: err });
+    }
+  }
+
+  /**
+   * Disconnect from the Orchestrator
+   */
+  disconnect() {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+    
+    if (this.ws) {
+      this.ws.close(1000, 'Client disconnect');
+      this.ws = null;
+    }
+    
+    this.connected = false;
+    this.error = null;
+  }
+
+  /**
+   * Send a message to the Orchestrator
+   */
+  sendMessage(messageType, payload) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket not connected');
+      return false;
+    }
+
+    try {
+      const message = {
+        type: messageType,
+        payload: payload
+      };
+
+      // Fire span for sending (safe fallback)
+      this.fireSendSpan(messageType, payload);
+
+      this.ws.send(JSON.stringify(message));
+      this.emit('messageSent', { type: messageType, payload });
+      
+      return true;
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      this.emit('error', { type: 'send', error: err, messageType });
+      return false;
+    }
+  }
+
+  /**
+   * Register a message handler for a specific message type
+   */
+  on(event, handler) {
+    if (event.startsWith('message:')) {
+      const messageType = event.slice(8);
+      this.messageHandlers.set(messageType, handler);
+    } else {
+      if (!this.eventHandlers.has(event)) {
+        this.eventHandlers.set(event, []);
+      }
+      this.eventHandlers.get(event).push(handler);
+    }
+  }
+
+  /**
+   * Remove a handler
+   */
+  off(event, handler) {
+    if (event.startsWith('message:')) {
+      const messageType = event.slice(8);
+      this.messageHandlers.delete(messageType);
+    } else {
+      const handlers = this.eventHandlers.get(event) || [];
+      const index = handlers.indexOf(handler);
+      if (index > -1) {
+        handlers.splice(index, 1);
+      }
+    }
+  }
+
+  /**
+   * Start an interview with proper message structure
+   */
+  startInterview(params) {
+    // Fire start button click span (safe fallback)
+    this.logTelemetry('Start_Button_Click', {
+      userId: params.userId,
+      twinId: params.twinId
+    });
+    
+    // Build properly formatted message using the builder
+    const message = buildStartInterviewMessage(params);
+    
+    // Send the message (type is extracted from the built message)
+    return this.sendMessage(message.type, message.payload);
+  }
+
+  /**
+   * Send heartbeat
+   */
+  sendHeartbeat() {
+    const message = buildHeartbeatMessage();
+    return this.sendMessage(message.type, message.payload);
+  }
+
+  // Private methods
+
+  /**
+   * Emit events to registered handlers
+   */
+  emit(event, data) {
+    const handlers = this.eventHandlers.get(event) || [];
+    handlers.forEach(handler => {
+      try {
+        handler(data);
+      } catch (error) {
+        console.error(`Event handler error for ${event}:`, error);
+      }
+    });
+  }
+
+  /**
+   * Fire send span telemetry (safe fallback)
+   */
+  fireSendSpan(messageType, payload) {
+    try {
+      if (messageType === 'StartInterview') {
+        this.logTelemetry('Start_Interview_Send', {
+          interviewId: payload?.metadata?.interviewId,
+          correlationId: payload?.metadata?.correlationId,
+          userId: payload?.metadata?.userId,
+          twinId: payload?.metadata?.twinId
+        });
+      }
+    } catch (error) {
+      // Silent failure - telemetry should never break functionality
+    }
+  }
+
+  /**
+   * Fire receive span telemetry (safe fallback)
+   */
+  fireReceiveSpan(messageType, parsedMessage) {
+    try {
+      switch (messageType) {
+        case 'InterviewStarted':
+          this.logTelemetry('Receive_Interview_Started', {
+            interviewId: parsedMessage.interviewId,
+            sessionId: parsedMessage.sessionId,
+            correlationId: parsedMessage.correlationId
+          });
+          break;
+          
+        case 'SendQuestion':
+          this.logTelemetry('Receive_Question_Text', {
+            interviewId: parsedMessage.interviewId,
+            correlationId: parsedMessage.correlationId
+          });
+          break;
+          
+        case 'ReturnAudioChunks':
+          this.logTelemetry('Receive_Audio_Chunks', {
+            interviewId: parsedMessage.interviewId,
+            correlationId: parsedMessage.correlationId
+          });
+          break;
+      }
+    } catch (error) {
+      // Silent failure - telemetry should never break functionality
+    }
+  }
+
+  /**
+   * Safe telemetry logging - never throws
+   */
+  logTelemetry(action, data = {}) {
+    try {
+      console.log(`[Orchestrator Telemetry] ${action}:`, data);
+      
+      // Future: Replace with actual telemetry service
+      // if (window.telemetryHelper) {
+      //   window.telemetryHelper.trackUserAction(action, data);
+      // }
+    } catch (error) {
+      // Silent failure - telemetry should never break functionality
+    }
+  }
+
+  // Convenience methods
+
+  isConnected() {
+    return this.connected && this.ws?.readyState === WebSocket.OPEN;
+  }
+
+  getConnectionState() {
+    if (!this.ws) return 'disconnected';
+    
+    switch (this.ws.readyState) {
+      case WebSocket.CONNECTING: return 'connecting';
+      case WebSocket.OPEN: return 'connected';
+      case WebSocket.CLOSING: return 'closing';
+      case WebSocket.CLOSED: return 'disconnected';
+      default: return 'unknown';
+    }
+  }
+
+  getLastMessage() {
+    return this.lastMessage;
+  }
+
+  getError() {
+    return this.error;
+  }
+}
+
+// Factory function for easy creation
+function createOrchestratorWebSocket(options = {}) {
+  return new OrchestratorWebSocketService(options);
+}
+
+// Export for use in other modules
+window.OrchestratorWebSocketService = OrchestratorWebSocketService;
+window.createOrchestratorWebSocket = createOrchestratorWebSocket;
