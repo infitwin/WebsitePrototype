@@ -50,7 +50,21 @@ function handleCTAClick(e) {
 function handleCuratorClick(e) {
     e.preventDefault();
     console.log('Curator activated - ready to help tell your story');
-    // TODO: Add curator chat/help functionality
+    
+    // Animate the orb to show it's been activated
+    const orb = e.target;
+    orb.style.transform = 'scale(1.1)';
+    orb.style.boxShadow = '0 0 30px rgba(107, 70, 193, 0.6)';
+    
+    setTimeout(() => {
+        orb.style.transform = 'scale(1)';
+        orb.style.boxShadow = '';
+    }, 300);
+    
+    // Navigate to Meet Winston page for curator interaction
+    setTimeout(() => {
+        window.location.href = 'pages/meet-winston.html';
+    }, 500);
 }
 
 // Utility function for smooth scrolling
