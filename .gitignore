@@ -62,3 +62,6 @@ testing-helper.html
 take-screenshot.html
 verify-*.js
 fix-*.py
+
+# Archived files
+archive/
