@@ -798,6 +798,16 @@
                         <button type="button" class="btn-secondary" onclick="resetSecurityForm()">Cancel</button>
                     </div>
                 </form>
+                
+                <!-- Logout Section -->
+                <div class="logout-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #E5E7EB;">
+                    <h3 style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 8px;">Sign Out</h3>
+                    <p style="font-size: 14px; color: #6B7280; margin-bottom: 16px;">Sign out of your Infitwin account on this device</p>
+                    <button type="button" class="btn-danger" id="logoutBtn" style="background: #EF4444; color: white;">
+                        <span>🚪</span>
+                        Sign Out
+                    </button>
+                </div>
             </section>
 
             <!-- Notifications Section -->
@@ -902,7 +912,11 @@
         Settings saved successfully!
     </div>
 
-    <script>
+    <script type="module">
+        // Import Firebase auth
+        import { auth } from '../js/firebase-config.js';
+        import { signOut } from 'firebase/auth';
+        
         // Settings Page JavaScript Functionality
         let userSettings = {
             displayName: 'John Doe',
@@ -972,6 +986,10 @@
             toggleSwitches.forEach(toggle => {
                 toggle.addEventListener('click', handleToggleClick);
             });
+            
+            // Logout button
+            const logoutBtn = document.getElementById('logoutBtn');
+            logoutBtn.addEventListener('click', handleLogout);
             
             // Handle direct clicks on toggle inputs
             document.querySelectorAll('.toggle-input').forEach(input => {
@@ -1120,6 +1138,27 @@
             userSettings[setting] = newState;
             saveSettings();
             showSuccessMessage('Setting updated!');
+        }
+        
+        // Handle logout
+        async function handleLogout() {
+            if (confirm('Are you sure you want to sign out?')) {
+                try {
+                    // Sign out from Firebase
+                    await signOut(auth);
+                    
+                    // Clear local storage
+                    localStorage.removeItem('userName');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('userSettings');
+                    
+                    // Redirect to login page
+                    window.location.href = '../auth.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Error signing out. Please try again.');
+                }
+            }
         }
 
         // Password Strength Checker
