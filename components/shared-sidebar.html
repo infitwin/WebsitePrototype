@@ -36,6 +36,34 @@
         <span class="sidebar-tooltip">Settings</span>
     </a>
     
+    <!-- User Menu Section -->
+    <div class="sidebar-user-menu">
+        <div class="user-avatar user-menu" onclick="toggleUserMenu(event)">
+            <span style="font-size: 20px;">👤</span>
+            <span class="sidebar-tooltip">User Menu</span>
+        </div>
+        <div class="user-name username">Demo User</div>
+        
+        <!-- User dropdown menu (hidden by default) -->
+        <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-item">
+                <span class="user-name current-user">Demo User</span>
+                <span class="user-email">demo@infitwin.com</span>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">
+                <span>⚙️ Settings</span>
+            </a>
+            <a href="my-files.html" class="user-dropdown-item">
+                <span>📁 My Files</span>
+            </a>
+            <div class="user-dropdown-divider"></div>
+            <a href="auth.html" class="user-dropdown-item logout-item" onclick="handleLogout(event)">
+                <span>🚪 Logout</span>
+            </a>
+        </div>
+    </div>
+    
     <!-- Logout Section with spacing -->
     <div class="sidebar-footer">
         <a href="auth.html" class="sidebar-nav-item logout-item" onclick="handleLogout(event)">

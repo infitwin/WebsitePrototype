@@ -105,6 +105,107 @@
             opacity: 1;
         }
 
+        /* User Menu Styles */
+        .sidebar-user-menu {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.5rem 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-avatar:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .user-name {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            width: 60px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            left: 80px;
+            bottom: 0;
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        .user-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .user-dropdown-item {
+            display: block;
+            padding: 12px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .user-dropdown-item:hover {
+            background: #F3F4F6;
+        }
+
+        .user-dropdown-item.logout-item:hover {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .user-dropdown-divider {
+            height: 1px;
+            background: #E5E7EB;
+            margin: 4px 0;
+        }
+
+        .user-email {
+            display: block;
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 2px;
+        }
+
         /* Page Content Container */
         .page-content {
             flex: 1;
@@ -372,7 +473,8 @@
             gap: 12px;
         }
 
-        .winston-orb {
+        .winston-orb,
+        .winston-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -450,7 +552,8 @@
             box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
         }
 
-        .mic-btn {
+        .mic-btn,
+        .mic-button {
             width: 45px;
             height: 45px;
             border: none;
@@ -880,7 +983,7 @@
 
             <div class="chat-messages" id="chatMessages">
                 <div class="message">
-                    <div class="winston-orb">🎩</div>
+                    <div class="winston-orb winston-avatar">🎩</div>
                     <div class="message-content">
                         Hello! I'm Winston, your story curator. I'm here to help you capture and organize your precious memories. What would you like to talk about today?
                     </div>
@@ -889,7 +992,7 @@
 
             <div class="chat-input">
                 <textarea class="response-area input-field" placeholder="Share your response here..." id="messageInput" rows="3"></textarea>
-                <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+                <button class="mic-btn mic-button" id="micBtn" onclick="toggleRecording()">🎤</button>
             </div>
         </div>
     </div>
@@ -1466,7 +1569,7 @@
             
             if (sender === 'winston') {
                 messageDiv.innerHTML = `
-                    <div class="winston-orb">🎩</div>
+                    <div class="winston-orb winston-avatar">🎩</div>
                     <div class="message-content">${text}</div>
                 `;
             } else {

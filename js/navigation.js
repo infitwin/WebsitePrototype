@@ -99,6 +99,12 @@ class NavigationManager {
     setupLogoutHandler() {
         // Make handleLogout available globally
         window.handleLogout = this.handleLogout.bind(this);
+        
+        // Make toggleUserMenu available globally
+        window.toggleUserMenu = this.toggleUserMenu.bind(this);
+        
+        // Close user menu when clicking outside
+        document.addEventListener('click', this.handleOutsideClick.bind(this));
     }
 
     /**
@@ -121,6 +127,31 @@ class NavigationManager {
         
         // Redirect to auth page
         window.location.href = 'auth.html';
+    }
+
+    /**
+     * Toggle user menu dropdown
+     */
+    toggleUserMenu(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown) {
+            dropdown.classList.toggle('active');
+        }
+    }
+
+    /**
+     * Handle clicks outside user menu to close it
+     */
+    handleOutsideClick(event) {
+        const userMenu = event.target.closest('.sidebar-user-menu');
+        const dropdown = document.getElementById('userDropdown');
+        
+        if (!userMenu && dropdown && dropdown.classList.contains('active')) {
+            dropdown.classList.remove('active');
+        }
     }
 }
 
