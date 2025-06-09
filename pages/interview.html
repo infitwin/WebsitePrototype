@@ -915,7 +915,14 @@
                     chunkInterval: 100,
                     audioBitsPerSecond: 16000
                 });
-                await audioRecorder.initialize();
+                
+                try {
+                    await audioRecorder.initialize();
+                } catch (initError) {
+                    console.warn('Audio recorder initialization failed:', initError);
+                    // Continue without audio recording capability
+                    audioRecorder = null;
+                }
                 
                 // Initialize TTS Player
                 ttsPlayer = new TTSAudioPlayer({
@@ -1146,22 +1153,26 @@
             const micBtn = document.getElementById('micBtn');
             
             if (!isRecording) {
-                startRecording();
-                micBtn.classList.add('recording');
-                micBtn.textContent = '⏹️';
+                // Try to start recording
+                const started = startRecording();
+                if (started) {
+                    micBtn.classList.add('recording');
+                    micBtn.textContent = '⏹️';
+                    isRecording = true;
+                }
             } else {
+                // Stop recording
                 stopRecording();
                 micBtn.classList.remove('recording');
                 micBtn.textContent = '🎤';
+                isRecording = false;
             }
-            
-            isRecording = !isRecording;
         }
 
         function startRecording() {
             if (!audioRecorder) {
                 showToast('Audio recorder not initialized', 'error');
-                return;
+                return false;
             }
             
             try {
@@ -1179,7 +1190,12 @@
                     (error) => {
                         console.error('Recording error:', error);
                         showToast('Recording error: ' + error.message, 'error');
-                        toggleRecording(); // Stop recording on error
+                        // Reset button state without calling toggleRecording
+                        const micBtn = document.getElementById('micBtn');
+                        micBtn.classList.remove('recording');
+                        micBtn.textContent = '🎤';
+                        isRecording = false;
+                        setWinstonState('idle');
                     },
                     // onStateChange callback
                     (state) => {
@@ -1194,11 +1210,12 @@
                 
                 console.log('Audio recording started');
                 setWinstonState('listening');
+                return true;
                 
             } catch (error) {
                 console.error('Failed to start recording:', error);
                 showToast('Failed to start recording: ' + error.message, 'error');
-                toggleRecording(); // Reset button state
+                return false;
             }
         }
 
