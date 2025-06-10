@@ -1,6 +1,27 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
 import D3DiagramProduction from './D3DiagramProduction';
 
+/**
+ * ⚠️ CRITICAL: NEVER EDIT INTERNAL CONTROL SIZES OR POSITIONS ⚠️
+ * 
+ * This is ONE INTEGRATED NEXUS CONTROL component.
+ * 
+ * DO NOT:
+ * - Edit internal element sizes, positions, or layouts
+ * - Change LAYOUT constants (header height, sidebar ratios, etc.)
+ * - Modify containerStyle dimensions or positioning
+ * - Adjust graph or sidebar widths/heights internally
+ * - Split or extract parts of this control
+ * 
+ * TO RESIZE THIS CONTROL:
+ * - Only change the container size that holds this component
+ * - Pass different width/height props to the component
+ * - Adjust the parent container's CSS (padding, positioning, etc.)
+ * 
+ * The control automatically scales all internal elements proportionally
+ * based on the width/height props you provide.
+ */
+
 // Theme and styling constants
 const THEME = {
   colors: {
