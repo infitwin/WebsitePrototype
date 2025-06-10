@@ -69,14 +69,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Form submissions
     const forms = document.querySelectorAll('.auth-form');
-    console.log('Found forms:', forms.length);
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Form submitted:', this);
             
             const isLogin = this.closest('#login-form');
-            console.log('Is login form:', !!isLogin);
             if (isLogin) {
                 handleLogin(e);
             } else {
@@ -110,7 +107,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             const signupSubmitBtn = Button.primary({
                 text: 'Create Your Archive',
                 fullWidth: true,
-                htmlType: 'submit'
+                htmlType: 'submit',
+                onClick: function(e) {
+                    e.preventDefault();
+                    handleSignup(e);
+                }
             });
             signupSubmitContainer.appendChild(signupSubmitBtn.element);
             console.log('✅ Signup button created');
@@ -153,20 +154,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Email signup
     async function handleSignup(e) {
         e.preventDefault();
-        console.log('handleSignup called');
         
         const name = document.getElementById('signup-name').value;
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         
-        console.log('Password:', password);
-        console.log('Confirm Password:', confirmPassword);
-        console.log('Passwords match:', password === confirmPassword);
-        
         // Validation
         if (password !== confirmPassword) {
-            console.log('Showing password mismatch notification');
             showNotification('Passwords do not match', 'error');
             return;
         }
