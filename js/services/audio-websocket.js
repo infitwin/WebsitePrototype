@@ -1,0 +1,305 @@
+/**
+ * Audio WebSocket Service for direct audio streaming
+ * Connects to AudioProcessingService for speech-to-text
+ * Based on websocket-messages.md architecture
+ */
+
+class AudioWebSocketService {
+  constructor(options = {}) {
+    this.options = {
+      autoReconnect: true,
+      reconnectInterval: 5000,
+      isDevelopment: false,
+      ...options
+    };
+    
+    // State
+    this.connected = false;
+    this.ws = null;
+    this.reconnectTimeout = null;
+    this.currentSessionId = null;
+    this.currentInterviewId = null;
+    
+    // Callbacks
+    this.onTranscriptReceived = null;
+    this.onError = null;
+    this.onConnected = null;
+    this.onDisconnected = null;
+  }
+
+  /**
+   * Connect to the Audio Processing Service
+   */
+  connect(sessionId, interviewId) {
+    if (this.ws?.readyState === WebSocket.OPEN || 
+        this.ws?.readyState === WebSocket.CONNECTING) {
+      return;
+    }
+
+    this.currentSessionId = sessionId;
+    this.currentInterviewId = interviewId;
+    
+    const wsUrl = getAudioWebSocketUrl(this.options.isDevelopment);
+    
+    try {
+      console.log('Connecting to Audio WebSocket:', wsUrl);
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = (event) => {
+        console.log('Connected to Audio Processing Service');
+        this.connected = true;
+        
+        // Send initial configuration message
+        this.sendInitialConfig();
+        
+        if (this.onConnected) {
+          this.onConnected();
+        }
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          // Check if it's a binary message
+          if (event.data instanceof Blob) {
+            // Handle binary audio response
+            this.handleBinaryMessage(event.data);
+          } else {
+            // Handle JSON message
+            const message = JSON.parse(event.data);
+            this.handleMessage(message);
+          }
+        } catch (err) {
+          console.error('Failed to process audio message:', err);
+          if (this.onError) {
+            this.onError(err);
+          }
+        }
+      };
+
+      this.ws.onerror = (event) => {
+        console.error('Audio WebSocket error:', event);
+        if (this.onError) {
+          this.onError(new Error('Audio WebSocket connection error'));
+        }
+      };
+
+      this.ws.onclose = (event) => {
+        console.log('Audio WebSocket closed:', event.code, event.reason);
+        this.connected = false;
+        
+        if (this.onDisconnected) {
+          this.onDisconnected();
+        }
+        
+        // Auto-reconnect if not a normal closure
+        if (this.options.autoReconnect && event.code !== 1000) {
+          this.reconnectTimeout = setTimeout(() => {
+            console.log('Attempting to reconnect audio WebSocket...');
+            this.connect(this.currentSessionId, this.currentInterviewId);
+          }, this.options.reconnectInterval);
+        }
+      };
+      
+    } catch (err) {
+      console.error('Failed to create Audio WebSocket:', err);
+      if (this.onError) {
+        this.onError(err);
+      }
+    }
+  }
+
+  /**
+   * Send initial configuration for audio processing
+   */
+  sendInitialConfig() {
+    const configMessage = {
+      messageId: `ui-audio-${Date.now()}`,
+      type: 'SendAudioChunk',
+      timestamp: new Date().toISOString(),
+      source: {
+        service: 'UI',
+        instanceId: 'browser-session-' + Math.random().toString(36).substr(2, 9)
+      },
+      target: {
+        service: 'AudioProcessingService'
+      },
+      payload: {
+        sessionId: this.currentSessionId,
+        interviewId: this.currentInterviewId,
+        turnId: 'pending****',
+        config: {
+          sampleRate: 16000,
+          encoding: 'WEBM_OPUS',
+          language: 'en-US',
+          mode: 'speech-to-text'
+        }
+      }
+    };
+
+    this.send(configMessage);
+    console.log('Sent audio configuration:', configMessage);
+  }
+
+  /**
+   * Send audio chunk to the service
+   */
+  sendAudioChunk(audioData, chunkIndex, isFinal = false) {
+    if (!this.isConnected()) {
+      console.warn('Cannot send audio chunk: Audio WebSocket not connected');
+      return false;
+    }
+
+    try {
+      // Create header for binary message
+      const header = {
+        chunkIndex: chunkIndex,
+        sessionId: this.currentSessionId,
+        turnId: 'pending****',
+        timestamp: new Date().toISOString(),
+        isFinal: isFinal
+      };
+
+      // Pad header to 200 bytes
+      const headerStr = JSON.stringify(header).padEnd(200, ' ');
+      
+      // Convert base64 to binary if needed
+      let binaryData;
+      if (typeof audioData === 'string') {
+        // Base64 string - convert to binary
+        const binaryString = atob(audioData);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        binaryData = bytes;
+      } else {
+        // Already binary
+        binaryData = audioData;
+      }
+
+      // Combine header and audio data
+      const headerBytes = new TextEncoder().encode(headerStr);
+      const combinedData = new Uint8Array(headerBytes.length + binaryData.length);
+      combinedData.set(headerBytes, 0);
+      combinedData.set(binaryData, headerBytes.length);
+
+      // Send as binary frame
+      this.ws.send(combinedData);
+      
+      console.log(`Sent audio chunk ${chunkIndex} (${binaryData.length} bytes)`);
+      return true;
+      
+    } catch (error) {
+      console.error('Failed to send audio chunk:', error);
+      if (this.onError) {
+        this.onError(error);
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Handle incoming messages
+   */
+  handleMessage(message) {
+    console.log('Audio service message:', message.type, message);
+    
+    // Handle different message types
+    switch (message.type) {
+      case 'ConnectionEstablished':
+        console.log('Audio service connection confirmed');
+        break;
+        
+      case 'AudioChunkReceived':
+        console.log('Audio chunk acknowledged:', message.payload);
+        break;
+        
+      case 'TranscriptionResult':
+      case 'ForwardTranscript':
+        if (this.onTranscriptReceived) {
+          const transcript = message.payload?.content?.transcript || message.payload?.transcript;
+          if (transcript) {
+            this.onTranscriptReceived({
+              text: transcript.text || transcript,
+              confidence: transcript.confidence,
+              isFinal: transcript.isFinal !== false,
+              timestamp: message.timestamp
+            });
+          }
+        }
+        break;
+        
+      case 'TranscriptionProgress':
+        // Interim transcription results
+        if (this.onTranscriptReceived && message.payload?.partialTranscript) {
+          this.onTranscriptReceived({
+            text: message.payload.partialTranscript,
+            confidence: message.payload.confidence || 0,
+            isFinal: false,
+            timestamp: message.timestamp
+          });
+        }
+        break;
+        
+      case 'Error':
+        console.error('Audio service error:', message.payload);
+        if (this.onError) {
+          this.onError(new Error(message.payload?.message || 'Audio service error'));
+        }
+        break;
+        
+      default:
+        console.log('Unhandled audio message type:', message.type);
+    }
+  }
+
+  /**
+   * Handle binary messages (future: audio responses)
+   */
+  handleBinaryMessage(blob) {
+    // For now, just log
+    console.log('Received binary message from audio service:', blob.size, 'bytes');
+  }
+
+  /**
+   * Send a JSON message
+   */
+  send(message) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.error('Audio WebSocket not connected');
+      return false;
+    }
+
+    try {
+      this.ws.send(JSON.stringify(message));
+      return true;
+    } catch (err) {
+      console.error('Failed to send audio message:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Disconnect from the service
+   */
+  disconnect() {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+    
+    if (this.ws) {
+      this.ws.close(1000, 'Client disconnect');
+      this.ws = null;
+    }
+    
+    this.connected = false;
+  }
+
+  isConnected() {
+    return this.connected && this.ws?.readyState === WebSocket.OPEN;
+  }
+}
+
+// Export for use
+window.AudioWebSocketService = AudioWebSocketService;

@@ -111,6 +111,18 @@
             background: #4f46e5;
         }
 
+        .large-nav-btn {
+            padding: 8px 16px !important;
+            font-size: 14px !important;
+            font-weight: 600;
+            min-width: 140px;
+        }
+
+        .large-nav-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 91, 255, 0.2);
+        }
+
         /* Main Layout Container */
         .interview-container {
             width: 100%;
@@ -190,7 +202,7 @@
 
         /* 2. Neo4j Graph Container */
         .graph-container {
-            height: 540px;
+            height: 340px;  /* Reduced from 540px to accommodate larger chat */
             width: 100%;
             background: #ffffff;
             position: relative;
@@ -228,7 +240,7 @@
 
         /* 3. Winston Chat Interface */
         .winston-chat {
-            height: 200px;
+            height: 400px;  /* Increased from 200px to 400px */
             width: 100%;
             background: #ffffff;
             border-top: 2px solid #e5e7eb;
@@ -299,17 +311,18 @@
 
         .winston-orb,
         .winston-avatar {
-            width: 40px;
-            height: 40px;
+            width: 48px;  /* Increased from 40px */
+            height: 48px;  /* Increased from 40px */
             border-radius: 50%;
             background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;  /* Increased from 18px */
             flex-shrink: 0;
             position: relative;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 183, 0, 0.4);  /* Added shadow for visibility */
         }
 
         .winston-orb.listening {
@@ -337,10 +350,13 @@
 
         .message-content {
             background: #f8f9fa;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border-radius: 12px;
             max-width: 70%;
-            line-height: 1.5;
+            line-height: 1.6;
+            font-size: 14px;
+            color: #374151;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .user-message {
@@ -569,58 +585,275 @@
             cursor: pointer;
         }
 
-        /* Privacy Modal */
-        .privacy-modal {
+        /* Interview Selection Modal */
+        .interview-selection-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
+            padding: 20px;
         }
 
-        .privacy-modal.active {
+        .interview-selection-modal.active {
             display: flex;
         }
 
-        .privacy-content {
-            width: 400px;
+        .interview-selection-content {
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
             background: white;
-            border-radius: 12px;
-            padding: 30px;
+            border-radius: 16px;
+            padding: 40px;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .selection-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1f2937;
             text-align: center;
         }
 
-        .privacy-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #1f2937;
-        }
-
-        .privacy-text {
-            line-height: 1.6;
+        .selection-subtitle {
+            font-size: 16px;
             color: #6b7280;
-            margin-bottom: 25px;
+            text-align: center;
+            margin-bottom: 40px;
         }
 
-        .privacy-btn {
+        .interview-option-section {
+            margin-bottom: 40px;
+        }
+
+        .option-header {
+            margin-bottom: 24px;
+        }
+
+        .option-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .option-header p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* Large Interview Buttons */
+        .new-interview-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .large-interview-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            border: 2px solid #635bff;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            min-height: 80px;
+        }
+
+        .large-interview-btn:hover {
+            background: #635bff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 91, 255, 0.3);
+        }
+
+        .large-interview-btn.primary {
+            background: #635bff;
+            color: white;
+        }
+
+        .large-interview-btn.primary:hover {
+            background: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .btn-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .btn-content {
+            flex: 1;
+        }
+
+        .btn-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .btn-subtitle {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        /* Interview Cards */
+        .continue-interview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .interview-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .interview-card:hover {
+            border-color: #635bff;
+            background: #f8f9ff;
+            transform: translateX(4px);
+        }
+
+        .interview-card.completed {
+            opacity: 0.8;
+            border-color: #10b981;
+        }
+
+        .interview-card.completed:hover {
+            border-color: #059669;
+            background: #f0fdf4;
+        }
+
+        .interview-card-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border-radius: 12px;
+        }
+
+        .interview-card-content {
+            flex: 1;
+        }
+
+        .interview-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .interview-card-progress {
+            font-size: 14px;
+            color: #635bff;
+            margin-bottom: 2px;
+        }
+
+        .interview-card-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .interview-card-action {
+            flex-shrink: 0;
+        }
+
+        .continue-btn, .view-btn {
             background: #635bff;
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
             transition: background 0.2s ease;
         }
 
-        .privacy-btn:hover {
+        .view-btn {
+            background: #10b981;
+        }
+
+        .continue-btn:hover {
             background: #4f46e5;
+        }
+
+        .view-btn:hover {
+            background: #059669;
+        }
+
+        /* Quick Tips */
+        .quick-tips {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .tips-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .tip-item {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .interview-selection-content {
+                padding: 24px;
+                margin: 10px;
+            }
+
+            .selection-title {
+                font-size: 24px;
+            }
+
+            .new-interview-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Overlay for modals */
@@ -726,24 +959,90 @@
         Connection lost. Attempting to reconnect...
     </div>
 
-    <!-- Privacy Notice Modal -->
-    <div class="privacy-modal active" id="privacyModal">
-        <div class="privacy-content">
-            <h3 class="privacy-title">👋 Welcome to Memory Interview</h3>
-            <div class="privacy-text">
-                <strong>Important:</strong> Click the button below to start your interview.<br><br>
-                • Only share what you're comfortable sharing<br>
-                • You can skip any question by saying 'next question'<br>
-                • All memories are private by default
+    <!-- Interview Selection Modal -->
+    <div class="interview-selection-modal active" id="interviewSelectionModal">
+        <div class="interview-selection-content">
+            <h2 class="selection-title">Choose Your Interview</h2>
+            <p class="selection-subtitle">Start a new memory interview or continue where you left off</p>
+            
+            <!-- New Interview Section -->
+            <div class="interview-option-section">
+                <div class="option-header">
+                    <h3>🚀 Start New Interview</h3>
+                    <p>Begin capturing new memories with Winston</p>
+                </div>
+                <div class="new-interview-buttons">
+                    <button class="large-interview-btn primary" onclick="startNewInterview('new')">
+                        <div class="btn-icon">💭</div>
+                        <div class="btn-content">
+                            <div class="btn-title">New Interview</div>
+                            <div class="btn-subtitle">Start a fresh conversation</div>
+                        </div>
+                    </button>
+                    <button class="large-interview-btn primary" onclick="startNewInterview('artifact')">
+                        <div class="btn-icon">📎</div>
+                        <div class="btn-content">
+                            <div class="btn-title">Interview based on artifact</div>
+                            <div class="btn-subtitle">Upload a photo, document, or item</div>
+                        </div>
+                    </button>
+                </div>
             </div>
-            <button class="privacy-btn pulsing" onclick="startInterview()" style="
-                animation: pulse 2s infinite;
-                background: #10B981 !important;
-                font-weight: bold;
-                font-size: 16px;
-            ">🚀 START INTERVIEW - Click Here to Begin</button>
-            <div style="margin-top: 15px; font-size: 12px; color: #6B7280;">
-                Can't see the interface? Make sure to click the green button above.
+
+            <!-- Continue Interview Section -->
+            <div class="interview-option-section">
+                <div class="option-header">
+                    <h3>📋 Continue Previous Interviews</h3>
+                    <p>Resume your ongoing memory sessions</p>
+                </div>
+                <div class="continue-interview-list">
+                    <div class="interview-card" onclick="resumeInterview('family-stories')">
+                        <div class="interview-card-icon">👨‍👩‍👧‍👦</div>
+                        <div class="interview-card-content">
+                            <div class="interview-card-title">Family Stories</div>
+                            <div class="interview-card-progress">12 of 25 questions completed</div>
+                            <div class="interview-card-date">Last updated 2 days ago</div>
+                        </div>
+                        <div class="interview-card-action">
+                            <div class="continue-btn">Continue →</div>
+                        </div>
+                    </div>
+                    
+                    <div class="interview-card" onclick="resumeInterview('career-journey')">
+                        <div class="interview-card-icon">💼</div>
+                        <div class="interview-card-content">
+                            <div class="interview-card-title">Career Journey</div>
+                            <div class="interview-card-progress">5 of 30 questions completed</div>
+                            <div class="interview-card-date">Last updated 1 week ago</div>
+                        </div>
+                        <div class="interview-card-action">
+                            <div class="continue-btn">Continue →</div>
+                        </div>
+                    </div>
+                    
+                    <div class="interview-card completed" onclick="viewInterview('wedding-day')">
+                        <div class="interview-card-icon">💒</div>
+                        <div class="interview-card-content">
+                            <div class="interview-card-title">Wedding Day ✓</div>
+                            <div class="interview-card-progress">Completed</div>
+                            <div class="interview-card-date">1 month ago</div>
+                        </div>
+                        <div class="interview-card-action">
+                            <div class="view-btn">View</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Start Tips -->
+            <div class="quick-tips">
+                <div class="tips-title">💡 Quick Tips</div>
+                <div class="tips-grid">
+                    <div class="tip-item">• Share what you're comfortable with</div>
+                    <div class="tip-item">• Say "next question" to skip</div>
+                    <div class="tip-item">• All memories are private by default</div>
+                    <div class="tip-item">• Your conversation builds a knowledge graph</div>
+                </div>
             </div>
         </div>
     </div>
@@ -761,8 +1060,8 @@
         </div>
         <div class="nav-right">
             <button class="nav-btn" onclick="saveAndExit()">Save & Exit</button>
-            <button class="nav-btn" onclick="toggleInterviewManager()">Interviews</button>
-            <button class="nav-btn primary" onclick="newInterview()">New Interview</button>
+            <button class="nav-btn large-nav-btn" onclick="showInterviewSelection()">📋 Choose Interview</button>
+            <button class="nav-btn primary large-nav-btn" onclick="startNewInterview('new')">🚀 New Interview</button>
         </div>
     </nav>
 
@@ -809,7 +1108,7 @@
                 <div class="message">
                     <div class="winston-orb winston-avatar">🎩</div>
                     <div class="message-content">
-                        Hello! I'm Winston, your story curator. I'm here to help you capture and organize your precious memories. What would you like to talk about today?
+                        Hello! I'm Winston, your memory curator. Let's begin by choosing a topic for today's interview. What would you like to explore? I'll guide you through about 30 focused questions to help capture your memories.
                     </div>
                 </div>
             </div>
@@ -852,7 +1151,7 @@
         <div class="manager-header">
             <div class="manager-buttons">
                 <button class="manager-btn" onclick="newInterview()">+ New Interview</button>
-                <button class="manager-btn" onclick="photoInterview()">Interview about Photo</button>
+                <button class="manager-btn" onclick="photoInterview()">Interview based on artifact</button>
             </div>
         </div>
 
@@ -934,11 +1233,25 @@
     <script src="../js/services/websocket-manager.js"></script>
     <script src="../js/services/audio-recorder.js"></script>
     <script src="../js/services/tts-player.js"></script>
-    <script src="../js/services/orchestrator-websocket.js"></script>
+    <script src="../js/services/orchestrator-websocket.js?v=3"></script>
+    <script src="../js/services/audio-websocket.js"></script>
     <script src="../js/config/orchestration-endpoints.js"></script>
     <script src="../js/utils/message-builder.js"></script>
 
     <script>
+        // Wait for all scripts to load
+        window.addEventListener('load', function() {
+            console.log('Checking loaded functions:');
+            console.log('- getBusinessWebSocketUrl:', typeof window.getBusinessWebSocketUrl);
+            console.log('- buildStartInterviewMessage:', typeof window.buildStartInterviewMessage);
+            console.log('- generateInterviewId:', typeof window.generateInterviewId);
+            console.log('- generateCorrelationId:', typeof window.generateCorrelationId);
+            
+            if (typeof window.getBusinessWebSocketUrl === 'function') {
+                console.log('Correct WebSocket URL:', window.getBusinessWebSocketUrl(false));
+            }
+        });
+        
         // Initialize Neo4j Graph Visualization
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔍 Initializing Neo4j in interview page...');
@@ -950,7 +1263,7 @@
                 try {
                     const neo4jViz = new Neo4jVisualization(graphContainer, {
                         width: graphContainer.offsetWidth || 1200,
-                        height: 540, // Match the graph-container height
+                        height: 340, // Match the updated graph-container height
                         showFilters: true,
                         showSearch: true
                     });
@@ -968,10 +1281,17 @@
         });
 
         // WebsitePrototype Audio Services Integration
+        // WebSocket connectivity: The startNewInterview function properly sends WebSocket messages
+        // to the backend orchestrator service using the same format as ui-studio:
+        // - Message type: 'StartInterview' 
+        // - Includes userId, twinId, subject, interviewType, and session parameters
+        // - Sends to wss://intervieworchestrationservice-833139648849.us-central1.run.app/ws
         let audioRecorder = null;
         let ttsPlayer = null;
         let orchestratorWebSocket = null;
+        let audioWebSocket = null;  // New audio WebSocket service
         let currentInterviewId = null;
+        let currentSessionId = null;
         let isInterviewActive = false;
 
         // Add missing function stubs for graceful fallback
@@ -985,44 +1305,74 @@
             };
         }
         
-        function getBusinessWebSocketUrl(isDevelopment) {
-            // Fallback WebSocket URL
-            return isDevelopment ? 'ws://localhost:8080/ws' : 'wss://api.infitwin.com/ws';
-        }
-        
-        function parseOrchestratorMessage(rawMessage) {
-            // Simple parser fallback
-            return {
-                type: rawMessage.type,
-                ...rawMessage.payload,
-                interviewId: rawMessage.payload?.interviewId,
-                correlationId: rawMessage.payload?.correlationId,
-                question: rawMessage.payload?.question,
-                audioChunks: rawMessage.payload?.audioChunks || []
+        // Temporary fallback until scripts load - use correct orchestrator URL
+        if (typeof window.getBusinessWebSocketUrl === 'undefined') {
+            window.getBusinessWebSocketUrl = function(isDevelopment) {
+                return isDevelopment ? 
+                    'ws://localhost:8000/ws' : 
+                    'wss://intervieworchestrationservice-833139648849.us-central1.run.app/ws';
             };
         }
         
-        function buildStartInterviewMessage(params) {
-            return {
-                type: 'StartInterview',
-                payload: {
-                    metadata: {
-                        interviewId: `interview-${Date.now()}`,
-                        correlationId: `corr-${Date.now()}`,
-                        userId: params.userId,
-                        twinId: params.twinId,
-                        sessionType: params.sessionType,
-                        timestamp: new Date().toISOString()
-                    }
+        // Initialize Audio WebSocket Service
+        function initializeAudioWebSocket() {
+            return new Promise((resolve, reject) => {
+                if (!currentSessionId || !currentInterviewId) {
+                    console.warn('Cannot initialize audio WebSocket: missing session/interview ID');
+                    reject(new Error('Missing session/interview ID'));
+                    return;
                 }
-            };
-        }
-        
-        function buildHeartbeatMessage() {
-            return {
-                type: 'Heartbeat',
-                payload: { timestamp: new Date().toISOString() }
-            };
+                
+                console.log('Initializing Audio WebSocket for session:', currentSessionId);
+                
+                // Create audio WebSocket service
+                audioWebSocket = new AudioWebSocketService({
+                    isDevelopment: false,
+                    autoReconnect: true
+                });
+                
+                // Set up callbacks
+                audioWebSocket.onConnected = () => {
+                    console.log('Audio WebSocket connected');
+                    showToast('Audio service connected', 'success');
+                    resolve(); // Resolve the promise when connected
+                };
+                
+                audioWebSocket.onTranscriptReceived = (transcript) => {
+                    console.log('Transcript received:', transcript);
+                    if (transcript.text) {
+                        // Add the transcribed text as a user message
+                        addMessage(transcript.text, 'user');
+                        
+                        // Only show toast for final transcripts
+                        if (transcript.isFinal) {
+                            showToast('Transcript: ' + transcript.text, 'success');
+                        }
+                    }
+                };
+                
+                audioWebSocket.onError = (error) => {
+                    console.error('Audio WebSocket error:', error);
+                    showToast('Audio service error: ' + error.message, 'error');
+                    reject(error); // Reject on error
+                };
+                
+                audioWebSocket.onDisconnected = () => {
+                    console.log('Audio WebSocket disconnected');
+                    showToast('Audio service disconnected', 'error');
+                };
+                
+                // Connect to audio service
+                audioWebSocket.connect(currentSessionId, currentInterviewId);
+                
+                // Set a timeout in case connection takes too long
+                setTimeout(() => {
+                    if (!audioWebSocket.isConnected()) {
+                        console.warn('Audio WebSocket connection timed out');
+                        resolve(); // Resolve anyway to not block
+                    }
+                }, 5000);
+            });
         }
         
         // Initialize WebsitePrototype services
@@ -1068,24 +1418,32 @@
                 };
                 
                 // Initialize Orchestrator WebSocket
+                console.log('Available WebSocket URL function:', typeof getBusinessWebSocketUrl);
+                console.log('Production WebSocket URL:', getBusinessWebSocketUrl(false));
                 orchestratorWebSocket = new OrchestratorWebSocketService();
                 
                 // Set up orchestrator callbacks
-                orchestratorWebSocket.onInterviewStarted = (data) => {
+                orchestratorWebSocket.onInterviewStarted = async (data) => {
                     console.log('Interview started:', data);
                     currentInterviewId = data.interviewId;
+                    currentSessionId = data.sessionId || data.sessionDetails?.id;
                     isInterviewActive = true;
                     showToast('Interview session started with Winston', 'success');
+                    
+                    // Initialize audio WebSocket connection and wait for it
+                    await initializeAudioWebSocket();
+                    showToast('Audio service ready - you can start recording', 'success');
                 };
                 
                 orchestratorWebSocket.onQuestionReceived = (data) => {
                     console.log('Question received:', data);
-                    updateInterviewQuestion(data.question);
+                    // Use questionText field from the parsed message
+                    updateInterviewQuestion(data.questionText || data.question);
                     
                     // If TTS audio is provided, play it
                     if (data.audioChunks && data.audioChunks.length > 0) {
                         ttsPlayer.addToQueue(data.audioChunks, {
-                            turnId: data.turnId || `question-${Date.now()}`,
+                            turnId: data.turnId || data.turnNumber || `question-${Date.now()}`,
                             type: 'interview-question'
                         });
                     }
@@ -1094,6 +1452,17 @@
                 orchestratorWebSocket.onAudioChunkRequested = (data) => {
                     console.log('Audio chunk requested:', data);
                     // This would typically trigger more detailed audio processing
+                };
+                
+                // Add transcription handler
+                orchestratorWebSocket.onTranscriptionReceived = (data) => {
+                    console.log('Transcription received:', data);
+                    const transcribedText = data.transcription || data.text || data.transcript;
+                    if (transcribedText) {
+                        // Add the transcribed text as a user message
+                        addMessage(transcribedText, 'user');
+                        showToast('Transcription: ' + transcribedText, 'success');
+                    }
                 };
                 
                 orchestratorWebSocket.onError = (error) => {
@@ -1136,8 +1505,8 @@
             }
         }
         
-        // Enhanced startInterview function
-        async function startInterviewWithOrchestrator() {
+        // Enhanced startInterview function with proper WebSocket message format
+        async function startInterviewWithOrchestrator(interviewType = 'new', subject = null) {
             try {
                 if (!orchestratorWebSocket) {
                     throw new Error('Orchestrator not initialized');
@@ -1149,29 +1518,57 @@
                 // Connect to WebSocket first
                 orchestratorWebSocket.connect();
                 
-                // Wait a moment for connection
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Wait longer for cloud service connection (3 seconds instead of 1)
+                let connectionAttempts = 0;
+                const maxAttempts = 6; // 6 attempts * 500ms = 3 seconds
                 
-                if (!orchestratorWebSocket.isConnected()) {
-                    throw new Error('Failed to connect to orchestrator');
+                while (!orchestratorWebSocket.isConnected() && connectionAttempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    connectionAttempts++;
                 }
                 
-                showToast('Starting interview session...', 'success');
+                if (!orchestratorWebSocket.isConnected()) {
+                    console.warn('WebSocket not connected after 3 seconds, proceeding anyway...');
+                    showToast('Connecting to server... Interview will start when ready.', 'success');
+                } else {
+                    showToast('Connected! Starting interview session...', 'success');
+                }
                 
-                // Start interview with orchestrator
+                // Prepare interview data in the correct format for the message builder
                 const interviewData = {
-                    userId: 'demo-user', // In production, get from auth
+                    userId: 'demo-user', // TODO: Get from auth in production
                     twinId: 'winston-interviewer',
-                    sessionType: 'memory-interview',
-                    metadata: {
-                        platform: 'WebsitePrototype',
-                        timestamp: new Date().toISOString()
+                    subject: subject || (interviewType === 'artifact' ? 'Artifact-based Memory' : 'Memory Interview'),
+                    interviewType: 'voice', // Always 'voice' for now
+                    interviewId: generateInterviewId(), // Generate unique ID
+                    correlationId: generateCorrelationId(), // Generate correlation ID
+                    additionalParams: {
+                        sessionParams: {
+                            interviewCategory: interviewType, // 'new' or 'artifact'
+                            autoRecord: true,
+                            enableTranscription: true,
+                            language: 'en-US',
+                            maxDuration: 3600, // 1 hour max
+                            maxQuestions: 30 // Internal limit
+                        },
+                        userContext: {
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                            locale: navigator.language,
+                            userAgent: navigator.userAgent,
+                            platform: 'WebsitePrototype'
+                        }
                     }
                 };
                 
-                orchestratorWebSocket.startInterview(interviewData);
+                // Send the properly formatted message
+                const success = orchestratorWebSocket.startInterview(interviewData);
+                
+                if (!success) {
+                    throw new Error('Failed to send start interview message');
+                }
                 
                 setWinstonState('idle');
+                console.log('Interview started with data:', interviewData);
                 
             } catch (error) {
                 console.error('Failed to start interview:', error);
@@ -1295,15 +1692,22 @@
                 return false;
             }
             
+            if (!audioWebSocket || !audioWebSocket.isConnected()) {
+                showToast('Audio service not connected. Please wait...', 'error');
+                return false;
+            }
+            
             try {
                 audioRecorder.start(
                     // onAudioChunk callback
                     (chunk) => {
                         console.log(`Audio chunk ${chunk.chunkNumber}: ${chunk.size} bytes`);
                         
-                        // Send audio chunk to orchestrator if interview is active
-                        if (orchestratorWebSocket && isInterviewActive) {
-                            orchestratorWebSocket.sendAudioChunk(chunk);
+                        // Send audio chunk to audio service if interview is active
+                        if (audioWebSocket && audioWebSocket.isConnected() && isInterviewActive) {
+                            audioWebSocket.sendAudioChunk(chunk.audio, chunk.chunkNumber, false);
+                        } else {
+                            console.warn('Audio WebSocket not ready, chunk dropped');
                         }
                     },
                     // onError callback
@@ -1436,13 +1840,22 @@
             document.getElementById('chatModal').classList.remove('active');
         }
 
-        async function startInterview() {
+        // New interview functions
+        async function startNewInterview(type) {
             try {
-                console.log('🚀 Starting interview - dismissing privacy modal');
-                document.getElementById('privacyModal').classList.remove('active');
+                console.log(`🚀 Starting new ${type} interview`);
+                document.getElementById('interviewSelectionModal').classList.remove('active');
                 
                 // Show loading state
-                showToast('Initializing interview...', 'success');
+                showToast(`Initializing ${type} interview...`, 'success');
+                
+                // Update interview question based on type
+                const questionMap = {
+                    'new': "Hello! I'm Winston, your memory curator. What topic would you like to explore today? It could be about your family, career, hobbies, travels, or any meaningful experience you'd like to preserve.",
+                    'artifact': "Please upload an artifact you'd like to discuss - this could be a photo, document, letter, or describe an item that holds special meaning to you."
+                };
+                
+                updateInterviewQuestion(questionMap[type] || questionMap['new']);
                 
                 // Initialize all services with fallback handling
                 const servicesReady = await initializeServices().catch(error => {
@@ -1459,7 +1872,7 @@
                 
                 // Try to start orchestrator session with fallback
                 try {
-                    await startInterviewWithOrchestrator();
+                    await startInterviewWithOrchestrator(type);
                 } catch (error) {
                     console.warn('Orchestrator connection failed, continuing in offline mode:', error);
                     showToast('Running in offline mode - audio features disabled', 'error');
@@ -1468,40 +1881,93 @@
                 // Start the idea clouds (this should always work)
                 startIdeaClouds();
                 
-                showToast('Interview interface ready! You can explore the graph visualization.', 'success');
-                
-                // Add accessibility announcement
-                setTimeout(() => {
-                    showToast('Interface is now visible. Use the graph to explore memory connections.', 'success');
-                }, 2000);
+                // Show specialized message for artifact interviews
+                if (type === 'artifact') {
+                    document.getElementById('photoReference').style.display = 'block';
+                    showToast('Artifact interview ready! Upload or describe your artifact to get started.', 'success');
+                } else {
+                    showToast('Interview ready! Let\'s capture your memories.', 'success');
+                }
                 
             } catch (error) {
                 console.error('❌ Critical error starting interview:', error);
                 showToast('Failed to start interview. Please refresh the page and try again.', 'error');
                 
                 // Emergency fallback - remove modal anyway
-                document.getElementById('privacyModal').classList.remove('active');
+                document.getElementById('interviewSelectionModal').classList.remove('active');
             }
         }
 
+        async function resumeInterview(interviewId) {
+            try {
+                console.log(`📋 Resuming interview: ${interviewId}`);
+                document.getElementById('interviewSelectionModal').classList.remove('active');
+                
+                showToast('Loading previous interview...', 'success');
+                
+                // Simulate loading previous interview data
+                const interviewData = {
+                    'family-stories': {
+                        question: "You were telling me about your grandmother's cooking. What was her most special dish?",
+                        progress: "12 of 25 questions completed"
+                    },
+                    'career-journey': {
+                        question: "What was the biggest challenge you faced in your first job?",
+                        progress: "5 of 30 questions completed"
+                    }
+                };
+                
+                const data = interviewData[interviewId];
+                if (data) {
+                    updateInterviewQuestion(data.question);
+                    showToast(`Resumed: ${data.progress}`, 'success');
+                } else {
+                    updateInterviewQuestion("Welcome back! What would you like to continue discussing?");
+                }
+                
+                // Initialize services and start interview
+                await initializeServices().catch(() => false);
+                await startInterviewWithOrchestrator('resume', interviewId).catch(() => {});
+                startIdeaClouds();
+                
+            } catch (error) {
+                console.error('❌ Error resuming interview:', error);
+                showToast('Failed to resume interview', 'error');
+                document.getElementById('interviewSelectionModal').classList.remove('active');
+            }
+        }
+
+        async function viewInterview(interviewId) {
+            showToast('Opening completed interview in view mode...', 'success');
+            document.getElementById('interviewSelectionModal').classList.remove('active');
+            
+            // In a real implementation, this would load the completed interview data
+            updateInterviewQuestion("This is a completed interview. You can review the conversation but not add new responses.");
+            
+            // Disable input controls for view mode
+            const inputField = document.getElementById('messageInput');
+            const micBtn = document.getElementById('micBtn');
+            if (inputField) inputField.disabled = true;
+            if (micBtn) micBtn.disabled = true;
+            
+            showToast('Viewing completed interview - read-only mode', 'success');
+        }
+
+        // Legacy function for backwards compatibility
+        async function startInterview() {
+            await startNewInterview('new');
+        }
+
+        function showInterviewSelection() {
+            document.getElementById('interviewSelectionModal').classList.add('active');
+        }
+
         function newInterview() {
-            showToast('Starting new interview...', 'success');
-            closeAll();
+            showInterviewSelection();
         }
 
         function photoInterview() {
-            showToast('Select a photo to discuss...', 'success');
-            closeAll();
-        }
-
-        function resumeInterview(type) {
-            showToast(`Resuming ${type} interview...`, 'success');
-            closeAll();
-        }
-
-        function viewInterview(type) {
-            showToast(`Opening ${type} interview in read-only mode...`, 'success');
-            closeAll();
+            startNewInterview('artifact');
         }
 
         function stopSession() {
@@ -1517,10 +1983,16 @@
                     ttsPlayer.stopAndClearQueue();
                 }
                 
-                // Close WebSocket connection if active
+                // Close WebSocket connections if active
                 if (orchestratorWebSocket && isInterviewActive) {
                     orchestratorWebSocket.endInterview();
                     isInterviewActive = false;
+                }
+                
+                // Disconnect audio WebSocket
+                if (audioWebSocket) {
+                    audioWebSocket.disconnect();
+                    audioWebSocket = null;
                 }
                 
                 // Stop idea clouds animation

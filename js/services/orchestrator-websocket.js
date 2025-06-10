@@ -80,6 +80,19 @@ class OrchestratorWebSocketService {
         this.onAudioChunkRequested(parsedMessage);
       }
     });
+    
+    // Handle TranscriptionResult
+    this.messageHandlers.set('TranscriptionResult', (parsedMessage) => {
+      console.log('Transcription received:', parsedMessage);
+      if (this.onTranscriptionReceived) {
+        this.onTranscriptionReceived(parsedMessage);
+      }
+    });
+    
+    // Handle any other message types
+    this.messageHandlers.set('default', (parsedMessage, rawMessage) => {
+      console.log('Unhandled message type:', rawMessage.type, parsedMessage);
+    });
   }
 
   /**
@@ -128,7 +141,12 @@ class OrchestratorWebSocketService {
           this.emit('message', rawMessage);
           
           // Call registered handler with both raw and parsed message
-          const handler = this.messageHandlers.get(rawMessage.type);
+          let handler = this.messageHandlers.get(rawMessage.type);
+          if (!handler) {
+            // Use default handler for unknown message types
+            handler = this.messageHandlers.get('default');
+          }
+          
           if (handler) {
             try {
               handler(parsedMessage, rawMessage);
@@ -382,17 +400,44 @@ class OrchestratorWebSocketService {
       return false;
     }
 
-    try {
-      const message = window.buildSendAudioChunkMessage({
-        interviewId: this.currentInterviewId,
-        correlationId: this.currentCorrelationId,
-        chunkNumber: audioChunk.chunkNumber,
-        audio: audioChunk.audio,
-        timestamp: audioChunk.timestamp,
-        size: audioChunk.size
-      });
+    if (!this.currentInterviewId) {
+      console.warn('Cannot send audio chunk: No active interview');
+      return false;
+    }
 
-      this.send(message);
+    try {
+      // For now, skip the message builder and create the message directly
+      // since we're dealing with base64 strings, not ArrayBuffers
+      const message = {
+        type: 'SendAudioChunk',
+        payload: {
+          metadata: {
+            interviewId: this.currentInterviewId,
+            sessionId: this.currentInterviewId,
+            correlationId: this.currentCorrelationId,
+            chunkIndex: audioChunk.chunkNumber,
+            timestamp: new Date().toISOString(),
+            isFirstChunk: audioChunk.chunkNumber === 1,
+            isLastChunk: false
+          },
+          data: {
+            audioData: audioChunk.audio, // Base64 string
+            audioConfig: audioChunk.chunkNumber === 1 ? {
+              sampleRate: 16000,
+              channels: 1,
+              encoding: 'webm-opus', // Based on the mimeType from recorder
+              languageCode: 'en-US'
+            } : null,
+            chunkMetadata: {
+              size: audioChunk.size,
+              mimeType: audioChunk.mimeType,
+              duration: null
+            }
+          }
+        }
+      };
+
+      this.sendMessage(message.type, message.payload);
       
       this.logTelemetry('Send_Audio_Chunk', {
         interviewId: this.currentInterviewId,
