@@ -1380,6 +1380,11 @@
     <!-- Load Shared Navigation -->
     <script src="../js/navigation.js"></script>
     
+    <!-- Authentication Guard -->
+    <script type="module">
+        import { guardPage } from '../js/auth-guard.js';
+    </script>
+    
     <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
     <script src="../js/neo4j-init.js"></script>
     
