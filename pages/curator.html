@@ -2077,7 +2077,7 @@
             // Initialize all services first
             const servicesReady = await initializeServices();
             if (!servicesReady) {
-                showToast('Failed to initialize services. Interview cannot start.', 'error');
+                showToast('Connection error: Failed to initialize services. Interview cannot start.', 'error');
                 return;
             }
             
