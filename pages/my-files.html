@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components/button.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/knowledge-symphony.css">
     <link rel="stylesheet" href="../css/file-management.css">
@@ -66,7 +67,7 @@
                         <div class="drop-zone-icon">📁</div>
                         <div class="drop-zone-text">Drag files here or click to browse</div>
                         <div class="drop-zone-subtext">Supported: Images, Documents, Spreadsheets, Ebooks (Max 10MB per file)</div>
-                        <button class="drop-zone-button">Choose Files</button>
+                        <div id="choose-files-button" class="button-placeholder"></div>
                     </div>
                     
                     <!-- Upload Queue -->
@@ -635,6 +636,7 @@
         import { createThumbnailElement, getFallbackIcon } from '../js/thumbnail-generator.js';
         import { createStorageDonutChart } from '../js/storage-ui.js';
         import { Modal } from '../js/components/ui/modal.js';
+        import { Button } from '../js/components/ui/button.js';
 
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🔄 My Files page loading...');
@@ -653,9 +655,51 @@
             
             console.log('✅ Authentication passed');
 
+            // Initialize buttons
+            initializeButtons();
+
             // Initialize file browser
             await initializeFileBrowser();
         });
+
+        function initializeButtons() {
+            // Choose Files Button
+            const chooseFilesBtn = Button.secondary({
+                text: 'Choose Files',
+                icon: '📁',
+                onClick: () => {
+                    document.getElementById('fileInput').click();
+                }
+            });
+            const chooseFilesContainer = document.getElementById('choose-files-button');
+            if (chooseFilesContainer) {
+                chooseFilesContainer.appendChild(chooseFilesBtn.element);
+            }
+
+            // Login Button (created dynamically in error states)
+            const loginBtn = Button.primary({
+                text: 'Go to Login',
+                onClick: () => {
+                    window.location.href = 'auth.html';
+                }
+            });
+            const loginContainer = document.getElementById('login-button');
+            if (loginContainer) {
+                loginContainer.appendChild(loginBtn.element);
+            }
+
+            // Retry Button (created dynamically in error states)
+            const retryBtn = Button.secondary({
+                text: 'Retry',
+                onClick: () => {
+                    location.reload();
+                }
+            });
+            const retryContainer = document.getElementById('retry-button');
+            if (retryContainer) {
+                retryContainer.appendChild(retryBtn.element);
+            }
+        }
 
         async function initializeFileBrowser() {
             console.log('🔧 Initializing file browser...');
@@ -736,14 +780,14 @@
                         <div class="empty-icon">🔐</div>
                         <h3>Authentication Required</h3>
                         <p>Please log in to view your files</p>
-                        <button onclick="window.location.href='auth.html'" class="drop-zone-button">Go to Login</button>
+                        <div id="login-button" class="button-placeholder"></div>
                     `;
                 } else {
                     emptyState.innerHTML = `
                         <div class="empty-icon">❌</div>
                         <h3>Error Loading Files</h3>
                         <p>${error.message}</p>
-                        <button onclick="location.reload()" class="drop-zone-button">Retry</button>
+                        <div id="retry-button" class="button-placeholder"></div>
                     `;
                 }
             }
