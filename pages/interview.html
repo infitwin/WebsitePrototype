@@ -202,7 +202,7 @@
 
         /* 2. Neo4j Graph Container */
         .graph-container {
-            height: 340px;  /* Reduced from 540px to accommodate larger chat */
+            height: 290px;  /* Further reduced to accommodate even larger chat */
             width: 100%;
             background: #ffffff;
             position: relative;
@@ -240,7 +240,7 @@
 
         /* 3. Winston Chat Interface */
         .winston-chat {
-            height: 400px;  /* Increased from 200px to 400px */
+            height: 450px;  /* Increased to 450px for better conversation visibility */
             width: 100%;
             background: #ffffff;
             border-top: 2px solid #e5e7eb;
@@ -350,13 +350,15 @@
 
         .message-content {
             background: #f8f9fa;
-            padding: 14px 18px;
+            padding: 16px 20px;
             border-radius: 12px;
-            max-width: 70%;
+            max-width: 85%;
+            min-width: 200px;
             line-height: 1.6;
-            font-size: 14px;
+            font-size: 15px;
             color: #374151;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word;
         }
 
         .user-message {
@@ -2108,7 +2110,14 @@
             }
             
             .message-bubble {
-                max-width: 90%;
+                max-width: 95%;
+            }
+            
+            .message-content {
+                max-width: 95%;
+                min-width: 150px;
+                font-size: 14px;
+                padding: 14px 16px;
             }
             
             .input-area {
