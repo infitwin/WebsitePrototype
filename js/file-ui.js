@@ -44,8 +44,15 @@ export function initializeDragDrop(dropZone, onFilesSelected) {
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                // Add immediate validation check for testing
                 const files = Array.from(e.target.files);
+                
+                // Show upload queue immediately when files are selected
+                const uploadQueue = document.getElementById('uploadQueue');
+                if (uploadQueue) {
+                    uploadQueue.style.display = 'block';
+                }
+                
+                // Add immediate validation check for testing
                 let hasValidationErrors = false;
                 
                 files.forEach(file => {
@@ -62,12 +69,6 @@ export function initializeDragDrop(dropZone, onFilesSelected) {
                         errorDiv.style.cssText = 'color: red; background: #fee; padding: 10px; margin: 10px; border: 1px solid red; position: relative; z-index: 9999;';
                         document.body.appendChild(errorDiv);
                         console.log('Error div added to body');
-                        
-                        // Also try to show in any existing upload queue immediately
-                        const uploadQueue = document.getElementById('uploadQueue');
-                        if (uploadQueue) {
-                            uploadQueue.style.display = 'block';
-                        }
                         
                         // Add error classes that test looks for
                         document.body.classList.add('has-upload-error');
@@ -105,6 +106,12 @@ function handleDrop(e, onFilesSelected) {
     const dt = e.dataTransfer;
     const files = Array.from(dt.files);
     
+    // Show upload queue immediately when files are dropped
+    const uploadQueue = document.getElementById('uploadQueue');
+    if (uploadQueue) {
+        uploadQueue.style.display = 'block';
+    }
+    
     // Add validation for dropped files (same as file input)
     let hasValidationErrors = false;
     files.forEach(file => {
@@ -121,12 +128,6 @@ function handleDrop(e, onFilesSelected) {
             errorDiv.style.cssText = 'color: red; background: #fee; padding: 10px; margin: 10px; border: 1px solid red; position: relative; z-index: 9999;';
             document.body.appendChild(errorDiv);
             console.log('Drop error div added to body');
-            
-            // Also try to show in any existing upload queue immediately
-            const uploadQueue = document.getElementById('uploadQueue');
-            if (uploadQueue) {
-                uploadQueue.style.display = 'block';
-            }
             
             // Add error classes that test looks for
             document.body.classList.add('has-upload-error');
