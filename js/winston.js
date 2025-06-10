@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
             addWinstonMessage(conversation[0].winston, true);
             setTimeout(() => {
                 showQuickResponses(conversation[0].quickOptions);
-            }, 2000);
-        }, 1000);
+            }, 500);
+        }, 200);
     }
     
     // Add Winston's message with typing animation
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 removeTypingIndicator();
                 addMessageToChat('winston', text);
-            }, 1500);
+            }, 300);
         } else {
             addMessageToChat('winston', text);
         }
@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     showInput();
                     showQuickResponses(conversation[1].quickOptions);
-                }, 2000);
-            }, 1000);
+                }, 500);
+            }, 300);
             conversationStep = 1;
         } else if (lowerText.includes('wisdom') || lowerText.includes('advice')) {
             // User wants to share wisdom
@@ -210,8 +210,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     showInput();
                     userInput.placeholder = "Share your wisdom or life advice...";
-                }, 1500);
-            }, 1000);
+                }, 300);
+            }, 200);
         } else if (lowerText.includes('funny') || lowerText.includes('travel') || lowerText.includes('embarrassing') || lowerText.includes('family')) {
             // User is ready to share a story
             const encouragement = getRandomResponse(winstonResponses.encouragement);
@@ -220,8 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     showInput();
                     userInput.placeholder = "Tell me your story! I'm all ears...";
-                }, 1500);
-            }, 1000);
+                }, 300);
+            }, 200);
         } else if (text.length > 50) {
             // User shared a substantial story
             userStory.content = text;
@@ -239,8 +239,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 addWinstonMessage(response);
                 setTimeout(() => {
                     showInput();
-                }, 1500);
-            }, 1000);
+                }, 300);
+            }, 200);
         }
     }
     

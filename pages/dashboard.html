@@ -188,8 +188,8 @@
             overflow: hidden;
         }
         
-        /* Left Side - Neo4j Graph Section */
-        .graph-section {
+        /* Simple Graph Section */
+        .simple-graph-section {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -197,151 +197,59 @@
             border-right: 1px solid #e0e0e0;
         }
         
-        /* Graph Header with Title and Controls */
         .graph-header {
-            padding: 20px;
+            padding: 16px 20px;
             border-bottom: 1px solid #e0e0e0;
             background-color: #f8f9fa;
-        }
-        
-        .graph-title-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
         }
         
-        .graph-title {
-            font-size: 20px;
+        .graph-header h2 {
+            margin: 0;
+            font-size: 18px;
             font-weight: 600;
             color: #333;
         }
         
         .graph-controls {
             display: flex;
-            gap: var(--spacing-xs);
-        }
-        
-        /* Search and Filters Row */
-        .search-filters-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .search-input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        
-        .hamburger-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid #ddd;
-            background-color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            transition: all 0.2s;
-        }
-        
-        .hamburger-btn:hover {
-            background-color: #f0f0f0;
-            border-color: #bbb;
-        }
-        
-        .hamburger-line {
-            width: 18px;
-            height: 2px;
-            background-color: #666;
-        }
-        
-        /* Node Type Filters */
-        .node-filters {
-            padding: 15px 20px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
             gap: 8px;
         }
         
-        .filter-btn {
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border: 1px solid var(--color-border);
-            background-color: var(--color-background-card);
-            border-radius: 6px;
+        .control-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: var(--font-size-sm);
+            font-size: 12px;
             transition: all 0.2s;
         }
         
-        .filter-btn:hover {
-            background-color: var(--color-background-hover);
-            border-color: var(--color-border-dark);
+        .control-btn:hover {
+            background: #f0f0f0;
+            border-color: #bbb;
         }
         
-        .filter-btn.active {
-            background-color: var(--color-background-selected);
-            border-color: var(--color-info);
-            color: var(--color-info);
-        }
-        
-        /* Graph Visualization Area */
-        .graph-visualization {
+        .graph-area {
             flex: 1;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .graph-canvas {
-            width: 100%;
-            height: 100%;
-            max-width: min(100%, 60vh);
-            max-height: min(100%, 60vh);
-            aspect-ratio: 1 / 1;
-            background-color: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
             position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            min-height: 400px;
         }
         
-        /* Mock graph */
-        .mock-graph {
-            position: relative;
-            width: 80%;
-            height: 80%;
+        .graph-footer {
+            padding: 8px 20px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+            font-size: 11px;
+            color: #666;
         }
         
-        .node {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
+        /* Removed old graph styles - NexusControl handles its own styling */
         
-        .node-1 { background-color: #f59e0b; top: 10%; left: 50%; transform: translateX(-50%); }
-        .node-2 { background-color: #8b5cf6; top: 35%; left: 20%; }
-        .node-3 { background-color: #8b5cf6; top: 35%; right: 20%; }
-        .node-4 { background-color: #10b981; bottom: 35%; left: 50%; transform: translateX(-50%); }
-        .node-5 { background-color: #3b82f6; bottom: 10%; left: 50%; transform: translateX(-50%); }
+        /* Neo4j Graph Container - NexusControl will inject its own styles */
         
         /* Right Side - Queue and History */
         .activity-section {
@@ -423,14 +331,7 @@
             color: #333;
         }
         
-        /* Graph Info Footer */
-        .graph-footer {
-            padding: 10px 20px;
-            border-top: 1px solid #e0e0e0;
-            background-color: #f8f9fa;
-            font-size: 12px;
-            color: #666;
-        }
+        /* Removed old graph footer - NexusControl has its own footer */
         
 
         /* User Dropdown Menu Styles */
@@ -572,10 +473,6 @@
                         <span>⋮</span>
                     </button>
                     <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <div class="dropdown-item" onclick="handleLogout(event)">
-                            <span class="dropdown-icon">🚪</span>
-                            <span>Logout</span>
-                        </div>
                         <div class="dropdown-item" onclick="window.location.href='settings.html'">
                             <span class="dropdown-icon">⚙️</span>
                             <span>Settings</span>
@@ -634,55 +531,21 @@
             <div class="dashboard-container">
                 <!-- Knowledge Management System - One Big Container -->
                 <div class="knowledge-system">
-                    <!-- Left Side - Neo4j Graph -->
-                    <div class="graph-section">
-                        <!-- Graph Header -->
+                    <!-- Simple Graph Section -->
+                    <div class="simple-graph-section">
                         <div class="graph-header">
-                            <div class="graph-title-row">
-                                <h2 class="graph-title">Knowledge Graph</h2>
-                                <div class="graph-controls">
-                                    <button class="infitwin-button infitwin-button--secondary infitwin-button--small">Center</button>
-                                    <button class="infitwin-button infitwin-button--secondary infitwin-button--small">Fit</button>
-                                    <button class="infitwin-button infitwin-button--secondary infitwin-button--small">Reset</button>
-                                    <button class="infitwin-button infitwin-button--warning infitwin-button--small">✨ Beautify</button>
-                                </div>
-                            </div>
-                            
-                            <!-- Search and Data Operations -->
-                            <div class="search-filters-row">
-                                <input type="text" class="search-input" placeholder="Search nodes and relationships...">
-                                <button class="hamburger-btn" onclick="togglePopup()">
-                                    <span class="hamburger-line"></span>
-                                    <span class="hamburger-line"></span>
-                                    <span class="hamburger-line"></span>
-                                </button>
+                            <h2>Knowledge Graph</h2>
+                            <div class="graph-controls">
+                                <button class="control-btn" onclick="centerGraph()">Center</button>
+                                <button class="control-btn" onclick="fitGraph()">Fit</button>
+                                <button class="control-btn" onclick="resetGraph()">Reset</button>
                             </div>
                         </div>
-                        
-                        <!-- Node Type Filters -->
-                        <div class="node-filters">
-                            <button class="filter-btn active">👤 Person</button>
-                            <button class="filter-btn active">📅 Event</button>
-                            <button class="filter-btn active">📍 Place</button>
-                            <button class="filter-btn active">💭 Memory</button>
+                        <div class="graph-area">
+                            <svg id="knowledge-graph" width="100%" height="100%"></svg>
                         </div>
-                        
-                        <!-- Graph Visualization -->
-                        <div class="graph-visualization">
-                            <div class="graph-canvas" id="neo4j-graph-container">
-                                <div class="mock-graph">
-                                    <div class="node node-1">😊</div>
-                                    <div class="node node-2">👤</div>
-                                    <div class="node node-3">👤</div>
-                                    <div class="node node-4">⭐</div>
-                                    <div class="node node-5">📘</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Graph Footer -->
                         <div class="graph-footer">
-                            <span>Nodes: 5 • Edges: 5 • Zoom: 100%</span>
+                            <span id="graph-stats">Nodes: 7 • Edges: 7</span>
                         </div>
                     </div>
                     
@@ -769,58 +632,107 @@
             console.log('📋 Advanced dashboard with widgets initialized');
         });
 
-        // Initialize Nexus Control for Dashboard
-        function initializeNexusControl() {
-            console.log('🎯 Initializing Nexus Control for dashboard...');
-            const graphContainer = document.getElementById('neo4j-graph-container');
+        // Initialize Simple Knowledge Graph
+        function initializeKnowledgeGraph() {
+            console.log('🎯 Initializing simple knowledge graph...');
             
-            if (graphContainer) {
-                console.log('✅ Dashboard graph container found');
-                
-                try {
-                    const nexusViz = new NexusControl(graphContainer, {
-                        width: graphContainer.offsetWidth || 800,
-                        height: 400, // Appropriate height for dashboard
-                        mode: 'dashboard',
-                        showHistory: true,
-                        showControls: true
-                    });
-                    console.log('✅ Dashboard Nexus visualization created successfully');
-                    
-                    // Store globally for debugging and external access
-                    window.dashboardNexusViz = nexusViz;
-                    
-                    // Hook for dashboard data updates
-                    window.updateDashboardGraph = function(data) {
-                        if (nexusViz && data) {
-                            nexusViz.setData(data);
-                            console.log('📊 Dashboard graph updated with new data');
-                        }
-                    };
-                    
-                    // Hook for adding new nodes
-                    window.addDashboardNode = function(node) {
-                        if (nexusViz && node) {
-                            nexusViz.addNode(node);
-                            console.log('➕ Node added to dashboard graph:', node);
-                        }
-                    };
-                    
-                    // Hook for adding new relationships
-                    window.addDashboardEdge = function(edge) {
-                        if (nexusViz && edge) {
-                            nexusViz.addEdge(edge);
-                            console.log('🔗 Edge added to dashboard graph:', edge);
-                        }
-                    };
-                    
-                } catch (error) {
-                    console.error('❌ Failed to initialize dashboard Nexus visualization:', error);
-                }
+            // Load D3 if not already loaded
+            if (!window.d3) {
+                const script = document.createElement('script');
+                script.src = 'https://d3js.org/d3.v7.min.js';
+                script.onload = createSimpleGraph;
+                document.head.appendChild(script);
             } else {
-                console.error('❌ Dashboard graph container not found!');
+                createSimpleGraph();
             }
         }
+        
+        function createSimpleGraph() {
+            const svg = d3.select('#knowledge-graph');
+            const container = svg.node().parentElement;
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            
+            // Sample data
+            const nodes = [
+                { id: 'you', name: 'You', type: 'person', x: width/2, y: height/2 },
+                { id: 'winston', name: 'Winston', type: 'ai', x: width/2 - 100, y: height/2 - 80 },
+                { id: 'childhood', name: 'Childhood', type: 'memory', x: width/2 + 80, y: height/2 - 100 },
+                { id: 'family', name: 'Family', type: 'people', x: width/2 - 120, y: height/2 + 60 },
+                { id: 'school', name: 'School', type: 'place', x: width/2 + 100, y: height/2 + 80 },
+                { id: 'work', name: 'Work', type: 'place', x: width/2 - 60, y: height/2 + 120 },
+                { id: 'hobbies', name: 'Hobbies', type: 'activity', x: width/2 + 120, y: height/2 - 40 }
+            ];
+            
+            const links = [
+                { source: 'you', target: 'winston' },
+                { source: 'you', target: 'childhood' },
+                { source: 'you', target: 'family' },
+                { source: 'you', target: 'school' },
+                { source: 'you', target: 'work' },
+                { source: 'you', target: 'hobbies' },
+                { source: 'childhood', target: 'family' }
+            ];
+            
+            // Create links
+            svg.selectAll('line')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('x1', d => nodes.find(n => n.id === d.source).x)
+                .attr('y1', d => nodes.find(n => n.id === d.source).y)
+                .attr('x2', d => nodes.find(n => n.id === d.target).x)
+                .attr('y2', d => nodes.find(n => n.id === d.target).y)
+                .attr('stroke', '#999')
+                .attr('stroke-width', 2);
+            
+            // Create nodes
+            const nodeGroups = svg.selectAll('g.node')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'node')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`);
+            
+            nodeGroups.append('circle')
+                .attr('r', 25)
+                .attr('fill', d => {
+                    const colors = {
+                        person: '#6B46C1',
+                        ai: '#10B981', 
+                        memory: '#F59E0B',
+                        people: '#3B82F6',
+                        place: '#EF4444',
+                        activity: '#8B5CF6'
+                    };
+                    return colors[d.type] || '#6B7280';
+                })
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 3);
+            
+            nodeGroups.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', 5)
+                .attr('fill', 'white')
+                .attr('font-size', '10px')
+                .attr('font-weight', 'bold')
+                .text(d => d.name.length > 8 ? d.name.substring(0, 6) + '...' : d.name);
+            
+            console.log('✅ Simple knowledge graph created');
+        }
+        
+        // Graph control functions
+        window.centerGraph = function() {
+            console.log('Center graph clicked');
+        };
+        
+        window.fitGraph = function() {
+            console.log('Fit graph clicked');  
+        };
+        
+        window.resetGraph = function() {
+            console.log('Reset graph clicked');
+        };
 
         // Data Operations Modal Function
         window.togglePopup = function() {
@@ -960,28 +872,10 @@
             });
         }
 
-        // Graph control handlers
-        document.addEventListener('DOMContentLoaded', function() {
-            const graphControls = document.querySelectorAll('.graph-controls .infitwin-button');
-            graphControls.forEach(control => {
-                control.addEventListener('click', function() {
-                    const action = this.textContent.trim();
-                    console.log(`Graph action: ${action}`);
-                    // Add graph control logic here
-                });
-            });
-
-            // Filter button handlers
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                    const filterType = this.textContent.trim();
-                    console.log(`Filter toggled: ${filterType}`);
-                    // Add filter logic here
-                });
-            });
-        });
+        // NexusControl handles all graph interactions internally
     </script>
+    
+    <!-- Centralized Navigation -->
+    <script src="../js/navigation.js"></script>
 </body>
 </html>

@@ -1,21 +1,36 @@
-// Email Verification Page JavaScript
+// Email Verification Page JavaScript - Firebase v8 Compatible
 
-import { auth } from './firebase-config.js';
-import { sendEmailVerification, onAuthStateChanged } from 'firebase/auth';
+// Wait for Firebase to be available
+function waitForFirebase() {
+    return new Promise((resolve) => {
+        if (window.firebase) {
+            resolve();
+        } else {
+            setTimeout(() => waitForFirebase().then(resolve), 100);
+        }
+    });
+}
 
-document.addEventListener('DOMContentLoaded', function() {
+let auth;
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // Wait for Firebase to be available
+    await waitForFirebase();
+    auth = firebase.auth();
+    
     // Get user email from localStorage or auth state
     const storedEmail = localStorage.getItem('userEmail');
     const emailDisplay = document.querySelector('.user-email');
     const resendButton = document.querySelector('.resend-button');
     const skipButton = document.querySelector('.skip-button');
+    const bypassAuthButton = document.querySelector('.bypass-auth-button');
     const checkButton = document.querySelector('.check-inbox-button');
     const notification = document.querySelector('.verification-notification');
     
     let currentUser = null;
     
     // Monitor auth state
-    onAuthStateChanged(auth, (user) => {
+    auth.onAuthStateChanged((user) => {
         if (user) {
             currentUser = user;
             emailDisplay.textContent = user.email;
@@ -44,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             try {
-                await sendEmailVerification(currentUser);
+                await currentUser.sendEmailVerification();
                 showNotification('Verification email sent! Check your inbox.', 'success');
                 
                 // Update button state
@@ -97,6 +112,18 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Skipping verification for demo...', 'info');
             setTimeout(() => {
                 window.location.href = './alpha-welcome.html';
+            }, 1500);
+        });
+    }
+    
+    // Bypass all auth checks (for testing)
+    if (bypassAuthButton) {
+        bypassAuthButton.addEventListener('click', function() {
+            // Set bypass flag in localStorage
+            localStorage.setItem('bypass_auth', 'true');
+            showNotification('Auth bypass enabled! Redirecting to dashboard...', 'success');
+            setTimeout(() => {
+                window.location.href = './dashboard.html';
             }, 1500);
         });
     }

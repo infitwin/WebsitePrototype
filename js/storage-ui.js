@@ -37,9 +37,16 @@ const FILE_TYPE_COLORS = {
 /**
  * Create a donut chart for storage breakdown
  */
-export function createStorageDonutChart(containerId) {
+export async function createStorageDonutChart(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
+    
+    // Import auth to check if user is authenticated
+    const { auth } = await import('./firebase-config.js');
+    if (!auth.currentUser) {
+        console.log('📊 Skipping chart creation - no authenticated user');
+        return;
+    }
 
     container.innerHTML = `
         <div class="storage-donut-wrapper">
@@ -122,7 +129,13 @@ export function createStorageDonutChart(containerId) {
         </style>
     `;
 
-    updateDonutChart(container);
+    try {
+        await updateDonutChart(container);
+    } catch (error) {
+        console.error('Error updating donut chart:', error);
+        // Show empty state in chart
+        container.querySelector('.donut-percentage').textContent = '0%';
+    }
 }
 
 async function updateDonutChart(container) {

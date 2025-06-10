@@ -662,6 +662,47 @@
             await initializeFileBrowser();
         });
 
+        function showNotAuthenticatedState() {
+            console.log('🔐 Showing not authenticated state');
+            
+            // Hide loading state
+            const loadingState = document.getElementById('loadingState');
+            if (loadingState) {
+                loadingState.style.display = 'none';
+            }
+            
+            // Show empty state with auth message
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = 'block';
+                emptyState.innerHTML = `
+                    <div class="empty-icon">🔒</div>
+                    <h3>Authentication Required</h3>
+                    <p>Please log in to view your files</p>
+                    <div id="login-button" style="margin-top: 1.5rem;"></div>
+                `;
+                
+                // Add login button
+                const loginBtn = Button.primary({
+                    text: 'Go to Login',
+                    onClick: () => {
+                        window.location.href = '/pages/auth.html';
+                    }
+                });
+                const loginContainer = document.getElementById('login-button');
+                if (loginContainer) {
+                    loginContainer.appendChild(loginBtn.element);
+                }
+            }
+            
+            // Hide other UI elements
+            const elements = ['filesContainer', 'storageInfo', 'uploadQueue'];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+        }
+
         function initializeButtons() {
             // Choose Files Button
             const chooseFilesBtn = Button.secondary({
@@ -708,26 +749,29 @@
             const { auth } = await import('../js/firebase-config.js');
             console.log('🔐 Firebase auth loaded, current user:', auth.currentUser ? 'Yes' : 'No');
             
-            // If no current user, wait a bit for auth state to resolve (unless testing)
-            if (!auth.currentUser && !window.localStorage.getItem('bypass_auth')) {
-                console.log('⏳ Waiting for auth state...');
-                await new Promise(resolve => {
+            // Always wait for auth state to fully resolve
+            if (!auth.currentUser) {
+                console.log('⏳ Waiting for auth state to resolve...');
+                const user = await new Promise((resolve) => {
                     const unsubscribe = auth.onAuthStateChanged(user => {
-                        if (user) {
-                            console.log('✅ Auth state resolved, user:', user.email);
-                            unsubscribe();
-                            resolve();
-                        } else {
-                            setTimeout(() => {
-                                console.log('❌ No user after waiting');
-                                unsubscribe();
-                                resolve();
-                            }, 3000);
-                        }
+                        console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+                        unsubscribe();
+                        resolve(user);
                     });
+                    
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        console.log('⏰ Auth state timeout');
+                        unsubscribe();
+                        resolve(null);
+                    }, 5000);
                 });
-            } else if (window.localStorage.getItem('bypass_auth')) {
-                console.log('🔧 Skipping auth state wait for testing');
+                
+                if (!user) {
+                    console.log('❌ No authenticated user found');
+                    showNotAuthenticatedState();
+                    return;
+                }
             }
             
             // Update user info in page header

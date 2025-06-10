@@ -42,9 +42,9 @@ class NexusControl {
   createContainer() {
     this.container.innerHTML = `
       <div class="nexus-control" style="
-        width: ${this.options.width}px;
-        height: ${this.options.height}px;
-        margin: 0 auto;
+        width: ${this.options.mode === 'dashboard' ? '100%' : this.options.width + 'px'};
+        height: ${this.options.mode === 'dashboard' ? '100%' : this.options.height + 'px'};
+        margin: ${this.options.mode === 'dashboard' ? '0' : '0 auto'};
         background: white;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);

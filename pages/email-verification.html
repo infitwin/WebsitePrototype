@@ -323,6 +323,12 @@
                     <button class="check-inbox-button">
                         I've Verified My Email
                     </button>
+                    <button class="skip-button" style="margin-top: 10px; background: #6B7280; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                        Skip for Testing
+                    </button>
+                    <button class="bypass-auth-button" style="margin-top: 10px; background: #DC2626; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                        Bypass All Auth (Testing)
+                    </button>
                     <div class="verification-notification"></div>
                     <div class="help-text">
                         • Check your spam or junk folder<br>
@@ -347,6 +353,28 @@
         </div>
     </div>
 
-    <script type="module" src="../js/email-verification.js"></script>
+    <!-- Firebase SDK v8 Compatibility -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        console.log('Firebase initialized');
+    </script>
+
+    <script src="../js/email-verification.js"></script>
 </body>
 </html>
