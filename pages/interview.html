@@ -607,7 +607,7 @@
         }
 
         .interview-selection-content {
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             max-height: 90vh;
             background: white;
@@ -731,6 +731,8 @@
             cursor: pointer;
             transition: all 0.2s ease;
             background: white;
+            min-width: 0;
+            overflow: hidden;
         }
 
         .interview-card:hover {
@@ -763,6 +765,8 @@
 
         .interview-card-content {
             flex: 1;
+            min-width: 0;
+            overflow: hidden;
         }
 
         .interview-card-title {
@@ -776,6 +780,7 @@
             font-size: 14px;
             color: #635bff;
             margin-bottom: 2px;
+            white-space: nowrap;
         }
 
         .interview-card-date {
