@@ -1460,8 +1460,8 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
-    <!-- Load Nexus Control BEFORE Firebase modules to avoid conflicts -->
-    <script src="../js/components/Neo4jCompactControl.js"></script>
+    <!-- Load Nexus Control (Browser Compatible) -->
+    <script src="../js/components/Neo4jCompactControl-browser.js"></script>
     
     <!-- Load Firebase Configuration and Services -->
     <script type="module" src="../js/config/firebase-config.js"></script>
@@ -1507,21 +1507,40 @@
                     const containerHeight = graphContainer.offsetHeight;
                     
                     console.log('🚀 Initializing COMPLETE Neo4jCompactControl (not split)');
+                    console.log(`Container dimensions: ${containerWidth}x${containerHeight}`);
                     
-                    // Create React element for Neo4jCompactControl
-                    const nexusElement = React.createElement(Neo4jCompactControl, {
-                        data: window.mockInterviewData || [],
-                        width: containerWidth,
-                        height: containerHeight,
-                        onNodeSelect: (node) => console.log('Node selected:', node),
-                        onEdgeSelect: (edge) => console.log('Edge selected:', edge)
-                    });
-                    
-                    // Render React component
-                    const root = ReactDOM.createRoot(graphContainer);
-                    root.render(nexusElement);
-                    
-                    console.log('✅ Interview Neo4j visualization created successfully');
+                    // Wait for Neo4jCompactControl to be loaded
+                    setTimeout(() => {
+                        if (typeof Neo4jCompactControl !== 'undefined') {
+                            // Create React element for Neo4jCompactControl
+                            const nexusElement = React.createElement(Neo4jCompactControl, {
+                                data: window.mockInterviewData || [],
+                                width: containerWidth,
+                                height: containerHeight,
+                                onNodeSelect: (node) => console.log('Node selected:', node),
+                                onEdgeSelect: (edge) => console.log('Edge selected:', edge)
+                            });
+                            
+                            // Render React component
+                            const root = ReactDOM.createRoot(graphContainer);
+                            root.render(nexusElement);
+                            
+                            console.log('✅ Interview Neo4j visualization created successfully');
+                        } else {
+                            console.error('❌ Neo4jCompactControl not loaded');
+                            
+                            // Fallback: Show placeholder
+                            graphContainer.innerHTML = `
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; 
+                                            background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px;">
+                                    <div style="text-align: center; color: #6c757d;">
+                                        <h3>Neo4j Control Loading...</h3>
+                                        <p>Setting up React environment</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }, 1000);
                     
                     // Store globally for debugging and external access
                     window.interviewNexusViz = root;
