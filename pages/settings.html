@@ -751,6 +751,7 @@
                             <label class="form-label" for="newPassword">New Password</label>
                             <input type="password" class="infitwin-form__input" id="newPassword" placeholder="Enter new password">
                             <div class="form-help">At least 8 characters</div>
+                            <div class="form-error">Password validation error</div>
                             <div class="password-strength" id="passwordStrength">
                                 <div class="strength-bar">
                                     <div class="strength-fill"></div>
@@ -1302,6 +1303,12 @@
             
             if (newPassword !== confirmPassword) {
                 showFieldError('confirmPassword', 'Passwords do not match');
+                return;
+            }
+            
+            // Prevent reusing current password (security best practice)
+            if (newPassword === currentPassword) {
+                showFieldError('newPassword', 'New password must be different from current password');
                 return;
             }
             
