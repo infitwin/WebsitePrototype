@@ -69,7 +69,7 @@ class AudioWebSocketService {
             this.handleMessage(message);
           }
         } catch (err) {
-          console.error('Failed to process audio message:', err);
+          this.logger.error('Failed to process audio message:', err);
           if (this.onError) {
             this.onError(err);
           }
@@ -77,7 +77,7 @@ class AudioWebSocketService {
       };
 
       this.ws.onerror = (event) => {
-        console.error('Audio WebSocket error:', event);
+        this.logger.error('Audio WebSocket error:', event);
         if (this.onError) {
           this.onError(new Error('Audio WebSocket connection error'));
         }
@@ -101,7 +101,7 @@ class AudioWebSocketService {
       };
       
     } catch (err) {
-      console.error('Failed to create Audio WebSocket:', err);
+      this.logger.error('Failed to create Audio WebSocket:', err);
       if (this.onError) {
         this.onError(err);
       }
