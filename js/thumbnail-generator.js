@@ -224,6 +224,9 @@ export function createThumbnailElement(file) {
     const container = document.createElement('div');
     container.className = 'file-thumbnail';
 
+    const fileType = getFileType(file);
+    const isImageFile = canGenerateThumbnail(fileType);
+
     if (file.thumbnailURL) {
         // Show actual thumbnail
         const img = document.createElement('img');
@@ -234,7 +237,21 @@ export function createThumbnailElement(file) {
         
         // Add error fallback
         img.onerror = function() {
-            container.innerHTML = `<div class="thumbnail-fallback">${getFallbackIcon(getFileType(file))}</div>`;
+            container.innerHTML = `<div class="thumbnail-fallback">${getFallbackIcon(fileType)}</div>`;
+        };
+        
+        container.appendChild(img);
+    } else if (isImageFile && file.downloadURL) {
+        // For image files without thumbnails, show the actual image
+        const img = document.createElement('img');
+        img.src = file.downloadURL;
+        img.alt = file.fileName;
+        img.className = 'thumbnail-image';
+        img.loading = 'lazy'; // Lazy loading for performance
+        
+        // Add error fallback
+        img.onerror = function() {
+            container.innerHTML = `<div class="thumbnail-fallback">${getFallbackIcon(fileType)}</div>`;
         };
         
         container.appendChild(img);
@@ -242,7 +259,7 @@ export function createThumbnailElement(file) {
         // Show fallback icon
         const icon = document.createElement('div');
         icon.className = 'thumbnail-fallback';
-        icon.textContent = getFallbackIcon(getFileType(file));
+        icon.textContent = getFallbackIcon(fileType);
         container.appendChild(icon);
     }
 
