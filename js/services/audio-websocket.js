@@ -171,26 +171,45 @@ class AudioWebSocketService {
       // Pad header to 200 bytes
       const headerStr = JSON.stringify(header).padEnd(200, ' ');
       
-      // Convert base64 to binary if needed
+      // Convert audio data to Uint8Array
       let binaryData;
       if (typeof audioData === 'string') {
         // Base64 string - convert to binary
         const binaryString = atob(audioData);
-        const bytes = new Uint8Array(binaryString.length);
+        binaryData = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+          binaryData[i] = binaryString.charCodeAt(i);
         }
-        binaryData = bytes;
-      } else {
-        // Already binary
+      } else if (audioData instanceof ArrayBuffer) {
+        // ArrayBuffer - convert to Uint8Array
+        binaryData = new Uint8Array(audioData);
+      } else if (audioData instanceof Uint8Array) {
+        // Already Uint8Array
         binaryData = audioData;
+      } else {
+        throw new Error('Unsupported audio data type: ' + typeof audioData);
       }
 
       // Combine header and audio data
       const headerBytes = new TextEncoder().encode(headerStr);
+      
+      // Validate sizes before combining
+      console.log(`Audio chunk ${chunkIndex}: header=${headerBytes.length}bytes, audio=${binaryData.length}bytes`);
+      
       const combinedData = new Uint8Array(headerBytes.length + binaryData.length);
-      combinedData.set(headerBytes, 0);
-      combinedData.set(binaryData, headerBytes.length);
+      
+      try {
+        combinedData.set(headerBytes, 0);
+        combinedData.set(binaryData, headerBytes.length);
+      } catch (error) {
+        console.error('Buffer combination error:', {
+          headerLength: headerBytes.length,
+          audioLength: binaryData.length,
+          combinedLength: combinedData.length,
+          error
+        });
+        throw error;
+      }
 
       // Send as binary frame
       this.ws.send(combinedData);
