@@ -172,11 +172,38 @@ export async function createAndUploadThumbnail(imageFile, fileId) {
 }
 
 /**
+ * Get file type from file object (handles different field names)
+ * @param {Object} file - File object
+ * @returns {string} MIME type or best guess
+ */
+function getFileType(file) {
+    // Try explicit type fields first
+    let fileType = file.fileType || file.mimeType || file.type;
+    
+    // If no type field, infer from filename
+    if (!fileType && file.fileName) {
+        const fileName = file.fileName.toLowerCase();
+        if (fileName.includes('.jpg') || fileName.includes('.jpeg')) return 'image/jpeg';
+        if (fileName.includes('.png')) return 'image/png';
+        if (fileName.includes('.gif')) return 'image/gif';
+        if (fileName.includes('.webp')) return 'image/webp';
+        if (fileName.includes('.pdf')) return 'application/pdf';
+        if (fileName.includes('.doc') || fileName.includes('.docx')) return 'application/msword';
+        if (fileName.includes('.xls') || fileName.includes('.xlsx')) return 'application/vnd.ms-excel';
+        if (fileName.includes('.txt')) return 'text/plain';
+        if (fileName.includes('.epub')) return 'application/epub+zip';
+    }
+    
+    return fileType || 'application/octet-stream';
+}
+
+/**
  * Get fallback icon for non-image files
  * @param {string} mimeType - File MIME type
  * @returns {string} Emoji icon for file type
  */
 export function getFallbackIcon(mimeType) {
+    if (!mimeType || typeof mimeType !== 'string') return '📄'; // Default fallback
     if (mimeType.includes('pdf')) return '📄';
     if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
     if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
@@ -206,7 +233,7 @@ export function createThumbnailElement(file) {
         
         // Add error fallback
         img.onerror = function() {
-            container.innerHTML = `<div class="thumbnail-fallback">${getFallbackIcon(file.fileType)}</div>`;
+            container.innerHTML = `<div class="thumbnail-fallback">${getFallbackIcon(getFileType(file))}</div>`;
         };
         
         container.appendChild(img);
@@ -214,7 +241,7 @@ export function createThumbnailElement(file) {
         // Show fallback icon
         const icon = document.createElement('div');
         icon.className = 'thumbnail-fallback';
-        icon.textContent = getFallbackIcon(file.fileType);
+        icon.textContent = getFallbackIcon(getFileType(file));
         container.appendChild(icon);
     }
 

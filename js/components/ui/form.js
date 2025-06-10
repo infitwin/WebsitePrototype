@@ -600,3 +600,8 @@ export function createForm(config) {
   
   return formGroup;
 }
+
+// Register component types to prevent duplicates (after class declarations)
+ComponentRegistry.registerType('FormInput', FormInput);
+ComponentRegistry.registerType('FormGroup', FormGroup);
+ComponentRegistry.registerType('FormValidator', FormValidator);

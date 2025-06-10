@@ -75,7 +75,8 @@ class ComponentRegistryManager {
     );
     
     if (this.isDevelopment) {
-      console.log(`📦 Created ${typeName} instance (${instance.config.id})`);
+      const instanceId = instance.config?.id || 'unknown-id';
+      console.log(`📦 Created ${typeName} instance (${instanceId})`);
     }
   }
   
@@ -89,7 +90,8 @@ class ComponentRegistryManager {
       this.stats.activeInstances--;
       
       if (this.isDevelopment) {
-        console.log(`🗑️ Destroyed ${typeName} instance (${instance.config.id})`);
+        const instanceId = instance.config?.id || 'unknown-id';
+        console.log(`🗑️ Destroyed ${typeName} instance (${instanceId})`);
       }
     }
   }
@@ -136,7 +138,7 @@ class ComponentRegistryManager {
           matches = false;
         }
         
-        if (criteria.id && instance.config.id !== criteria.id) {
+        if (criteria.id && instance.config?.id !== criteria.id) {
           matches = false;
         }
         
@@ -156,7 +158,7 @@ class ComponentRegistryManager {
           results.push({
             type: typeName,
             instance: instance,
-            id: instance.config.id
+            id: instance.config?.id || 'unknown-id'
           });
         }
       });
@@ -203,7 +205,7 @@ class ComponentRegistryManager {
     const allIds = new Map();
     this.instances.forEach((instanceSet, typeName) => {
       instanceSet.forEach(instance => {
-        const id = instance.config.id;
+        const id = instance.config?.id || 'unknown-id';
         if (allIds.has(id)) {
           issues.push({
             type: 'duplicate_id',

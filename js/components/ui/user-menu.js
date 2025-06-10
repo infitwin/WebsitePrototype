@@ -21,9 +21,6 @@
 import { BaseComponent } from '../core/base-component.js';
 import { ComponentRegistry } from '../core/component-registry.js';
 
-// Register component type to prevent duplicates
-ComponentRegistry.registerType('UserMenu', UserMenu);
-
 export class UserMenu extends BaseComponent {
   constructor(options = {}) {
     super({
@@ -325,6 +322,9 @@ export class UserMenu extends BaseComponent {
     document.removeEventListener('click', this.boundCloseHandler);
   }
 }
+
+// Register component type to prevent duplicates (after class declaration)
+ComponentRegistry.registerType('UserMenu', UserMenu);
 
 // Export convenience methods
 export function createUserMenu(options = {}) {

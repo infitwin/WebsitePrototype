@@ -137,7 +137,7 @@ class AudioWebSocketService {
         turnId: 'pending****',
         config: {
           sampleRate: 16000,
-          encoding: 'WEBM_OPUS',
+          encoding: 'LINEAR16',
           language: 'en-US',
           mode: 'speech-to-text'
         }

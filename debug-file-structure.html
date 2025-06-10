@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug File Structure</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .success { background: #4CAF50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        #fileData { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success">
+            <h1>🔍 File Structure Debug</h1>
+            <p>Checking the structure of files returned from Firebase</p>
+        </div>
+        
+        <div id="fileData">
+            <p>Loading file data...</p>
+        </div>
+    </div>
+
+    <!-- Import map for Firebase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/storage": "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js",
+            "firebase/functions": "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import { getUserFiles } from './js/file-service.js';
+        import { guardPage } from './js/auth-guard.js';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Checking authentication...');
+            
+            const allowed = await guardPage({
+                requireVerified: false,
+                redirectTo: '/pages/auth.html'
+            });
+            
+            if (!allowed) {
+                document.getElementById('fileData').innerHTML = '<p style="color: red;">Not authenticated. Please log in first.</p>';
+                return;
+            }
+
+            try {
+                console.log('Getting user files...');
+                const result = await getUserFiles({ pageSize: 5 });
+                
+                document.getElementById('fileData').innerHTML = `
+                    <h3>📊 File Query Results</h3>
+                    <p><strong>Total files found:</strong> ${result.files.length}</p>
+                    <p><strong>Has more:</strong> ${result.hasMore}</p>
+                    
+                    <h4>First 3 files structure:</h4>
+                    <pre>${JSON.stringify(result.files.slice(0, 3), null, 2)}</pre>
+                    
+                    <h4>Field Names in First File:</h4>
+                    <pre>${result.files.length > 0 ? Object.keys(result.files[0]).join(', ') : 'No files'}</pre>
+                    
+                    <h4>File Type Fields:</h4>
+                    <ul>
+                        ${result.files.slice(0, 5).map(file => 
+                            `<li><strong>${file.fileName || 'No name'}:</strong> 
+                             fileType="${file.fileType || 'undefined'}", 
+                             mimeType="${file.mimeType || 'undefined'}", 
+                             type="${file.type || 'undefined'}"</li>`
+                        ).join('')}
+                    </ul>
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('fileData').innerHTML = `
+                    <p style="color: red;">Error loading files: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

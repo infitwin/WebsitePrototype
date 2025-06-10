@@ -12,9 +12,8 @@ import { validateDesignTokens } from './design-token-validator.js';
 
 export class BaseComponent {
   constructor(options = {}) {
-    // Enforce component registration to prevent duplicates
+    // Set component type
     this.componentType = this.constructor.name;
-    ComponentRegistry.register(this.componentType, this);
     
     // Default configuration that all components share
     this.config = {
@@ -25,6 +24,9 @@ export class BaseComponent {
       visible: options.visible !== false, // Default to visible
       ...options
     };
+    
+    // Enforce component registration to prevent duplicates (after config is set)
+    ComponentRegistry.register(this.componentType, this);
     
     // Shared state management
     this.state = {};

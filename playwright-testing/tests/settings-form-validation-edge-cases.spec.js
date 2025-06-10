@@ -214,9 +214,17 @@ test.describe('Settings Form Validation Edge Cases', () => {
   });
 
   test('should handle concurrent form modifications', async ({ page }) => {
+    // Disable timezone monitoring to allow test modifications
+    await page.evaluate(() => {
+      window.disableTimezoneMonitoring = true;
+    });
+    
     const displayName = page.locator('#displayName');
     const email = page.locator('#emailAddress');
     const phone = page.locator('#phoneNumber');
+    
+    // Wait for page to be fully loaded
+    await page.waitForTimeout(100);
     
     // Modify all fields concurrently
     await Promise.all([
@@ -224,6 +232,9 @@ test.describe('Settings Form Validation Edge Cases', () => {
       email.fill('concurrent@test.com'),
       phone.fill('111-222-3333'),
     ]);
+    
+    // Give time for any async operations to complete
+    await page.waitForTimeout(200);
     
     // Values should all be updated
     expect(await displayName.inputValue()).toBe('Concurrent Test User');

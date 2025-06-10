@@ -1,0 +1,46 @@
+/**
+ * Neo4j Diagram Custom Styles
+ */
+
+/* Vis-network container */
+.vis-network {
+  outline: none !important;
+}
+
+/* Override vis-network tooltip styles */
+.vis-tooltip {
+  position: absolute;
+  visibility: hidden;
+  padding: 8px 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.9);
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 5;
+  max-width: 280px;
+  white-space: normal;
+}
+
+/* Custom node hover effect */
+.vis-network canvas {
+  cursor: default;
+}
+
+/* Button hover effects */
+button {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: all 200ms ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}

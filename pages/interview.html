@@ -1221,8 +1221,8 @@
         }, 3000);
     </script>
     
-    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
-    <script src="../js/neo4j-init.js"></script>
+    <!-- Load Nexus Control BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/components/NexusControl.js"></script>
     
     <!-- Load Firebase Configuration and Services -->
     <script type="module" src="../js/config/firebase-config.js"></script>
@@ -1231,7 +1231,7 @@
     <!-- Load Audio and WebSocket Services -->
     <script src="../js/utils/audio-logger.js"></script>
     <script src="../js/services/websocket-manager.js"></script>
-    <script src="../js/services/audio-recorder.js"></script>
+    <script src="../js/services/audio-recorder-linear16.js"></script>
     <script src="../js/services/tts-player.js"></script>
     <script src="../js/services/orchestrator-websocket.js?v=3"></script>
     <script src="../js/services/audio-websocket.js"></script>
@@ -1252,31 +1252,56 @@
             }
         });
         
-        // Initialize Neo4j Graph Visualization
+        // Initialize Nexus Graph Visualization
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 Initializing Neo4j in interview page...');
+            console.log('🎯 Initializing Nexus in interview page...');
             const graphContainer = document.getElementById('interview-neo4j-container');
             
             if (graphContainer) {
-                console.log('✅ Interview Neo4j container found');
+                console.log('✅ Interview Nexus container found');
                 
                 try {
-                    const neo4jViz = new Neo4jVisualization(graphContainer, {
+                    const nexusViz = new NexusControl(graphContainer, {
                         width: graphContainer.offsetWidth || 1200,
                         height: 340, // Match the updated graph-container height
-                        showFilters: true,
-                        showSearch: true
+                        mode: 'interview',
+                        showHistory: true,
+                        showControls: true
                     });
-                    console.log('✅ Interview Neo4j visualization created successfully');
+                    console.log('✅ Interview Nexus visualization created successfully');
                     
-                    // Store globally for debugging
-                    window.interviewNeo4jViz = neo4jViz;
+                    // Store globally for debugging and external access
+                    window.interviewNexusViz = nexusViz;
+                    
+                    // Hook for interview data updates
+                    window.updateInterviewGraph = function(data) {
+                        if (nexusViz && data) {
+                            nexusViz.setData(data);
+                            console.log('📊 Interview graph updated with new data');
+                        }
+                    };
+                    
+                    // Hook for adding new nodes during interview
+                    window.addInterviewNode = function(node) {
+                        if (nexusViz && node) {
+                            nexusViz.addNode(node);
+                            console.log('➕ Node added to interview graph:', node);
+                        }
+                    };
+                    
+                    // Hook for adding new relationships during interview
+                    window.addInterviewEdge = function(edge) {
+                        if (nexusViz && edge) {
+                            nexusViz.addEdge(edge);
+                            console.log('🔗 Edge added to interview graph:', edge);
+                        }
+                    };
                     
                 } catch (error) {
-                    console.error('❌ Failed to initialize interview Neo4j visualization:', error);
+                    console.error('❌ Failed to initialize interview Nexus visualization:', error);
                 }
             } else {
-                console.error('❌ Interview Neo4j container not found!');
+                console.error('❌ Interview Nexus container not found!');
             }
         });
 
@@ -1380,10 +1405,11 @@
             try {
                 console.log('Initializing WebsitePrototype audio services...');
                 
-                // Initialize Audio Recorder
-                audioRecorder = new AudioRecorder({
+                // Initialize LINEAR16 Audio Recorder
+                audioRecorder = new AudioRecorderLinear16({
                     chunkInterval: 100,
-                    audioBitsPerSecond: 16000
+                    sampleRate: 16000,
+                    encoding: 'LINEAR16'
                 });
                 
                 try {

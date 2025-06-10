@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Examine First File</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .field { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .undefined { background: #ffebee; }
+        .defined { background: #e8f5e8; }
+    </style>
+</head>
+<body>
+    <h1>Examine First File Data</h1>
+    <div id="results">Loading...</div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import { getUserFiles } from './js/file-service.js';
+        import { guardPage } from './js/auth-guard.js';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const allowed = await guardPage({ requireVerified: false });
+                if (!allowed) {
+                    document.getElementById('results').innerHTML = 'Not authenticated';
+                    return;
+                }
+
+                const result = await getUserFiles({ pageSize: 1 });
+                
+                if (result.files.length === 0) {
+                    document.getElementById('results').innerHTML = 'No files found';
+                    return;
+                }
+                
+                const file = result.files[0];
+                
+                let html = `<h3>First file analysis: ${file.fileName}</h3>`;
+                
+                // Check each field
+                const fieldsToCheck = [
+                    'fileType', 'mimeType', 'type', 'category', 'fileName', 
+                    'fileSize', 'uploadedAt', 'downloadURL', 'thumbnailURL',
+                    'id', 'userId', 'storagePath'
+                ];
+                
+                fieldsToCheck.forEach(fieldName => {
+                    const value = file[fieldName];
+                    const isDefined = value !== undefined && value !== null;
+                    html += `<div class="field ${isDefined ? 'defined' : 'undefined'}">`;
+                    html += `<strong>${fieldName}:</strong> ${isDefined ? value : 'UNDEFINED'}`;
+                    html += `</div>`;
+                });
+                
+                // Show all fields
+                html += `<h4>All available fields:</h4>`;
+                html += `<div class="field">`;
+                html += Object.keys(file).join(', ');
+                html += `</div>`;
+                
+                // Show if it should be an image
+                const fileName = file.fileName || '';
+                const isImageFile = fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/);
+                html += `<h4>File analysis:</h4>`;
+                html += `<div class="field ${isImageFile ? 'defined' : 'undefined'}">`;
+                html += `<strong>Should be image:</strong> ${isImageFile ? 'YES' : 'NO'}`;
+                html += `</div>`;
+                
+                document.getElementById('results').innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

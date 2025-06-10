@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug File Types</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .success { background: #4CAF50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        #fileData { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; }
+        .file-item { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success">
+            <h1>🔍 Debug File Types</h1>
+            <p>Checking why JPEG files don't show type data properly</p>
+        </div>
+        
+        <div id="fileData">
+            <p>Loading file data...</p>
+        </div>
+    </div>
+
+    <!-- Import map for Firebase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/storage": "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js",
+            "firebase/functions": "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import { getUserFiles } from './js/file-service.js';
+        import { guardPage } from './js/auth-guard.js';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Checking authentication...');
+            
+            const allowed = await guardPage({
+                requireVerified: false,
+                redirectTo: '/pages/auth.html'
+            });
+            
+            if (!allowed) {
+                document.getElementById('fileData').innerHTML = '<p style="color: red;">Not authenticated. Please log in first at <a href="/pages/auth.html">auth.html</a></p>';
+                return;
+            }
+
+            try {
+                console.log('Getting user files...');
+                const result = await getUserFiles({ pageSize: 10 });
+                
+                let html = `
+                    <h3>📊 File Data Analysis</h3>
+                    <p><strong>Total files found:</strong> ${result.files.length}</p>
+                    <p><strong>Has more:</strong> ${result.hasMore}</p>
+                `;
+                
+                // Analyze each file
+                result.files.forEach((file, index) => {
+                    const isImage = file.fileName && (
+                        file.fileName.toLowerCase().includes('.jpg') ||
+                        file.fileName.toLowerCase().includes('.jpeg') ||
+                        file.fileName.toLowerCase().includes('.png') ||
+                        file.fileName.toLowerCase().includes('.gif')
+                    );
+                    
+                    html += `
+                        <div class="file-item">
+                            <h4>File ${index + 1}: ${file.fileName || 'No name'}</h4>
+                            <p><strong>Should be image:</strong> ${isImage ? 'YES' : 'NO'}</p>
+                            <p><strong>Available fields:</strong></p>
+                            <ul>
+                                <li>fileType: "${file.fileType || 'undefined'}"</li>
+                                <li>mimeType: "${file.mimeType || 'undefined'}"</li>
+                                <li>type: "${file.type || 'undefined'}"</li>
+                                <li>category: "${file.category || 'undefined'}"</li>
+                                <li>fileName: "${file.fileName || 'undefined'}"</li>
+                                <li>thumbnailURL: "${file.thumbnailURL ? 'EXISTS' : 'undefined'}"</li>
+                                <li>downloadURL: "${file.downloadURL ? 'EXISTS' : 'undefined'}"</li>
+                            </ul>
+                            <details>
+                                <summary>Full object data</summary>
+                                <pre>${JSON.stringify(file, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('fileData').innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('fileData').innerHTML = `
+                    <p style="color: red;">Error loading files: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
