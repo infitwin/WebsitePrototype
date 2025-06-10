@@ -67,6 +67,11 @@ export const ALL_SUPPORTED_TYPES = Object.values(SUPPORTED_FILE_TYPES).flat();
 export function validateFile(file) {
     const errors = [];
     
+    // Check for zero-byte files
+    if (file.size === 0) {
+        errors.push('Empty files (0 bytes) are not allowed');
+    }
+    
     // Check file size
     if (file.size > FILE_SIZE_LIMIT) {
         errors.push(`File size must be less than ${FILE_SIZE_LIMIT / 1024 / 1024}MB`);
