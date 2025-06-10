@@ -12,16 +12,6 @@ function waitForFirebase() {
     });
 }
 
-// Firebase config
-const firebaseConfig = {
-    apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
-    authDomain: "infitwin.firebaseapp.com",
-    projectId: "infitwin",
-    storageBucket: "infitwin.firebasestorage.app",
-    messagingSenderId: "833139648849",
-    appId: "1:833139648849:web:2768d8e37cf2a318018b70"
-};
-
 let auth;
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -29,12 +19,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Wait for Firebase to be available
     await waitForFirebase();
-    console.log('Firebase loaded, initializing app...');
+    console.log('Firebase loaded, using pre-initialized Firebase...');
     
-    // Initialize Firebase (v8 syntax)
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
+    // Use the already initialized Firebase from the HTML
     auth = firebase.auth();
     
     console.log('Firebase initialized, setting up buttons...');
@@ -82,11 +69,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Form submissions
     const forms = document.querySelectorAll('.auth-form');
+    console.log('Found forms:', forms.length);
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Form submitted:', this);
             
             const isLogin = this.closest('#login-form');
+            console.log('Is login form:', !!isLogin);
             if (isLogin) {
                 handleLogin(e);
             } else {
@@ -163,14 +153,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Email signup
     async function handleSignup(e) {
         e.preventDefault();
+        console.log('handleSignup called');
         
         const name = document.getElementById('signup-name').value;
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         
+        console.log('Password:', password);
+        console.log('Confirm Password:', confirmPassword);
+        console.log('Passwords match:', password === confirmPassword);
+        
         // Validation
         if (password !== confirmPassword) {
+            console.log('Showing password mismatch notification');
             showNotification('Passwords do not match', 'error');
             return;
         }
