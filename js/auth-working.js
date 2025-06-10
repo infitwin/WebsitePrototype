@@ -48,22 +48,41 @@ document.addEventListener('DOMContentLoaded', async function() {
     const signupForm = document.getElementById('signup-form');
     const loginForm = document.getElementById('login-form');
     
+    // Function to switch to a specific tab
+    function switchToTab(targetTab) {
+        tabButtons.forEach(btn => {
+            if (btn.getAttribute('data-tab') === targetTab) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        if (targetTab === 'signup') {
+            signupForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+        } else {
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+        }
+    }
+    
+    // Check URL parameters on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    
+    // Default to login tab unless signup is explicitly requested
+    if (tabParam === 'signup') {
+        switchToTab('signup');
+    } else {
+        switchToTab('login');
+    }
+    
+    // Add click handlers for manual tab switching
     tabButtons.forEach(button => {
         button.addEventListener('click', function() {
             const targetTab = this.getAttribute('data-tab');
-            
-            // Update active tab
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Show corresponding form
-            if (targetTab === 'signup') {
-                signupForm.classList.remove('hidden');
-                loginForm.classList.add('hidden');
-            } else {
-                loginForm.classList.remove('hidden');
-                signupForm.classList.add('hidden');
-            }
+            switchToTab(targetTab);
         });
     });
     
