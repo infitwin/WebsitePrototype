@@ -204,6 +204,7 @@ function getFileType(file) {
  */
 export function getFallbackIcon(mimeType) {
     if (!mimeType || typeof mimeType !== 'string') return '📄'; // Default fallback
+    if (mimeType.startsWith('image/')) return '🖼️'; // Image files
     if (mimeType.includes('pdf')) return '📄';
     if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
     if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
