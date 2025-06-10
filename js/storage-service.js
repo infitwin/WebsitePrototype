@@ -27,10 +27,12 @@ export async function getStorageBreakdown() {
     };
 
     try {
-        // Query file records from Firestore using user subcollection
-        const filesRef = collection(db, 'users', userId, 'files');
-        const q = query(filesRef);
-        const snapshot = await getDocs(q);
+        // Query file records from Firestore using root collection (same as file-service.js)
+        const filesQuery = query(
+            collection(db, 'files'),
+            where('userId', '==', userId)
+        );
+        const snapshot = await getDocs(filesQuery);
 
         snapshot.forEach(doc => {
             const file = doc.data();
@@ -128,9 +130,9 @@ export async function getStorageRecommendations() {
 
     try {
         // Get large files (over 5MB)
-        const filesRef = collection(db, 'users', userId, 'files');
         const largeFilesQuery = query(
-            filesRef, 
+            collection(db, 'files'),
+            where('userId', '==', userId),
             where('fileSize', '>', 5 * 1024 * 1024),
             orderBy('fileSize', 'desc'),
             limit(5)
@@ -156,7 +158,8 @@ export async function getStorageRecommendations() {
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
         
         const oldFilesQuery = query(
-            filesRef,
+            collection(db, 'files'),
+            where('userId', '==', userId),
             where('uploadedAt', '<', ninetyDaysAgo.toISOString()),
             limit(10)
         );
@@ -173,7 +176,11 @@ export async function getStorageRecommendations() {
         }
 
         // Check for duplicate names (simplified check)
-        const allFiles = await getDocs(filesRef);
+        const allFilesQuery = query(
+            collection(db, 'files'),
+            where('userId', '==', userId)
+        );
+        const allFiles = await getDocs(allFilesQuery);
         const fileNames = {};
         
         allFiles.forEach(doc => {
@@ -214,8 +221,11 @@ export async function calculateStorageUsed() {
     let totalSize = 0;
 
     try {
-        const filesRef = collection(db, 'users', userId, 'files');
-        const snapshot = await getDocs(filesRef);
+        const filesQuery = query(
+            collection(db, 'files'),
+            where('userId', '==', userId)
+        );
+        const snapshot = await getDocs(filesQuery);
 
         snapshot.forEach(doc => {
             const file = doc.data();
@@ -257,10 +267,12 @@ export async function archiveOldFiles(daysOld = 90) {
 
 // Helper function to categorize files
 function categorizeFile(mimeType) {
-    if (mimeType.startsWith('image/')) return 'images';
-    if (mimeType.includes('pdf') || mimeType.includes('word') || mimeType.includes('document')) return 'documents';
-    if (mimeType.includes('sheet') || mimeType.includes('excel')) return 'spreadsheets';
-    if (mimeType.includes('epub')) return 'ebooks';
+    if (!mimeType || typeof mimeType !== 'string') return 'other';
+    const type = mimeType.toLowerCase();
+    if (type.startsWith('image/')) return 'images';
+    if (type.includes('pdf') || type.includes('word') || type.includes('document')) return 'documents';
+    if (type.includes('sheet') || type.includes('excel')) return 'spreadsheets';
+    if (type.includes('epub')) return 'ebooks';
     return 'other';
 }
 
