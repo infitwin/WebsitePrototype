@@ -261,12 +261,21 @@ class AudioWebSocketService {
           const transcript = message.payload?.content?.transcript || message.payload?.transcript;
           console.log('Extracted transcript:', transcript);
           if (transcript) {
-            this.onTranscriptReceived({
+            const transcriptData = {
               text: transcript.text || transcript,
               confidence: transcript.confidence,
               isFinal: transcript.isFinal !== false,
               timestamp: message.timestamp
-            });
+            };
+            
+            // Send transcript to UI callback
+            this.onTranscriptReceived(transcriptData);
+            
+            // CRITICAL FIX: Forward final transcripts to Orchestrator for AI processing
+            if (transcriptData.isFinal && transcriptData.text && window.orchestratorWebSocket) {
+              console.log('🔄 Forwarding final transcript to Orchestrator for AI processing:', transcriptData.text);
+              this.forwardTranscriptToOrchestrator(transcriptData);
+            }
           } else {
             console.warn('No transcript found in message:', message);
           }
@@ -356,6 +365,61 @@ class AudioWebSocketService {
 
   isConnected() {
     return this.connected && this.ws?.readyState === WebSocket.OPEN;
+  }
+
+  /**
+   * Forward transcript to Orchestrator for AI processing
+   * This triggers the GetInterviewSupport → ReturnInterviewSupport → SendQuestion flow
+   */
+  forwardTranscriptToOrchestrator(transcriptData) {
+    try {
+      if (!window.orchestratorWebSocket || !window.orchestratorWebSocket.isConnected()) {
+        console.warn('Cannot forward transcript: Orchestrator not connected');
+        return false;
+      }
+
+      // Build SendMessage payload according to websocket-messages.md
+      const sendMessagePayload = {
+        metadata: {
+          interviewId: this.currentInterviewId,
+          sessionId: this.currentSessionId,
+          correlationId: `transcript_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          messageType: 'UserResponse',
+          turnId: `turn_${Date.now()}`
+        },
+        data: {
+          messageContent: {
+            text: transcriptData.text,
+            messageType: 'voice_transcript',
+            confidence: transcriptData.confidence || 1.0,
+            language: 'en-US'
+          },
+          context: {
+            source: 'speech_to_text',
+            audioProcessed: true,
+            timestamp: transcriptData.timestamp || new Date().toISOString()
+          }
+        }
+      };
+
+      console.log('📤 Sending transcript as SendMessage to Orchestrator:', sendMessagePayload);
+      
+      // Send as SendMessage type to trigger AI processing
+      const success = window.orchestratorWebSocket.sendMessage('SendMessage', sendMessagePayload);
+      
+      if (success) {
+        console.log('✅ Transcript forwarded to Orchestrator successfully');
+        return true;
+      } else {
+        console.error('❌ Failed to forward transcript to Orchestrator');
+        return false;
+      }
+      
+    } catch (error) {
+      console.error('Error forwarding transcript to Orchestrator:', error);
+      return false;
+    }
   }
 }
 

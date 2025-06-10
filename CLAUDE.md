@@ -1,5 +1,45 @@
 # CLAUDE.md - AI Assistant Instructions
 
+## CRITICAL: Neo4j/NexusControl Architecture
+
+### 🚫 NEVER SPLIT THE NEXUSCONTROL
+
+**The NexusControl is ONE INTEGRATED COMPONENT that includes:**
+- ACTIVE tab with Neo4j graph visualization
+- HISTORY tab with timeline view  
+- All control buttons and filters
+- Search functionality
+- Tab navigation
+
+**DO NOT:**
+- Break it into separate panels
+- Use only the graph part
+- Create custom layouts that split the control
+- Attempt to extract individual features
+
+**DO:**
+- Use the complete NexusControl as designed
+- Initialize it in a single container
+- Let it manage its own internal layout
+- Respect that it's a unified component
+
+**Implementation:**
+```javascript
+// CORRECT - Use the full control
+const nexusViz = new NexusControl(container, {
+    width: containerWidth,
+    height: containerHeight,
+    mode: 'interview',
+    showHistory: true,
+    showControls: true,
+    showTabs: true
+});
+
+// WRONG - Never try to split it
+// DO NOT create separate graph and history panels
+// DO NOT extract just the visualization part
+```
+
 ## PROJECT COLOR SCHEME
 
 The Infitwin website uses a consistent color palette across all pages:

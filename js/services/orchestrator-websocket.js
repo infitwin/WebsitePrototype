@@ -89,6 +89,20 @@ class OrchestratorWebSocketService {
       }
     });
     
+    // Handle SendMessage responses (AI-generated responses from IDIS)
+    this.messageHandlers.set('MessageSaved', (parsedMessage) => {
+      console.log('Message saved confirmation received:', parsedMessage);
+      // This confirms the transcript was processed by the backend
+    });
+    
+    // Handle errors from message processing
+    this.messageHandlers.set('ProcessingError', (parsedMessage) => {
+      console.error('Message processing error:', parsedMessage);
+      if (this.onError) {
+        this.onError(new Error(`Processing error: ${parsedMessage.error || 'Unknown error'}`));
+      }
+    });
+    
     // Handle any other message types
     this.messageHandlers.set('default', (parsedMessage, rawMessage) => {
       console.log('Unhandled message type:', rawMessage.type, parsedMessage);

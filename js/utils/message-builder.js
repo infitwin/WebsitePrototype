@@ -189,7 +189,29 @@ function parseOrchestratorMessage(message) {
         questionText: data.questionText,
         context: data.context,
         followUpPrompts: data.followUpPrompts,
-        questionMetadata: data.questionMetadata
+        questionMetadata: data.questionMetadata,
+        audioChunks: data.audioChunks // Include TTS audio if provided
+      };
+
+    case 'MessageSaved':
+      return {
+        type,
+        interviewId: metadata.interviewId,
+        sessionId: metadata.sessionId,
+        correlationId: metadata.correlationId,
+        messageId: metadata.messageId,
+        status: data.status,
+        message: data.message
+      };
+
+    case 'ProcessingError':
+      return {
+        type,
+        interviewId: metadata.interviewId,
+        correlationId: metadata.correlationId,
+        error: data.error,
+        errorCode: data.errorCode,
+        details: data.details
       };
 
     case 'ReturnAudioChunks':

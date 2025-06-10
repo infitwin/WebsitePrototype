@@ -45,7 +45,7 @@
             overflow: hidden;
         }
         
-        /* User Header */
+        /* Dashboard Header - User info + Activity indicators + Notifications */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
@@ -53,6 +53,7 @@
             padding: 1rem 2rem;
             background: white;
             border-bottom: 1px solid #E5E7EB;
+            height: 64px;
         }
         
         .user-info {
@@ -88,6 +89,54 @@
             color: #6B7280;
         }
         
+        /* Activity Indicators in Header Center */
+        .activity-indicators {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .activity-indicator {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        
+        .activity-indicator:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .activity-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #1F2937;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        /* Activity indicator colors */
+        .memories-indicator { background: linear-gradient(135deg, #9333EA 0%, #A855F7 100%); }
+        .moments-indicator { background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%); }
+        .people-indicator { background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); }
+        .places-indicator { background: linear-gradient(135deg, #F59E0B 0%, #FBD38D 100%); }
+        .projects-indicator { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
+        .insights-indicator { background: linear-gradient(135deg, #06B6D4 0%, #38BDF8 100%); }
+        
         .header-actions {
             display: flex;
             gap: 1rem;
@@ -106,233 +155,87 @@
             background: #F3F4F6;
             border-color: #D1D5DB;
         }
-
-        /* Quick Access Section - At Very Top */
-        .quick-access-section {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
         
-        .quick-access-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 12px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .quick-tile {
-            background-color: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+        /* Statistics Sub-bar */
+        .statistics-subbar {
+            height: 48px;
+            background: #f5f5f7;
+            border-bottom: 1px solid #E5E7EB;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 6px;
+            padding: 0 2rem;
+            font-size: 0.875rem;
+            color: #6B7280;
         }
         
-        .quick-tile:hover {
-            background-color: #f8f9fa;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transform: translateY(-1px);
+        .stats-container {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
         }
         
-        .quick-tile-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        .quick-tile-title {
-            font-size: 11px;
+        .stat-label {
             font-weight: 500;
-            color: #333;
-            line-height: 1.2;
+            color: #374151;
         }
         
-        .quick-tile-subtitle {
-            font-size: 9px;
-            color: #666;
+        .stat-value {
+            font-weight: 600;
+            color: #1F2937;
         }
         
-        /* Icon colors */
-        .memories-icon { background: #9333ea; }
-        .moments-icon { background: #ec4899; }
-        .people-icon { background: #3b82f6; }
-        .places-icon { background: #f59e0b; }
-        .projects-icon { background: #10b981; }
-        .insights-icon { background: #06b6d4; }
+        .stat-separator {
+            width: 1px;
+            height: 20px;
+            background: #D1D5DB;
+        }
+
         
-        /* Main Dashboard Container */
+        /* Main Dashboard Container - Centered Layout */
         .dashboard-container {
             flex: 1;
-            padding: 20px;
+            padding: 2rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #f5f5f7;
         }
         
-        /* Knowledge Management System - The Big Container */
-        .knowledge-system {
-            background-color: #f8f9fa;
-            border: 2px solid #e0e0e0;
+        /* Nexus Container - Centered Hero Element */
+        .nexus-container {
+            background: white;
             border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 1400px;
-            height: 90%;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        /* Simple Graph Section */
-        .simple-graph-section {
-            flex: 1;
+            max-width: 900px;
             display: flex;
             flex-direction: column;
-            background-color: white;
-            border-right: 1px solid #e0e0e0;
-        }
-        
-        .graph-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid #e0e0e0;
-            background-color: #f8f9fa;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
         }
         
-        .graph-header h2 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
+        .nexus-label {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.05em;
         }
         
-        .graph-controls {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .control-btn {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .control-btn:hover {
-            background: #f0f0f0;
-            border-color: #bbb;
-        }
-        
-        .graph-area {
-            flex: 1;
+        /* Neo4j Graph Container - Square Configuration */
+        #neo4j-graph-container {
+            width: 100%;
             position: relative;
-            min-height: 400px;
-        }
-        
-        .graph-footer {
-            padding: 8px 20px;
-            border-top: 1px solid #e0e0e0;
-            background-color: #f8f9fa;
-            font-size: 11px;
-            color: #666;
-        }
-        
-        /* Removed old graph styles - NexusControl handles its own styling */
-        
-        /* Neo4j Graph Container - NexusControl will inject its own styles */
-        
-        /* Right Side - Queue and History */
-        .activity-section {
-            width: 300px;
-            background-color: #f8f9fa;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
         }
-        
-        .activity-header {
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            background-color: white;
-        }
-        
-        .activity-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .activity-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .activity-section-box {
-            background-color: white;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        
-        .section-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .queue-content {
-            font-size: 13px;
-            color: #666;
-        }
-        
-        .queue-status {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: #10b981;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-        
-        .history-item {
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .history-item:last-child {
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-        
-        .history-time {
-            font-size: 11px;
-            color: #999;
-            margin-bottom: 3px;
-        }
-        
-        .history-action {
-            font-size: 12px;
-            color: #333;
-        }
-        
-        /* Removed old graph footer - NexusControl has its own footer */
         
 
         /* User Dropdown Menu Styles */
@@ -431,24 +334,80 @@
             box-shadow: 0 6px 25px rgba(107, 70, 193, 0.5);
         }
 
-        /* Responsive adjustments */
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .nexus-container {
+                max-width: 700px;
+                padding: 1.5rem;
+            }
+            
+            .nexus-label {
+                font-size: 1.75rem;
+            }
+        }
+        
         @media (max-width: 768px) {
-            .quick-access-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .knowledge-system {
-                flex-direction: column;
-                height: auto;
-            }
-            
-            .activity-section {
-                width: 100%;
-                max-height: 300px;
-            }
-            
             .dashboard-header {
                 padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                height: auto;
+                align-items: flex-start;
+            }
+            
+            .activity-indicators {
+                gap: 8px;
+            }
+            
+            .activity-indicator {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            .statistics-subbar {
+                padding: 0 1rem;
+                overflow-x: auto;
+            }
+            
+            .stats-container {
+                gap: 1rem;
+                white-space: nowrap;
+            }
+            
+            .dashboard-container {
+                padding: 1rem;
+            }
+            
+            .nexus-container {
+                padding: 1rem;
+                max-width: 100%;
+            }
+            
+            .nexus-label {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .statistics-subbar {
+                display: none;
+            }
+            
+            .activity-indicators {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            .activity-indicator {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            
+            .nexus-container {
+                padding: 0.75rem;
             }
         }
     </style>
@@ -460,7 +419,7 @@
 
         <!-- Main Content Wrapper -->
         <div class="main-content-wrapper">
-            <!-- User Header -->
+            <!-- Dashboard Header with Activity Indicators -->
             <header class="dashboard-header">
                 <div class="user-info user-dropdown-container">
                     <div class="user-avatar">
@@ -480,6 +439,35 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Activity Indicators -->
+                <div class="activity-indicators">
+                    <div class="activity-indicator memories-indicator" data-category="memories" title="Memories">
+                        <span>🧠</span>
+                        <div class="activity-badge" id="memoriesCount">127</div>
+                    </div>
+                    <div class="activity-indicator moments-indicator" data-category="moments" title="Key Moments">
+                        <span>✨</span>
+                        <div class="activity-badge" id="momentsCount">34</div>
+                    </div>
+                    <div class="activity-indicator people-indicator" data-category="people" title="People">
+                        <span>👥</span>
+                        <div class="activity-badge" id="peopleCount">89</div>
+                    </div>
+                    <div class="activity-indicator places-indicator" data-category="places" title="Places">
+                        <span>📍</span>
+                        <div class="activity-badge" id="placesCount">56</div>
+                    </div>
+                    <div class="activity-indicator projects-indicator" data-category="projects" title="Projects">
+                        <span>🚀</span>
+                        <div class="activity-badge" id="projectsCount">12</div>
+                    </div>
+                    <div class="activity-indicator insights-indicator" data-category="insights" title="Insights">
+                        <span>💡</span>
+                        <div class="activity-badge" id="insightsCount">23</div>
+                    </div>
+                </div>
+                
                 <div class="header-actions">
                     <button class="notification-btn" aria-label="Notifications">
                         <span style="font-size: 20px;">🔔</span>
@@ -487,115 +475,48 @@
                 </div>
             </header>
             
-            <!-- Quick Access Icons - At Very Top -->
-            <div class="quick-access-section">
-                <div class="quick-access-grid">
-                    <div class="quick-tile" data-category="recent">
-                        <div class="quick-tile-icon memories-icon"></div>
-                        <div class="quick-tile-title">Recent Memories</div>
-                        <div class="quick-tile-subtitle">Last 7 days</div>
+            <!-- Statistics Sub-bar -->
+            <div class="statistics-subbar">
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Memories:</span>
+                        <span class="stat-value" id="totalMemoriesCount">1,847</span>
                     </div>
-                    
-                    <div class="quick-tile" data-category="moments">
-                        <div class="quick-tile-icon moments-icon"></div>
-                        <div class="quick-tile-title">Key Moments</div>
-                        <div class="quick-tile-subtitle">Life highlights</div>
+                    <div class="stat-separator"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">Connections:</span>
+                        <span class="stat-value" id="connectionsCount">342</span>
                     </div>
-                    
-                    <div class="quick-tile" data-category="people">
-                        <div class="quick-tile-icon people-icon"></div>
-                        <div class="quick-tile-title">People</div>
-                        <div class="quick-tile-subtitle">Connections</div>
+                    <div class="stat-separator"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">People:</span>
+                        <span class="stat-value" id="peopleStatsCount">89</span>
                     </div>
-                    
-                    <div class="quick-tile" data-category="places">
-                        <div class="quick-tile-icon places-icon"></div>
-                        <div class="quick-tile-title">Places</div>
-                        <div class="quick-tile-subtitle">Locations visited</div>
+                    <div class="stat-separator"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">Places:</span>
+                        <span class="stat-value" id="placesStatsCount">56</span>
                     </div>
-                    
-                    <div class="quick-tile" data-category="projects">
-                        <div class="quick-tile-icon projects-icon"></div>
-                        <div class="quick-tile-title">Projects</div>
-                        <div class="quick-tile-subtitle">Achievements</div>
+                    <div class="stat-separator"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">Storage:</span>
+                        <span class="stat-value" id="storageUsed">2.4GB of 10GB</span>
                     </div>
-                    
-                    <div class="quick-tile" data-category="insights">
-                        <div class="quick-tile-icon insights-icon"></div>
-                        <div class="quick-tile-title">Insights</div>
-                        <div class="quick-tile-subtitle">Patterns & themes</div>
+                    <div class="stat-separator"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">Last Sync:</span>
+                        <span class="stat-value" id="lastSync">2 min ago</span>
                     </div>
                 </div>
             </div>
             
             <!-- Main Dashboard Container -->
             <div class="dashboard-container">
-                <!-- Knowledge Management System - One Big Container -->
-                <div class="knowledge-system">
-                    <!-- Simple Graph Section -->
-                    <div class="simple-graph-section">
-                        <div class="graph-header">
-                            <h2>Knowledge Graph</h2>
-                            <div class="graph-controls">
-                                <button class="control-btn" onclick="centerGraph()">Center</button>
-                                <button class="control-btn" onclick="fitGraph()">Fit</button>
-                                <button class="control-btn" onclick="resetGraph()">Reset</button>
-                            </div>
-                        </div>
-                        <div class="graph-area">
-                            <svg id="knowledge-graph" width="100%" height="100%"></svg>
-                        </div>
-                        <div class="graph-footer">
-                            <span id="graph-stats">Nodes: 7 • Edges: 7</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Right Side - Activity Section -->
-                    <div class="activity-section">
-                        <div class="activity-header">
-                            <h3 class="activity-title">Activity Monitor</h3>
-                        </div>
-                        
-                        <div class="activity-content">
-                            <!-- Active Queue -->
-                            <div class="activity-section-box">
-                                <h4 class="section-title">Active Queue</h4>
-                                <div class="queue-content">
-                                    <span class="queue-status"></span>
-                                    No active operations
-                                </div>
-                            </div>
-                            
-                            <!-- History -->
-                            <div class="activity-section-box">
-                                <h4 class="section-title">History</h4>
-                                <div class="history-list">
-                                    <div class="history-item">
-                                        <div class="history-time">10:32</div>
-                                        <div class="history-action">Graph initialized</div>
-                                    </div>
-                                    <div class="history-item">
-                                        <div class="history-time">10:30</div>
-                                        <div class="history-action">Dashboard loaded</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Storage Widget Integration -->
-                            <div id="storageWidget" class="activity-section-box">
-                                <!-- Storage widget will be rendered here -->
-                            </div>
-                            
-                            <!-- Activity Feed Widget Integration -->
-                            <div id="activityWidget" class="activity-section-box">
-                                <!-- Activity widget will be rendered here -->
-                            </div>
-                            
-                            <!-- Quick Actions Widget Integration -->
-                            <div id="quickActionsWidget" class="activity-section-box">
-                                <!-- Quick actions widget will be rendered here -->
-                            </div>
-                        </div>
+                <!-- Nexus Container - Centered Hero Element -->
+                <div class="nexus-container">
+                    <div class="nexus-label">NEXUS</div>
+                    <div id="neo4j-graph-container">
+                        <!-- Nexus control will be initialized here -->
                     </div>
                 </div>
             </div>
@@ -623,179 +544,83 @@
         import { guardPage } from '../js/auth-guard.js';
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize all widgets in the activity sidebar
-            createStorageMeterWidget('storageWidget');
-            createActivityFeedWidget('activityWidget');
-            createQuickActionsWidget('quickActionsWidget');
-            
-            // Initialize Nexus Control
+            // Initialize Nexus Control in centered configuration
             initializeNexusControl();
             
-            console.log('📋 Advanced dashboard with widgets initialized');
+            console.log('📋 Dashboard with centered Nexus initialized');
         });
 
-        // Initialize Simple Knowledge Graph
-        function initializeKnowledgeGraph() {
-            console.log('🎯 Initializing simple knowledge graph...');
+        // Initialize Nexus Control with Square Configuration
+        function initializeNexusControl() {
+            console.log('🎯 Initializing Nexus Control in square configuration...');
             
-            // Load D3 if not already loaded
-            if (!window.d3) {
-                const script = document.createElement('script');
-                script.src = 'https://d3js.org/d3.v7.min.js';
-                script.onload = createSimpleGraph;
-                document.head.appendChild(script);
-            } else {
-                createSimpleGraph();
+            const container = document.getElementById('neo4j-graph-container');
+            if (!container) {
+                console.error('Nexus container not found');
+                return;
+            }
+            
+            // Calculate square dimensions based on container
+            const containerWidth = container.offsetWidth || 800;
+            const containerHeight = window.innerHeight - 250; // Account for header and sub-bar
+            
+            // Square graph configuration - ensure the graph itself is square
+            const graphSize = Math.min(containerWidth * 0.8, containerHeight * 0.8, 600);
+            
+            try {
+                // Initialize NexusControl with square configuration
+                if (window.NexusControl) {
+                    window.nexusViz = new NexusControl(container, {
+                        width: graphSize,
+                        height: graphSize,
+                        mode: 'dashboard',
+                        showHistory: true,
+                        showControls: true,
+                        showTabs: true,
+                        showFilters: true,
+                        showSearch: true
+                    });
+                    
+                    console.log('✅ Nexus Control initialized with square configuration:', graphSize + 'x' + graphSize);
+                } else {
+                    console.warn('⚠️ NexusControl not available, falling back to placeholder');
+                    // Create a placeholder square visualization
+                    createPlaceholderNexus(container, graphSize);
+                }
+            } catch (error) {
+                console.error('Error initializing Nexus Control:', error);
+                createPlaceholderNexus(container, graphSize);
             }
         }
         
-        function createSimpleGraph() {
-            const svg = d3.select('#knowledge-graph');
-            const container = svg.node().parentElement;
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
-            
-            // Sample data
-            const nodes = [
-                { id: 'you', name: 'You', type: 'person', x: width/2, y: height/2 },
-                { id: 'winston', name: 'Winston', type: 'ai', x: width/2 - 100, y: height/2 - 80 },
-                { id: 'childhood', name: 'Childhood', type: 'memory', x: width/2 + 80, y: height/2 - 100 },
-                { id: 'family', name: 'Family', type: 'people', x: width/2 - 120, y: height/2 + 60 },
-                { id: 'school', name: 'School', type: 'place', x: width/2 + 100, y: height/2 + 80 },
-                { id: 'work', name: 'Work', type: 'place', x: width/2 - 60, y: height/2 + 120 },
-                { id: 'hobbies', name: 'Hobbies', type: 'activity', x: width/2 + 120, y: height/2 - 40 }
-            ];
-            
-            const links = [
-                { source: 'you', target: 'winston' },
-                { source: 'you', target: 'childhood' },
-                { source: 'you', target: 'family' },
-                { source: 'you', target: 'school' },
-                { source: 'you', target: 'work' },
-                { source: 'you', target: 'hobbies' },
-                { source: 'childhood', target: 'family' }
-            ];
-            
-            // Create links
-            svg.selectAll('line')
-                .data(links)
-                .enter()
-                .append('line')
-                .attr('x1', d => nodes.find(n => n.id === d.source).x)
-                .attr('y1', d => nodes.find(n => n.id === d.source).y)
-                .attr('x2', d => nodes.find(n => n.id === d.target).x)
-                .attr('y2', d => nodes.find(n => n.id === d.target).y)
-                .attr('stroke', '#999')
-                .attr('stroke-width', 2);
-            
-            // Create nodes
-            const nodeGroups = svg.selectAll('g.node')
-                .data(nodes)
-                .enter()
-                .append('g')
-                .attr('class', 'node')
-                .attr('transform', d => `translate(${d.x}, ${d.y})`);
-            
-            nodeGroups.append('circle')
-                .attr('r', 25)
-                .attr('fill', d => {
-                    const colors = {
-                        person: '#6B46C1',
-                        ai: '#10B981', 
-                        memory: '#F59E0B',
-                        people: '#3B82F6',
-                        place: '#EF4444',
-                        activity: '#8B5CF6'
-                    };
-                    return colors[d.type] || '#6B7280';
-                })
-                .attr('stroke', '#fff')
-                .attr('stroke-width', 3);
-            
-            nodeGroups.append('text')
-                .attr('text-anchor', 'middle')
-                .attr('dy', 5)
-                .attr('fill', 'white')
-                .attr('font-size', '10px')
-                .attr('font-weight', 'bold')
-                .text(d => d.name.length > 8 ? d.name.substring(0, 6) + '...' : d.name);
-            
-            console.log('✅ Simple knowledge graph created');
+        // Placeholder Nexus for when NexusControl is not available
+        function createPlaceholderNexus(container, size) {
+            container.innerHTML = `
+                <div style="
+                    width: ${size}px;
+                    height: ${size}px;
+                    border: 2px solid #E5E7EB;
+                    border-radius: 12px;
+                    background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    color: #6B7280;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 1rem;">🧠</div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Nexus Visualization</div>
+                    <div style="font-size: 14px; text-align: center; max-width: 300px; line-height: 1.5;">
+                        Your knowledge graph will appear here once connected to the data source.
+                    </div>
+                    <div style="margin-top: 2rem; padding: 0.75rem 1.5rem; background: white; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px;">
+                        Square Dimensions: ${size}×${size}px
+                    </div>
+                </div>
+            `;
+            console.log('✅ Placeholder Nexus created with square dimensions:', size + 'x' + size);
         }
-        
-        // Store graph state for controls
-        let graphTransform = { x: 0, y: 0, scale: 1 };
-        let originalNodes = null;
-        
-        // Graph control functions
-        window.centerGraph = function() {
-            const svg = d3.select('#knowledge-graph');
-            const container = svg.node().parentElement;
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
-            
-            // Reset to center
-            graphTransform = { x: 0, y: 0, scale: 1 };
-            
-            // Apply centering transform to all elements
-            svg.selectAll('g.node')
-                .transition()
-                .duration(500)
-                .attr('transform', d => `translate(${d.x}, ${d.y})`);
-                
-            svg.selectAll('line')
-                .transition()
-                .duration(500)
-                .attr('x1', d => nodes.find(n => n.id === d.source).x)
-                .attr('y1', d => nodes.find(n => n.id === d.source).y)
-                .attr('x2', d => nodes.find(n => n.id === d.target).x)
-                .attr('y2', d => nodes.find(n => n.id === d.target).y);
-                
-            console.log('✅ Graph centered');
-        };
-        
-        window.fitGraph = function() {
-            const svg = d3.select('#knowledge-graph');
-            const container = svg.node().parentElement;
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
-            
-            // Find bounds of all nodes
-            const nodeData = nodes;
-            const xExtent = d3.extent(nodeData, d => d.x);
-            const yExtent = d3.extent(nodeData, d => d.y);
-            
-            const graphWidth = xExtent[1] - xExtent[0] + 100; // Add padding
-            const graphHeight = yExtent[1] - yExtent[0] + 100;
-            
-            // Calculate scale to fit
-            const scale = Math.min(width / graphWidth, height / graphHeight, 1);
-            
-            // Apply zoom transform
-            const g = svg.append('g').attr('class', 'zoom-group');
-            svg.selectAll('line, g.node').each(function() {
-                g.node().appendChild(this);
-            });
-            
-            g.transition()
-                .duration(500)
-                .attr('transform', `scale(${scale})`);
-                
-            console.log('✅ Graph fitted to view');
-        };
-        
-        window.resetGraph = function() {
-            // Store original positions if not already stored
-            if (!originalNodes) {
-                originalNodes = JSON.parse(JSON.stringify(nodes));
-            }
-            
-            // Clear and recreate the graph
-            d3.select('#knowledge-graph').selectAll('*').remove();
-            createSimpleGraph();
-            
-            console.log('✅ Graph reset to original state');
-        };
 
         // Data Operations Modal Function
         window.togglePopup = function() {
@@ -892,8 +717,8 @@
             // Setup user dropdown menu
             setupUserDropdown();
 
-            // Add click handlers to quick tiles
-            setupQuickTileHandlers();
+            // Add click handlers to activity indicators
+            setupActivityIndicatorHandlers();
         });
 
         function setupUserDropdown() {
@@ -924,17 +749,31 @@
             }
         }
 
-        function setupQuickTileHandlers() {
-            const quickTiles = document.querySelectorAll('.quick-tile');
-            quickTiles.forEach(tile => {
-                tile.addEventListener('click', function() {
+        function setupActivityIndicatorHandlers() {
+            const activityIndicators = document.querySelectorAll('.activity-indicator');
+            activityIndicators.forEach(indicator => {
+                indicator.addEventListener('click', function() {
                     const category = this.getAttribute('data-category');
-                    console.log(`Navigating to ${category} section`);
-                    // Add navigation logic here in the future
+                    console.log(`Filtering Nexus by ${category}`);
+                    // Future: Filter Nexus view by category
+                    
+                    // Add visual feedback
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
                 });
             });
         }
 
+        // Responsive Nexus resize handler
+        window.addEventListener('resize', function() {
+            // Reinitialize Nexus with new dimensions on resize
+            setTimeout(() => {
+                initializeNexusControl();
+            }, 100);
+        });
+        
         // NexusControl handles all graph interactions internally
     </script>
     
