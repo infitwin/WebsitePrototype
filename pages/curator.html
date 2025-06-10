@@ -2026,15 +2026,20 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message' + (sender === 'user' ? ' user-message' : '');
             
+            // Create message content element
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = text; // Use textContent to safely escape HTML
+            
             if (sender === 'winston') {
-                messageDiv.innerHTML = `
-                    <div class="winston-orb">🎩</div>
-                    <div class="message-content">${text}</div>
-                `;
+                const winstonOrb = document.createElement('div');
+                winstonOrb.className = 'winston-orb';
+                winstonOrb.textContent = '🎩';
+                
+                messageDiv.appendChild(winstonOrb);
+                messageDiv.appendChild(messageContent);
             } else {
-                messageDiv.innerHTML = `
-                    <div class="message-content">${text}</div>
-                `;
+                messageDiv.appendChild(messageContent);
             }
             
             messagesContainer.appendChild(messageDiv);
