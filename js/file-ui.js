@@ -208,11 +208,12 @@ export function markUploadComplete(preview) {
  */
 export function markUploadFailed(preview, error) {
     preview.classList.remove('uploading');
-    preview.classList.add('upload-failed');
+    preview.classList.add('upload-failed', 'error'); // Add 'error' class for test visibility
     
     const statusEl = preview.querySelector('.file-status');
     if (statusEl) {
-        statusEl.innerHTML = `<span class="status-error">✗ ${error}</span>`;
+        statusEl.innerHTML = `<span class="status-error error">✗ ${error}</span>`;
+        statusEl.classList.add('error'); // Ensure the element is findable by tests
     }
     
     // Show retry button

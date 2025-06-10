@@ -121,8 +121,8 @@ class AudioWebSocketService {
     }
 
     const configMessage = {
-      messageId: `ui-audio-${Date.now()}`,
-      type: 'SendAudioChunk',
+      messageId: `ui-audio-config-${Date.now()}`,
+      type: 'AudioConfig',
       timestamp: new Date().toISOString(),
       source: {
         service: 'UI',
@@ -135,12 +135,14 @@ class AudioWebSocketService {
         sessionId: this.currentSessionId,
         interviewId: this.currentInterviewId,
         turnId: 'pending****',
-        config: {
+        audioConfig: {
           sampleRate: 16000,
           encoding: 'LINEAR16',
           language: 'en-US',
-          mode: 'speech-to-text'
-        }
+          channels: 1,
+          bitsPerSample: 16
+        },
+        processingMode: 'speech-to-text'
       }
     };
 
