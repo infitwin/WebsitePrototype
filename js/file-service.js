@@ -44,6 +44,52 @@ export const SUPPORTED_FILE_TYPES = {
 // Get all supported types as flat array
 export const ALL_SUPPORTED_TYPES = Object.values(SUPPORTED_FILE_TYPES).flat();
 
+// Supported file extensions for fallback validation
+const SUPPORTED_EXTENSIONS = {
+    images: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
+    documents: ['.pdf', '.doc', '.docx', '.txt', '.rtf'],
+    spreadsheets: ['.xls', '.xlsx'],
+    ebooks: ['.epub']
+};
+
+// Dangerous file extensions that should never be allowed
+const DANGEROUS_EXTENSIONS = [
+    '.exe', '.bat', '.cmd', '.com', '.scr', '.pif', '.app', '.dmg', 
+    '.deb', '.rpm', '.pkg', '.msi', '.jar', '.vbs', '.js', '.ps1',
+    '.sh', '.bin', '.run', '.apk', '.ipa'
+];
+
+/**
+ * Check if file extension is supported
+ * @param {string} fileName - File name
+ * @returns {boolean} True if extension is supported
+ */
+function isValidFileExtension(fileName) {
+    const extension = getFileExtension(fileName);
+    const allExtensions = Object.values(SUPPORTED_EXTENSIONS).flat();
+    return allExtensions.includes(extension);
+}
+
+/**
+ * Check if file extension is dangerous
+ * @param {string} fileName - File name
+ * @returns {boolean} True if extension is dangerous
+ */
+function isDangerousFileExtension(fileName) {
+    const extension = getFileExtension(fileName);
+    return DANGEROUS_EXTENSIONS.includes(extension);
+}
+
+/**
+ * Get file extension from filename
+ * @param {string} fileName - File name
+ * @returns {string} File extension in lowercase
+ */
+function getFileExtension(fileName) {
+    const lastDot = fileName.lastIndexOf('.');
+    return lastDot >= 0 ? fileName.substring(lastDot).toLowerCase() : '';
+}
+
 /**
  * File metadata schema
  * @typedef {Object} FileMetadata
@@ -77,9 +123,17 @@ export function validateFile(file) {
         errors.push(`File size must be less than ${FILE_SIZE_LIMIT / 1024 / 1024}MB`);
     }
     
-    // Check file type
-    if (!ALL_SUPPORTED_TYPES.includes(file.type)) {
+    // Check file type (MIME type first, then extension fallback)
+    const isValidMimeType = ALL_SUPPORTED_TYPES.includes(file.type);
+    const isValidExtension = isValidFileExtension(file.name);
+    
+    if (!isValidMimeType && !isValidExtension) {
         errors.push('File type not supported. Supported types: Images (JPG, PNG, GIF, WEBP), Documents (PDF, DOC, DOCX, TXT, RTF), Spreadsheets (XLS, XLSX), Ebooks (EPUB)');
+    }
+    
+    // Check for dangerous file extensions
+    if (isDangerousFileExtension(file.name)) {
+        errors.push('This file type is not allowed for security reasons');
     }
     
     // Check file name length
