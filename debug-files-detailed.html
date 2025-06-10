@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Files - Detailed</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test-section { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #45a049; }
+        pre { background: white; padding: 10px; overflow-x: auto; border: 1px solid #ddd; }
+        .log-entry { margin: 2px 0; padding: 2px; }
+    </style>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <h1>🔍 Detailed File Debugging</h1>
+    
+    <div class="test-section">
+        <h3>Step 1: Authentication Check</h3>
+        <button onclick="checkAuth()">Check Authentication</button>
+        <div id="authResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 2: Test Queries</h3>
+        <button onclick="testSimpleFiles()">Test Simple Files Query</button>
+        <button onclick="testUserFiles()">Test User Files Query</button>
+        <button onclick="testAllCollections()">List All Collections</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 3: Create Test File</h3>
+        <button onclick="createTestFile()">Create Test File in 'files' Collection</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Results:</h3>
+        <pre id="results"></pre>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged } from 'firebase/auth';
+        import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const colorClass = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            results.innerHTML += `<div class="log-entry ${colorClass}">${new Date().toLocaleTimeString()}: ${message}</div>`;
+        }
+        
+        window.checkAuth = async function() {
+            const authDiv = document.getElementById('authResult');
+            
+            // Check current user
+            if (auth.currentUser) {
+                authDiv.innerHTML = `
+                    <p class="success">✅ Authenticated</p>
+                    <p>Email: ${auth.currentUser.email}</p>
+                    <p>UID: ${auth.currentUser.uid}</p>
+                `;
+                log(`Authenticated as: ${auth.currentUser.email} (${auth.currentUser.uid})`, 'success');
+            } else {
+                authDiv.innerHTML = `<p class="info">⏳ Waiting for auth...</p>`;
+                
+                // Wait for auth
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        authDiv.innerHTML = `
+                            <p class="success">✅ Authenticated</p>
+                            <p>Email: ${user.email}</p>
+                            <p>UID: ${user.uid}</p>
+                        `;
+                        log(`Authenticated as: ${user.email} (${user.uid})`, 'success');
+                    } else {
+                        authDiv.innerHTML = `<p class="error">❌ Not authenticated</p>`;
+                        log('Not authenticated', 'error');
+                    }
+                });
+            }
+        };
+        
+        window.testSimpleFiles = async function() {
+            try {
+                log('Testing simple files query...');
+                const filesRef = collection(db, 'files');
+                const q = query(filesRef, limit(5));
+                const snapshot = await getDocs(q);
+                
+                log(`Found ${snapshot.size} files total`, 'success');
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    log(`File: ${doc.id} - User: ${data.userId} - Name: ${data.fileName || data.name || 'unnamed'}`);
+                });
+                
+            } catch (error) {
+                log(`Error in simple query: ${error.message}`, 'error');
+            }
+        };
+        
+        window.testUserFiles = async function() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    log('No authenticated user!', 'error');
+                    return;
+                }
+                
+                log(`Testing user files query for: ${user.uid}`);
+                
+                // Try the exact query from UI Studio
+                const filesQuery = query(
+                    collection(db, "files"),
+                    where("userId", "==", user.uid),
+                    orderBy("uploadedAt", "desc"),
+                    limit(10)
+                );
+                
+                const snapshot = await getDocs(filesQuery);
+                
+                log(`Found ${snapshot.size} files for user ${user.email}`, 'success');
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    log(`User File: ${doc.id} - ${data.fileName || data.name || 'unnamed'} - Uploaded: ${data.uploadedAt}`);
+                });
+                
+            } catch (error) {
+                log(`Error in user query: ${error.message}`, 'error');
+                
+                if (error.message.includes('index')) {
+                    log('💡 This requires a composite index. Check Firebase Console!', 'error');
+                    log('Go to: Firebase Console > Firestore > Indexes', 'info');
+                }
+            }
+        };
+        
+        window.testAllCollections = async function() {
+            try {
+                log('Attempting to list collections (may not work in browser)...');
+                
+                // Try to get a document to see structure
+                const testDoc = await getDocs(collection(db, 'files'));
+                if (testDoc.empty) {
+                    log('Files collection is empty!', 'error');
+                } else {
+                    log(`Files collection exists with ${testDoc.size} documents`, 'success');
+                }
+                
+                // Also check if subcollection exists
+                if (auth.currentUser) {
+                    const subCol = collection(db, 'users', auth.currentUser.uid, 'files');
+                    const subDocs = await getDocs(subCol);
+                    if (!subDocs.empty) {
+                        log(`Found ${subDocs.size} files in users/${auth.currentUser.uid}/files subcollection`, 'info');
+                    }
+                }
+                
+            } catch (error) {
+                log(`Error checking collections: ${error.message}`, 'error');
+            }
+        };
+        
+        window.createTestFile = async function() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    log('No authenticated user!', 'error');
+                    return;
+                }
+                
+                const testFileId = `test_file_${Date.now()}`;
+                const testFile = {
+                    id: testFileId,
+                    userId: user.uid,
+                    fileName: 'Test File.pdf',
+                    fileType: 'application/pdf',
+                    fileSize: 1024000,
+                    uploadedAt: new Date().toISOString(),
+                    category: 'documents',
+                    downloadURL: 'https://example.com/test.pdf',
+                    storagePath: `users/${user.uid}/files/test.pdf`
+                };
+                
+                log(`Creating test file: ${testFileId}`);
+                
+                await setDoc(doc(db, 'files', testFileId), {
+                    ...testFile,
+                    serverTimestamp: serverTimestamp()
+                });
+                
+                log(`✅ Test file created successfully!`, 'success');
+                log('Now try "Test User Files Query" again', 'info');
+                
+            } catch (error) {
+                log(`Error creating test file: ${error.message}`, 'error');
+            }
+        };
+        
+        // Auto-check auth on load
+        setTimeout(checkAuth, 1000);
+    </script>
+</body>
+</html>

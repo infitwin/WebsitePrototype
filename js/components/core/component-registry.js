@@ -21,7 +21,10 @@ class ComponentRegistryManager {
     };
     
     // Development mode warnings
-    this.isDevelopment = process.env.NODE_ENV !== 'production';
+    // Check if we're in development mode (process is not defined in browsers)
+    this.isDevelopment = typeof process !== 'undefined' 
+      ? process.env.NODE_ENV !== 'production'
+      : window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   }
   
   /**
@@ -248,6 +251,12 @@ class ComponentRegistryManager {
 export const ComponentRegistry = new ComponentRegistryManager();
 
 // Make registry available globally for debugging in development
-if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
-  window.ComponentRegistry = ComponentRegistry;
+if (typeof window !== 'undefined') {
+  const isDevelopment = typeof process !== 'undefined' 
+    ? process.env.NODE_ENV !== 'production'
+    : window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (isDevelopment) {
+    window.ComponentRegistry = ComponentRegistry;
+  }
 }

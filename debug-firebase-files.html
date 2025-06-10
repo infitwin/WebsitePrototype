@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Firebase Files</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .debug-section { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: white; padding: 10px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+    
+    <!-- Import map for Firebase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/storage": "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <h1>🔍 Debug Firebase Files</h1>
+    
+    <div class="debug-section">
+        <h3>1. Firebase Configuration</h3>
+        <div id="configStatus"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>2. Authentication Status</h3>
+        <div id="authStatus"></div>
+        <button onclick="checkAuth()">Check Auth</button>
+        <button onclick="waitForAuth()">Wait for Auth</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>3. Firestore Query Test</h3>
+        <div id="queryStatus"></div>
+        <button onclick="testSubcollection()">Test Subcollection (old)</button>
+        <button onclick="testRootCollection()">Test Root Collection (new)</button>
+        <button onclick="testSimpleQuery()">Test Simple Query</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>4. Results</h3>
+        <pre id="results"></pre>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged } from 'firebase/auth';
+        import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
+        
+        // Firebase config from firebase-config.js
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Make functions available globally
+        window.auth = auth;
+        window.db = db;
+        
+        // Display config status
+        document.getElementById('configStatus').innerHTML = `
+            <p class="success">✅ Firebase initialized</p>
+            <p class="info">Project ID: ${firebaseConfig.projectId}</p>
+        `;
+        
+        window.checkAuth = function() {
+            const user = auth.currentUser;
+            const status = document.getElementById('authStatus');
+            
+            if (user) {
+                status.innerHTML = `
+                    <p class="success">✅ User authenticated</p>
+                    <p class="info">Email: ${user.email}</p>
+                    <p class="info">UID: ${user.uid}</p>
+                `;
+            } else {
+                status.innerHTML = `<p class="error">❌ No user authenticated</p>`;
+            }
+        };
+        
+        window.waitForAuth = function() {
+            const status = document.getElementById('authStatus');
+            status.innerHTML = `<p class="info">⏳ Waiting for auth state...</p>`;
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    status.innerHTML = `
+                        <p class="success">✅ Auth state resolved</p>
+                        <p class="info">Email: ${user.email}</p>
+                        <p class="info">UID: ${user.uid}</p>
+                    `;
+                } else {
+                    status.innerHTML = `<p class="error">❌ No user in auth state</p>`;
+                }
+            });
+        };
+        
+        window.testSubcollection = async function() {
+            const status = document.getElementById('queryStatus');
+            const results = document.getElementById('results');
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    status.innerHTML = `<p class="error">❌ No authenticated user</p>`;
+                    return;
+                }
+                
+                status.innerHTML = `<p class="info">🔍 Testing subcollection: users/${user.uid}/files</p>`;
+                
+                const filesRef = collection(db, 'users', user.uid, 'files');
+                const q = query(filesRef, orderBy('uploadedAt', 'desc'), limit(10));
+                const snapshot = await getDocs(q);
+                
+                const files = [];
+                snapshot.forEach(doc => {
+                    files.push({ id: doc.id, ...doc.data() });
+                });
+                
+                status.innerHTML += `<p class="success">✅ Query successful</p>`;
+                results.textContent = JSON.stringify(files, null, 2);
+                
+            } catch (error) {
+                status.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+                results.textContent = error.stack;
+            }
+        };
+        
+        window.testRootCollection = async function() {
+            const status = document.getElementById('queryStatus');
+            const results = document.getElementById('results');
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    status.innerHTML = `<p class="error">❌ No authenticated user</p>`;
+                    return;
+                }
+                
+                status.innerHTML = `<p class="info">🔍 Testing root collection: files (where userId == ${user.uid})</p>`;
+                
+                const filesRef = collection(db, 'files');
+                const q = query(
+                    filesRef, 
+                    where('userId', '==', user.uid),
+                    orderBy('uploadedAt', 'desc'),
+                    limit(10)
+                );
+                const snapshot = await getDocs(q);
+                
+                const files = [];
+                snapshot.forEach(doc => {
+                    files.push({ id: doc.id, ...doc.data() });
+                });
+                
+                status.innerHTML += `<p class="success">✅ Query successful - Found ${files.length} files</p>`;
+                results.textContent = JSON.stringify(files, null, 2);
+                
+            } catch (error) {
+                status.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+                if (error.message.includes('index')) {
+                    status.innerHTML += `<p class="error">💡 This error means you need to create a composite index in Firebase Console</p>`;
+                }
+                results.textContent = error.stack;
+            }
+        };
+        
+        window.testSimpleQuery = async function() {
+            const status = document.getElementById('queryStatus');
+            const results = document.getElementById('results');
+            
+            try {
+                status.innerHTML = `<p class="info">🔍 Testing simple query without auth filter</p>`;
+                
+                const filesRef = collection(db, 'files');
+                const q = query(filesRef, limit(5));
+                const snapshot = await getDocs(q);
+                
+                const files = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    files.push({ 
+                        id: doc.id, 
+                        userId: data.userId,
+                        fileName: data.fileName || data.name,
+                        uploadedAt: data.uploadedAt
+                    });
+                });
+                
+                status.innerHTML += `<p class="success">✅ Simple query successful - Found ${files.length} files total</p>`;
+                results.textContent = JSON.stringify(files, null, 2);
+                
+            } catch (error) {
+                status.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+                results.textContent = error.stack;
+            }
+        };
+        
+        // Auto-check auth on load
+        setTimeout(checkAuth, 1000);
+    </script>
+</body>
+</html>

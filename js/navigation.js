@@ -40,6 +40,8 @@ class NavigationManager {
         await this.loadSharedNavigation();
         this.setActiveState();
         this.setupLogoutHandler();
+        // Don't update user info in navigation - only in dropdown
+        // this.updateUserInfo();
     }
 
     /**
@@ -153,18 +155,76 @@ class NavigationManager {
             dropdown.classList.remove('active');
         }
     }
+
+    /**
+     * Update user info in navigation
+     */
+    async updateUserInfo() {
+        try {
+            // First check localStorage
+            const userEmail = localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName') || sessionStorage.getItem('userName');
+            
+            if (userEmail) {
+                // Update all user name/email displays
+                const userNameElements = document.querySelectorAll('.user-name, .username, .current-user');
+                const userEmailElements = document.querySelectorAll('.user-email');
+                
+                userNameElements.forEach(el => {
+                    el.textContent = userName || userEmail.split('@')[0];
+                });
+                
+                userEmailElements.forEach(el => {
+                    el.textContent = userEmail;
+                });
+                
+                console.log('✅ Updated navigation with user:', userEmail);
+            } else {
+                // Try to get from Firebase auth
+                const checkFirebaseAuth = async () => {
+                    try {
+                        const { auth } = await import('./firebase-config.js');
+                        
+                        auth.onAuthStateChanged(user => {
+                            if (user) {
+                                // Update displays with Firebase user
+                                const userNameElements = document.querySelectorAll('.user-name, .username, .current-user');
+                                const userEmailElements = document.querySelectorAll('.user-email');
+                                
+                                userNameElements.forEach(el => {
+                                    el.textContent = user.displayName || user.email.split('@')[0];
+                                });
+                                
+                                userEmailElements.forEach(el => {
+                                    el.textContent = user.email;
+                                });
+                                
+                                console.log('✅ Updated navigation with Firebase user:', user.email);
+                                
+                                // Save to localStorage for next time
+                                localStorage.setItem('userEmail', user.email);
+                                localStorage.setItem('userName', user.displayName || user.email.split('@')[0]);
+                            }
+                        });
+                    } catch (error) {
+                        console.warn('Could not import Firebase:', error);
+                    }
+                };
+                
+                checkFirebaseAuth();
+            }
+        } catch (error) {
+            console.error('Error updating user info:', error);
+        }
+    }
 }
 
-// Auto-initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    new NavigationManager();
-});
-
-// Also initialize immediately if DOM is already loaded
+// Auto-initialize only once when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         new NavigationManager();
     });
 } else {
+    // DOM already loaded
     new NavigationManager();
 }

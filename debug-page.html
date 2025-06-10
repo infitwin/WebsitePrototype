@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug My Files</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #console { background: black; color: lime; padding: 10px; height: 300px; overflow-y: scroll; font-family: monospace; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ccc; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Debug My Files Page</h1>
+    <div id="console"></div>
+    <iframe src="/pages/my-files.html" id="testFrame"></iframe>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message) {
+            consoleDiv.innerHTML += message + '<br>';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        // Monitor iframe console
+        const iframe = document.getElementById('testFrame');
+        iframe.onload = function() {
+            log('📱 Iframe loaded');
+            
+            setTimeout(() => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    // Check navigation
+                    const navContainer = iframeDoc.querySelector('.sidebar-nav-container');
+                    log(`🧭 Navigation container: ${navContainer ? 'Found' : 'Missing'}`);
+                    
+                    if (navContainer) {
+                        log(`📏 Nav container innerHTML length: ${navContainer.innerHTML.length}`);
+                        if (navContainer.innerHTML.length === 0) {
+                            log('⚠️  Navigation container is empty');
+                        }
+                    }
+                    
+                    // Check file states
+                    const loadingState = iframeDoc.getElementById('loadingState');
+                    const emptyState = iframeDoc.getElementById('emptyState');
+                    const filesContainer = iframeDoc.getElementById('filesContainer');
+                    
+                    log(`🔄 Loading state display: ${loadingState ? loadingState.style.display : 'not found'}`);
+                    log(`📂 Empty state display: ${emptyState ? emptyState.style.display : 'not found'}`);
+                    log(`📁 Files container: ${filesContainer ? 'Found' : 'Missing'}`);
+                    
+                    if (filesContainer) {
+                        log(`📊 Files container children: ${filesContainer.children.length}`);
+                    }
+                    
+                } catch (error) {
+                    log(`❌ Error accessing iframe: ${error.message}`);
+                }
+            }, 5000);
+        };
+        
+        log('🚀 Starting debug session...');
+    </script>
+</body>
+</html>

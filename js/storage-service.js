@@ -27,9 +27,9 @@ export async function getStorageBreakdown() {
     };
 
     try {
-        // Query file records from Firestore
-        const filesRef = collection(db, 'files');
-        const q = query(filesRef, where('userId', '==', userId));
+        // Query file records from Firestore using user subcollection
+        const filesRef = collection(db, 'users', userId, 'files');
+        const q = query(filesRef);
         const snapshot = await getDocs(q);
 
         snapshot.forEach(doc => {
@@ -128,10 +128,9 @@ export async function getStorageRecommendations() {
 
     try {
         // Get large files (over 5MB)
-        const filesRef = collection(db, 'files');
+        const filesRef = collection(db, 'users', userId, 'files');
         const largeFilesQuery = query(
             filesRef, 
-            where('userId', '==', userId),
             where('fileSize', '>', 5 * 1024 * 1024),
             orderBy('fileSize', 'desc'),
             limit(5)
@@ -158,7 +157,6 @@ export async function getStorageRecommendations() {
         
         const oldFilesQuery = query(
             filesRef,
-            where('userId', '==', userId),
             where('uploadedAt', '<', ninetyDaysAgo.toISOString()),
             limit(10)
         );
@@ -175,8 +173,7 @@ export async function getStorageRecommendations() {
         }
 
         // Check for duplicate names (simplified check)
-        const allFilesQuery = query(filesRef, where('userId', '==', userId));
-        const allFiles = await getDocs(allFilesQuery);
+        const allFiles = await getDocs(filesRef);
         const fileNames = {};
         
         allFiles.forEach(doc => {
@@ -217,9 +214,8 @@ export async function calculateStorageUsed() {
     let totalSize = 0;
 
     try {
-        const filesRef = collection(db, 'files');
-        const q = query(filesRef, where('userId', '==', userId));
-        const snapshot = await getDocs(q);
+        const filesRef = collection(db, 'users', userId, 'files');
+        const snapshot = await getDocs(filesRef);
 
         snapshot.forEach(doc => {
             const file = doc.data();

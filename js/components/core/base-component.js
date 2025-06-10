@@ -103,7 +103,11 @@ export class BaseComponent {
    * Validate that component uses design system tokens
    */
   validateDesignSystem() {
-    if (process.env.NODE_ENV !== 'production') {
+    const isProduction = typeof process !== 'undefined' 
+      ? process.env.NODE_ENV === 'production'
+      : false; // In browser, assume not production
+      
+    if (!isProduction) {
       validateDesignTokens(this.element, this.componentType);
     }
   }

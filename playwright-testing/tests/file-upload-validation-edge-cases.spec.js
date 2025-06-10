@@ -32,17 +32,37 @@ test.describe('File Upload Validation Edge Cases', () => {
     // Mock file selection with oversized file
     await page.evaluate((mockFile) => {
       const fileInput = document.querySelector('#fileInput');
+      console.log('File input found:', !!fileInput);
+      
       if (fileInput) {
         const dataTransfer = new DataTransfer();
         const file = new File([new ArrayBuffer(mockFile.size)], mockFile.name, { type: mockFile.type });
+        console.log('Created file:', file.name, file.size, file.type);
+        
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
+        console.log('Files set on input:', fileInput.files.length);
         
         // Trigger change event
         const event = new Event('change', { bubbles: true });
+        console.log('Dispatching change event');
         fileInput.dispatchEvent(event);
+        console.log('Event dispatched');
+        
+        // Add a test div to verify script execution
+        const testDiv = document.createElement('div');
+        testDiv.className = 'test-debug';
+        testDiv.textContent = 'Test script executed';
+        document.body.appendChild(testDiv);
       }
     }, largeMockFile);
+    
+    // Wait a moment for processing
+    await page.waitForTimeout(1000);
+    
+    // Check if test script executed
+    const testDebugVisible = await page.locator('.test-debug').isVisible().catch(() => false);
+    console.log('Test debug div visible:', testDebugVisible);
     
     // Should show error message about file size
     const errorSelectors = [
@@ -51,6 +71,7 @@ test.describe('File Upload Validation Edge Cases', () => {
       'text=/size.*limit/i',
       '.error',
       '.upload-error',
+      '.validation-error',
       '[class*="error"]'
     ];
     

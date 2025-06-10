@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify My Files Fix</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .success { background: #4CAF50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .test-frame { width: 100%; height: 800px; border: 3px solid #4CAF50; border-radius: 8px; background: white; }
+        .info-box { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        h3 { margin-top: 0; }
+        .highlight { background: yellow; padding: 2px 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success">
+            <h1>✅ Component Registry Fixed!</h1>
+            <p>The "process is not defined" error has been resolved.</p>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔧 What Was Fixed:</h3>
+            <ul>
+                <li>Line 254: Added check for <span class="highlight">typeof process !== 'undefined'</span> before accessing process.env</li>
+                <li>This was the second occurrence that was still causing errors</li>
+                <li>Now properly checks if process exists before using it</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>📋 Expected Results:</h3>
+            <ul>
+                <li>✅ No more "process is not defined" errors in console</li>
+                <li>✅ Navigation loads without errors</li>
+                <li>✅ Files should display in grid view</li>
+                <li>✅ No username visible in navigation sidebar</li>
+                <li>✅ User email shown under "My Files" title</li>
+            </ul>
+        </div>
+        
+        <h3>🖼️ Live My Files Page (with test credentials logged in):</h3>
+        <iframe src="/pages/my-files.html" class="test-frame"></iframe>
+    </div>
+</body>
+</html>

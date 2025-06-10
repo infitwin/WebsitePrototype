@@ -19,11 +19,6 @@
 import { BaseComponent } from '../core/base-component.js';
 import { ComponentRegistry } from '../core/component-registry.js';
 
-// Register component types to prevent duplicates
-ComponentRegistry.registerType('FormInput', FormInput);
-ComponentRegistry.registerType('FormGroup', FormGroup);
-ComponentRegistry.registerType('FormValidator', FormValidator);
-
 export class FormInput extends BaseComponent {
   constructor(options = {}) {
     super({

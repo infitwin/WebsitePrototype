@@ -31,7 +31,11 @@ const DESIGN_TOKENS = {
  * Validate that an element uses design system tokens
  */
 export function validateDesignTokens(element, componentType) {
-  if (process.env.NODE_ENV === 'production') {
+  const isProduction = typeof process !== 'undefined' 
+    ? process.env.NODE_ENV === 'production'
+    : false; // In browser, assume not production
+    
+  if (isProduction) {
     return; // Skip validation in production
   }
   
@@ -56,7 +60,11 @@ export function validateDesignTokens(element, componentType) {
     console.groupEnd();
     
     // In strict mode, throw error to force compliance
-    if (process.env.STRICT_DESIGN_SYSTEM === 'true') {
+    const strictMode = typeof process !== 'undefined' 
+      ? process.env.STRICT_DESIGN_SYSTEM === 'true'
+      : false;
+      
+    if (strictMode) {
       throw new Error(`${componentType} violates design system. Use design tokens instead of hardcoded values.`);
     }
   }
@@ -156,7 +164,11 @@ function rgbToHex(rgb) {
  * Scan all elements on page for design system violations
  */
 export function auditPageDesignSystem() {
-  if (process.env.NODE_ENV === 'production') {
+  const isProduction = typeof process !== 'undefined' 
+    ? process.env.NODE_ENV === 'production'
+    : false; // In browser, assume not production
+    
+  if (isProduction) {
     return;
   }
   
@@ -208,6 +220,12 @@ export function auditPageDesignSystem() {
 }
 
 // Export utility for manual checking
-if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
-  window.auditDesignSystem = auditPageDesignSystem;
+if (typeof window !== 'undefined') {
+  const isDevelopment = typeof process !== 'undefined' 
+    ? process.env.NODE_ENV !== 'production'
+    : window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (isDevelopment) {
+    window.auditDesignSystem = auditPageDesignSystem;
+  }
 }

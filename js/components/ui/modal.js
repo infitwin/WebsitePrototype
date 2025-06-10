@@ -19,9 +19,6 @@
 import { BaseComponent } from '../core/base-component.js';
 import { ComponentRegistry } from '../core/component-registry.js';
 
-// Register component type to prevent duplicates
-ComponentRegistry.registerType('Modal', Modal);
-
 export class Modal extends BaseComponent {
   constructor(options = {}) {
     super({
@@ -437,6 +434,9 @@ export class Modal extends BaseComponent {
     return modal;
   }
 }
+
+// Register component type to prevent duplicates (after class declaration)
+ComponentRegistry.registerType('Modal', Modal);
 
 // Export convenience methods
 export const ModalConfirm = Modal.confirm;

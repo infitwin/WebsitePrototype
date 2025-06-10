@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Console Errors</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .frame { width: 100%; height: 600px; border: 2px solid #333; }
+        #errors { background: #fee; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        #success { background: #efe; padding: 15px; margin: 20px 0; border-radius: 8px; display: none; }
+        .error-item { margin: 5px 0; color: #d00; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>My Files Page - Console Error Check</h1>
+    
+    <button onclick="checkErrors()">Check for Console Errors</button>
+    
+    <div id="errors" style="display: none;">
+        <h3>❌ Console Errors Found:</h3>
+        <div id="errorList"></div>
+    </div>
+    
+    <div id="success">
+        <h3>✅ No Console Errors!</h3>
+        <p>The page loaded successfully without errors.</p>
+    </div>
+    
+    <h3>My Files Page:</h3>
+    <iframe id="myFilesFrame" src="/pages/my-files.html" class="frame"></iframe>
+    
+    <script>
+        let errorCount = 0;
+        const originalError = console.error;
+        
+        // Override console.error to capture errors from iframe
+        window.addEventListener('message', function(e) {
+            if (e.data.type === 'console-error') {
+                errorCount++;
+                const errorList = document.getElementById('errorList');
+                const errorItem = document.createElement('div');
+                errorItem.className = 'error-item';
+                errorItem.textContent = e.data.message;
+                errorList.appendChild(errorItem);
+            }
+        });
+        
+        function checkErrors() {
+            const iframe = document.getElementById('myFilesFrame');
+            const iframeWindow = iframe.contentWindow;
+            
+            // Inject error monitoring
+            iframe.onload = function() {
+                const script = iframe.contentDocument.createElement('script');
+                script.textContent = `
+                    const originalError = console.error;
+                    console.error = function(...args) {
+                        window.parent.postMessage({
+                            type: 'console-error',
+                            message: args.join(' ')
+                        }, '*');
+                        originalError.apply(console, args);
+                    };
+                    
+                    // Check if component registry loaded
+                    setTimeout(() => {
+                        if (typeof window.ComponentRegistry === 'undefined') {
+                            console.log('ComponentRegistry loaded: No');
+                        } else {
+                            console.log('ComponentRegistry loaded: Yes');
+                        }
+                        
+                        // Check auth status
+                        if (window.auth && window.auth.currentUser) {
+                            console.log('Auth user:', window.auth.currentUser.email);
+                        } else {
+                            console.log('Auth user: Not logged in');
+                        }
+                    }, 2000);
+                `;
+                iframe.contentDocument.head.appendChild(script);
+            };
+            
+            // Reload the iframe to capture errors
+            iframe.src = iframe.src + '?t=' + Date.now();
+            
+            // Check after 3 seconds
+            setTimeout(() => {
+                if (errorCount === 0) {
+                    document.getElementById('success').style.display = 'block';
+                    document.getElementById('errors').style.display = 'none';
+                } else {
+                    document.getElementById('errors').style.display = 'block';
+                    document.getElementById('success').style.display = 'none';
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -18,9 +18,6 @@
 import { BaseComponent } from '../core/base-component.js';
 import { ComponentRegistry } from '../core/component-registry.js';
 
-// Register component type to prevent duplicates
-ComponentRegistry.registerType('Button', Button);
-
 export class Button extends BaseComponent {
   constructor(options = {}) {
     super({
@@ -343,5 +340,6 @@ export class ButtonGroup extends BaseComponent {
   }
 }
 
-// Register ButtonGroup
+// Register component types to prevent duplicates (after class declarations)
+ComponentRegistry.registerType('Button', Button);
 ComponentRegistry.registerType('ButtonGroup', ButtonGroup);

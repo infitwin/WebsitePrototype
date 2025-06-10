@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Debug</title>
+</head>
+<body>
+    <h1>Quick Debug Test</h1>
+    <div id="status">Testing...</div>
+    
+    <script type="module">
+        try {
+            console.log('Starting debug test...');
+            
+            // Test 1: Check if basic imports work
+            const { auth } = await import('./js/firebase-config.js');
+            console.log('✅ Firebase config loaded:', typeof auth);
+            document.getElementById('status').innerHTML += '<br>✅ Firebase config: OK';
+            
+            // Test 2: Check if file service imports work
+            const { getUserFiles } = await import('./js/file-service.js');
+            console.log('✅ File service loaded:', typeof getUserFiles);
+            document.getElementById('status').innerHTML += '<br>✅ File service: OK';
+            
+            // Test 3: Check if storage service imports work
+            const { getStorageBreakdown } = await import('./js/storage-service.js');
+            console.log('✅ Storage service loaded:', typeof getStorageBreakdown);
+            document.getElementById('status').innerHTML += '<br>✅ Storage service: OK';
+            
+            // Test 4: Check current user
+            if (auth.currentUser) {
+                console.log('✅ User authenticated:', auth.currentUser.email);
+                document.getElementById('status').innerHTML += '<br>✅ User: ' + auth.currentUser.email;
+                
+                // Test 5: Try to get user files
+                try {
+                    const result = await getUserFiles();
+                    console.log('✅ Files result:', result);
+                    document.getElementById('status').innerHTML += '<br>✅ Files loaded: ' + result.files.length + ' files';
+                } catch (fileError) {
+                    console.error('❌ File loading error:', fileError);
+                    document.getElementById('status').innerHTML += '<br>❌ File error: ' + fileError.message;
+                }
+                
+                // Test 6: Try storage breakdown
+                try {
+                    const breakdown = await getStorageBreakdown();
+                    console.log('✅ Storage breakdown:', breakdown);
+                    document.getElementById('status').innerHTML += '<br>✅ Storage breakdown: OK';
+                } catch (storageError) {
+                    console.error('❌ Storage error:', storageError);
+                    document.getElementById('status').innerHTML += '<br>❌ Storage error: ' + storageError.message;
+                }
+            } else {
+                console.log('❌ No user authenticated');
+                document.getElementById('status').innerHTML += '<br>❌ No user authenticated';
+            }
+            
+        } catch (error) {
+            console.error('❌ Import error:', error);
+            document.getElementById('status').innerHTML += '<br>❌ Import error: ' + error.message;
+        }
+    </script>
+</body>
+</html>

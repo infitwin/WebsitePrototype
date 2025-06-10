@@ -226,7 +226,9 @@ async function saveFileMetadata(metadata) {
         throw new Error('User must be authenticated');
     }
     
-    const docRef = doc(db, 'users', user.uid, 'files', metadata.id);
+    console.log('💾 saveFileMetadata: Saving to ROOT collection like UI Studio');
+    // Use the same collection structure as UI Studio - root level "files" collection
+    const docRef = doc(db, 'files', metadata.id);
     await setDoc(docRef, {
         ...metadata,
         serverTimestamp: serverTimestamp()
@@ -253,42 +255,48 @@ export async function getUserFiles(options = {}) {
     }
     
     try {
-        const filesRef = collection(db, 'users', user.uid, 'files');
-        let q = query(
-            filesRef,
-            orderBy(sortBy, sortOrder),
-            limit(pageSize)
+        console.log('🔍 getUserFiles: Using ROOT collection path like UI Studio');
+        console.log('🔍 getUserFiles: Current user:', user.uid, user.email);
+        
+        // Use the EXACT same query structure as UI Studio
+        const filesQuery = query(
+            collection(db, "files"),
+            where("userId", "==", user.uid),
+            orderBy("uploadedAt", "desc"),
+            limit(pageSize || 10)
         );
         
-        // Add type filter if specified
-        if (filterType && filterType !== 'all') {
-            q = query(q, where('category', '==', filterType));
-        }
-        
-        // Add pagination cursor if provided
-        if (lastDoc) {
-            q = query(q, startAfter(lastDoc));
-        }
-        
-        const querySnapshot = await getDocs(q);
+        console.log('🔍 getUserFiles: Executing Firestore query...');
+        const querySnapshot = await getDocs(filesQuery);
         
         const files = [];
         querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            delete data.serverTimestamp; // Remove server field
             files.push({
-                ...data,
-                _doc: doc // Store doc reference for pagination
+                id: doc.id,
+                ...doc.data()
             });
         });
         
+        console.log('🔍 getUserFiles: Query complete. Found', files.length, 'files');
+        console.log('🔍 getUserFiles: Files:', files);
+        
         return {
             files,
-            hasMore: files.length === pageSize,
-            lastDoc: files.length > 0 ? files[files.length - 1]._doc : null
+            hasMore: files.length === (pageSize || 10),
+            lastDoc: files.length > 0 ? querySnapshot.docs[querySnapshot.docs.length - 1] : null
         };
     } catch (error) {
-        console.error('Error getting files:', error);
+        console.error('❌ getUserFiles Error:', error);
+        console.error('❌ Error details:', error.message);
+        console.error('❌ Error code:', error.code);
+        
+        // If it's a permission or index error, provide helpful info
+        if (error.code === 'permission-denied') {
+            console.error('❌ Permission denied - check Firestore rules');
+        } else if (error.message && error.message.includes('index')) {
+            console.error('❌ Composite index required - check Firebase console');
+        }
+        
         return { files: [], hasMore: false, lastDoc: null };
     }
 }
@@ -304,17 +312,23 @@ export async function getAllUserFiles() {
     }
     
     try {
-        const filesRef = collection(db, 'users', user.uid, 'files');
-        const q = query(filesRef, orderBy('uploadedAt', 'desc'));
+        console.log('🔍 getAllUserFiles: Using ROOT collection like UI Studio');
+        // Use the same collection structure as UI Studio - root level "files" collection
+        const filesRef = collection(db, 'files');
+        const q = query(filesRef, where('userId', '==', user.uid), orderBy('uploadedAt', 'desc'));
         const querySnapshot = await getDocs(q);
         
         const files = [];
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             delete data.serverTimestamp; // Remove server field
-            files.push(data);
+            files.push({
+                id: doc.id,
+                ...data
+            });
         });
         
+        console.log('🔍 getAllUserFiles: Found', files.length, 'files');
         return files;
     } catch (error) {
         console.error('Error getting files:', error);
@@ -339,8 +353,9 @@ export async function deleteFile(fileId, storagePath) {
         const storageRef = ref(storage, storagePath);
         await deleteObject(storageRef);
         
-        // Delete from Firestore
-        const docRef = doc(db, 'users', user.uid, 'files', fileId);
+        console.log('🗑️ deleteFile: Deleting from ROOT collection like UI Studio');
+        // Delete from Firestore - use root collection like UI Studio
+        const docRef = doc(db, 'files', fileId);
         await deleteDoc(docRef);
     } catch (error) {
         console.error('Error deleting file:', error);

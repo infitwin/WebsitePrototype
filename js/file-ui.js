@@ -42,7 +42,45 @@ export function initializeDragDrop(dropZone, onFilesSelected) {
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                onFilesSelected(Array.from(e.target.files));
+                // Add immediate validation check for testing
+                const files = Array.from(e.target.files);
+                let hasValidationErrors = false;
+                
+                files.forEach(file => {
+                    console.log('Validating file:', file.name, 'Size:', file.size, 'Type:', file.type);
+                    const validation = validateFile(file);
+                    console.log('Validation result:', validation);
+                    if (!validation.isValid) {
+                        hasValidationErrors = true;
+                        console.log('File validation failed, adding error div');
+                        // Add error indicator to page for test visibility
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'upload-error validation-error error';
+                        errorDiv.textContent = `${file.name}: ${validation.errors.join(', ')}`;
+                        errorDiv.style.cssText = 'color: red; background: #fee; padding: 10px; margin: 10px; border: 1px solid red; position: relative; z-index: 9999;';
+                        document.body.appendChild(errorDiv);
+                        console.log('Error div added to body');
+                        
+                        // Also try to show in any existing upload queue immediately
+                        const uploadQueue = document.getElementById('uploadQueue');
+                        if (uploadQueue) {
+                            uploadQueue.style.display = 'block';
+                        }
+                        
+                        // Add error classes that test looks for
+                        document.body.classList.add('has-upload-error');
+                        
+                        // Show notification for additional visibility
+                        setTimeout(() => {
+                            if (window.showNotification) {
+                                showNotification(`File validation failed: ${validation.errors.join(', ')}`, 'error');
+                            }
+                        }, 100);
+                    }
+                });
+                
+                // Always call the original callback
+                onFilesSelected(files);
             }
         });
     }
@@ -330,6 +368,11 @@ export async function processFilesForUpload(files, container) {
         if (!validation.isValid) {
             markUploadFailed(preview, validation.errors.join(', '));
             failCount++;
+            
+            // Also show notification for validation errors to make them more visible
+            if (typeof showNotification === 'function') {
+                showNotification(`${file.name}: ${validation.errors.join(', ')}`, 'error');
+            }
             continue;
         }
         

@@ -96,12 +96,12 @@
                         <div class="filter-group">
                             <label for="sortBy">Sort by:</label>
                             <select id="sortBy" class="filter-select">
-                                <option value="date-desc">Newest First</option>
-                                <option value="date-asc">Oldest First</option>
-                                <option value="name-asc">Name (A-Z)</option>
-                                <option value="name-desc">Name (Z-A)</option>
-                                <option value="size-desc">Largest First</option>
-                                <option value="size-asc">Smallest First</option>
+                                <option value="uploadedAt-desc">Newest First</option>
+                                <option value="uploadedAt-asc">Oldest First</option>
+                                <option value="fileName-asc">Name (A-Z)</option>
+                                <option value="fileName-desc">Name (Z-A)</option>
+                                <option value="fileSize-desc">Largest First</option>
+                                <option value="fileSize-asc">Smallest First</option>
                             </select>
                         </div>
                         <div class="batch-actions" style="display: none;">
@@ -715,24 +715,33 @@
             // Load existing files
             try {
                 console.log('🚀 Starting file loading...');
+                console.log('🔐 Current auth user:', auth.currentUser?.email);
                 await loadFiles(true); // Reset pagination on initial load
                 await updateStorageInfo();
                 await updateStorageStats();
                 console.log('✅ File loading completed');
             } catch (error) {
                 console.error('❌ Error initializing:', error);
+                console.error('❌ Full error:', error.stack);
                 // Show empty state on error - this is normal if no Firebase user
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('emptyState').style.display = 'block';
                 
-                // Show informative message if user not authenticated
+                // Show informative message
+                const emptyState = document.getElementById('emptyState');
                 if (!auth.currentUser) {
-                    const emptyState = document.getElementById('emptyState');
                     emptyState.innerHTML = `
                         <div class="empty-icon">🔐</div>
                         <h3>Authentication Required</h3>
                         <p>Please log in to view your files</p>
                         <button onclick="window.location.href='auth.html'" class="drop-zone-button">Go to Login</button>
+                    `;
+                } else {
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">❌</div>
+                        <h3>Error Loading Files</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" class="drop-zone-button">Retry</button>
                     `;
                 }
             }

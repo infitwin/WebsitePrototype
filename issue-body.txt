@@ -1,0 +1,33 @@
+## Issue Summary
+The Settings page navigation sidebar is not visually loading despite having proper infrastructure and passing Playwright tests.
+
+## Expected Behavior
+Settings page should show left sidebar with emoji navigation icons (Dashboard, Twin Management, etc.) as defined in /components/shared-sidebar.html
+
+## Actual Behavior  
+- Empty sidebar-nav-container div
+- Navigation functionality works (tests pass)
+- Visual sidebar not appearing
+
+## Technical Details
+- Settings page: http://localhost:8357/pages/settings.html
+- Has sidebar-nav-container div (line 661)
+- Loads navigation.js (line 1055) 
+- shared-sidebar.html component exists and is accessible
+- Playwright tests find all navigation elements
+
+## Investigation Needed
+- Check if navigation.js NavigationManager is loading shared sidebar properly
+- Verify fetch request to ../components/shared-sidebar.html
+- Test if path resolution works from /pages/settings.html
+- Check browser console for JavaScript errors
+
+## Related Issues
+- #61 (Navigation missing on Interview page)
+- #59 (Navigation inconsistencies)
+
+## Test Case
+Run: npx playwright test tests/audit-settings.spec.js (passes despite visual issue)
+
+## Priority
+Medium - Navigation works functionally but missing visual elements impacts UX

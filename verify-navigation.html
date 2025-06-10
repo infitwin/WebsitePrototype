@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Navigation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/knowledge-symphony.css">
+    <style>
+        .test-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            z-index: 9999;
+            max-width: 300px;
+        }
+        .test-info h3 { margin-top: 0; }
+        .check { margin: 5px 0; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <div class="symphony-dashboard">
+        <!-- Using centralized navigation -->
+        <div class="sidebar-nav-container"></div>
+        
+        <div class="main-content-wrapper">
+            <main class="symphony-content">
+                <h1>Navigation Verification</h1>
+                <p>This page uses the centralized navigation component.</p>
+                
+                <div class="test-info">
+                    <h3>Verification Checklist:</h3>
+                    <div id="checks"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script src="js/navigation.js"></script>
+    <script>
+        // Wait for navigation to load
+        setTimeout(() => {
+            const checks = document.getElementById('checks');
+            
+            // Check 1: Navigation loaded
+            const nav = document.querySelector('.sidebar-nav');
+            checks.innerHTML += `<div class="check ${nav ? 'pass' : 'fail'}">
+                ${nav ? '✅' : '❌'} Navigation loaded
+            </div>`;
+            
+            // Check 2: No visible username
+            const visibleUsernames = Array.from(document.querySelectorAll('.user-name, .username'))
+                .filter(el => el.offsetParent !== null && !el.closest('.user-dropdown'));
+            
+            checks.innerHTML += `<div class="check ${visibleUsernames.length === 0 ? 'pass' : 'fail'}">
+                ${visibleUsernames.length === 0 ? '✅' : '❌'} No visible username (found ${visibleUsernames.length})
+            </div>`;
+            
+            if (visibleUsernames.length > 0) {
+                visibleUsernames.forEach(el => {
+                    checks.innerHTML += `<div class="check fail">
+                        Found: "${el.textContent}" in ${el.className}
+                    </div>`;
+                });
+            }
+            
+            // Check 3: Avatar icon present
+            const avatar = document.querySelector('.user-avatar');
+            checks.innerHTML += `<div class="check ${avatar ? 'pass' : 'fail'}">
+                ${avatar ? '✅' : '❌'} Avatar icon present
+            </div>`;
+            
+            // Check 4: Dropdown hidden
+            const dropdown = document.getElementById('userDropdown');
+            const dropdownHidden = !dropdown || !dropdown.classList.contains('active');
+            checks.innerHTML += `<div class="check ${dropdownHidden ? 'pass' : 'fail'}">
+                ${dropdownHidden ? '✅' : '❌'} User dropdown hidden
+            </div>`;
+            
+        }, 2000);
+    </script>
+</body>
+</html>

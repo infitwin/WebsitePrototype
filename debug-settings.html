@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings Debug Test</title>
+</head>
+<body>
+    <h1>Settings Persistence Debug</h1>
+    <div id="output"></div>
+    <button onclick="runDebugTest()">Run Debug Test</button>
+
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += message + '<br>';
+            console.log(message);
+        }
+
+        function runDebugTest() {
+            document.getElementById('output').innerHTML = '';
+            
+            // Step 1: Check initial state
+            log('=== STEP 1: Initial State ===');
+            
+            // First clear localStorage to start fresh
+            localStorage.removeItem('userSettings');
+            log('Cleared localStorage');
+            
+            // Simulate the settings initialization from the settings page
+            let userSettings = {
+                displayName: 'John Doe',
+                emailAddress: 'john.doe@email.com',
+                phoneNumber: '+1 (555) 123-4567',
+                timezone: 'America/Los_Angeles'
+            };
+            
+            log('Initial userSettings: ' + JSON.stringify(userSettings));
+            log('Initial localStorage userSettings: ' + localStorage.getItem('userSettings'));
+            
+            // Step 2: Simulate loading from localStorage (like initializeSettings function)
+            log('\n=== STEP 2: Load from localStorage ===');
+            const savedSettings = localStorage.getItem('userSettings');
+            if (savedSettings) {
+                userSettings = { ...userSettings, ...JSON.parse(savedSettings) };
+                log('Merged settings loaded from localStorage');
+            } else {
+                log('No saved settings found, using defaults');
+            }
+            log('After loading userSettings: ' + JSON.stringify(userSettings));
+            
+            // Step 3: Simulate making a change and saving
+            log('\n=== STEP 3: Change Display Name and Save ===');
+            userSettings.displayName = 'Test User Changed';
+            log('Changed displayName to: ' + userSettings.displayName);
+            
+            // Simulate saveSettings function
+            localStorage.setItem('userSettings', JSON.stringify(userSettings));
+            log('Saved to localStorage');
+            
+            log('After save userSettings: ' + JSON.stringify(userSettings));
+            log('After save localStorage: ' + localStorage.getItem('userSettings'));
+            
+            // Step 4: Simulate changing field without saving
+            log('\n=== STEP 4: Change to "Original Name" (no save) ===');
+            // This would be just typing in the form field, not updating userSettings
+            let displayFieldValue = 'Original Name';
+            log('Form field now shows: ' + displayFieldValue);
+            log('But userSettings unchanged: ' + JSON.stringify(userSettings));
+            log('localStorage unchanged: ' + localStorage.getItem('userSettings'));
+            
+            // Step 5: Simulate page refresh (reload from localStorage)
+            log('\n=== STEP 5: Simulate Page Refresh ===');
+            // Reset userSettings to defaults
+            userSettings = {
+                displayName: 'John Doe',
+                emailAddress: 'john.doe@email.com',
+                phoneNumber: '+1 (555) 123-4567',
+                timezone: 'America/Los_Angeles'
+            };
+            
+            // Then load from localStorage (like page refresh)
+            const reloadedSettings = localStorage.getItem('userSettings');
+            if (reloadedSettings) {
+                userSettings = { ...userSettings, ...JSON.parse(reloadedSettings) };
+            }
+            
+            log('After refresh userSettings: ' + JSON.stringify(userSettings));
+            log('After refresh localStorage: ' + localStorage.getItem('userSettings'));
+            log('Display name field should show: ' + userSettings.displayName);
+            
+            // Step 6: Test the actual problem scenario
+            log('\n=== STEP 6: Testing Problem Scenario ===');
+            
+            // Check if the form population is working correctly
+            if (userSettings.displayName === 'Test User Changed') {
+                log('✅ PERSISTENCE WORKING: Display name correctly shows saved value');
+            } else {
+                log('❌ PERSISTENCE BROKEN: Display name does not show saved value');
+                log('Expected: Test User Changed, Got: ' + userSettings.displayName);
+            }
+            
+            // Clean up
+            localStorage.removeItem('userSettings');
+        }
+    </script>
+</body>
+</html>
