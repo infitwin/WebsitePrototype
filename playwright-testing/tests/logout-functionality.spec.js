@@ -18,8 +18,8 @@ test.describe('Logout Functionality', () => {
     // Verify we're on dashboard
     await expect(page).toHaveURL(/dashboard\.html/);
     
-    // Click the logout button in sidebar
-    await page.click('.sidebar-nav .logout-item');
+    // Click the logout button in sidebar footer
+    await page.click('.sidebar-footer .logout-item');
     
     // Should redirect to auth page
     await expect(page).toHaveURL(/auth\.html/);
@@ -36,16 +36,17 @@ test.describe('Logout Functionality', () => {
     // Open user dropdown menu
     await page.click('#userMenuToggle');
     
-    // Check that dropdown is visible
-    await expect(page.locator('#userDropdownMenu')).toBeVisible();
+    // Wait for dropdown to have 'show' class
+    await page.waitForSelector('#userDropdownMenu.show', { state: 'visible' });
+    
+    // Get dropdown content
+    const dropdownContent = await page.locator('#userDropdownMenu').textContent();
     
     // Check that there's no logout option in the dropdown
-    const logoutInDropdown = await page.locator('#userDropdownMenu').locator('text=Logout').count();
-    expect(logoutInDropdown).toBe(0);
+    expect(dropdownContent).not.toContain('Logout');
     
     // Check that Settings option is still there
-    const settingsInDropdown = await page.locator('#userDropdownMenu').locator('text=Settings').count();
-    expect(settingsInDropdown).toBe(1);
+    expect(dropdownContent).toContain('Settings');
   });
   
   test('All authenticated pages should have logout in sidebar', async ({ page }) => {
@@ -65,8 +66,8 @@ test.describe('Logout Functionality', () => {
     for (const pageName of authenticatedPages) {
       await page.goto(`http://localhost:8357/pages/${pageName}`);
       
-      // Check that sidebar logout button exists
-      const logoutButton = page.locator('.sidebar-nav .logout-item');
+      // Check that sidebar logout button exists (in footer section)
+      const logoutButton = page.locator('.sidebar-footer .logout-item');
       await expect(logoutButton).toBeVisible();
       
       // Verify it has the logout icon and text
