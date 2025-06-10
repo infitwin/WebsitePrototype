@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenTelemetry Demo - WebsitePrototype</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #6B46C1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #553C9A; }
+        .span-demo {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .endpoint-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 OpenTelemetry Demo - WebsitePrototype</h1>
+        
+        <div class="endpoint-info">
+            <h3>📊 OTEL Collector Configuration</h3>
+            <p><strong>Endpoint:</strong> <code>https://otel-collector-service-833139648849.us-central1.run.app/v1/traces</code></p>
+            <p><strong>Service:</strong> website-prototype v1.0.0</p>
+            <p><strong>Environment:</strong> <span id="environment">Loading...</span></p>
+        </div>
+
+        <div id="otel-status" class="status info">
+            🚀 Initializing OpenTelemetry...
+        </div>
+
+        <h2>🎯 Priority 1 Spans Demo</h2>
+        <p>Test the five priority 1 spans from the OTEL architecture:</p>
+
+        <div class="span-demo">
+            <h3>WF-001: UI_interaction:StartButton_Clicked</h3>
+            <button onclick="testStartButtonClick()">🚀 Start Interview</button>
+            <div id="start-result"></div>
+        </div>
+
+        <div class="span-demo">
+            <h3>WF-002: UI_sending_to_Orchestrator:StartInterview</h3>
+            <button onclick="testStartInterviewSend()">📤 Send Start Message</button>
+            <div id="send-result"></div>
+        </div>
+
+        <div class="span-demo">
+            <h3>WF-020: UI_interaction:RecordButton_Pressed</h3>
+            <button onclick="testRecordButtonPress()">🎙️ Start Recording</button>
+            <div id="record-result"></div>
+        </div>
+
+        <div class="span-demo">
+            <h3>WF-021: UI_sending_to_AudioProcessingService:SendAudioChunk</h3>
+            <button onclick="testAudioChunkSend()">🔊 Send Audio Chunk</button>
+            <div id="audio-result"></div>
+        </div>
+
+        <div class="span-demo">
+            <h3>WF-044: UI_sending_to_AudioProcessingService:RequestTextToSpeech</h3>
+            <button onclick="testTextToSpeechRequest()">🗣️ Request TTS</button>
+            <div id="tts-result"></div>
+        </div>
+
+        <h2>📊 Additional Tracking</h2>
+        <div class="span-demo">
+            <button onclick="testPageNavigation()">🔗 Page Navigation</button>
+            <button onclick="testFormSubmission()">📝 Form Submit</button>
+            <button onclick="testFileUpload()">📁 File Upload</button>
+            <button onclick="testError()">⚠️ Test Error</button>
+        </div>
+
+        <h2>🔄 Span Management</h2>
+        <div class="span-demo">
+            <button onclick="flushSpans()">🔄 Force Flush Spans</button>
+            <button onclick="viewSpanQueue()">👁️ View Span Queue</button>
+            <div id="flush-result"></div>
+        </div>
+
+        <h2>📋 Recent Spans</h2>
+        <div id="span-log">
+            <pre id="span-display">No spans created yet...</pre>
+        </div>
+    </div>
+
+    <!-- Import OpenTelemetry modules -->
+    <script type="module">
+        import SimpleOTelConfig from './js/otel-config-simple.js';
+        import SimpleUITracingService from './js/services/ui-tracing-service-simple.js';
+
+        // Global variables
+        window.simpleOTel = SimpleOTelConfig;
+        window.tracingService = new SimpleUITracingService();
+        
+        // Initialize and show status
+        try {
+            SimpleOTelConfig.initialize();
+            document.getElementById('otel-status').className = 'status success';
+            document.getElementById('otel-status').textContent = '✅ OpenTelemetry initialized successfully!';
+            
+            // Show environment
+            document.getElementById('environment').textContent = SimpleOTelConfig.getEnvironment();
+            
+            // Track page load
+            window.tracingService.trackPageLoad();
+            
+        } catch (error) {
+            document.getElementById('otel-status').className = 'status warning';
+            document.getElementById('otel-status').textContent = '⚠️ OpenTelemetry initialization failed: ' + error.message;
+        }
+
+        // Make functions globally available
+        window.testStartButtonClick = function() {
+            const span = window.tracingService.trackStartButtonClick({
+                type: 'personal-history',
+                userId: 'demo-user-123',
+                twinId: 'demo-twin-456'
+            });
+            document.getElementById('start-result').innerHTML = 
+                '<div class="status success">✅ Start button click span created!</div>';
+            updateSpanLog('UI_interaction:StartButton_Clicked', {
+                'interview.type': 'personal-history',
+                'user.id': 'demo-user-123',
+                'twin.id': 'demo-twin-456'
+            });
+        };
+
+        window.testStartInterviewSend = function() {
+            window.tracingService.trackStartInterviewSend({
+                type: 'StartInterview',
+                target: { service: 'Orchestrator' },
+                messageId: 'msg-demo-001',
+                payload: {
+                    metadata: {
+                        sessionId: 'session-demo-123',
+                        interviewId: 'interview-demo-456'
+                    }
+                }
+            });
+            document.getElementById('send-result').innerHTML = 
+                '<div class="status success">✅ Start interview send span created!</div>';
+            updateSpanLog('UI_sending_to_Orchestrator:StartInterview', {
+                'message.id': 'msg-demo-001',
+                'session.id': 'session-demo-123'
+            });
+        };
+
+        window.testRecordButtonPress = function() {
+            window.tracingService.trackRecordButtonPress({
+                sessionId: 'session-demo-123',
+                interviewId: 'interview-demo-456'
+            });
+            document.getElementById('record-result').innerHTML = 
+                '<div class="status success">✅ Record button press span created!</div>';
+            updateSpanLog('UI_interaction:RecordButton_Pressed', {
+                'session.id': 'session-demo-123',
+                'interview.id': 'interview-demo-456'
+            });
+        };
+
+        window.testAudioChunkSend = function() {
+            window.tracingService.trackAudioChunkSend({
+                type: 'SendAudioChunk',
+                target: { service: 'AudioProcessingService' },
+                messageId: 'audio-chunk-001',
+                chunkSize: 1024,
+                format: 'webm-opus'
+            });
+            document.getElementById('audio-result').innerHTML = 
+                '<div class="status success">✅ Audio chunk send span created!</div>';
+            updateSpanLog('UI_sending_to_AudioProcessingService:SendAudioChunk', {
+                'audio.chunk.size': 1024,
+                'audio.format': 'webm-opus'
+            });
+        };
+
+        window.testTextToSpeechRequest = function() {
+            window.tracingService.trackTextToSpeechRequest({
+                type: 'RequestTextToSpeech',
+                text: 'Hello, this is a test message for text-to-speech.',
+                voice: 'en-US-Wavenet-D'
+            });
+            document.getElementById('tts-result').innerHTML = 
+                '<div class="status success">✅ Text-to-speech request span created!</div>';
+            updateSpanLog('UI_sending_to_AudioProcessingService:RequestTextToSpeech', {
+                'tts.text.length': 49,
+                'tts.voice': 'en-US-Wavenet-D'
+            });
+        };
+
+        window.testPageNavigation = function() {
+            window.tracingService.trackPageNavigation('otel-demo', 'dashboard', 'click');
+            updateSpanLog('UI_interaction:PageNavigation', {
+                'navigation.from': 'otel-demo',
+                'navigation.to': 'dashboard'
+            });
+        };
+
+        window.testFormSubmission = function() {
+            window.tracingService.trackFormSubmission('demo-form', {
+                'field1': 'value1',
+                'field2': 'value2'
+            });
+            updateSpanLog('UI_interaction:FormSubmission', {
+                'form.fields.count': 2
+            });
+        };
+
+        window.testFileUpload = function() {
+            window.tracingService.trackFileUpload('demo-file.pdf', 2048576, 'application/pdf');
+            updateSpanLog('UI_interaction:FileUpload', {
+                'file.name': 'demo-file.pdf',
+                'file.size': 2048576,
+                'file.type': 'application/pdf'
+            });
+        };
+
+        window.testError = function() {
+            window.tracingService.trackError('JavaScript', 'Demo error for testing purposes', {
+                'error.filename': 'otel-demo.html',
+                'error.line': 42
+            });
+            updateSpanLog('UI_interaction:Error', {
+                'error.message': 'Demo error for testing purposes'
+            });
+        };
+
+        window.flushSpans = async function() {
+            try {
+                await window.tracingService.flush();
+                document.getElementById('flush-result').innerHTML = 
+                    '<div class="status success">✅ Spans flushed to OTEL collector!</div>';
+            } catch (error) {
+                document.getElementById('flush-result').innerHTML = 
+                    '<div class="status warning">⚠️ Flush failed: ' + error.message + '</div>';
+            }
+        };
+
+        window.viewSpanQueue = function() {
+            const queueLength = window.simpleOTel.spans.length;
+            document.getElementById('flush-result').innerHTML = 
+                `<div class="status info">📊 Current span queue: ${queueLength} spans pending</div>`;
+        };
+
+        function updateSpanLog(spanName, attributes) {
+            const timestamp = new Date().toISOString();
+            const spanDisplay = document.getElementById('span-display');
+            const newSpan = `[${timestamp}] ${spanName}\n${JSON.stringify(attributes, null, 2)}\n\n`;
+            spanDisplay.textContent = newSpan + spanDisplay.textContent;
+        }
+    </script>
+</body>
+</html>

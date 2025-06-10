@@ -1,0 +1,41 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/infitwin/website-prototype:latest', '.']
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/infitwin/website-prototype:latest']
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+    - 'run'
+    - 'deploy'
+    - 'website-prototype'
+    - '--image=gcr.io/infitwin/website-prototype:latest'
+    - '--region=us-central1'
+    - '--platform=managed'
+    - '--allow-unauthenticated'
+    - '--port=8080'
+    - '--memory=512Mi'
+    - '--cpu=1'
+    - '--max-instances=10'
+    - '--min-instances=1'
+    - '--set-env-vars=OTEL_SERVICE_NAME=website-prototype'
+    - '--set-env-vars=OTEL_SERVICE_VERSION=1.0.0'
+    - '--set-env-vars=OTEL_EXPORTER_OTLP_ENDPOINT=https://otel-collector-service-833139648849.us-central1.run.app'
+    - '--set-env-vars=OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf'
+    - '--set-env-vars=OTEL_LOG_LEVEL=info'
+    - '--set-env-vars=NODE_ENV=production'
+
+images:
+  - 'gcr.io/infitwin/website-prototype:latest'
+
+# Build options
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+
+# Timeout for the entire build process
+timeout: '1200s'
