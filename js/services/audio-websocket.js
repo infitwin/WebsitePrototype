@@ -112,6 +112,14 @@ class AudioWebSocketService {
    * Send initial configuration for audio processing
    */
   sendInitialConfig() {
+    // Validate that we have proper session info before sending config
+    if (!this.currentSessionId || this.currentSessionId === 'pending****') {
+      console.warn('⚠️ Audio config delayed - waiting for valid session ID');
+      // Try again in 1 second
+      setTimeout(() => this.sendInitialConfig(), 1000);
+      return;
+    }
+
     const configMessage = {
       messageId: `ui-audio-${Date.now()}`,
       type: 'SendAudioChunk',
@@ -137,7 +145,8 @@ class AudioWebSocketService {
     };
 
     this.send(configMessage);
-    console.log('Sent audio configuration:', configMessage);
+    console.log('📤 Sent audio configuration with session:', this.currentSessionId);
+    console.log('Config details:', configMessage);
   }
 
   /**
@@ -242,9 +251,23 @@ class AudioWebSocketService {
         break;
         
       case 'Error':
-        console.error('Audio service error:', message.payload);
-        if (this.onError) {
-          this.onError(new Error(message.payload?.message || 'Audio service error'));
+      case 'AudioProcessingError':
+        console.error('Audio service error - full payload:', JSON.stringify(message.payload, null, 2));
+        // Extract error details
+        const errorMessage = message.payload?.error?.message || 
+                            message.payload?.message || 
+                            message.payload?.description ||
+                            'Audio processing error';
+        const errorCode = message.payload?.error?.code || 
+                         message.payload?.code ||
+                         'UNKNOWN_ERROR';
+        
+        console.error(`🔴 Audio Error [${errorCode}]: ${errorMessage}`);
+        
+        // Don't call onError callback for every error to avoid spam
+        // Only call for severe errors
+        if (errorCode !== 'SPEECH_NOT_DETECTED' && this.onError) {
+          this.onError(new Error(`${errorCode}: ${errorMessage}`));
         }
         break;
         
