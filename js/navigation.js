@@ -20,7 +20,6 @@ class NavigationManager {
         const pageMap = {
             'dashboard': 'dashboard',
             'twin-management': 'twin',
-            'explore': 'explore', 
             'interview': 'interview',
             'curator': 'curator',
             'interview-transcripts': 'transcripts',
