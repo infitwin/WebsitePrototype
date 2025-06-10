@@ -1469,23 +1469,55 @@
             
             let score = 0;
             let feedback = [];
+            let isWeak = false;
             
-            // Length check
-            if (password.length >= 8) score++;
-            else feedback.push('at least 8 characters');
+            // Check for weak patterns first (these override other scoring)
+            const weakPatterns = [
+                /^(.)\1{7,}$/, // Repeated characters (e.g., "aaaaaaaa")
+                /^(012|123|234|345|456|567|678|789|890)+/, // Sequential ascending
+                /^(987|876|765|654|543|432|321|210|109)+/, // Sequential descending
+                /^(qwerty|asdf|zxcv|password|admin|login)/i, // Common patterns
+                /^[0-9]+$/, // Numbers only (like "12345678")
+                /^[a-z]+$/, // Letters only, lowercase
+                /^[A-Z]+$/, // Letters only, uppercase
+            ];
             
-            // Character variety checks
-            if (/[a-z]/.test(password)) score++;
-            else feedback.push('lowercase letters');
+            // Check if password matches any weak pattern
+            for (const pattern of weakPatterns) {
+                if (pattern.test(password)) {
+                    isWeak = true;
+                    break;
+                }
+            }
             
-            if (/[A-Z]/.test(password)) score++;
-            else feedback.push('uppercase letters');
+            // Additional check for simple sequential numbers
+            if (/^123456|^234567|^345678|^456789|^567890|^678901|^789012|^890123|^901234/.test(password)) {
+                isWeak = true;
+            }
             
-            if (/[0-9]/.test(password)) score++;
-            else feedback.push('numbers');
-            
-            if (/[^A-Za-z0-9]/.test(password)) score++;
-            else feedback.push('special characters');
+            // If weak pattern detected, force low score regardless of other criteria
+            if (isWeak) {
+                score = 0;
+                feedback.push('avoid common patterns');
+            } else {
+                // Normal scoring for non-weak patterns
+                // Length check
+                if (password.length >= 8) score++;
+                else feedback.push('at least 8 characters');
+                
+                // Character variety checks
+                if (/[a-z]/.test(password)) score++;
+                else feedback.push('lowercase letters');
+                
+                if (/[A-Z]/.test(password)) score++;
+                else feedback.push('uppercase letters');
+                
+                if (/[0-9]/.test(password)) score++;
+                else feedback.push('numbers');
+                
+                if (/[^A-Za-z0-9]/.test(password)) score++;
+                else feedback.push('special characters');
+            }
             
             // Update strength indicator
             const strengthClasses = ['strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
