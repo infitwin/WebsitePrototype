@@ -244,6 +244,16 @@ class AudioWebSocketService {
         console.log('Audio chunk acknowledged:', message.payload);
         break;
         
+      case 'AudioChunkProcessed':
+        // Handle accumulating status and successful processing
+        const status = message.payload?.status;
+        if (status === 'accumulating') {
+          console.log('Audio chunk accumulating for recognition');
+        } else {
+          console.log('Audio chunk processed:', message.payload);
+        }
+        break;
+        
       case 'TranscriptionResult':
       case 'ForwardTranscript':
         console.log('TranscriptionResult received:', message);
