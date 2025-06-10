@@ -246,8 +246,10 @@ class AudioWebSocketService {
         
       case 'TranscriptionResult':
       case 'ForwardTranscript':
+        console.log('TranscriptionResult received:', message);
         if (this.onTranscriptReceived) {
           const transcript = message.payload?.content?.transcript || message.payload?.transcript;
+          console.log('Extracted transcript:', transcript);
           if (transcript) {
             this.onTranscriptReceived({
               text: transcript.text || transcript,
@@ -255,6 +257,8 @@ class AudioWebSocketService {
               isFinal: transcript.isFinal !== false,
               timestamp: message.timestamp
             });
+          } else {
+            console.warn('No transcript found in message:', message);
           }
         }
         break;
