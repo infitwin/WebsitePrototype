@@ -107,11 +107,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const signupSubmitBtn = Button.primary({
                 text: 'Create Your Archive',
                 fullWidth: true,
-                htmlType: 'submit',
-                onClick: function(e) {
-                    e.preventDefault();
-                    handleSignup(e);
-                }
+                htmlType: 'submit'
             });
             signupSubmitContainer.appendChild(signupSubmitBtn.element);
             console.log('✅ Signup button created');
@@ -160,7 +156,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         
-        // Validation
+        // Password strength validation
+        if (password.length < 8) {
+            showNotification('Password must be at least 8 characters', 'error');
+            return;
+        }
+        
+        // Password match validation
         if (password !== confirmPassword) {
             showNotification('Passwords do not match', 'error');
             return;
