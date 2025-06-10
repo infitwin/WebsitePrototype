@@ -18,17 +18,17 @@
             color: #1a1a1a;
             overflow: hidden;
             height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .interview-page-wrapper {
             display: flex;
+            height: 100vh;
+            width: 100%;
         }
 
-        /* Shared Navigation Sidebar */
-        .sidebar-nav-container {
-            width: 80px;
-            flex-shrink: 0;
-            z-index: 200;
-        }
-
-        /* Duplicate sidebar styles removed - using shared navigation from sidebar-nav-container */
+        /* Shared Navigation Sidebar - no custom styles needed */
 
         /* Page Content Container */
         .page-content {
@@ -1054,11 +1054,13 @@
         </div>
     </div>
 
-    <!-- Shared Sidebar Navigation -->
-    <div class="sidebar-nav-container"></div>
+    <!-- Main Page Wrapper -->
+    <div class="interview-page-wrapper">
+        <!-- Shared Sidebar Navigation -->
+        <div class="sidebar-nav-container"></div>
 
-    <!-- Page Content -->
-    <div class="page-content">
+        <!-- Page Content -->
+        <div class="page-content">
         <!-- Navigation Header -->
     <nav class="interview-nav">
         <div class="nav-left">
@@ -1127,6 +1129,7 @@
         </div>
     </div>
     </div> <!-- End page-content -->
+    </div> <!-- End interview-page-wrapper -->
 
     <!-- Expanded Chat Modal -->
     <div class="chat-modal" id="chatModal">
