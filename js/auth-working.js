@@ -31,14 +31,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     await waitForFirebase();
     console.log('Firebase loaded, initializing app...');
     
-    // Initialize Firebase
-    const app = window.firebase.initializeApp(firebaseConfig);
-    auth = window.firebase.getAuth(app);
+    // Initialize Firebase (v8 syntax)
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    auth = firebase.auth();
     
     console.log('Firebase initialized, setting up buttons...');
     
-    // Import Button component
-    const { Button } = await import('./components/ui/button.js');
+    // Wait for Button component to be available (loaded as module)
+    function waitForButton() {
+        return new Promise((resolve) => {
+            if (window.Button) {
+                resolve(window.Button);
+            } else {
+                setTimeout(() => waitForButton().then(resolve), 100);
+            }
+        });
+    }
+    
+    const Button = await waitForButton();
     console.log('Button component loaded');
     
     // Initialize buttons using the centralized component
@@ -129,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         
         try {
-            const userCredential = await window.firebase.signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
             const user = userCredential.user;
             
             // Store user data
@@ -164,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         
         try {
-            const userCredential = await window.firebase.createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
             
             // Store user data

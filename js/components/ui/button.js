@@ -343,3 +343,7 @@ export class ButtonGroup extends BaseComponent {
 // Register component types to prevent duplicates (after class declarations)
 ComponentRegistry.registerType('Button', Button);
 ComponentRegistry.registerType('ButtonGroup', ButtonGroup);
+
+// Make Button available globally for non-module scripts
+window.Button = Button;
+window.ButtonGroup = ButtonGroup;
