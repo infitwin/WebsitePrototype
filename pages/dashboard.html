@@ -732,8 +732,8 @@
     <!-- Load Shared Navigation -->
     <script src="../js/navigation.js"></script>
     
-    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
-    <script src="../js/neo4j-init.js"></script>
+    <!-- Load Nexus Control BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/components/NexusControl.js"></script>
     
     <script type="module" src="../js/knowledge-symphony.js"></script>
     <script type="module">
@@ -748,9 +748,64 @@
             createActivityFeedWidget('activityWidget');
             createQuickActionsWidget('quickActionsWidget');
             
-            // Neo4j is already initialized by neo4j-init.js
+            // Initialize Nexus Control
+            initializeNexusControl();
+            
             console.log('📋 Advanced dashboard with widgets initialized');
         });
+
+        // Initialize Nexus Control for Dashboard
+        function initializeNexusControl() {
+            console.log('🎯 Initializing Nexus Control for dashboard...');
+            const graphContainer = document.getElementById('neo4j-graph-container');
+            
+            if (graphContainer) {
+                console.log('✅ Dashboard graph container found');
+                
+                try {
+                    const nexusViz = new NexusControl(graphContainer, {
+                        width: graphContainer.offsetWidth || 800,
+                        height: 400, // Appropriate height for dashboard
+                        mode: 'dashboard',
+                        showHistory: true,
+                        showControls: true
+                    });
+                    console.log('✅ Dashboard Nexus visualization created successfully');
+                    
+                    // Store globally for debugging and external access
+                    window.dashboardNexusViz = nexusViz;
+                    
+                    // Hook for dashboard data updates
+                    window.updateDashboardGraph = function(data) {
+                        if (nexusViz && data) {
+                            nexusViz.setData(data);
+                            console.log('📊 Dashboard graph updated with new data');
+                        }
+                    };
+                    
+                    // Hook for adding new nodes
+                    window.addDashboardNode = function(node) {
+                        if (nexusViz && node) {
+                            nexusViz.addNode(node);
+                            console.log('➕ Node added to dashboard graph:', node);
+                        }
+                    };
+                    
+                    // Hook for adding new relationships
+                    window.addDashboardEdge = function(edge) {
+                        if (nexusViz && edge) {
+                            nexusViz.addEdge(edge);
+                            console.log('🔗 Edge added to dashboard graph:', edge);
+                        }
+                    };
+                    
+                } catch (error) {
+                    console.error('❌ Failed to initialize dashboard Nexus visualization:', error);
+                }
+            } else {
+                console.error('❌ Dashboard graph container not found!');
+            }
+        }
 
         // Data Operations Modal Function
         window.togglePopup = function() {
