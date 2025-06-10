@@ -157,13 +157,13 @@
             overflow: hidden;
         }
 
-        /* Graph Container for Square Layout */
+        /* Graph Container for Rectangular Layout - Right Aligned */
         .graph-container {
             flex: 1;
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 8px;
+            justify-content: flex-end;
+            padding: 8px 8px 8px 150px;
             background: #ffffff;
         }
 
@@ -175,11 +175,8 @@
         /* - Search functionality */
         /* This is ONE INTEGRATED CONTROL - NEVER break it into pieces */
         .nexus-control-container {
-            width: 100%;
-            height: 100%;
-            max-width: min(100%, 100vh - 200px);
-            max-height: min(100%, 100vh - 200px);
-            aspect-ratio: 1;
+            width: 85%;
+            height: 90%;
             background: #ffffff;
             position: relative;
             overflow: hidden;
