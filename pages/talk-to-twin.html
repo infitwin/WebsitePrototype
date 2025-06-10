@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/components/button.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/knowledge-symphony.css">
     <link rel="stylesheet" href="../css/dashboard.css">
@@ -658,12 +659,9 @@
                     placeholder="Ask your twin anything..." 
                     rows="1"
                 ></textarea>
-                <button class="voice-btn" id="voiceBtn" title="Hold to record">🎤</button>
+                <div id="voice-button" class="button-placeholder"></div>
             </div>
-            <button class="send-btn" id="sendBtn" aria-label="Send message" title="Send message" disabled>
-                <span class="send-icon">→</span>
-                <span class="send-text" style="display: none;">Send</span>
-            </button>
+            <div id="send-button" class="button-placeholder"></div>
         </div>
         <div class="recording-indicator" id="recordingIndicator">
             <span class="recording-dot"></span>
@@ -679,7 +677,9 @@
     <!-- TODO: Message persistence and session management -->
 
     <script src="../js/navigation.js"></script>
-    <script>
+    <script type="module">
+        import { Button } from '../js/components/ui/button.js';
+        
         // Talk to Twin JavaScript Functionality
         let isRecording = false;
         let messageHistory = [];
@@ -688,6 +688,7 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             initializeTalkToTwin();
+            initializeButtons();
             setupEventListeners();
         });
 
@@ -705,6 +706,34 @@
             updateEmptyState();
         }
 
+        function initializeButtons() {
+            // Voice Button
+            const voiceBtn = Button.icon({
+                icon: '🎤',
+                type: 'tertiary',
+                onClick: () => toggleRecording()
+            });
+            voiceBtn.element.id = 'voiceBtn';
+            voiceBtn.element.title = 'Hold to record';
+            document.getElementById('voice-button').appendChild(voiceBtn.element);
+
+            // Send Button
+            const sendBtn = Button.icon({
+                icon: '→',
+                type: 'primary',
+                disabled: true,
+                onClick: () => sendMessage()
+            });
+            sendBtn.element.id = 'sendBtn';
+            sendBtn.element.setAttribute('aria-label', 'Send message');
+            sendBtn.element.title = 'Send message';
+            document.getElementById('send-button').appendChild(sendBtn.element);
+            
+            // Store button references globally for later use
+            window.voiceButton = voiceBtn;
+            window.sendButton = sendBtn;
+        }
+
         function setupEventListeners() {
             // Twin selector
             const twinSelector = document.getElementById('twinSelector');
@@ -720,13 +749,11 @@
 
             // Chat input
             const chatInput = document.getElementById('chatInput');
-            const sendBtn = document.getElementById('sendBtn');
             
             chatInput.addEventListener('input', handleInputChange);
             chatInput.addEventListener('keydown', handleKeyDown);
-            sendBtn.addEventListener('click', sendMessage);
 
-            // Voice button
+            // Voice button interactions (hold to record functionality)
             const voiceBtn = document.getElementById('voiceBtn');
             
             // Desktop: hold to record
@@ -804,8 +831,7 @@
         // Input Handling
         function handleInputChange(e) {
             const value = e.target.value.trim();
-            const sendBtn = document.getElementById('sendBtn');
-            sendBtn.disabled = value.length === 0;
+            window.sendButton.setDisabled(value.length === 0);
         }
 
         function handleKeyDown(e) {
@@ -832,7 +858,7 @@
                 addUserMessage(message);
                 input.value = '';
                 input.style.height = 'auto';
-                document.getElementById('sendBtn').disabled = true;
+                window.sendButton.setDisabled(true);
                 
                 // Hide suggestions after first message
                 const suggestions = document.getElementById('suggestedQuestions');

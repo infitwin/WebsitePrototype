@@ -680,7 +680,7 @@
             const loginBtn = Button.primary({
                 text: 'Go to Login',
                 onClick: () => {
-                    window.location.href = 'auth.html';
+                    window.location.href = '/pages/auth.html';
                 }
             });
             const loginContainer = document.getElementById('login-button');
@@ -1030,8 +1030,21 @@
                 item.className = 'file-list-item';
                 item.dataset.fileId = file.id;
                 
-                // Get file type safely (handles different field names)
-                const fileType = file.fileType || file.mimeType || file.type || 'application/octet-stream';
+                // Get file type safely (handles different field names and infers from filename)
+                function getFileTypeFromFile(file) {
+                    let fileType = file.fileType || file.mimeType || file.type;
+                    if (!fileType && file.fileName) {
+                        const fileName = file.fileName.toLowerCase();
+                        if (fileName.includes('.jpg') || fileName.includes('.jpeg')) return 'image/jpeg';
+                        if (fileName.includes('.png')) return 'image/png';
+                        if (fileName.includes('.gif')) return 'image/gif';
+                        if (fileName.includes('.webp')) return 'image/webp';
+                        if (fileName.includes('.pdf')) return 'application/pdf';
+                        if (fileName.includes('.doc') || fileName.includes('.docx')) return 'application/msword';
+                    }
+                    return fileType || 'application/octet-stream';
+                }
+                const fileType = getFileTypeFromFile(file);
                 
                 item.innerHTML = `
                     <div>
@@ -1108,8 +1121,21 @@
             // Create modal content based on file type
             let content;
             
-            // Get file type safely (handles different field names)
-            const fileType = file.fileType || file.mimeType || file.type || 'application/octet-stream';
+            // Get file type safely (handles different field names and infers from filename)
+            function getFileTypeFromFile(file) {
+                let fileType = file.fileType || file.mimeType || file.type;
+                if (!fileType && file.fileName) {
+                    const fileName = file.fileName.toLowerCase();
+                    if (fileName.includes('.jpg') || fileName.includes('.jpeg')) return 'image/jpeg';
+                    if (fileName.includes('.png')) return 'image/png';
+                    if (fileName.includes('.gif')) return 'image/gif';
+                    if (fileName.includes('.webp')) return 'image/webp';
+                    if (fileName.includes('.pdf')) return 'application/pdf';
+                    if (fileName.includes('.doc') || fileName.includes('.docx')) return 'application/msword';
+                }
+                return fileType || 'application/octet-stream';
+            }
+            const fileType = getFileTypeFromFile(file);
             
             if (fileType.startsWith('image/')) {
                 content = `
