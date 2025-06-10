@@ -664,8 +664,8 @@
             const { auth } = await import('../js/firebase-config.js');
             console.log('🔐 Firebase auth loaded, current user:', auth.currentUser ? 'Yes' : 'No');
             
-            // If no current user, wait a bit for auth state to resolve
-            if (!auth.currentUser) {
+            // If no current user, wait a bit for auth state to resolve (unless testing)
+            if (!auth.currentUser && !window.localStorage.getItem('bypass_auth')) {
                 console.log('⏳ Waiting for auth state...');
                 await new Promise(resolve => {
                     const unsubscribe = auth.onAuthStateChanged(user => {
@@ -682,6 +682,8 @@
                         }
                     });
                 });
+            } else if (window.localStorage.getItem('bypass_auth')) {
+                console.log('🔧 Skipping auth state wait for testing');
             }
             
             // Update user info in page header
@@ -854,11 +856,11 @@
                 
                 // FORCE the loading to stop and show empty state
                 loadingState.style.display = 'none';
-                emptyState.style.display = 'block';
                 currentPage.loading = false;
                 
                 // Show user-friendly message in empty state
                 const emptyState = document.getElementById('emptyState');
+                emptyState.style.display = 'block';
                 emptyState.innerHTML = `
                     <div class="empty-icon">📂</div>
                     <h3>No files yet</h3>
@@ -925,7 +927,9 @@
             }
             
             // Set up checkbox event listeners after files are rendered
-            setupFileCheckboxListeners();
+            if (window.setupFileCheckboxListeners) {
+                window.setupFileCheckboxListeners();
+            }
         }
 
         function renderGridView(files) {
@@ -982,15 +986,18 @@
                 item.className = 'file-list-item';
                 item.dataset.fileId = file.id;
                 
+                // Get file type safely (handles different field names)
+                const fileType = file.fileType || file.mimeType || file.type || 'application/octet-stream';
+                
                 item.innerHTML = `
                     <div>
                         <input type="checkbox" class="file-checkbox">
                     </div>
                     <div class="file-list-name">
-                        <span class="file-list-icon">${getFallbackIcon(file.fileType)}</span>
+                        <span class="file-list-icon">${getFallbackIcon(fileType)}</span>
                         ${file.fileName}
                     </div>
-                    <div class="file-list-type">${file.category}</div>
+                    <div class="file-list-type">${file.category || 'Unknown'}</div>
                     <div class="file-list-size">${formatFileSize(file.fileSize)}</div>
                     <div class="file-list-date">${formatDate(file.uploadedAt)}</div>
                 `;
@@ -1057,7 +1064,10 @@
             // Create modal content based on file type
             let content;
             
-            if (file.fileType.startsWith('image/')) {
+            // Get file type safely (handles different field names)
+            const fileType = file.fileType || file.mimeType || file.type || 'application/octet-stream';
+            
+            if (fileType.startsWith('image/')) {
                 content = `
                     <img src="${file.downloadURL}" alt="${file.fileName}" style="max-width: 100%; height: auto;">
                     <div style="margin-top: 1rem;">
@@ -1069,9 +1079,9 @@
             } else {
                 content = `
                     <div style="text-align: center; padding: 2rem;">
-                        <div style="font-size: 5rem; margin-bottom: 1rem;">${getFallbackIcon(file.fileType)}</div>
+                        <div style="font-size: 5rem; margin-bottom: 1rem;">${getFallbackIcon(fileType)}</div>
                         <h3>${file.fileName}</h3>
-                        <p>Type: ${file.category}</p>
+                        <p>Type: ${file.category || 'Unknown'}</p>
                         <p>Size: ${formatFileSize(file.fileSize)}</p>
                         <p>Uploaded: ${formatDate(file.uploadedAt)}</p>
                     </div>

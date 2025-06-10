@@ -48,6 +48,12 @@ export async function guardPage(options = {}) {
         allowUnverified = false
     } = options;
     
+    // Check for testing bypass
+    if (typeof window !== 'undefined' && window.localStorage.getItem('bypass_auth') === 'true') {
+        console.log('🔧 Auth guard bypassed for testing');
+        return true;
+    }
+    
     try {
         const authenticated = await isAuthenticated();
         

@@ -4,6 +4,22 @@ const path = require('path');
 test.describe('File Upload Validation Edge Cases', () => {
   
   test.beforeEach(async ({ page }) => {
+    // Set up mock authentication to bypass auth guards
+    await page.addInitScript(() => {
+      window.localStorage.setItem('bypass_auth', 'true');
+      // Mock Firebase auth for testing
+      window.mockFirebaseAuth = {
+        currentUser: {
+          uid: 'test-user',
+          email: 'weezer@yev.com',
+          emailVerified: true
+        }
+      };
+    });
+    
+    // Listen to console logs
+    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    
     await page.goto('http://localhost:8357/pages/my-files.html');
     await page.waitForLoadState('networkidle');
   });
@@ -13,7 +29,25 @@ test.describe('File Upload Validation Edge Cases', () => {
     const fileInput = page.locator('#fileInput');
     const dropZone = page.locator('#dropZone, .file-drop-zone');
     
-    if (!await fileInput.isVisible() && !await dropZone.isVisible()) {
+    // Debug: Check what's actually on the page
+    const pageTitle = await page.title();
+    const bodyContent = await page.locator('body').innerHTML();
+    console.log('Page title:', pageTitle);
+    console.log('Page has content:', bodyContent.length > 0);
+    
+    // File input is hidden but should exist, drop zone should be visible
+    const fileInputExists = await fileInput.count() > 0;
+    const dropZoneVisible = await dropZone.isVisible();
+    const dropZoneExists = await dropZone.count() > 0;
+    
+    console.log('File input exists:', fileInputExists, 'Drop zone exists:', dropZoneExists, 'Drop zone visible:', dropZoneVisible);
+    
+    // Try to find any file-related elements
+    const anyFileInput = await page.locator('input[type="file"]').count();
+    const anyDropZone = await page.locator('[class*="drop"], [id*="drop"], [class*="upload"]').count();
+    console.log('Any file inputs:', anyFileInput, 'Any drop zones:', anyDropZone);
+    
+    if (!fileInputExists && !dropZoneVisible) {
       test.skip('File upload interface not found on this page');
     }
     

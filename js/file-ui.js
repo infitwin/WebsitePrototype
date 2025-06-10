@@ -18,6 +18,8 @@ const activeUploads = new Map();
 export function initializeDragDrop(dropZone, onFilesSelected) {
     if (!dropZone) return;
     
+    console.log('🔧 Initializing drag-drop on:', dropZone.id, 'with callback:', !!onFilesSelected);
+    
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
