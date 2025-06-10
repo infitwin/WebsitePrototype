@@ -721,17 +721,78 @@
             console.log('✅ Simple knowledge graph created');
         }
         
+        // Store graph state for controls
+        let graphTransform = { x: 0, y: 0, scale: 1 };
+        let originalNodes = null;
+        
         // Graph control functions
         window.centerGraph = function() {
-            console.log('Center graph clicked');
+            const svg = d3.select('#knowledge-graph');
+            const container = svg.node().parentElement;
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            
+            // Reset to center
+            graphTransform = { x: 0, y: 0, scale: 1 };
+            
+            // Apply centering transform to all elements
+            svg.selectAll('g.node')
+                .transition()
+                .duration(500)
+                .attr('transform', d => `translate(${d.x}, ${d.y})`);
+                
+            svg.selectAll('line')
+                .transition()
+                .duration(500)
+                .attr('x1', d => nodes.find(n => n.id === d.source).x)
+                .attr('y1', d => nodes.find(n => n.id === d.source).y)
+                .attr('x2', d => nodes.find(n => n.id === d.target).x)
+                .attr('y2', d => nodes.find(n => n.id === d.target).y);
+                
+            console.log('✅ Graph centered');
         };
         
         window.fitGraph = function() {
-            console.log('Fit graph clicked');  
+            const svg = d3.select('#knowledge-graph');
+            const container = svg.node().parentElement;
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            
+            // Find bounds of all nodes
+            const nodeData = nodes;
+            const xExtent = d3.extent(nodeData, d => d.x);
+            const yExtent = d3.extent(nodeData, d => d.y);
+            
+            const graphWidth = xExtent[1] - xExtent[0] + 100; // Add padding
+            const graphHeight = yExtent[1] - yExtent[0] + 100;
+            
+            // Calculate scale to fit
+            const scale = Math.min(width / graphWidth, height / graphHeight, 1);
+            
+            // Apply zoom transform
+            const g = svg.append('g').attr('class', 'zoom-group');
+            svg.selectAll('line, g.node').each(function() {
+                g.node().appendChild(this);
+            });
+            
+            g.transition()
+                .duration(500)
+                .attr('transform', `scale(${scale})`);
+                
+            console.log('✅ Graph fitted to view');
         };
         
         window.resetGraph = function() {
-            console.log('Reset graph clicked');
+            // Store original positions if not already stored
+            if (!originalNodes) {
+                originalNodes = JSON.parse(JSON.stringify(nodes));
+            }
+            
+            // Clear and recreate the graph
+            d3.select('#knowledge-graph').selectAll('*').remove();
+            createSimpleGraph();
+            
+            console.log('✅ Graph reset to original state');
         };
 
         // Data Operations Modal Function
