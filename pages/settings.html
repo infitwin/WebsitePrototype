@@ -8,585 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/design-system.css">
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="../css/knowledge-symphony.css">
-    <style>
-        /* Settings Page Specific Styles */
-        .settings-container {
-            background: var(--color-background);
-            min-height: 100vh;
-        }
-
-        /* Navigation */
-        .dashboard-nav {
-            height: 64px;
-            background: var(--color-background-card);
-            border-bottom: 1px solid var(--color-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            margin-left: 80px; /* Account for fixed sidebar */
-        }
-
-        .nav-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-logo {
-            height: 40px;
-            width: auto;
-        }
-
-        .nav-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #374151;
-            margin: 0;
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-button {
-            position: relative;
-            background: none;
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .nav-button:hover {
-            background: #F3F4F6;
-        }
-
-        .notification-icon {
-            font-size: 20px;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            background: #EF4444;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 16px;
-            background: #F3F4F6;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .user-menu:hover {
-            background: #F3F4F6;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-        }
-
-        .user-name {
-            font-weight: 500;
-            color: #374151;
-        }
-
-        .menu-dropdown {
-            background: none;
-            border: none;
-            color: #6B7280;
-            cursor: pointer;
-        }
-
-        /* Main Content Wrapper */
-        .main-content-wrapper {
-            margin-left: 80px; /* Account for fixed sidebar */
-            min-height: 100vh;
-            width: calc(100% - 80px);
-        }
-
-        /* Hide the old sidebar since we're using shared navigation */
-        .dashboard-sidebar {
-            display: none;
-        }
-        
-        /* Adjust main content for shared sidebar */
-        .symphony-content {
-            padding-left: 0;
-            margin-left: 0;
-        }
-
-        .sidebar-nav {
-            padding: 24px 20px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            text-decoration: none;
-            color: #6B7280;
-            font-weight: 500;
-            margin-bottom: 4px;
-            transition: all 0.2s;
-        }
-
-        .nav-item:hover {
-            background: #F3F4F6;
-            color: #374151;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
-            color: white;
-        }
-
-        .nav-icon {
-            font-size: 18px;
-        }
-
-        .sidebar-footer {
-            padding: 20px;
-            border-top: 1px solid #E5E7EB;
-            margin-top: auto;
-        }
-
-        .storage-info {
-            text-align: center;
-        }
-
-        .storage-label {
-            font-size: 14px;
-            color: #6B7280;
-            margin-bottom: 8px;
-        }
-
-        .storage-bar {
-            width: 100%;
-            height: 8px;
-            background: #E5E7EB;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-
-        .storage-used {
-            height: 100%;
-            background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
-            transition: width 0.3s ease;
-        }
-
-        .storage-text {
-            font-size: 12px;
-            color: #6B7280;
-            margin: 0;
-        }
-
-        /* Main Content */
-        .dashboard-main {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-        }
-
-        /* Page Header */
-        .page-header {
-            margin-bottom: 32px;
-        }
-
-        .page-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: #374151;
-            margin: 0;
-            margin-bottom: 8px;
-        }
-
-        .page-subtitle {
-            font-size: 16px;
-            color: #6B7280;
-            margin: 0;
-        }
-
-        /* Settings Sections */
-        .settings-section {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-header {
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #E5E7EB;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #374151;
-            margin: 0;
-            margin-bottom: 4px;
-        }
-
-        .section-description {
-            font-size: 14px;
-            color: #6B7280;
-            margin: 0;
-        }
-
-        /* Form Styles */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 6px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #E5E7EB;
-            border-radius: 8px;
-            font-size: 16px;
-            font-family: inherit;
-            transition: all 0.2s;
-            background: white;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #FFD700;
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
-        }
-
-        .form-input:disabled {
-            background: #F3F4F6;
-            color: #9CA3AF;
-            cursor: not-allowed;
-        }
-
-        .form-help {
-            font-size: 12px;
-            color: #6B7280;
-            margin-top: 4px;
-        }
-
-        .form-error {
-            font-size: 12px;
-            color: #EF4444;
-            margin-top: 4px;
-            display: none;
-        }
-
-        .form-input.error {
-            border-color: #EF4444;
-        }
-
-        .form-input.error + .form-error {
-            display: block;
-        }
-
-        /* Email Verification Badge */
-        .email-container {
-            position: relative;
-        }
-
-        .verification-badge {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #10B981;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        /* Password Strength Indicator */
-        .password-strength {
-            margin-top: 8px;
-            display: none;
-        }
-
-        .password-strength.show {
-            display: block;
-        }
-
-        .strength-bar {
-            height: 4px;
-            background: #E5E7EB;
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 4px;
-        }
-
-        .strength-fill {
-            height: 100%;
-            transition: all 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .strength-weak .strength-fill {
-            width: 25%;
-            background: #EF4444;
-        }
-
-        .strength-fair .strength-fill {
-            width: 50%;
-            background: #F59E0B;
-        }
-
-        .strength-good .strength-fill {
-            width: 75%;
-            background: #3B82F6;
-        }
-
-        .strength-strong .strength-fill {
-            width: 100%;
-            background: #10B981;
-        }
-
-        .strength-text {
-            font-size: 12px;
-            color: #6B7280;
-        }
-
-        /* Toggle Switches */
-        .toggle-group {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .toggle-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-        }
-
-        .toggle-info {
-            flex: 1;
-        }
-
-        .toggle-label {
-            font-size: 16px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 4px;
-        }
-
-        .toggle-description {
-            font-size: 14px;
-            color: #6B7280;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 24px;
-            background: #E5E7EB;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .toggle-switch.active {
-            background: #3B82F6;
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .toggle-switch.active::after {
-            transform: translateX(24px);
-        }
-
-        .toggle-input {
-            display: none;
-        }
-
-        /* Buttons */
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 1px solid #E5E7EB;
-        }
-
-        /* Custom button styles are now replaced by design-system.css */
-        /* Use .infitwin-button classes instead of .btn- classes */
-
-        /* Loading Spinner */
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top: 2px solid currentColor;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Success Message */
-        .success-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10B981;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            z-index: 1001;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .success-message.show {
-            transform: translateX(0);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-
-            .dashboard-sidebar {
-                width: 100%;
-                order: 2;
-            }
-
-            .dashboard-main {
-                padding: 16px;
-                order: 1;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-
-            .toggle-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .infitwin-button--primary,
-            .infitwin-button--secondary {
-                justify-content: center;
-                width: 100%;
-            }
-        }
-            /* Navigation */
-        .auth-nav {
-     
-    <!-- Navigation -->
-    <nav class="auth-nav">
-        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
-    </nav>
-
-       padding: 20px 30px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            position: relative;
-            z-index: 10;
-        }
-
-        .back-link {
-            color: #87CEEB;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .back-link:hover {
-            color: #FFD700;
-        }
-
-</style>
-<link rel="stylesheet" href="../css/components/navigation.css">
+    <link rel="stylesheet" href="../css/components/navigation.css">
+    <link rel="stylesheet" href="../css/pages/settings.css">
 </head>
 <body class="settings-container">
     <div class="symphony-dashboard">
@@ -595,391 +18,372 @@
         
         <!-- Main Content Wrapper -->
         <div class="main-content-wrapper">
-    <!-- Navigation -->
-    <nav class="dashboard-nav">
-        <div class="nav-container">
-            <div class="nav-left">
-                <img src="../assets/images/infitwin-logo.jpg" alt="Infitwin" class="nav-logo">
-                <h1 class="nav-title">Settings</h1>
-            </div>
-            <div class="nav-right">
-                <button class="nav-button notifications">
-                    <span class="notification-icon">🔔</span>
-                    <span class="notification-badge">3</span>
-                </button>
-                <div class="user-menu">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=FFD700&color=2C1810" alt="User" class="user-avatar">
-                    <span class="user-name">John Doe</span>
-                    <button class="menu-dropdown">▼</button>
+            <!-- Navigation -->
+            <nav class="dashboard-nav">
+                <div class="nav-container">
+                    <div class="nav-left">
+                        <img src="../assets/images/infitwin-logo.jpg" alt="Infitwin" class="nav-logo">
+                        <h1 class="nav-title">Settings</h1>
+                    </div>
+                    <div class="nav-right">
+                        <button class="nav-button notifications">
+                            <span class="notification-icon">🔔</span>
+                            <span class="notification-badge">3</span>
+                        </button>
+                        <div id="userMenuContainer"></div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </nav>
+            </nav>
 
-        <!-- Main Content -->
-        <main class="dashboard-main symphony-content">
-            <!-- Page Header -->
-            <header class="page-header">
-                <h1 class="page-title">Settings</h1>
-                <p class="page-subtitle">Manage your account settings and preferences</p>
-            </header>
+            <!-- Main Content -->
+            <main class="dashboard-main symphony-content">
+                <!-- Page Header -->
+                <header class="page-header">
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle">Manage your account settings and preferences</p>
+                </header>
 
-            <!-- Profile Section -->
-            <section class="settings-section profile-section" data-section="profile">
-                <div class="section-header">
-                    <h2 class="section-title">Profile</h2>
-                    <p class="section-description">Update your personal information and account details</p>
-                </div>
+                <!-- Profile Section -->
+                <section class="settings-section profile-section" data-section="profile">
+                    <div class="section-header">
+                        <h2 class="section-title">Profile</h2>
+                        <p class="section-description">Update your personal information and account details</p>
+                    </div>
 
-                <form id="accountForm">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label" for="displayName">Display Name</label>
-                            <input type="text" class="infitwin-form__input" id="displayName" value="John Doe">
-                            <div class="form-help">Used across Infitwin</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="emailAddress">Email Address</label>
-                            <div class="email-container">
-                                <input type="email" class="infitwin-form__input" id="emailAddress" value="john.doe@email.com">
-                                <span class="verification-badge">✓ Verified</span>
+                    <form id="accountForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="displayName">Display Name</label>
+                                <input type="text" class="infitwin-form__input" id="displayName" value="John Doe" data-validate="required">
+                                <div class="form-help">Used across Infitwin</div>
+                                <div class="form-error"></div>
                             </div>
-                            <div class="form-help">We'll email to verify any changes</div>
-                        </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="phoneNumber">Phone Number</label>
-                            <input type="tel" class="infitwin-form__input" id="phoneNumber" value="+1 (555) 123-4567">
-                            <div class="form-help">Optional - for account recovery</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="timezone">Timezone</label>
-                            <select class="infitwin-form__input" id="timezone">
-                                <option value="America/New_York">Eastern Time (ET)</option>
-                                <option value="America/Chicago">Central Time (CT)</option>
-                                <option value="America/Denver">Mountain Time (MT)</option>
-                                <option value="America/Los_Angeles" selected>Pacific Time (PT)</option>
-                            </select>
-                            <div class="form-error">Please select a valid timezone</div>
-                        </div>
-                    </div>
-
-                    <div class="button-group">
-                        <button type="submit" class="infitwin-button infitwin-button--primary" id="saveAccountBtn">
-                            <span>💾</span>
-                            Save Changes
-                        </button>
-                        <button type="button" class="infitwin-button infitwin-button--secondary" onclick="resetAccountForm()">Cancel</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Account Settings Section -->
-            <section class="settings-section account-settings-section" data-section="account">
-                <div class="section-header">
-                    <h2 class="section-title">Account Settings</h2>
-                    <p class="section-description">Manage your account, billing, and subscription settings</p>
-                </div>
-
-                <div class="toggle-group">
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Subscription Status</div>
-                            <div class="toggle-description">Current plan: Free Tier (10GB storage limit)</div>
-                        </div>
-                        <button class="infitwin-button infitwin-button--secondary infitwin-button--small">
-                            Upgrade Plan
-                        </button>
-                    </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Storage Usage</div>
-                            <div class="toggle-description">3.5 GB of 10 GB used (35%)</div>
-                        </div>
-                        <div style="width: 120px; height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden;">
-                            <div style="width: 35%; height: 100%; background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);"></div>
-                        </div>
-                    </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Account Created</div>
-                            <div class="toggle-description">December 15, 2024</div>
-                        </div>
-                    </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Data Export</div>
-                            <div class="toggle-description">Download all your memories, transcripts, and settings</div>
-                        </div>
-                        <button class="infitwin-button infitwin-button--secondary infitwin-button--small" onclick="downloadData()">
-                            Export Data
-                        </button>
-                    </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Delete Account</div>
-                            <div class="toggle-description">Permanently delete your account and all associated data</div>
-                        </div>
-                        <button class="infitwin-button infitwin-button--danger infitwin-button--small" onclick="deleteAccount()">
-                            Delete Account
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Security Section -->
-            <section class="settings-section">
-                <div class="section-header">
-                    <h2 class="section-title">Security</h2>
-                    <p class="section-description">Manage your password and security settings</p>
-                </div>
-
-                <form id="securityForm" novalidate>
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label class="form-label" for="currentPassword">Current Password</label>
-                            <input type="password" class="infitwin-form__input" id="currentPassword" placeholder="Enter current password">
-                            <div class="form-error">Current password is required</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="newPassword">New Password</label>
-                            <input type="password" class="infitwin-form__input" id="newPassword" placeholder="Enter new password">
-                            <div class="form-help">At least 8 characters</div>
-                            <div class="form-error">Password validation error</div>
-                            <div class="password-strength" id="passwordStrength">
-                                <div class="strength-bar">
-                                    <div class="strength-fill"></div>
+                            <div class="form-group">
+                                <label class="form-label" for="emailAddress">Email Address</label>
+                                <div class="email-container">
+                                    <input type="email" class="infitwin-form__input" id="emailAddress" value="john.doe@email.com" data-validate="email">
+                                    <span class="verification-badge">✓ Verified</span>
                                 </div>
-                                <div class="strength-text">Password strength</div>
+                                <div class="form-help">We'll email to verify any changes</div>
+                                <div class="form-error"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="phoneNumber">Phone Number</label>
+                                <input type="tel" class="infitwin-form__input" id="phoneNumber" value="+1 (555) 123-4567" data-validate="phone">
+                                <div class="form-help">Optional - for account recovery</div>
+                                <div class="form-error"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="timezone">Timezone</label>
+                                <select class="infitwin-form__input" id="timezone">
+                                    <option value="America/New_York">Eastern Time (ET)</option>
+                                    <option value="America/Chicago">Central Time (CT)</option>
+                                    <option value="America/Denver">Mountain Time (MT)</option>
+                                    <option value="America/Los_Angeles" selected>Pacific Time (PT)</option>
+                                </select>
+                                <div class="form-error">Please select a valid timezone</div>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="confirmPassword">Confirm Password</label>
-                            <input type="password" class="infitwin-form__input" id="confirmPassword" placeholder="Confirm new password">
-                            <div class="form-error" id="passwordMismatch">Passwords do not match</div>
+                        <div class="button-group">
+                            <button type="submit" id="saveAccountBtn">Save Changes</button>
+                            <button type="button" id="cancelAccountBtn">Cancel</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Account Settings Section -->
+                <section class="settings-section account-settings-section" data-section="account">
+                    <div class="section-header">
+                        <h2 class="section-title">Account Settings</h2>
+                        <p class="section-description">Manage your account, billing, and subscription settings</p>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Subscription Status</div>
+                                <div class="toggle-description">Current plan: Free Tier (10GB storage limit)</div>
+                            </div>
+                            <button id="upgradePlanBtn">Upgrade Plan</button>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Storage Usage</div>
+                                <div class="toggle-description">3.5 GB of 10 GB used (35%)</div>
+                            </div>
+                            <div style="width: 120px; height: 8px; background: var(--color-border); border-radius: 4px; overflow: hidden;">
+                                <div style="width: 35%; height: 100%; background: linear-gradient(135deg, var(--color-warning) 0%, #FFC107 100%);"></div>
+                            </div>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Account Created</div>
+                                <div class="toggle-description">December 15, 2024</div>
+                            </div>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Data Export</div>
+                                <div class="toggle-description">Download all your memories, transcripts, and settings</div>
+                            </div>
+                            <button id="exportDataBtn">Export Data</button>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Delete Account</div>
+                                <div class="toggle-description">Permanently delete your account and all associated data</div>
+                            </div>
+                            <button id="deleteAccountBtn">Delete Account</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Security Section -->
+                <section class="settings-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Security</h2>
+                        <p class="section-description">Manage your password and security settings</p>
+                    </div>
+
+                    <form id="securityForm" novalidate>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label" for="currentPassword">Current Password</label>
+                                <input type="password" class="infitwin-form__input" id="currentPassword" placeholder="Enter current password" data-validate="required">
+                                <div class="form-error">Current password is required</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="newPassword">New Password</label>
+                                <input type="password" class="infitwin-form__input" id="newPassword" placeholder="Enter new password" data-validate="required">
+                                <div class="form-help">At least 8 characters</div>
+                                <div class="form-error">Password validation error</div>
+                                <div class="password-strength" id="passwordStrength">
+                                    <div class="strength-bar">
+                                        <div class="strength-fill"></div>
+                                    </div>
+                                    <div class="strength-text">Password strength</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="confirmPassword">Confirm Password</label>
+                                <input type="password" class="infitwin-form__input" id="confirmPassword" placeholder="Confirm new password" data-validate="required">
+                                <div class="form-error" id="passwordMismatch">Passwords do not match</div>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="submit" id="changePasswordBtn">Change Password</button>
+                            <button type="button" id="cancelPasswordBtn">Cancel</button>
+                        </div>
+                    </form>
+                    
+                    <!-- Logout Section -->
+                    <div class="logout-section">
+                        <h3 style="font-size: 16px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 8px;">Sign Out</h3>
+                        <p style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: 16px;">Sign out of your Infitwin account on this device</p>
+                        <button type="button" id="logoutBtn">Sign Out</button>
+                    </div>
+                </section>
+
+                <!-- Preferences Section -->
+                <section class="settings-section preferences-section" data-section="preferences">
+                    <div class="section-header">
+                        <h2 class="section-title">Preferences</h2>
+                        <p class="section-description">Customize your interface, language, and application preferences</p>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Theme</div>
+                                <div class="toggle-description">Choose your preferred color scheme</div>
+                            </div>
+                            <select class="infitwin-form__input" id="themePreference" style="width: 150px;">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="auto">Auto (System)</option>
+                            </select>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Language</div>
+                                <div class="toggle-description">Select your preferred language</div>
+                            </div>
+                            <select class="infitwin-form__input" id="languagePreference" style="width: 150px;">
+                                <option value="en" selected>English</option>
+                                <option value="es">Español</option>
+                                <option value="fr">Français</option>
+                                <option value="de">Deutsch</option>
+                                <option value="zh">中文</option>
+                            </select>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Date Format</div>
+                                <div class="toggle-description">How dates are displayed throughout the app</div>
+                            </div>
+                            <select class="infitwin-form__input" id="dateFormat" style="width: 150px;">
+                                <option value="mdy">MM/DD/YYYY</option>
+                                <option value="dmy">DD/MM/YYYY</option>
+                                <option value="ymd">YYYY-MM-DD</option>
+                                <option value="relative">Relative (2 days ago)</option>
+                            </select>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Auto-Save Interviews</div>
+                                <div class="toggle-description">Automatically save interview responses as you type</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="autoSaveInterviews">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Compact View</div>
+                                <div class="toggle-description">Use a denser layout to show more content</div>
+                            </div>
+                            <label class="toggle-switch" data-setting="compactView">
+                                <input type="checkbox" class="toggle-input">
+                            </label>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Animation Effects</div>
+                                <div class="toggle-description">Enable smooth transitions and animations</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="animationEffects">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Sound Effects</div>
+                                <div class="toggle-description">Play sounds for notifications and interactions</div>
+                            </div>
+                            <label class="toggle-switch" data-setting="soundEffects">
+                                <input type="checkbox" class="toggle-input">
+                            </label>
                         </div>
                     </div>
 
                     <div class="button-group">
-                        <button type="submit" class="infitwin-button infitwin-button--primary" id="changePasswordBtn">
-                            <span>🔒</span>
-                            Change Password
-                        </button>
-                        <button type="button" class="infitwin-button infitwin-button--secondary" onclick="resetSecurityForm()">Cancel</button>
+                        <button type="button" id="savePreferencesBtn">Save Preferences</button>
+                        <button type="button" id="resetPreferencesBtn">Reset to Defaults</button>
                     </div>
-                </form>
-                
-                <!-- Logout Section -->
-                <div class="logout-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #E5E7EB;">
-                    <h3 style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 8px;">Sign Out</h3>
-                    <p style="font-size: 14px; color: #6B7280; margin-bottom: 16px;">Sign out of your Infitwin account on this device</p>
-                    <button type="button" class="infitwin-button infitwin-button--danger" id="logoutBtn">
-                        <span>🚪</span>
-                        Sign Out
-                    </button>
-                </div>
-            </section>
+                </section>
 
-            <!-- Preferences Section -->
-            <section class="settings-section preferences-section" data-section="preferences">
-                <div class="section-header">
-                    <h2 class="section-title">Preferences</h2>
-                    <p class="section-description">Customize your interface, language, and application preferences</p>
-                </div>
+                <!-- Notifications Section -->
+                <section class="settings-section notification-section" data-section="notifications">
+                    <div class="section-header">
+                        <h2 class="section-title">Notifications</h2>
+                        <p class="section-description">Control how and when you receive notifications</p>
+                    </div>
 
-                <div class="toggle-group">
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Theme</div>
-                            <div class="toggle-description">Choose your preferred color scheme</div>
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Email Notifications</div>
+                                <div class="toggle-description">Receive general updates and announcements via email</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="emailNotifications">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
                         </div>
-                        <select class="infitwin-form__input" id="themePreference" style="width: 150px;">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                            <option value="auto">Auto (System)</option>
-                        </select>
-                    </div>
 
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Language</div>
-                            <div class="toggle-description">Select your preferred language</div>
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Interview Reminders</div>
+                                <div class="toggle-description">Get reminded to continue building your twin through interviews</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="interviewReminders">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
                         </div>
-                        <select class="infitwin-form__input" id="languagePreference" style="width: 150px;">
-                            <option value="en" selected>English</option>
-                            <option value="es">Español</option>
-                            <option value="fr">Français</option>
-                            <option value="de">Deutsch</option>
-                            <option value="zh">中文</option>
-                        </select>
-                    </div>
 
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Date Format</div>
-                            <div class="toggle-description">How dates are displayed throughout the app</div>
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Weekly Digest</div>
+                                <div class="toggle-description">Receive a weekly summary of your memory building progress</div>
+                            </div>
+                            <label class="toggle-switch" data-setting="weeklyDigest">
+                                <input type="checkbox" class="toggle-input">
+                            </label>
                         </div>
-                        <select class="infitwin-form__input" id="dateFormat" style="width: 150px;">
-                            <option value="mdy">MM/DD/YYYY</option>
-                            <option value="dmy">DD/MM/YYYY</option>
-                            <option value="ymd">YYYY-MM-DD</option>
-                            <option value="relative">Relative (2 days ago)</option>
-                        </select>
-                    </div>
 
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Auto-Save Interviews</div>
-                            <div class="toggle-description">Automatically save interview responses as you type</div>
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Shared Twin Alerts</div>
+                                <div class="toggle-description">Get notified when someone shares their twin with you</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="sharedTwinAlerts">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
                         </div>
-                        <label class="toggle-switch active" data-setting="autoSaveInterviews">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
+                    </div>
+                </section>
+
+                <!-- Privacy Section -->
+                <section class="settings-section privacy-section" data-section="privacy">
+                    <div class="section-header">
+                        <h2 class="section-title">Privacy</h2>
+                        <p class="section-description">Control your privacy and data sharing preferences</p>
                     </div>
 
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Compact View</div>
-                            <div class="toggle-description">Use a denser layout to show more content</div>
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Profile Visibility</div>
+                                <div class="toggle-description">Allow others to find your profile when sharing twins</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="profileVisibility">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
                         </div>
-                        <label class="toggle-switch" data-setting="compactView">
-                            <input type="checkbox" class="toggle-input">
-                        </label>
-                    </div>
 
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Animation Effects</div>
-                            <div class="toggle-description">Enable smooth transitions and animations</div>
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Analytics</div>
+                                <div class="toggle-description">Help improve Infitwin by sharing anonymous usage data</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="analytics">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
                         </div>
-                        <label class="toggle-switch active" data-setting="animationEffects">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
-                    </div>
 
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Sound Effects</div>
-                            <div class="toggle-description">Play sounds for notifications and interactions</div>
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Memory Suggestions</div>
+                                <div class="toggle-description">Allow AI to suggest memory topics based on your existing content</div>
+                            </div>
+                            <label class="toggle-switch active" data-setting="memorySuggestions">
+                                <input type="checkbox" class="toggle-input" checked>
+                            </label>
                         </div>
-                        <label class="toggle-switch" data-setting="soundEffects">
-                            <input type="checkbox" class="toggle-input">
-                        </label>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button type="button" class="infitwin-button infitwin-button--primary" id="savePreferencesBtn">
-                        <span>⚙️</span>
-                        Save Preferences
-                    </button>
-                    <button type="button" class="infitwin-button infitwin-button--secondary" onclick="resetPreferences()">Reset to Defaults</button>
-                </div>
-            </section>
-
-            <!-- Notifications Section -->
-            <section class="settings-section notification-section" data-section="notifications">
-                <div class="section-header">
-                    <h2 class="section-title">Notifications</h2>
-                    <p class="section-description">Control how and when you receive notifications</p>
-                </div>
-
-                <div class="toggle-group">
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Email Notifications</div>
-                            <div class="toggle-description">Receive general updates and announcements via email</div>
-                        </div>
-                        <label class="toggle-switch active" data-setting="emailNotifications">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
                     </div>
 
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Interview Reminders</div>
-                            <div class="toggle-description">Get reminded to continue building your twin through interviews</div>
-                        </div>
-                        <label class="toggle-switch active" data-setting="interviewReminders">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
+                    <div class="button-group">
+                        <button type="button" id="downloadDataBtn">Download My Data</button>
+                        <button type="button" id="deleteAccountBtn2">Delete Account</button>
                     </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Weekly Digest</div>
-                            <div class="toggle-description">Receive a weekly summary of your memory building progress</div>
-                        </div>
-                        <label class="toggle-switch" data-setting="weeklyDigest">
-                            <input type="checkbox" class="toggle-input">
-                        </label>
-                    </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Shared Twin Alerts</div>
-                            <div class="toggle-description">Get notified when someone shares their twin with you</div>
-                        </div>
-                        <label class="toggle-switch active" data-setting="sharedTwinAlerts">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Privacy Section -->
-            <section class="settings-section privacy-section" data-section="privacy">
-                <div class="section-header">
-                    <h2 class="section-title">Privacy</h2>
-                    <p class="section-description">Control your privacy and data sharing preferences</p>
-                </div>
-
-                <div class="toggle-group">
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Profile Visibility</div>
-                            <div class="toggle-description">Allow others to find your profile when sharing twins</div>
-                        </div>
-                        <label class="toggle-switch active" data-setting="profileVisibility">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
-                    </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Analytics</div>
-                            <div class="toggle-description">Help improve Infitwin by sharing anonymous usage data</div>
-                        </div>
-                        <label class="toggle-switch active" data-setting="analytics">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
-                    </div>
-
-                    <div class="toggle-item">
-                        <div class="toggle-info">
-                            <div class="toggle-label">Memory Suggestions</div>
-                            <div class="toggle-description">Allow AI to suggest memory topics based on your existing content</div>
-                        </div>
-                        <label class="toggle-switch active" data-setting="memorySuggestions">
-                            <input type="checkbox" class="toggle-input" checked>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button type="button" class="infitwin-button infitwin-button--tertiary">Download My Data</button>
-                    <button type="button" class="infitwin-button infitwin-button--tertiary">Delete Account</button>
-                </div>
-            </section>
-        </main>
+                </section>
+            </main>
         </div>
     </div>
 
@@ -1013,806 +417,61 @@
 
     <script src="../js/navigation.js"></script>
     <script type="module">
+        import { initializeSettings } from '../js/pages/settings.js';
         import { guardPage } from '../js/auth-guard.js';
-        import { Modal } from '../js/components/ui/modal.js';
+        import { UserMenu } from '../js/components/ui/user-menu.js';
+        import { Button } from '../js/components/ui/button.js';
         
-        // Settings Page JavaScript Functionality
-        let userSettings = {
-            displayName: 'John Doe',
-            emailAddress: 'john.doe@email.com',
-            phoneNumber: '+1 (555) 123-4567',
-            timezone: 'America/Los_Angeles',
-            emailNotifications: true,
-            interviewReminders: true,
-            weeklyDigest: false,
-            sharedTwinAlerts: true,
-            profileVisibility: true,
-            analytics: true,
-            memorySuggestions: true,
-            // Preferences
-            themePreference: 'light',
-            languagePreference: 'en',
-            dateFormat: 'mdy',
-            autoSaveInterviews: true,
-            compactView: false,
-            animationEffects: true,
-            soundEffects: false
-        };
-
-        let originalSettings = {};
-        let hasUnsavedChanges = false;
-
-        // Initialize page
+        // Guard the page
+        guardPage();
+        
+        // Initialize user menu
+        const userMenuContainer = document.getElementById('userMenuContainer');
+        const userMenu = new UserMenu({
+            userName: localStorage.getItem('userName') || 'John Doe',
+            userAvatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(localStorage.getItem('userName') || 'John Doe')}&background=FFD700&color=2C1810`
+        });
+        userMenuContainer.appendChild(userMenu.element);
+        
+        // Initialize settings functionality
         document.addEventListener('DOMContentLoaded', function() {
             initializeSettings();
-            setupEventListeners();
-        });
-
-        function initializeSettings() {
-            console.log('Settings initialized');
             
-            // Load settings from localStorage
-            const savedSettings = localStorage.getItem('userSettings');
-            if (savedSettings) {
-                userSettings = { ...userSettings, ...JSON.parse(savedSettings) };
-            }
-            
-            // Store original settings for reset functionality
-            originalSettings = { ...userSettings };
-            
-            // Populate form fields
-            populateFormFields();
-            setupToggleSwitches();
-            
-            // Validate timezone on initialization
-            validateTimezone();
-            
-            // Start monitoring for programmatic changes
-            monitorTimezoneChanges();
-        }
-
-        function setupEventListeners() {
-            // Account form
-            const accountForm = document.getElementById('accountForm');
-            accountForm.addEventListener('submit', handleAccountFormSubmit);
-            
-            // Security form
-            const securityForm = document.getElementById('securityForm');
-            securityForm.addEventListener('submit', handleSecurityFormSubmit);
-            
-            // Form input changes with mobile-specific handling
-            const formInputs = document.querySelectorAll('.infitwin-form__input');
-            formInputs.forEach(input => {
-                input.addEventListener('input', handleFormInputChange);
-                
-                // Mobile-specific: prevent double-firing of events
-                let mobileEventHandled = false;
-                
-                // Handle touch events on mobile to prevent double-firing
-                input.addEventListener('touchstart', () => {
-                    mobileEventHandled = true;
-                    setTimeout(() => { mobileEventHandled = false; }, 100);
-                });
-                
-                // Handle blur events with mobile consideration
-                input.addEventListener('blur', (e) => {
-                    if (!mobileEventHandled) {
-                        handleFormInputChange(e);
-                    }
-                });
-            });
-            
-            // Password strength checking
-            const newPasswordInput = document.getElementById('newPassword');
-            newPasswordInput.addEventListener('input', checkPasswordStrength);
-            
-            // Confirm password validation
-            const confirmPasswordInput = document.getElementById('confirmPassword');
-            confirmPasswordInput.addEventListener('input', validatePasswordMatch);
-            
-            // Toggle switches with mobile touch handling
-            const toggleSwitches = document.querySelectorAll('.toggle-switch');
-            toggleSwitches.forEach(toggle => {
-                toggle.addEventListener('click', handleToggleClick);
-                
-                // Mobile-specific: handle touch events to prevent double-firing
-                let touchHandled = false;
-                
-                toggle.addEventListener('touchstart', (e) => {
-                    touchHandled = true;
-                    setTimeout(() => { touchHandled = false; }, 200);
-                });
-                
-                toggle.addEventListener('touchend', (e) => {
-                    if (touchHandled) {
-                        e.preventDefault(); // Prevent click event from firing
-                        handleToggleClick(e);
-                    }
-                });
-            });
-            
-            // Logout button
-            const logoutBtn = document.getElementById('logoutBtn');
-            logoutBtn.addEventListener('click', handleLogout);
-            
-            // Preferences section
-            const savePreferencesBtn = document.getElementById('savePreferencesBtn');
-            savePreferencesBtn.addEventListener('click', handleSavePreferences);
-            
-            // Preference dropdown changes
-            const preferenceSelects = ['themePreference', 'languagePreference', 'dateFormat'];
-            preferenceSelects.forEach(id => {
-                const element = document.getElementById(id);
-                element.addEventListener('change', handlePreferenceChange);
-            });
-            
-            // Timezone validation on change
-            const timezoneSelect = document.getElementById('timezone');
-            timezoneSelect.addEventListener('change', validateTimezone);
-            
-            // Handle direct clicks on toggle inputs
-            document.querySelectorAll('.toggle-input').forEach(input => {
-                input.addEventListener('change', function(e) {
-                    const toggle = this.closest('.toggle-switch');
-                    const setting = toggle.dataset.setting;
-                    const newState = this.checked;
-                    
-                    // Update visual state
-                    if (newState) {
-                        toggle.classList.add('active');
-                    } else {
-                        toggle.classList.remove('active');
-                    }
-                    
-                    // Save immediately
-                    userSettings[setting] = newState;
-                    saveSettings();
-                    showSuccessMessage('Setting updated!');
-                });
-            });
-            
-            // Warn about unsaved changes
-            window.addEventListener('beforeunload', function(e) {
-                if (hasUnsavedChanges) {
-                    e.preventDefault();
-                    e.returnValue = '';
-                }
-            });
-        }
-
-        function populateFormFields() {
-            // Only populate if fields are empty or contain default values (for testing compatibility)
-            const fields = [
-                { id: 'displayName', setting: 'displayName' },
-                { id: 'emailAddress', setting: 'emailAddress' },
-                { id: 'phoneNumber', setting: 'phoneNumber' },
-                { id: 'timezone', setting: 'timezone' },
-                { id: 'themePreference', setting: 'themePreference' },
-                { id: 'languagePreference', setting: 'languagePreference' },
-                { id: 'dateFormat', setting: 'dateFormat' }
+            // Setup additional button replacements
+            const buttonReplacements = [
+                { id: 'cancelAccountBtn', config: { text: 'Cancel', type: 'secondary' } },
+                { id: 'upgradePlanBtn', config: { text: 'Upgrade Plan', type: 'secondary', size: 'small' } },
+                { id: 'exportDataBtn', config: { text: 'Export Data', type: 'secondary', size: 'small' } },
+                { id: 'deleteAccountBtn', config: { text: 'Delete Account', type: 'danger', size: 'small' } },
+                { id: 'cancelPasswordBtn', config: { text: 'Cancel', type: 'secondary' } },
+                { id: 'resetPreferencesBtn', config: { text: 'Reset to Defaults', type: 'secondary' } },
+                { id: 'downloadDataBtn', config: { text: 'Download My Data', type: 'tertiary' } },
+                { id: 'deleteAccountBtn2', config: { text: 'Delete Account', type: 'tertiary' } }
             ];
             
-            fields.forEach(({ id, setting }) => {
-                const field = document.getElementById(id);
-                const currentValue = field.value;
-                const defaultValue = userSettings[setting];
-                
-                // Only set value if field is empty, has the placeholder default, or we're not in test mode
-                const isTestMode = window.disableTimezoneMonitoring || currentValue.includes('Concurrent') || currentValue.includes('concurrent');
-                
-                if (!isTestMode && (!currentValue || currentValue === field.getAttribute('placeholder'))) {
-                    field.value = defaultValue;
-                }
-            });
-        }
-
-        function setupToggleSwitches() {
-            const toggles = document.querySelectorAll('[data-setting]');
-            toggles.forEach(toggle => {
-                const setting = toggle.dataset.setting;
-                const input = toggle.querySelector('.toggle-input');
-                const isActive = userSettings[setting];
-                
-                if (isActive) {
-                    toggle.classList.add('active');
-                    input.checked = true;
-                } else {
-                    toggle.classList.remove('active');
-                    input.checked = false;
-                }
-            });
-        }
-
-        // Form Handlers
-        let isFormSubmitting = false; // Flag to prevent concurrent submissions
-        function handleAccountFormSubmit(e) {
-            e.preventDefault();
-            
-            // Prevent concurrent form submissions
-            if (isFormSubmitting) {
-                return;
-            }
-            
-            const formData = new FormData(e.target);
-            const saveBtn = document.getElementById('saveAccountBtn');
-            
-            // Validate timezone
-            const timezoneValue = document.getElementById('timezone').value;
-            const validTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'];
-            
-            if (!timezoneValue || !validTimezones.includes(timezoneValue)) {
-                showFieldError('timezone', 'Please select a valid timezone');
-                return;
-            }
-            
-            // Clear any existing timezone errors
-            clearFieldError('timezone');
-            
-            // Set submitting flag to prevent concurrent submissions
-            isFormSubmitting = true;
-            
-            // Show loading state
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
-            
-            // Simulate API call
-            setTimeout(() => {
-                // Update settings
-                userSettings.displayName = document.getElementById('displayName').value;
-                userSettings.emailAddress = document.getElementById('emailAddress').value;
-                userSettings.phoneNumber = document.getElementById('phoneNumber').value;
-                userSettings.timezone = document.getElementById('timezone').value;
-                
-                saveSettings();
-                showSuccessMessage('Account settings saved!');
-                hasUnsavedChanges = false;
-                
-                // Reset button and clear submitting flag
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<span>💾</span> Save Changes';
-                isFormSubmitting = false; // Allow new submissions
-            }, 1500);
-        }
-
-        function handleSecurityFormSubmit(e) {
-            e.preventDefault();
-            
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const changeBtn = document.getElementById('changePasswordBtn');
-            
-            // Validate passwords
-            if (!currentPassword) {
-                showFieldError('currentPassword', 'Current password is required');
-                return;
-            }
-            
-            if (!newPassword) {
-                showFieldError('newPassword', 'New password is required');
-                return;
-            }
-            
-            if (newPassword.length < 8) {
-                showFieldError('newPassword', 'Password must be at least 8 characters');
-                return;
-            }
-            
-            if (!confirmPassword) {
-                showFieldError('confirmPassword', 'Please confirm your password');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                showFieldError('confirmPassword', 'Passwords do not match');
-                return;
-            }
-            
-            // Prevent reusing current password (security best practice)
-            if (newPassword === currentPassword) {
-                showFieldError('newPassword', 'New password must be different from current password');
-                return;
-            }
-            
-            // Show loading state
-            changeBtn.disabled = true;
-            changeBtn.innerHTML = '<span class="spinner"></span> Changing...';
-            
-            // Simulate API call
-            setTimeout(() => {
-                showSuccessMessage('Password changed successfully!');
-                resetSecurityForm();
-                
-                // Reset button
-                changeBtn.disabled = false;
-                changeBtn.innerHTML = '<span>🔒</span> Change Password';
-            }, 2000);
-        }
-
-        // Debounced form input change handler to prevent race conditions
-        let inputChangeTimeouts = new Map(); // Per-field debouncing instead of global
-        function handleFormInputChange(e) {
-            // Set unsaved changes flag immediately (no debouncing for this)
-            hasUnsavedChanges = true;
-            
-            // Only debounce validation, not the value setting
-            if (e && e.target) {
-                const fieldId = e.target.id;
-                
-                // Clear previous timeout for this specific field
-                if (inputChangeTimeouts.has(fieldId)) {
-                    clearTimeout(inputChangeTimeouts.get(fieldId));
-                }
-                
-                // Set debounced validation only if field has validation
-                if (e.target.dataset.validate) {
-                    const timeoutId = setTimeout(() => {
-                        validateField(e.target);
-                        inputChangeTimeouts.delete(fieldId);
-                    }, 150); // 150ms debounce for validation only
+            buttonReplacements.forEach(({ id, config }) => {
+                const oldBtn = document.getElementById(id);
+                if (oldBtn) {
+                    const newBtn = new Button(config);
+                    oldBtn.replaceWith(newBtn.element);
                     
-                    inputChangeTimeouts.set(fieldId, timeoutId);
-                }
-            }
-        }
-        
-        // Helper function to validate individual fields
-        function validateField(field) {
-            const fieldType = field.dataset.validate;
-            const value = field.value.trim();
-            
-            // Clear any existing errors first
-            clearFieldError(field.id);
-            
-            // Basic validation based on field type
-            switch (fieldType) {
-                case 'email':
-                    if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                        showFieldError(field.id, 'Please enter a valid email address');
+                    // Re-attach event handlers based on button ID
+                    switch(id) {
+                        case 'cancelAccountBtn':
+                            newBtn.element.addEventListener('click', () => {
+                                document.getElementById('accountForm').reset();
+                            });
+                            break;
+                        case 'resetPreferencesBtn':
+                            newBtn.element.addEventListener('click', () => {
+                                // Reset preferences logic handled in settings.js
+                            });
+                            break;
+                        // Add other button handlers as needed
                     }
-                    break;
-                case 'phone':
-                    if (value && !/^[\d\s\-\(\)\.+]+$/.test(value)) {
-                        showFieldError(field.id, 'Please enter a valid phone number');
-                    }
-                    break;
-                case 'required':
-                    if (!value) {
-                        showFieldError(field.id, 'This field is required');
-                    }
-                    break;
-            }
-        }
-
-        // Debounced toggle handling to prevent rapid clicking issues on mobile
-        let toggleTimeout = null;
-        function handleToggleClick(e) {
-            e.preventDefault();
-            const toggle = e.currentTarget;
-            const input = toggle.querySelector('.toggle-input');
-            const setting = toggle.dataset.setting;
-            
-            // Prevent toggle spam by temporarily disabling
-            if (toggle.classList.contains('saving')) {
-                return;
-            }
-            
-            // Toggle state
-            const newState = !input.checked;
-            input.checked = newState;
-            
-            // Update visual state
-            if (newState) {
-                toggle.classList.add('active');
-            } else {
-                toggle.classList.remove('active');
-            }
-            
-            // Add saving state to prevent rapid clicks
-            toggle.classList.add('saving');
-            
-            // Clear previous timeout and debounce the save
-            clearTimeout(toggleTimeout);
-            toggleTimeout = setTimeout(() => {
-                // Save with debouncing
-                userSettings[setting] = newState;
-                saveSettings();
-                showSuccessMessage('Setting updated!');
-                
-                // Remove saving state
-                toggle.classList.remove('saving');
-            }, 300); // 300ms debounce for toggle operations
-        }
-        
-        // Handle logout
-        async function handleLogout() {
-            const modal = Modal.confirm({
-                title: 'Sign Out',
-                message: 'Are you sure you want to sign out?',
-                confirmText: 'Sign Out',
-                onConfirm: async () => {
-                    try {
-                        // Sign out from Firebase using v8 syntax
-                        await auth.signOut();
-                        
-                        // Clear local storage
-                        localStorage.removeItem('userName');
-                        localStorage.removeItem('userEmail');
-                        localStorage.removeItem('userSettings');
-                        
-                        // Redirect to login page
-                        window.location.href = '../auth.html';
-                    } catch (error) {
-                        console.error('Logout error:', error);
-                        const errorModal = Modal.alert({
-                            title: 'Error',
-                            message: 'Error signing out. Please try again.',
-                            type: 'danger'
-                        });
-                        errorModal.show();
-                    }
-                }
-            });
-            modal.show();
-        }
-
-        // Password Strength Checker
-        function checkPasswordStrength() {
-            const password = document.getElementById('newPassword').value;
-            const strengthContainer = document.getElementById('passwordStrength');
-            const strengthText = strengthContainer.querySelector('.strength-text');
-            
-            if (password.length === 0) {
-                strengthContainer.classList.remove('show');
-                return;
-            }
-            
-            strengthContainer.classList.add('show');
-            
-            let score = 0;
-            let feedback = [];
-            let isWeak = false;
-            
-            // Check for weak patterns first (these override other scoring)
-            const weakPatterns = [
-                /^(.)\1{7,}$/, // Repeated characters (e.g., "aaaaaaaa")
-                /^(012|123|234|345|456|567|678|789|890)+/, // Sequential ascending
-                /^(987|876|765|654|543|432|321|210|109)+/, // Sequential descending
-                /^(qwerty|asdf|zxcv|password|admin|login)/i, // Common patterns
-                /^[0-9]+$/, // Numbers only (like "12345678")
-                /^[a-z]+$/, // Letters only, lowercase
-                /^[A-Z]+$/, // Letters only, uppercase
-            ];
-            
-            // Check if password matches any weak pattern
-            for (const pattern of weakPatterns) {
-                if (pattern.test(password)) {
-                    isWeak = true;
-                    break;
-                }
-            }
-            
-            // Additional check for simple sequential numbers
-            if (/^123456|^234567|^345678|^456789|^567890|^678901|^789012|^890123|^901234/.test(password)) {
-                isWeak = true;
-            }
-            
-            // If weak pattern detected, force low score regardless of other criteria
-            if (isWeak) {
-                score = 0;
-                feedback.push('avoid common patterns');
-            } else {
-                // Normal scoring for non-weak patterns
-                // Length check
-                if (password.length >= 8) score++;
-                else feedback.push('at least 8 characters');
-                
-                // Character variety checks
-                if (/[a-z]/.test(password)) score++;
-                else feedback.push('lowercase letters');
-                
-                if (/[A-Z]/.test(password)) score++;
-                else feedback.push('uppercase letters');
-                
-                if (/[0-9]/.test(password)) score++;
-                else feedback.push('numbers');
-                
-                if (/[^A-Za-z0-9]/.test(password)) score++;
-                else feedback.push('special characters');
-            }
-            
-            // Update strength indicator
-            const strengthClasses = ['strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
-            const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
-            
-            strengthContainer.className = 'password-strength show';
-            
-            if (score <= 1) {
-                strengthContainer.classList.add('strength-weak');
-                strengthText.textContent = `${strengthLabels[0]} - Add ${feedback.slice(0, 2).join(', ')}`;
-            } else if (score === 2) {
-                strengthContainer.classList.add('strength-fair');
-                strengthText.textContent = `${strengthLabels[1]} - Add ${feedback.slice(0, 1).join(', ')}`;
-            } else if (score === 3) {
-                strengthContainer.classList.add('strength-good');
-                strengthText.textContent = `${strengthLabels[2]} - Almost there!`;
-            } else {
-                strengthContainer.classList.add('strength-strong');
-                strengthText.textContent = `${strengthLabels[3]} - Excellent password`;
-            }
-        }
-
-        function validatePasswordMatch() {
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const confirmInput = document.getElementById('confirmPassword');
-            
-            if (confirmPassword.length > 0 && newPassword !== confirmPassword) {
-                confirmInput.classList.add('error');
-            } else {
-                confirmInput.classList.remove('error');
-            }
-        }
-        
-        function validateTimezone() {
-            const timezoneSelect = document.getElementById('timezone');
-            const timezoneValue = timezoneSelect.value;
-            const validTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'];
-            
-            if (!timezoneValue || !validTimezones.includes(timezoneValue)) {
-                // Reset to default valid timezone
-                timezoneSelect.value = 'America/Los_Angeles';
-                showFieldError('timezone', 'Invalid timezone selected. Reset to Pacific Time.');
-                
-                // Auto-clear error after 3 seconds
-                setTimeout(() => {
-                    clearFieldError('timezone');
-                }, 3000);
-                
-                return false;
-            }
-            
-            clearFieldError('timezone');
-            return true;
-        }
-        
-        // Monitor for programmatic changes to timezone select - improved for testing
-        let timezoneMonitoringEnabled = true;
-        function monitorTimezoneChanges() {
-            const timezoneSelect = document.getElementById('timezone');
-            let lastValidValue = timezoneSelect.value || 'America/Los_Angeles';
-            const validTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'];
-            
-            // Allow disabling monitoring for testing (check window.disableTimezoneMonitoring)
-            const checkDisabled = () => window.disableTimezoneMonitoring || !timezoneMonitoringEnabled;
-            
-            // Use MutationObserver to detect attribute changes - but respect disable flag
-            const observer = new MutationObserver(() => {
-                if (checkDisabled()) return;
-                
-                const currentValue = timezoneSelect.value;
-                if (!currentValue || !validTimezones.includes(currentValue)) {
-                    timezoneSelect.value = lastValidValue;
-                } else {
-                    lastValidValue = currentValue;
-                }
-            });
-            
-            observer.observe(timezoneSelect, { 
-                attributes: true, 
-                attributeFilter: ['value'] 
-            });
-            
-            // Store original descriptor to avoid conflicts
-            const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
-            
-            // Also use property descriptor to intercept direct value assignment - with disable check
-            Object.defineProperty(timezoneSelect, 'value', {
-                get() {
-                    return originalDescriptor.get.call(this);
-                },
-                set(newValue) {
-                    // Always allow setting the value, but validate if monitoring is enabled
-                    originalDescriptor.set.call(this, newValue);
-                    
-                    if (!checkDisabled()) {
-                        if (newValue && validTimezones.includes(newValue)) {
-                            lastValidValue = newValue;
-                        } else if (newValue && !validTimezones.includes(newValue)) {
-                            // Only reset invalid values when monitoring is enabled
-                            originalDescriptor.set.call(this, lastValidValue);
-                        }
-                    }
-                },
-                configurable: true
-            });
-            
-            // Reduced frequency check and respect disable flag
-            setInterval(() => {
-                if (checkDisabled()) return;
-                
-                const currentValue = timezoneSelect.value || '';
-                if (!currentValue || !validTimezones.includes(currentValue)) {
-                    timezoneSelect.value = lastValidValue;
-                }
-            }, 200); // Reduced from 50ms to 200ms for less aggressive monitoring
-        }
-
-        // Utility Functions
-        function showFieldError(fieldId, message) {
-            const field = document.getElementById(fieldId);
-            const errorDiv = field.parentNode.querySelector('.form-error');
-            
-            field.classList.add('error');
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-            }
-            
-            field.focus();
-        }
-
-        function clearFieldError(fieldId) {
-            const field = document.getElementById(fieldId);
-            const errorDiv = field.parentNode.querySelector('.form-error');
-            
-            field.classList.remove('error');
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
-        }
-
-        function showSuccessMessage(message) {
-            const messageEl = document.getElementById('successMessage');
-            messageEl.textContent = message;
-            messageEl.classList.add('show');
-            
-            setTimeout(() => {
-                messageEl.classList.remove('show');
-            }, 3000);
-        }
-
-        function saveSettings() {
-            localStorage.setItem('userSettings', JSON.stringify(userSettings));
-            console.log('Settings saved:', userSettings);
-        }
-
-        function resetAccountForm() {
-            // Reset to original values
-            document.getElementById('displayName').value = originalSettings.displayName;
-            document.getElementById('emailAddress').value = originalSettings.emailAddress;
-            document.getElementById('phoneNumber').value = originalSettings.phoneNumber;
-            document.getElementById('timezone').value = originalSettings.timezone;
-            
-            hasUnsavedChanges = false;
-        }
-
-        function resetSecurityForm() {
-            document.getElementById('securityForm').reset();
-            document.getElementById('passwordStrength').classList.remove('show');
-            
-            // Clear any error states
-            const passwordInputs = ['currentPassword', 'newPassword', 'confirmPassword'];
-            passwordInputs.forEach(id => clearFieldError(id));
-        }
-
-        // Data Export/Delete Functions (Placeholders)
-        function downloadData() {
-            // TODO: Implement data export
-            const modal = Modal.alert({
-                title: 'Data Export',
-                message: 'Data export would generate a download of all your memories and settings.',
-                type: 'info'
-            });
-            modal.show();
-        }
-
-        function deleteAccount() {
-            const modal = Modal.confirm({
-                title: 'Delete Account',
-                message: 'Are you sure you want to delete your account? This action cannot be undone.',
-                confirmText: 'Delete Account',
-                type: 'danger',
-                onConfirm: () => {
-                    // TODO: Implement account deletion
-                    const successModal = Modal.alert({
-                        title: 'Account Deletion',
-                        message: 'Account deletion would be processed. This is a placeholder.',
-                        type: 'info'
-                    });
-                    successModal.show();
-                }
-            });
-            modal.show();
-        }
-
-        // Preferences handlers
-        function handleSavePreferences() {
-            const saveBtn = document.getElementById('savePreferencesBtn');
-            
-            // Show loading state
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
-            
-            // Update preferences from form
-            userSettings.themePreference = document.getElementById('themePreference').value;
-            userSettings.languagePreference = document.getElementById('languagePreference').value;
-            userSettings.dateFormat = document.getElementById('dateFormat').value;
-            
-            // Simulate API call
-            setTimeout(() => {
-                saveSettings();
-                showSuccessMessage('Preferences saved successfully!');
-                
-                // Reset button
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<span>⚙️</span> Save Preferences';
-            }, 1000);
-        }
-
-        function handlePreferenceChange() {
-            hasUnsavedChanges = true;
-        }
-
-        function resetPreferences() {
-            const modal = Modal.confirm({
-                title: 'Reset Preferences',
-                message: 'Reset all preferences to their default values?',
-                confirmText: 'Reset',
-                type: 'warning',
-                onConfirm: () => {
-                    document.getElementById('themePreference').value = 'light';
-                    document.getElementById('languagePreference').value = 'en';
-                    document.getElementById('dateFormat').value = 'mdy';
-                    
-                    // Reset toggle switches in preferences section
-                    const preferencesSection = document.querySelector('.preferences-section');
-                    const toggles = preferencesSection.querySelectorAll('[data-setting]');
-                    toggles.forEach(toggle => {
-                        const setting = toggle.dataset.setting;
-                        const input = toggle.querySelector('.toggle-input');
-                        
-                        // Set default values
-                        const defaults = {
-                            autoSaveInterviews: true,
-                            compactView: false,
-                            animationEffects: true,
-                            soundEffects: false
-                        };
-                        
-                        const defaultValue = defaults[setting] !== undefined ? defaults[setting] : false;
-                        input.checked = defaultValue;
-                        
-                        if (defaultValue) {
-                            toggle.classList.add('active');
-                        } else {
-                            toggle.classList.remove('active');
-                        }
-                        
-                        userSettings[setting] = defaultValue;
-                    });
-                    
-                    saveSettings();
-                    showSuccessMessage('Preferences reset to defaults!');
-                }
-            });
-            modal.show();
-        }
-
-        // Add click handlers for data buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            const dataButtons = document.querySelectorAll('.infitwin-button--tertiary');
-            dataButtons.forEach(btn => {
-                if (btn.textContent.includes('Download')) {
-                    btn.addEventListener('click', downloadData);
-                } else if (btn.textContent.includes('Delete')) {
-                    btn.addEventListener('click', deleteAccount);
                 }
             });
         });
-
-        // Track page interaction
-        console.log('Settings page loaded and interactive');
     </script>
 </body>
 </html>
