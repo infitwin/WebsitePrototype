@@ -281,10 +281,6 @@ async function initializeServices() {
                 // Initialize audio WebSocket connection and wait for it
                 await initializeAudioWebSocket();
                 
-                // Add Winston's greeting to chat once services are ready
-                const winstonGreeting = "Hello! I'm Winston, your memory curator. Let's begin by choosing a topic for today's interview. What would you like to explore? I'll guide you through about 30 focused questions to help capture your memories.";
-                addMessage(winstonGreeting, 'winston');
-                
                 // Enable inputs now that services are ready
                 const micButton = document.getElementById('micBtn');
                 const messageInput = document.getElementById('messageInput');
@@ -320,23 +316,18 @@ async function initializeServices() {
                 const isInitialGreeting = questionText.includes("Hello! I'm Winston") && 
                                          questionText.includes("memory curator");
                 
-                if (isInitialGreeting && window.initialGreetingShown) {
-                    console.log('Skipping duplicate greeting message');
-                    return;
-                }
-                
                 if (isInitialGreeting) {
-                    window.initialGreetingShown = true;
+                    console.log('Skipping initial greeting in chat - already shown in question area');
+                    // Update the question display but don't add to chat
+                    updateInterviewQuestion(questionText);
+                    return;
                 }
                 
                 // Update the question display
                 updateInterviewQuestion(questionText);
                 
-                // Only add to chat if it's not the initial greeting
-                if (!isInitialGreeting) {
-                    // Add Winston's message to the chat
-                    addMessage(questionText, 'winston');
-                }
+                // Add Winston's message to the chat (non-greeting messages only)
+                addMessage(questionText, 'winston');
             }
             
             // If TTS audio is provided, play it
@@ -735,53 +726,24 @@ function sendMessage() {
     }
 }
 
-function addMessage(text, sender, animate = false) {
+function addMessage(text, sender) {
     const messagesContainer = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message' + (sender === 'user' ? ' user-message' : '');
     
     if (sender === 'winston') {
-        const avatar = document.createElement('div');
-        avatar.className = 'winston-orb winston-avatar';
-        avatar.textContent = '🎩';
-        messageDiv.appendChild(avatar);
-        
-        const content = document.createElement('div');
-        content.className = 'message-content';
-        
-        if (animate) {
-            // Typing animation for Winston
-            content.textContent = '';
-            messageDiv.appendChild(content);
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            // Type out the message
-            let index = 0;
-            const typingSpeed = 20; // milliseconds per character
-            const typeInterval = setInterval(() => {
-                if (index < text.length) {
-                    content.textContent += text[index];
-                    index++;
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                } else {
-                    clearInterval(typeInterval);
-                }
-            }, typingSpeed);
-        } else {
-            content.textContent = text;
-            messageDiv.appendChild(content);
-        }
+        messageDiv.innerHTML = `
+            <div class="winston-orb winston-avatar">🎩</div>
+            <div class="message-content">${text}</div>
+        `;
     } else {
         messageDiv.innerHTML = `
             <div class="message-content">${text}</div>
         `;
     }
     
-    if (!animate || sender !== 'winston') {
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 // Interview Management Functions
