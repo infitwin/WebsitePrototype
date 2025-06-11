@@ -330,19 +330,71 @@ class OrchestratorWebSocketService {
       twinId: params.twinId
     });
     
-    // Build properly formatted message using the builder
-    const message = buildStartInterviewMessage(params);
+    // Build StartInterview message according to websocket-messages.md
+    const message = {
+      messageId: `msg-${Date.now()}`,
+      type: 'StartInterview',
+      timestamp: new Date().toISOString(),
+      source: {
+        service: 'UI',
+        instanceId: 'browser-session-' + Math.random().toString(36).substr(2, 9)
+      },
+      target: {
+        service: 'Orchestrator'
+      },
+      payload: {
+        metadata: {
+          requestId: `req-${Date.now()}`,
+          interviewId: 'pending****',
+          sessionId: 'pending****',
+          correlationId: params.correlationId || `corr-${Date.now()}`,
+          userId: params.userId,
+          twinId: params.twinId,
+          timestamp: new Date().toISOString(),
+          senderTarget: 'UI',
+          recipientTarget: 'Orchestrator'
+        },
+        interviewData: {
+          interviewStage: 'openInterview',
+          interviewType: params.interviewType || 'personal-history'
+        },
+        content: {
+          action: 'start',
+          preferences: {
+            language: 'en-US',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          }
+        }
+      }
+    };
     
-    // Send the message (type is extracted from the built message)
-    return this.sendMessage(message.type, message.payload);
+    console.log('Sending StartInterview message:', message);
+    
+    // Send the complete message
+    try {
+      this.ws.send(JSON.stringify(message));
+      this.logTelemetry('Start_Interview_Send', {
+        interviewId: 'pending****',
+        correlationId: message.payload.metadata.correlationId,
+        userId: params.userId,
+        twinId: params.twinId
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to send StartInterview message:', error);
+      return false;
+    }
   }
 
   /**
    * Send heartbeat
    */
   sendHeartbeat() {
-    const message = buildHeartbeatMessage();
-    return this.sendMessage(message.type, message.payload);
+    const message = {
+      type: 'Heartbeat',
+      timestamp: new Date().toISOString()
+    };
+    return this.sendMessage(message.type, message);
   }
 
   // Private methods
