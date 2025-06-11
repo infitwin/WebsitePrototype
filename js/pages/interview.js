@@ -171,7 +171,7 @@ function initializeAudioWebSocket() {
         // Set up callbacks
         audioWebSocket.onConnected = () => {
             console.log('Audio WebSocket connected');
-            showToast('Audio service connected', 'success');
+            // Silent connection for cleaner UX
             resolve(); // Resolve the promise when connected
         };
         
@@ -198,7 +198,7 @@ function initializeAudioWebSocket() {
         
         audioWebSocket.onDisconnected = () => {
             console.log('Audio WebSocket disconnected');
-            showToast('Audio service disconnected', 'error');
+            console.warn('Audio service disconnected');
         };
         
         // Connect to audio service
@@ -271,7 +271,6 @@ async function initializeServices() {
             currentInterviewId = data.interviewId;
             currentSessionId = data.sessionId || data.sessionDetails?.id;
             isInterviewActive = true;
-            showToast('Interview session started with Winston', 'success');
             
             // CRITICAL FIX: Only initialize audio WebSocket AFTER we have valid IDs
             if (currentInterviewId && currentSessionId) {
@@ -281,10 +280,28 @@ async function initializeServices() {
                 
                 // Initialize audio WebSocket connection and wait for it
                 await initializeAudioWebSocket();
-                showToast('Audio service ready - you can start recording', 'success');
+                
+                // Show Winston's greeting message
+                const winstonGreeting = "Hello! I'm Winston, your memory curator. Let's begin by choosing a topic for today's interview. What would you like to explore? I'll guide you through about 30 focused questions to help capture your memories.";
+                
+                // Add Winston's greeting to the chat
+                addMessage(winstonGreeting, 'winston');
+                updateInterviewQuestion(winstonGreeting);
+                
+                // Enable inputs now that Winston has greeted
+                const micButton = document.getElementById('micBtn');
+                const messageInput = document.getElementById('messageInput');
+                if (micButton) {
+                    micButton.disabled = false;
+                    micButton.classList.remove('disabled');
+                }
+                if (messageInput) {
+                    messageInput.disabled = false;
+                    messageInput.placeholder = 'Share your response here...';
+                }
             } else {
                 console.error('❌ Interview started but missing required IDs:', { currentInterviewId, currentSessionId });
-                showToast('Interview started but audio service unavailable', 'warning');
+                console.warn('Interview started but audio service unavailable');
             }
         };
         
@@ -305,8 +322,17 @@ async function initializeServices() {
                 // Add Winston's message to the chat
                 addMessage(questionText, 'winston');
                 
-                // Show success toast
-                showToast('Winston replied: ' + questionText.substring(0, 50) + '...', 'success');
+                // Enable inputs now that Winston has started
+                const micButton = document.getElementById('micBtn');
+                const messageInput = document.getElementById('messageInput');
+                if (micButton) {
+                    micButton.disabled = false;
+                    micButton.classList.remove('disabled');
+                }
+                if (messageInput) {
+                    messageInput.disabled = false;
+                    messageInput.placeholder = 'Share your response here...';
+                }
             }
             
             // If TTS audio is provided, play it
@@ -666,7 +692,7 @@ function sendMessage() {
             setWinstonState('idle');
         }
     } else {
-        showToast('Not connected to interview service', 'error');
+        console.error('Not connected to interview service');
         
         // Fallback to demo mode if not connected
         setWinstonState('thinking');
@@ -712,21 +738,21 @@ async function startNewInterview(type) {
         console.log(`🚀 Starting new ${type} interview`);
         document.getElementById('interviewSelectionModal').classList.remove('active');
         
-        // Show loading state
-        showToast(`Initializing ${type} interview...`, 'success');
-        
-        // Update interview question based on type
-        const questionMap = {
-            'new': "Hello! I'm Winston, your memory curator. What topic would you like to explore today? It could be about your family, career, hobbies, travels, or any meaningful experience you'd like to preserve.",
-            'artifact': "Please upload an artifact you'd like to discuss - this could be a photo, document, letter, or describe an item that holds special meaning to you."
-        };
-        
-        updateInterviewQuestion(questionMap[type] || questionMap['new']);
+        // Disable inputs initially
+        const micButton = document.getElementById('micBtn');
+        const messageInput = document.getElementById('messageInput');
+        if (micButton) {
+            micButton.disabled = true;
+            micButton.classList.add('disabled');
+        }
+        if (messageInput) {
+            messageInput.disabled = true;
+            messageInput.placeholder = 'Waiting for Winston to start the interview...';
+        }
         
         // Initialize all services with fallback handling
         const servicesReady = await initializeServices().catch(error => {
             console.warn('Service initialization failed, continuing with limited functionality:', error);
-            showToast('Some features may be limited due to initialization issues', 'error');
             return false;
         });
         

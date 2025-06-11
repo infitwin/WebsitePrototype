@@ -440,6 +440,19 @@ body {
     animation: pulse 1s infinite;
 }
 
+.mic-btn:disabled,
+.mic-btn.disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.mic-btn:disabled:hover,
+.mic-btn.disabled:hover {
+    background: #9ca3af;
+    transform: none;
+}
+
 /* Live transcription indicator */
 .transcription-indicator {
     position: absolute;
@@ -800,6 +813,12 @@ body {
     width: 100%;
     resize: vertical;
     min-height: 80px;
+}
+
+.response-area:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
 }
 
 /* Responsive Design */
