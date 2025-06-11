@@ -172,6 +172,8 @@ function parseOrchestratorMessage(message) {
         type,
         interviewId: metadata.interviewId,
         sessionId: metadata.sessionId,
+        userId: metadata.userId,        // ADD THIS
+        twinId: metadata.twinId,        // ADD THIS
         correlationId: metadata.correlationId,
         status: data.status,
         message: data.message,

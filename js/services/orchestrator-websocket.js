@@ -31,6 +31,8 @@ class OrchestratorWebSocketService {
     // Interview state
     this.currentInterviewId = null;
     this.currentSessionId = null;
+    this.currentUserId = null;      // ADD THIS
+    this.currentTwinId = null;      // ADD THIS
     this.currentCorrelationId = null;
     this.wasConnectedBefore = false;
     
@@ -65,13 +67,20 @@ class OrchestratorWebSocketService {
       // Extract IDs from the parsed message (which includes flattened payload data)
       this.currentInterviewId = parsedMessage.interviewId;
       this.currentSessionId = parsedMessage.sessionId || parsedMessage.sessionDetails?.sessionId;
+      this.currentUserId = parsedMessage.userId;      // ADD THIS
+      this.currentTwinId = parsedMessage.twinId;      // ADD THIS
       this.currentCorrelationId = parsedMessage.correlationId;
       
       console.log('Interview IDs set:', {
         interviewId: this.currentInterviewId,
         sessionId: this.currentSessionId,
+        userId: this.currentUserId,
+        twinId: this.currentTwinId,
         correlationId: this.currentCorrelationId
       });
+      
+      // Request initial graph data for interview
+      this.requestInterviewGraphData();
       
       if (this.onInterviewStarted) {
         this.onInterviewStarted(parsedMessage);
@@ -142,6 +151,33 @@ class OrchestratorWebSocketService {
     this.messageHandlers.set('connection', (parsedMessage) => {
       console.log('Orchestrator connection confirmed:', parsedMessage);
       // Connection acknowledgment from orchestrator
+    });
+    
+    // Handle initial graph data
+    this.messageHandlers.set('GraphDataResponse', (parsedMessage) => {
+      console.log('Graph data received:', parsedMessage);
+      if (window.updateInterviewGraph) {
+        window.updateInterviewGraph(parsedMessage.data);
+      }
+    });
+
+    // Handle real-time graph updates
+    this.messageHandlers.set('GraphUpdate', (parsedMessage) => {
+      console.log('Graph update received:', parsedMessage);
+      if (window.addInterviewGraphData) {
+        window.addInterviewGraphData(parsedMessage.data);
+      }
+    });
+    
+    // Handle state update responses
+    this.messageHandlers.set('state_updated', (parsedMessage) => {
+      console.log('State update response:', parsedMessage);
+      const newState = parsedMessage.data?.state;
+      const success = parsedMessage.data?.success;
+      
+      if (newState === 'closed' && success && this.onSessionClosed) {
+        this.onSessionClosed({ success: true });
+      }
     });
     
     // Handle any other message types
@@ -631,6 +667,110 @@ class OrchestratorWebSocketService {
     }
     
     return parsed;
+  }
+
+  /**
+   * Request graph data with flexible scope
+   */
+  requestGraphData(scope = 'interview') {
+    if (!this.currentUserId || !this.currentTwinId) {
+      console.error('Missing required IDs for graph data request');
+      return false;
+    }
+    
+    // Build filter based on scope
+    const filter = {
+      userId: this.currentUserId,
+      twinId: this.currentTwinId
+    };
+    
+    // Only add interviewId filter for interview scope
+    if (scope === 'interview' && this.currentInterviewId) {
+      filter.interviewId = this.currentInterviewId;
+    }
+    
+    const message = {
+      type: 'RequestGraphData',
+      payload: {
+        metadata: {
+          userId: this.currentUserId,
+          twinId: this.currentTwinId,
+          interviewId: this.currentInterviewId || null,
+          correlationId: generateCorrelationId(),
+          timestamp: new Date().toISOString()
+        },
+        data: {
+          scope: scope, // 'interview' or 'all'
+          filter: filter
+        }
+      }
+    };
+    
+    try {
+      this.ws.send(JSON.stringify(message));
+      console.log(`Sent RequestGraphData (${scope}):`, message);
+      return true;
+    } catch (error) {
+      console.error('Failed to send graph data request:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Convenience method for requesting interview-specific graph data
+   */
+  requestInterviewGraphData() {
+    return this.requestGraphData('interview');
+  }
+
+  /**
+   * Convenience method for requesting all graph data
+   */
+  requestAllGraphData() {
+    return this.requestGraphData('all');
+  }
+
+  /**
+   * Send state update message to orchestrator
+   * @param {string} state - State to update to ('pause', 'resume', 'close')
+   * @param {string} reason - Optional reason (only used for 'close')
+   * @returns {boolean} Success status
+   */
+  sendStateUpdate(state, reason = null) {
+    if (!this.isConnected()) {
+      console.warn(`Cannot send state update '${state}': WebSocket not connected`);
+      return false;
+    }
+
+    try {
+      const message = {
+        type: 'state_update',
+        data: {
+          state: state
+        }
+      };
+      
+      if (reason && state === 'close') {
+        message.data.reason = reason;
+      }
+      
+      console.log(`Sending state update: ${state}`, message);
+      this.ws.send(JSON.stringify(message));
+      
+      return true;
+    } catch (error) {
+      console.error(`Failed to send state update '${state}':`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Close the current session
+   * @param {string} reason - Optional reason for closing
+   * @returns {boolean} Success status
+   */
+  closeSession(reason = 'User requested close') {
+    return this.sendStateUpdate('close', reason);
   }
 
   /**

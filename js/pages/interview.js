@@ -68,9 +68,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof Neo4jCompactControl !== 'undefined') {
                     // Create React element for Neo4jCompactControl
                     const nexusElement = React.createElement(Neo4jCompactControl, {
-                        data: window.mockInterviewData || [],
+                        data: window.currentGraphData || window.mockInterviewData || [],
                         width: containerWidth,
                         height: containerHeight,
+                        mode: 'interview',
                         onNodeSelect: (node) => console.log('Node selected:', node),
                         onEdgeSelect: (edge) => console.log('Edge selected:', edge)
                     });
@@ -99,28 +100,119 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 1000);
             
-            // Hook for interview data updates
-            window.updateInterviewGraph = function(data) {
-                if (window.interviewNexusViz && data) {
-                    // TODO: Implement data update logic
-                    console.log('📊 Interview graph updated with new data');
+            // Store current graph data globally
+            window.currentGraphData = null;
+
+            // Update the entire graph with new data
+            window.updateInterviewGraph = function(graphData) {
+                if (window.interviewNexusViz && graphData) {
+                    console.log('📊 Interview graph updated with new data:', graphData);
+                    
+                    // Transform Neo4j data to NexusControl format
+                    const nexusData = {
+                        nodes: (graphData.nodes || []).map(node => ({
+                            id: node.id,
+                            name: node.properties?.name || node.id,
+                            type: mapNeo4jTypeToNexusType(node.labels?.[0]),
+                            x: node.properties?.x || Math.random() * 600 + 100,
+                            y: node.properties?.y || Math.random() * 600 + 100,
+                            ...node.properties
+                        })),
+                        links: (graphData.edges || []).map(edge => ({
+                            source: edge.source || edge.startNode,
+                            target: edge.target || edge.endNode,
+                            relationship: edge.type || edge.relationship,
+                            ...edge.properties
+                        }))
+                    };
+                    
+                    // Store for future reference
+                    window.currentGraphData = nexusData;
+                    
+                    // Re-render NexusControl with new data
+                    const graphContainer = document.getElementById('interview-neo4j-container');
+                    if (graphContainer) {
+                        const root = window.interviewNexusViz;
+                        root.render(React.createElement(Neo4jCompactControl, {
+                            data: nexusData,
+                            width: graphContainer.offsetWidth,
+                            height: graphContainer.offsetHeight,
+                            mode: 'interview',
+                            onNodeSelect: (node) => console.log('Node selected:', node),
+                            onEdgeSelect: (edge) => console.log('Edge selected:', edge)
+                        }));
+                        
+                        console.log('✅ NexusControl updated with', nexusData.nodes.length, 'nodes and', nexusData.links.length, 'edges');
+                    }
                 }
             };
             
-            // Hook for adding new nodes during interview
-            window.addInterviewNode = function(node) {
-                if (window.interviewNexusViz && node) {
-                    // TODO: Implement node addition logic
-                    console.log('➕ Node added to interview graph:', node);
+            // Add incremental updates for real-time changes
+            window.addInterviewGraphData = function(updateData) {
+                console.log('🔄 Adding graph data:', updateData);
+                
+                if (!window.currentGraphData || !updateData) {
+                    console.warn('No existing graph data or update data');
+                    return;
                 }
+                
+                // Merge new nodes
+                if (updateData.nodes && updateData.nodes.length > 0) {
+                    const newNodes = updateData.nodes.map(node => ({
+                        id: node.id,
+                        name: node.properties?.name || node.id,
+                        type: mapNeo4jTypeToNexusType(node.labels?.[0]),
+                        x: node.properties?.x || Math.random() * 600 + 100,
+                        y: node.properties?.y || Math.random() * 600 + 100,
+                        ...node.properties
+                    }));
+                    
+                    // Add only new nodes (avoid duplicates)
+                    newNodes.forEach(newNode => {
+                        if (!window.currentGraphData.nodes.find(n => n.id === newNode.id)) {
+                            window.currentGraphData.nodes.push(newNode);
+                        }
+                    });
+                }
+                
+                // Merge new edges
+                if (updateData.edges && updateData.edges.length > 0) {
+                    const newEdges = updateData.edges.map(edge => ({
+                        source: edge.source || edge.startNode,
+                        target: edge.target || edge.endNode,
+                        relationship: edge.type || edge.relationship,
+                        ...edge.properties
+                    }));
+                    
+                    // Add only new edges (avoid duplicates)
+                    newEdges.forEach(newEdge => {
+                        if (!window.currentGraphData.links.find(e => 
+                            e.source === newEdge.source && e.target === newEdge.target)) {
+                            window.currentGraphData.links.push(newEdge);
+                        }
+                    });
+                }
+                
+                // Re-render with updated data
+                window.updateInterviewGraph({
+                    nodes: window.currentGraphData.nodes,
+                    edges: window.currentGraphData.links
+                });
             };
             
-            // Hook for adding new relationships during interview
-            window.addInterviewEdge = function(edge) {
-                if (window.interviewNexusViz && edge) {
-                    // TODO: Implement edge addition logic
-                    console.log('🔗 Edge added to interview graph:', edge);
-                }
+            // Helper function to map Neo4j node types to NexusControl types
+            window.mapNeo4jTypeToNexusType = function(neo4jLabel) {
+                const typeMap = {
+                    'Person': 'central',
+                    'Family': 'family',
+                    'Event': 'event',
+                    'Place': 'place',
+                    'Memory': 'memory',
+                    'Topic': 'memory',
+                    'Experience': 'event',
+                    'Organization': 'event'
+                };
+                return typeMap[neo4jLabel] || 'central';
             };
             
         } catch (error) {
@@ -366,7 +458,6 @@ async function initializeServices() {
         
         orchestratorWebSocket.onReconnected = () => {
             console.log('Orchestrator WebSocket reconnected');
-            showToast('Connection restored', 'success');
             showConnectionBanner(false);
         };
         
@@ -801,9 +892,6 @@ async function startNewInterview(type) {
         // Show specialized message for artifact interviews
         if (type === 'artifact') {
             document.getElementById('photoReference').style.display = 'block';
-            showToast('Artifact interview ready! Upload or describe your artifact to get started.', 'success');
-        } else {
-            showToast('Interview ready! Let\'s capture your memories.', 'success');
         }
         
     } catch (error) {
@@ -820,7 +908,7 @@ async function resumeInterview(interviewId) {
         console.log(`📋 Resuming interview: ${interviewId}`);
         document.getElementById('interviewSelectionModal').classList.remove('active');
         
-        showToast('Loading previous interview...', 'success');
+        console.log('Loading previous interview...');
         
         // Simulate loading previous interview data
         const interviewData = {
@@ -837,7 +925,7 @@ async function resumeInterview(interviewId) {
         const data = interviewData[interviewId];
         if (data) {
             updateInterviewQuestion(data.question);
-            showToast(`Resumed: ${data.progress}`, 'success');
+            console.log(`Resumed: ${data.progress}`);
         } else {
             updateInterviewQuestion("Welcome back! What would you like to continue discussing?");
         }
@@ -855,7 +943,7 @@ async function resumeInterview(interviewId) {
 }
 
 async function viewInterview(interviewId) {
-    showToast('Opening completed interview in view mode...', 'success');
+    console.log('Opening completed interview in view mode...');
     document.getElementById('interviewSelectionModal').classList.remove('active');
     
     // In a real implementation, this would load the completed interview data
@@ -867,7 +955,7 @@ async function viewInterview(interviewId) {
     if (inputField) inputField.disabled = true;
     if (micBtn) micBtn.disabled = true;
     
-    showToast('Viewing completed interview - read-only mode', 'success');
+    console.log('Viewing completed interview - read-only mode');
 }
 
 // Session Management
