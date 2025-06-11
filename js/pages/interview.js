@@ -372,7 +372,7 @@ async function initializeServices() {
         
     } catch (error) {
         console.error('❌ Service initialization failed:', error);
-        showToast('Failed to initialize audio services: ' + error.message, 'error');
+        console.error('Failed to initialize audio services:', error.message);
         return false;
     }
 }
@@ -422,7 +422,7 @@ async function startInterviewWithOrchestrator(interviewType = 'new', subject = n
         }
         
         setWinstonState('thinking');
-        showToast('Connecting to interview orchestrator...', 'success');
+        console.log('Connecting to interview orchestrator...');
         
         // Connect to WebSocket first
         orchestratorWebSocket.connect();
@@ -438,9 +438,9 @@ async function startInterviewWithOrchestrator(interviewType = 'new', subject = n
         
         if (!orchestratorWebSocket.isConnected()) {
             console.warn('WebSocket not connected after 3 seconds, proceeding anyway...');
-            showToast('Connecting to server... Interview will start when ready.', 'success');
+            // Silent connection - no notifications
         } else {
-            showToast('Connected! Starting interview session...', 'success');
+            console.log('Connected! Starting interview session...');
         }
         
         // Prepare interview data in the correct format for the message builder
@@ -782,7 +782,7 @@ async function startNewInterview(type) {
         // Continue even if services fail to initialize
         if (!servicesReady) {
             console.log('⚠️ Services failed to initialize, continuing in demo mode');
-            showToast('Running in demo mode - some features may not work', 'error');
+            console.warn('Running in demo mode - some features may not work');
         }
         
         // Try to start orchestrator session with fallback
@@ -790,7 +790,7 @@ async function startNewInterview(type) {
             await startInterviewWithOrchestrator(type);
         } catch (error) {
             console.warn('Orchestrator connection failed, continuing in offline mode:', error);
-            showToast('Running in offline mode - audio features disabled', 'error');
+            console.warn('Running in offline mode - audio features disabled');
         }
         
         // Start the idea clouds (this should always work)
