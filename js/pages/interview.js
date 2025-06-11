@@ -291,8 +291,13 @@ async function initializeServices() {
         orchestratorWebSocket.onQuestionReceived = (data) => {
             console.log('🎯 Winston question received:', data);
             
-            // Extract question text
-            const questionText = data.questionText || data.question;
+            // Extract question text from payload.data.questionText (actual structure from orchestrator)
+            const questionText = data.payload?.data?.questionText || 
+                               data.questionText || 
+                               data.question;
+            
+            console.log('Extracted questionText:', questionText);
+            
             if (questionText) {
                 // Update the question display
                 updateInterviewQuestion(questionText);

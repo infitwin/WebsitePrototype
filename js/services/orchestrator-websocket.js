@@ -59,18 +59,36 @@ class OrchestratorWebSocketService {
    */
   setupMessageHandlers() {
     // Handle InterviewStarted
-    this.messageHandlers.set('InterviewStarted', (parsedMessage) => {
+    this.messageHandlers.set('InterviewStarted', (parsedMessage, rawMessage) => {
+      console.log('InterviewStarted handler called with:', parsedMessage);
+      
+      // Extract IDs from the parsed message (which includes flattened payload data)
       this.currentInterviewId = parsedMessage.interviewId;
-      this.currentSessionId = parsedMessage.sessionId || parsedMessage.sessionDetails?.id;
+      this.currentSessionId = parsedMessage.sessionId || parsedMessage.sessionDetails?.sessionId;
       this.currentCorrelationId = parsedMessage.correlationId;
+      
+      console.log('Interview IDs set:', {
+        interviewId: this.currentInterviewId,
+        sessionId: this.currentSessionId,
+        correlationId: this.currentCorrelationId
+      });
       
       if (this.onInterviewStarted) {
         this.onInterviewStarted(parsedMessage);
       }
     });
     
-    // Handle SendQuestion
+    // Handle SendQuestion (AI responses from orchestrator)
     this.messageHandlers.set('SendQuestion', (parsedMessage) => {
+      console.log('SendQuestion received:', parsedMessage);
+      if (this.onQuestionReceived) {
+        this.onQuestionReceived(parsedMessage);
+      }
+    });
+    
+    // Handle AIResponse (alternative message type for AI responses)
+    this.messageHandlers.set('AIResponse', (parsedMessage) => {
+      console.log('AIResponse received:', parsedMessage);
       if (this.onQuestionReceived) {
         this.onQuestionReceived(parsedMessage);
       }
@@ -330,66 +348,55 @@ class OrchestratorWebSocketService {
       twinId: params.twinId
     });
     
-    // Try a simpler message format first
-    const simpleMessage = {
+    // Use EXACT format from websocket-messages.md documentation
+    const correlationId = params.correlationId || `corr-${Date.now()}`;
+    const timestamp = new Date().toISOString();
+    const instanceId = 'browser-session-' + Math.random().toString(36).substr(2, 9);
+    
+    const message = {
+      messageId: `msg-${Date.now()}`,
       type: 'StartInterview',
-      userId: params.userId,
-      twinId: params.twinId,
-      correlationId: params.correlationId || `corr-${Date.now()}`
+      timestamp: timestamp,
+      source: {
+        service: 'UI',
+        instanceId: instanceId
+      },
+      target: {
+        service: 'Orchestrator'
+      },
+      payload: {
+        metadata: {
+          requestId: `req-${Date.now()}`,
+          interviewId: 'pending****',
+          sessionId: 'pending****',
+          correlationId: correlationId,
+          userId: params.userId,
+          twinId: params.twinId,
+          timestamp: timestamp,
+          senderTarget: 'UI',
+          recipientTarget: 'Orchestrator'
+        },
+        interviewData: {
+          interviewStage: 'openInterview',
+          interviewType: params.interviewType || 'personal-history'
+        },
+        content: {
+          action: 'start',
+          preferences: {
+            language: 'en-US',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          }
+        }
+      }
     };
     
-    console.log('Trying simple StartInterview message:', simpleMessage);
+    console.log('Sending StartInterview message (following websocket-messages.md):', message);
     
-    // Send the simple message first
     try {
-      this.ws.send(JSON.stringify(simpleMessage));
-      console.log('Simple message sent, waiting for response...');
-      
-      // Also try the complex format after a delay
-      setTimeout(() => {
-        const complexMessage = {
-          messageId: `msg-${Date.now()}`,
-          type: 'StartInterview',
-          timestamp: new Date().toISOString(),
-          source: {
-            service: 'UI',
-            instanceId: 'browser-session-' + Math.random().toString(36).substr(2, 9)
-          },
-          target: {
-            service: 'Orchestrator'
-          },
-          payload: {
-            metadata: {
-              requestId: `req-${Date.now()}`,
-              interviewId: 'pending****',
-              sessionId: 'pending****',
-              correlationId: params.correlationId || `corr-${Date.now()}`,
-              userId: params.userId,
-              twinId: params.twinId,
-              timestamp: new Date().toISOString(),
-              senderTarget: 'UI',
-              recipientTarget: 'Orchestrator'
-            },
-            interviewData: {
-              interviewStage: 'openInterview',
-              interviewType: params.interviewType || 'personal-history'
-            },
-            content: {
-              action: 'start',
-              preferences: {
-                language: 'en-US',
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-              }
-            }
-          }
-        };
-        
-        console.log('Trying complex StartInterview message:', complexMessage);
-        this.ws.send(JSON.stringify(complexMessage));
-      }, 1000);
+      this.ws.send(JSON.stringify(message));
       
       this.logTelemetry('Start_Interview_Send', {
-        correlationId: params.correlationId,
+        correlationId: correlationId,
         userId: params.userId,
         twinId: params.twinId
       });
@@ -640,10 +647,12 @@ class OrchestratorWebSocketService {
       return false;
     }
     
+    // Follow the ForwardTranscript pattern from websocket-messages.md
+    const timestamp = new Date().toISOString();
     const message = {
       messageId: `ui-text-${Date.now()}`,
-      type: 'UserTextMessage',
-      timestamp: new Date().toISOString(),
+      type: 'ForwardTranscript',
+      timestamp: timestamp,
       source: {
         service: 'UI',
         instanceId: 'browser-session-' + Math.random().toString(36).substr(2, 9)
@@ -653,23 +662,36 @@ class OrchestratorWebSocketService {
       },
       payload: {
         metadata: {
+          requestId: `req-${Date.now()}`,
           interviewId: this.currentInterviewId,
           sessionId: this.currentSessionId || this.currentInterviewId,
+          turnId: 'pending****',
           userId: 'demo-user',
           twinId: 'winston-interviewer',
-          timestamp: new Date().toISOString()
+          timestamp: timestamp,
+          senderTarget: 'UI',
+          recipientTarget: 'Orchestrator'
+        },
+        interviewData: {
+          interviewStage: 'onGoing',
+          sessionStatus: 'active',
+          turnSequence: 1
         },
         content: {
-          text: text,
-          inputType: 'text',
-          timestamp: new Date().toISOString()
+          transcript: {
+            text: text,
+            confidence: 1.0,
+            language: 'en-US',
+            duration: 0,
+            isFinal: true
+          }
         }
       }
     };
     
     try {
       this.ws.send(JSON.stringify(message));
-      console.log('Sent UserTextMessage:', message);
+      console.log('Sent ForwardTranscript:', message);
       return true;
     } catch (error) {
       console.error('Failed to send text message:', error);
