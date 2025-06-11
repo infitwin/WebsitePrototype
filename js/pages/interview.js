@@ -281,14 +281,7 @@ async function initializeServices() {
                 // Initialize audio WebSocket connection and wait for it
                 await initializeAudioWebSocket();
                 
-                // Show Winston's greeting message
-                const winstonGreeting = "Hello! I'm Winston, your memory curator. Let's begin by choosing a topic for today's interview. What would you like to explore? I'll guide you through about 30 focused questions to help capture your memories.";
-                
-                // Add Winston's greeting to the chat
-                addMessage(winstonGreeting, 'winston');
-                updateInterviewQuestion(winstonGreeting);
-                
-                // Enable inputs now that Winston has greeted
+                // Enable inputs now that services are ready
                 const micButton = document.getElementById('micBtn');
                 const messageInput = document.getElementById('messageInput');
                 if (micButton) {
@@ -305,6 +298,9 @@ async function initializeServices() {
             }
         };
         
+        // Track if we've shown the initial greeting globally
+        window.initialGreetingShown = false;
+        
         orchestratorWebSocket.onQuestionReceived = (data) => {
             console.log('🎯 Winston question received:', data);
             
@@ -316,23 +312,24 @@ async function initializeServices() {
             console.log('Extracted questionText:', questionText);
             
             if (questionText) {
+                // Check if this is the duplicate initial greeting
+                const isInitialGreeting = questionText.includes("Hello! I'm Winston") && 
+                                         questionText.includes("memory curator");
+                
+                if (isInitialGreeting && window.initialGreetingShown) {
+                    console.log('Skipping duplicate greeting message');
+                    return;
+                }
+                
+                if (isInitialGreeting) {
+                    window.initialGreetingShown = true;
+                }
+                
                 // Update the question display
                 updateInterviewQuestion(questionText);
                 
                 // Add Winston's message to the chat
                 addMessage(questionText, 'winston');
-                
-                // Enable inputs now that Winston has started
-                const micButton = document.getElementById('micBtn');
-                const messageInput = document.getElementById('messageInput');
-                if (micButton) {
-                    micButton.disabled = false;
-                    micButton.classList.remove('disabled');
-                }
-                if (messageInput) {
-                    messageInput.disabled = false;
-                    messageInput.placeholder = 'Share your response here...';
-                }
             }
             
             // If TTS audio is provided, play it
@@ -712,24 +709,53 @@ function sendMessage() {
     }
 }
 
-function addMessage(text, sender) {
+function addMessage(text, sender, animate = false) {
     const messagesContainer = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message' + (sender === 'user' ? ' user-message' : '');
     
     if (sender === 'winston') {
-        messageDiv.innerHTML = `
-            <div class="winston-orb winston-avatar">🎩</div>
-            <div class="message-content">${text}</div>
-        `;
+        const avatar = document.createElement('div');
+        avatar.className = 'winston-orb winston-avatar';
+        avatar.textContent = '🎩';
+        messageDiv.appendChild(avatar);
+        
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        
+        if (animate) {
+            // Typing animation for Winston
+            content.textContent = '';
+            messageDiv.appendChild(content);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Type out the message
+            let index = 0;
+            const typingSpeed = 20; // milliseconds per character
+            const typeInterval = setInterval(() => {
+                if (index < text.length) {
+                    content.textContent += text[index];
+                    index++;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                } else {
+                    clearInterval(typeInterval);
+                }
+            }, typingSpeed);
+        } else {
+            content.textContent = text;
+            messageDiv.appendChild(content);
+        }
     } else {
         messageDiv.innerHTML = `
             <div class="message-content">${text}</div>
         `;
     }
     
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    if (!animate || sender !== 'winston') {
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }
 
 // Interview Management Functions
@@ -749,6 +775,14 @@ async function startNewInterview(type) {
             messageInput.disabled = true;
             messageInput.placeholder = 'Waiting for Winston to start the interview...';
         }
+        
+        // Show Winston's greeting with typing animation while services initialize
+        const winstonGreeting = "Hello! I'm Winston, your memory curator. Let's begin by choosing a topic for today's interview. What would you like to explore? I'll guide you through about 30 focused questions to help capture your memories.";
+        addMessage(winstonGreeting, 'winston', true);
+        updateInterviewQuestion(winstonGreeting);
+        
+        // Mark that we've shown the initial greeting
+        window.initialGreetingShown = true;
         
         // Initialize all services with fallback handling
         const servicesReady = await initializeServices().catch(error => {
