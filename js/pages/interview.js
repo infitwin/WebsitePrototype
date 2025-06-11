@@ -995,10 +995,15 @@ function pauseInterview() {
     }
     
     // Send session close message to orchestrator
+    console.log('🔍 DEBUG: Checking connection status:');
+    console.log('  - orchestratorWebSocket exists:', !!orchestratorWebSocket);
+    console.log('  - isConnected():', orchestratorWebSocket?.isConnected());
+    console.log('  - isInterviewActive:', isInterviewActive);
+    
     if (orchestratorWebSocket && orchestratorWebSocket.isConnected() && isInterviewActive) {
         // Set up one-time event listener for session closed
         const handleSessionClosed = (data) => {
-            console.log('Session closed confirmation received:', data);
+            console.log('✅ handleSessionClosed called with data:', data);
             addMessage('Interview paused. Your progress has been saved.', 'winston');
             
             // Remove the listener after handling
@@ -1007,6 +1012,8 @@ function pauseInterview() {
             // Complete the pause process
             setTimeout(() => completeInterviewPause(), 1500);
         };
+        
+        console.log('🔍 DEBUG: Setting up sessionClosed event listener');
         
         // Register the event listener BEFORE sending the message
         orchestratorWebSocket.on('sessionClosed', handleSessionClosed);

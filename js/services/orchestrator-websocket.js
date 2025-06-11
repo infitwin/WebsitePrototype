@@ -174,11 +174,17 @@ class OrchestratorWebSocketService {
     
     // Handle state update responses
     this.messageHandlers.set('state_updated', (parsedMessage) => {
-      console.log('State update response:', parsedMessage);
+      console.log('🔍 DEBUG: state_updated message received:', parsedMessage);
+      console.log('🔍 DEBUG: parsedMessage.data:', parsedMessage.data);
+      
       const newState = parsedMessage.data?.state;
       const success = parsedMessage.data?.success;
       
+      console.log('🔍 DEBUG: newState:', newState, 'success:', success);
+      
       if (newState === 'closed' && success) {
+        console.log('✅ Session closed successfully, emitting event');
+        
         // Always emit the event, regardless of callback
         this.emit('sessionClosed', { success: true, state: newState });
         
@@ -189,6 +195,8 @@ class OrchestratorWebSocketService {
         
         // Clear the pending flag
         this.pendingSessionClosure = false;
+      } else {
+        console.log('⚠️ State update received but not a successful close:', newState, success);
       }
     });
     
@@ -234,6 +242,8 @@ class OrchestratorWebSocketService {
           const rawMessage = JSON.parse(event.data);
           this.lastMessage = rawMessage;
           
+          console.log('📨 WebSocket message received:', rawMessage.type, rawMessage);
+          
           // Parse the message for easier access
           const parsedMessage = this.parseMessage(rawMessage);
           
@@ -246,12 +256,14 @@ class OrchestratorWebSocketService {
           // Call registered handler with both raw and parsed message
           let handler = this.messageHandlers.get(rawMessage.type);
           if (!handler) {
+            console.log('⚠️ No handler for message type:', rawMessage.type);
             // Use default handler for unknown message types
             handler = this.messageHandlers.get('default');
           }
           
           if (handler) {
             try {
+              console.log('🔄 Calling handler for:', rawMessage.type);
               handler(parsedMessage, rawMessage);
             } catch (error) {
               console.error(`Handler error for ${rawMessage.type}:`, error);
