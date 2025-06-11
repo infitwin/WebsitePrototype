@@ -330,55 +330,70 @@ class OrchestratorWebSocketService {
       twinId: params.twinId
     });
     
-    // Build StartInterview message according to websocket-messages.md
-    const message = {
-      messageId: `msg-${Date.now()}`,
+    // Try a simpler message format first
+    const simpleMessage = {
       type: 'StartInterview',
-      timestamp: new Date().toISOString(),
-      source: {
-        service: 'UI',
-        instanceId: 'browser-session-' + Math.random().toString(36).substr(2, 9)
-      },
-      target: {
-        service: 'Orchestrator'
-      },
-      payload: {
-        metadata: {
-          requestId: `req-${Date.now()}`,
-          interviewId: 'pending****',
-          sessionId: 'pending****',
-          correlationId: params.correlationId || `corr-${Date.now()}`,
-          userId: params.userId,
-          twinId: params.twinId,
-          timestamp: new Date().toISOString(),
-          senderTarget: 'UI',
-          recipientTarget: 'Orchestrator'
-        },
-        interviewData: {
-          interviewStage: 'openInterview',
-          interviewType: params.interviewType || 'personal-history'
-        },
-        content: {
-          action: 'start',
-          preferences: {
-            language: 'en-US',
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-          }
-        }
-      }
+      userId: params.userId,
+      twinId: params.twinId,
+      correlationId: params.correlationId || `corr-${Date.now()}`
     };
     
-    console.log('Sending StartInterview message:', message);
+    console.log('Trying simple StartInterview message:', simpleMessage);
     
-    // Send the complete message
+    // Send the simple message first
     try {
-      this.ws.send(JSON.stringify(message));
+      this.ws.send(JSON.stringify(simpleMessage));
+      console.log('Simple message sent, waiting for response...');
+      
+      // Also try the complex format after a delay
+      setTimeout(() => {
+        const complexMessage = {
+          messageId: `msg-${Date.now()}`,
+          type: 'StartInterview',
+          timestamp: new Date().toISOString(),
+          source: {
+            service: 'UI',
+            instanceId: 'browser-session-' + Math.random().toString(36).substr(2, 9)
+          },
+          target: {
+            service: 'Orchestrator'
+          },
+          payload: {
+            metadata: {
+              requestId: `req-${Date.now()}`,
+              interviewId: 'pending****',
+              sessionId: 'pending****',
+              correlationId: params.correlationId || `corr-${Date.now()}`,
+              userId: params.userId,
+              twinId: params.twinId,
+              timestamp: new Date().toISOString(),
+              senderTarget: 'UI',
+              recipientTarget: 'Orchestrator'
+            },
+            interviewData: {
+              interviewStage: 'openInterview',
+              interviewType: params.interviewType || 'personal-history'
+            },
+            content: {
+              action: 'start',
+              preferences: {
+                language: 'en-US',
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+              }
+            }
+          }
+        };
+        
+        console.log('Trying complex StartInterview message:', complexMessage);
+        this.ws.send(JSON.stringify(complexMessage));
+      }, 1000);
+      
       this.logTelemetry('Start_Interview_Send', {
-        interviewId: 'pending****',
-        correlationId: message.payload.metadata.correlationId,
+        correlationId: params.correlationId,
         userId: params.userId,
         twinId: params.twinId
       });
+      
       return true;
     } catch (error) {
       console.error('Failed to send StartInterview message:', error);
