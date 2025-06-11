@@ -674,8 +674,11 @@ class OrchestratorWebSocketService {
    */
   requestGraphData(scope = 'interview') {
     if (!this.currentUserId || !this.currentTwinId) {
-      console.error('Missing required IDs for graph data request');
-      return false;
+      console.error('Missing required IDs for graph data request', {
+        currentUserId: this.currentUserId,
+        currentTwinId: this.currentTwinId
+      });
+      throw new Error('Cannot request graph data - missing userId or twinId. Authentication may be broken.');
     }
     
     // Build filter based on scope
@@ -783,8 +786,16 @@ class OrchestratorWebSocketService {
     }
     
     if (!this.currentInterviewId) {
-      console.warn('Cannot send text message: No active interview');
-      return false;
+      console.error('Cannot send text message: No active interview');
+      throw new Error('No active interview - currentInterviewId is null');
+    }
+    
+    if (!this.currentUserId || !this.currentTwinId) {
+      console.error('Cannot send text message: Missing user/twin IDs', {
+        currentUserId: this.currentUserId,
+        currentTwinId: this.currentTwinId
+      });
+      throw new Error('Missing required IDs - authentication may be broken');
     }
     
     // Follow the ForwardTranscript pattern from websocket-messages.md
@@ -806,8 +817,8 @@ class OrchestratorWebSocketService {
           interviewId: this.currentInterviewId,
           sessionId: this.currentSessionId || this.currentInterviewId,
           turnId: 'pending****',
-          userId: this.currentUserId || 'demo-user',
-          twinId: this.currentTwinId || 'winston-interviewer',
+          userId: this.currentUserId,
+          twinId: this.currentTwinId,
           timestamp: timestamp,
           senderTarget: 'UI',
           recipientTarget: 'Orchestrator'
