@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Files - Infitwin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components/button.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/knowledge-symphony.css">
+    <link rel="stylesheet" href="../css/file-management.css">
+    
+    <!-- Import map for Firebase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/storage": "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js",
+            "firebase/functions": "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="../css/components/navigation.css">
+</head>
+<body>
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar-nav-container"></div>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Main Content -->
+            <main class="symphony-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-left">
+                        <h1>My Files</h1>
+                        <p class="page-subtitle">Manage your documents and media files</p>
+                        <p class="user-info" id="userInfo" style="font-size: 0.875rem; color: #6B7280; margin-top: 0.25rem;">
+                            <!-- User info will be inserted here -->
+                        </p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <input type="text" id="fileSearch" placeholder="Search files..." class="search-input">
+                            <span class="search-icon">🔍</span>
+                        </div>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="grid" title="Grid view">
+                                <span>⊞</span>
+                            </button>
+                            <button class="view-btn" data-view="list" title="List view">
+                                <span>☰</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Section -->
+                <section class="upload-section">
+                    <div class="file-drop-zone" id="dropZone">
+                        <input type="file" id="fileInput" multiple hidden accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.epub">
+                        <div class="drop-zone-icon">📁</div>
+                        <div class="drop-zone-text">Drag files here or click to browse</div>
+                        <div class="drop-zone-subtext">Supported: Images, Documents, Spreadsheets, Ebooks (Max 10MB per file)</div>
+                        <div id="choose-files-button" class="button-placeholder"></div>
+                    </div>
+                    
+                    <!-- Upload Queue -->
+                    <div id="uploadQueue" style="display: none;"></div>
+                </section>
+
+                <!-- File Browser Section -->
+                <section class="file-browser-section">
+                    <!-- Filter Bar -->
+                    <div class="filter-bar">
+                        <div class="filter-group">
+                            <label for="selectAll">
+                                <input type="checkbox" id="selectAll">
+                                Select All
+                            </label>
+                        </div>
+                        <div class="filter-group">
+                            <label for="fileTypeFilter">Type:</label>
+                            <select id="fileTypeFilter" class="filter-select">
+                                <option value="all">All Files</option>
+                                <option value="images">Images</option>
+                                <option value="documents">Documents</option>
+                                <option value="spreadsheets">Spreadsheets</option>
+                                <option value="ebooks">Ebooks</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sortBy">Sort by:</label>
+                            <select id="sortBy" class="filter-select">
+                                <option value="uploadedAt-desc">Newest First</option>
+                                <option value="uploadedAt-asc">Oldest First</option>
+                                <option value="fileName-asc">Name (A-Z)</option>
+                                <option value="fileName-desc">Name (Z-A)</option>
+                                <option value="fileSize-desc">Largest First</option>
+                                <option value="fileSize-asc">Smallest First</option>
+                            </select>
+                        </div>
+                        <div class="batch-actions" style="display: none;">
+                            <span class="selected-count">0 selected</span>
+                            <button class="btn-batch-download">Download</button>
+                            <button class="btn-batch-delete">Delete</button>
+                        </div>
+                    </div>
+
+                    <!-- Files Container -->
+                    <div id="filesContainer" class="file-grid">
+                        <!-- Files will be dynamically loaded here -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="empty-icon">📂</div>
+                        <h3>No files yet</h3>
+                        <p>Upload your first file to get started</p>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Loading your files...</p>
+                    </div>
+                </section>
+
+                <!-- Storage Overview Section -->
+                <section class="storage-overview-section">
+                    <h2 class="section-title">Storage Overview</h2>
+                    <div class="overview-grid">
+                        <!-- Storage Breakdown Chart -->
+                        <div class="chart-card">
+                            <h3>Storage Breakdown</h3>
+                            <div id="storageDonutChart">
+                                <!-- Donut chart will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="stats-card">
+                            <h3>Quick Stats</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="totalUsed">0 GB</div>
+                                    <div class="stat-label">Total Used</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="totalFiles">0</div>
+                                    <div class="stat-label">Total Files</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="largestFile">0 MB</div>
+                                    <div class="stat-label">Largest File</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="avgFileSize">0 MB</div>
+                                    <div class="stat-label">Average Size</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Meter -->
+                    <div class="storage-card">
+                        <h3>Storage Usage</h3>
+                        <div class="storage-meter">
+                            <div class="storage-used" id="storageBar" style="width: 0%"></div>
+                        </div>
+                        <div class="storage-details">
+                            <span id="storageText">0 MB of 1 GB used</span>
+                            <span id="storagePercent">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn optimize" id="optimizeBtn">
+                                <span class="action-icon">🔧</span>
+                                <span class="action-text">Optimize Storage</span>
+                            </button>
+                            <button class="action-btn export" id="exportBtn">
+                                <span class="action-icon">📊</span>
+                                <span class="action-text">Export Report</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- File Preview Modal - Will be created by centralized Modal component -->
+
+    <style>
+        /* Page specific styles */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #2C3E50;
+        }
+
+        .page-subtitle {
+            margin: 0.5rem 0 0 0;
+            color: #6B7280;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            width: 300px;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6B7280;
+        }
+
+        .upload-section {
+            margin-bottom: 3rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #6B7280;
+        }
+
+        .filter-select {
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            background: #FFFFFF;
+            cursor: pointer;
+        }
+
+        .batch-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .selected-count {
+            font-weight: 600;
+            color: #2C3E50;
+        }
+
+        .btn-batch-download,
+        .btn-batch-delete {
+            padding: 0.5rem 1rem;
+            border: 1px solid #E5E7EB;
+            background: #FFFFFF;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-batch-download:hover {
+            background: #3498DB;
+            color: white;
+            border-color: #3498DB;
+        }
+
+        .btn-batch-delete:hover {
+            background: #E74C3C;
+            color: white;
+            border-color: #E74C3C;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #2C3E50;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #6B7280;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #E5E7EB;
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Storage Overview Section */
+        .storage-overview-section {
+            margin-top: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #374151;
+            margin-bottom: 1.5rem;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card,
+        .stats-card,
+        .storage-card,
+        .quick-actions {
+            background: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-card h3,
+        .stats-card h3,
+        .storage-card h3,
+        .quick-actions h3 {
+            margin: 0 0 1rem 0;
+            color: #374151;
+            font-size: 1.125rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #F3F4F6;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        .storage-card {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Quick Actions */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn.optimize:hover {
+            border-color: #10B981;
+        }
+
+        .action-btn.export:hover {
+            border-color: #6B46C1;
+        }
+
+        .action-icon {
+            font-size: 2rem;
+        }
+
+        .action-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .storage-meter {
+            height: 12px;
+            background: #E5E7EB;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .storage-used {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700 0%, #FFC107 100%);
+            transition: width 0.3s ease;
+        }
+
+        .storage-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+
+        /* Custom modal styles replaced by design-system.css modal component */
+
+        /* Load More Button */
+        .load-more-container {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+        }
+
+        .load-more-btn {
+            background: #FFD700;
+            color: #374151;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .load-more-btn:hover:not(:disabled) {
+            background: #FFC107;
+            transform: translateY(-1px);
+        }
+
+        .load-more-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .load-more-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Thumbnail Styles */
+        .file-thumbnail {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #F8F9FA;
+        }
+
+        .thumbnail-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .thumbnail-fallback {
+            font-size: 2.5rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-grid-thumbnail {
+            margin-bottom: 0.75rem;
+        }
+
+        /* Update file grid item styling for thumbnails */
+        .file-grid-item {
+            padding: 1rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            background: #FFFFFF;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .file-grid-item:hover {
+            border-color: #FFD700;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .file-checkbox {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 2;
+        }
+
+        .file-grid-name {
+            font-weight: 500;
+            color: #2C3E50;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
+            font-size: 0.875rem;
+        }
+
+        .file-grid-size {
+            color: #6B7280;
+            font-size: 0.75rem;
+        }
+
+        /* Lazy loading optimization */
+        .thumbnail-image[loading="lazy"] {
+            transition: opacity 0.3s ease;
+        }
+
+        .thumbnail-image[loading="lazy"]:not([src]) {
+            opacity: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script src="../js/navigation.js"></script>
+    <script type="module">
+        import { initializeDragDrop, createUploadQueue, processFilesForUpload, showNotification } from '../js/file-ui.js';
+        import { getUserFiles, deleteFile, calculateStorageUsed } from '../js/file-service.js';
+        import { getStorageBreakdown } from '../js/storage-service.js';
+        import { guardPage } from '../js/auth-guard.js';
+        import { createThumbnailElement, getFallbackIcon } from '../js/thumbnail-generator.js';
+        import { createStorageDonutChart } from '../js/storage-ui.js';
+        import { Modal } from '../js/components/ui/modal.js';
+        import { Button } from '../js/components/ui/button.js';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 My Files page loading...');
+            
+            // Check authentication
+            console.log('🔐 Checking authentication...');
+            const allowed = await guardPage({
+                requireVerified: false,  // Temporarily disabled for testing
+                redirectTo: '/pages/auth.html'
+            });
+            
+            if (!allowed) {
+                console.log('❌ Authentication failed');
+                return;
+            }
+            
+            console.log('✅ Authentication passed');
+
+            // Initialize buttons
+            initializeButtons();
+
+            // Initialize file browser
+            await initializeFileBrowser();
+        });
+
+        function showNotAuthenticatedState() {
+            console.log('🔐 Showing not authenticated state');
+            
+            // Hide loading state
+            const loadingState = document.getElementById('loadingState');
+            if (loadingState) {
+                loadingState.style.display = 'none';
+            }
+            
+            // Show empty state with auth message
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = 'block';
+                emptyState.innerHTML = `
+                    <div class="empty-icon">🔒</div>
+                    <h3>Authentication Required</h3>
+                    <p>Please log in to view your files</p>
+                    <div id="login-button" style="margin-top: 1.5rem;"></div>
+                `;
+                
+                // Add login button
+                const loginBtn = Button.primary({
+                    text: 'Go to Login',
+                    onClick: () => {
+                        window.location.href = '/pages/auth.html';
+                    }
+                });
+                const loginContainer = document.getElementById('login-button');
+                if (loginContainer) {
+                    loginContainer.appendChild(loginBtn.element);
+                }
+            }
+            
+            // Hide other UI elements
+            const elements = ['filesContainer', 'storageInfo', 'uploadQueue'];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+        }
+
+        function initializeButtons() {
+            // Choose Files Button
+            const chooseFilesBtn = Button.secondary({
+                text: 'Choose Files',
+                icon: '📁',
+                onClick: () => {
+                    document.getElementById('fileInput').click();
+                }
+            });
+            const chooseFilesContainer = document.getElementById('choose-files-button');
+            if (chooseFilesContainer) {
+                chooseFilesContainer.appendChild(chooseFilesBtn.element);
+            }
+
+            // Login Button (created dynamically in error states)
+            const loginBtn = Button.primary({
+                text: 'Go to Login',
+                onClick: () => {
+                    window.location.href = '/pages/auth.html';
+                }
+            });
+            const loginContainer = document.getElementById('login-button');
+            if (loginContainer) {
+                loginContainer.appendChild(loginBtn.element);
+            }
+
+            // Retry Button (created dynamically in error states)
+            const retryBtn = Button.secondary({
+                text: 'Retry',
+                onClick: () => {
+                    location.reload();
+                }
+            });
+            const retryContainer = document.getElementById('retry-button');
+            if (retryContainer) {
+                retryContainer.appendChild(retryBtn.element);
+            }
+        }
+
+        async function initializeFileBrowser() {
+            console.log('🔧 Initializing file browser...');
+            
+            // Check if user is authenticated with Firebase
+            const { auth } = await import('../js/firebase-config.js');
+            console.log('🔐 Firebase auth loaded, current user:', auth.currentUser ? 'Yes' : 'No');
+            
+            // Always wait for auth state to fully resolve
+            if (!auth.currentUser) {
+                console.log('⏳ Waiting for auth state to resolve...');
+                const user = await new Promise((resolve) => {
+                    const unsubscribe = auth.onAuthStateChanged(user => {
+                        console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+                        unsubscribe();
+                        resolve(user);
+                    });
+                    
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        console.log('⏰ Auth state timeout');
+                        unsubscribe();
+                        resolve(null);
+                    }, 5000);
+                });
+                
+                if (!user) {
+                    console.log('❌ No authenticated user found');
+                    showNotAuthenticatedState();
+                    return;
+                }
+            }
+            
+            // Update user info in page header
+            if (auth.currentUser) {
+                const userInfo = document.getElementById('userInfo');
+                if (userInfo) {
+                    userInfo.textContent = `Viewing files for: ${auth.currentUser.email}`;
+                }
+            }
+            
+            // Initialize drag and drop
+            const dropZone = document.getElementById('dropZone');
+            const uploadQueue = createUploadQueue();
+            document.getElementById('uploadQueue').appendChild(uploadQueue);
+
+            initializeDragDrop(dropZone, async (files) => {
+                document.getElementById('uploadQueue').style.display = 'block';
+                await processFilesForUpload(files, uploadQueue.querySelector('.queue-items'));
+                await loadFiles(); // Refresh file list
+                await updateStorageInfo(); // Update storage meter
+            });
+
+            // Initialize storage chart
+            try {
+                createStorageDonutChart('storageDonutChart');
+                console.log('📊 Storage chart initialized');
+            } catch (error) {
+                console.warn('⚠️  Storage chart failed:', error);
+            }
+
+            // Load existing files
+            try {
+                console.log('🚀 Starting file loading...');
+                console.log('🔐 Current auth user:', auth.currentUser?.email);
+                await loadFiles(true); // Reset pagination on initial load
+                await updateStorageInfo();
+                await updateStorageStats();
+                console.log('✅ File loading completed');
+            } catch (error) {
+                console.error('❌ Error initializing:', error);
+                console.error('❌ Full error:', error.stack);
+                // Show empty state on error - this is normal if no Firebase user
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                
+                // Show informative message
+                const emptyState = document.getElementById('emptyState');
+                if (!auth.currentUser) {
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">🔐</div>
+                        <h3>Authentication Required</h3>
+                        <p>Please log in to view your files</p>
+                        <div id="login-button" class="button-placeholder"></div>
+                    `;
+                } else {
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">❌</div>
+                        <h3>Error Loading Files</h3>
+                        <p>${error.message}</p>
+                        <div id="retry-button" class="button-placeholder"></div>
+                    `;
+                }
+            }
+
+            // Setup event listeners
+            setupEventListeners();
+            setupStorageEventListeners();
+            setupSelectAllFunctionality();
+            
+            console.log('🎉 File browser initialization complete');
+        }
+
+        // Pagination state
+        let currentPage = {
+            files: [],
+            hasMore: false,
+            lastDoc: null,
+            loading: false
+        };
+
+        async function loadFiles(reset = false) {
+            console.log('📁 loadFiles called, reset:', reset);
+            
+            const container = document.getElementById('filesContainer');
+            const emptyState = document.getElementById('emptyState');
+            const loadingState = document.getElementById('loadingState');
+
+            // Reset pagination if requested
+            if (reset) {
+                currentPage = {
+                    files: [],
+                    hasMore: false,
+                    lastDoc: null,
+                    loading: false
+                };
+                container.innerHTML = '';
+            }
+
+            // Prevent multiple concurrent loads
+            if (currentPage.loading) {
+                console.log('⏳ Already loading, skipping...');
+                return;
+            }
+            currentPage.loading = true;
+
+            // Show loading on first load
+            if (reset) {
+                console.log('🔄 Showing loading state...');
+                loadingState.style.display = 'block';
+                emptyState.style.display = 'none';
+            }
+
+            try {
+                console.log('🔍 Getting filter values...');
+                // Get filter values
+                const filterType = document.getElementById('fileTypeFilter').value;
+                const sortBy = document.getElementById('sortBy').value;
+                const [sortField, sortOrder] = sortBy.split('-');
+
+                console.log('📊 Calling getUserFiles with:', {
+                    pageSize: 20,
+                    lastDoc: reset ? null : currentPage.lastDoc,
+                    sortBy: sortField,
+                    sortOrder: sortOrder,
+                    filterType: filterType
+                });
+
+                // No artificial delay needed - let it load naturally
+
+                const result = await getUserFiles({
+                    pageSize: 20,
+                    lastDoc: reset ? null : currentPage.lastDoc,
+                    sortBy: sortField,
+                    sortOrder: sortOrder,
+                    filterType: filterType
+                });
+                
+                console.log('📋 getUserFiles result:', result);
+                
+                // Update pagination state
+                if (reset) {
+                    currentPage.files = result.files;
+                } else {
+                    currentPage.files = [...currentPage.files, ...result.files];
+                }
+                currentPage.hasMore = result.hasMore;
+                currentPage.lastDoc = result.lastDoc;
+                currentPage.loading = false;
+                
+                console.log('✅ Hiding loading state...');
+                loadingState.style.display = 'none';
+
+                if (currentPage.files.length === 0) {
+                    console.log('📂 No files found, showing empty state');
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                console.log('🎨 Rendering', currentPage.files.length, 'files');
+                // Render files based on current view
+                const currentView = document.querySelector('.view-btn.active').dataset.view;
+                renderFiles(currentPage.files, currentView);
+
+                // Show load more button if there are more files
+                updateLoadMoreButton();
+
+            } catch (error) {
+                console.error('❌ Error loading files:', error);
+                console.log('🔧 FORCING empty state due to error');
+                
+                // FORCE the loading to stop and show empty state
+                loadingState.style.display = 'none';
+                currentPage.loading = false;
+                
+                // Show user-friendly message in empty state
+                const emptyState = document.getElementById('emptyState');
+                emptyState.style.display = 'block';
+                emptyState.innerHTML = `
+                    <div class="empty-icon">📂</div>
+                    <h3>No files yet</h3>
+                    <p>Upload your first file to get started</p>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: #6B7280;">
+                        Debug: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function updateLoadMoreButton() {
+            const container = document.getElementById('filesContainer');
+            let loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            // Remove existing button
+            if (loadMoreBtn) {
+                loadMoreBtn.remove();
+            }
+            
+            // Add load more button if there are more files
+            if (currentPage.hasMore) {
+                loadMoreBtn = document.createElement('div');
+                loadMoreBtn.id = 'loadMoreBtn';
+                loadMoreBtn.className = 'load-more-container';
+                loadMoreBtn.innerHTML = `
+                    <button class="load-more-btn" onclick="loadMoreFiles()">
+                        <span class="load-more-text">Load More Files</span>
+                        <span class="load-more-spinner" style="display: none;">⟳</span>
+                    </button>
+                `;
+                container.parentNode.appendChild(loadMoreBtn);
+            }
+        }
+
+        window.loadMoreFiles = async function() {
+            const btn = document.querySelector('.load-more-btn');
+            const text = btn.querySelector('.load-more-text');
+            const spinner = btn.querySelector('.load-more-spinner');
+            
+            // Show loading state
+            text.style.display = 'none';
+            spinner.style.display = 'inline';
+            btn.disabled = true;
+            
+            try {
+                await loadFiles(false); // Load next page
+            } finally {
+                // Reset button state
+                text.style.display = 'inline';
+                spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        };
+
+        function renderFiles(files, view) {
+            const container = document.getElementById('filesContainer');
+            container.className = view === 'grid' ? 'file-grid' : 'file-list';
+
+            if (view === 'grid') {
+                renderGridView(files);
+            } else {
+                renderListView(files);
+            }
+            
+            // Set up checkbox event listeners after files are rendered
+            if (window.setupFileCheckboxListeners) {
+                window.setupFileCheckboxListeners();
+            }
+        }
+
+        function renderGridView(files) {
+            const container = document.getElementById('filesContainer');
+            
+            files.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-grid-item';
+                item.dataset.fileId = file.id;
+                
+                // Create thumbnail element
+                const thumbnailElement = createThumbnailElement(file);
+                
+                item.innerHTML = `
+                    <input type="checkbox" class="file-checkbox">
+                    <div class="file-grid-thumbnail"></div>
+                    <div class="file-grid-name">${file.fileName}</div>
+                    <div class="file-grid-size">${formatFileSize(file.fileSize)}</div>
+                `;
+                
+                // Insert thumbnail element
+                const thumbnailContainer = item.querySelector('.file-grid-thumbnail');
+                thumbnailContainer.appendChild(thumbnailElement);
+
+                // Add click handlers
+                item.addEventListener('click', (e) => {
+                    if (e.target.type !== 'checkbox') {
+                        previewFile(file);
+                    }
+                });
+
+                container.appendChild(item);
+            });
+        }
+
+        function renderListView(files) {
+            const container = document.getElementById('filesContainer');
+            
+            // Add header
+            const header = document.createElement('div');
+            header.className = 'file-list-header';
+            header.innerHTML = `
+                <div>Select</div>
+                <div>Name</div>
+                <div>Type</div>
+                <div>Size</div>
+                <div>Date</div>
+            `;
+            container.appendChild(header);
+
+            // Add files
+            files.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-list-item';
+                item.dataset.fileId = file.id;
+                
+                // Get file type safely (handles different field names and infers from filename)
+                function getFileTypeFromFile(file) {
+                    let fileType = file.fileType || file.mimeType || file.type;
+                    if (!fileType && file.fileName) {
+                        const fileName = file.fileName.toLowerCase();
+                        if (fileName.includes('.jpg') || fileName.includes('.jpeg')) return 'image/jpeg';
+                        if (fileName.includes('.png')) return 'image/png';
+                        if (fileName.includes('.gif')) return 'image/gif';
+                        if (fileName.includes('.webp')) return 'image/webp';
+                        if (fileName.includes('.pdf')) return 'application/pdf';
+                        if (fileName.includes('.doc') || fileName.includes('.docx')) return 'application/msword';
+                    }
+                    return fileType || 'application/octet-stream';
+                }
+                const fileType = getFileTypeFromFile(file);
+                
+                item.innerHTML = `
+                    <div>
+                        <input type="checkbox" class="file-checkbox">
+                    </div>
+                    <div class="file-list-name">
+                        <span class="file-list-icon">${getFallbackIcon(fileType)}</span>
+                        ${file.fileName}
+                    </div>
+                    <div class="file-list-type">${file.category || 'Unknown'}</div>
+                    <div class="file-list-size">${formatFileSize(file.fileSize)}</div>
+                    <div class="file-list-date">${formatDate(file.uploadedAt)}</div>
+                `;
+
+                // Add click handlers
+                item.addEventListener('click', (e) => {
+                    if (e.target.type !== 'checkbox') {
+                        previewFile(file);
+                    }
+                });
+
+                container.appendChild(item);
+            });
+        }
+
+        async function updateStorageInfo() {
+            try {
+                const used = await calculateStorageUsed();
+                const total = 1 * 1024 * 1024 * 1024; // 1GB limit
+                const percent = Math.round((used / total) * 100);
+
+                document.getElementById('storageBar').style.width = `${percent}%`;
+                document.getElementById('storageText').textContent = `${formatFileSize(used)} of ${formatFileSize(total)} used`;
+                document.getElementById('storagePercent').textContent = `${percent}%`;
+            } catch (error) {
+                console.error('Error updating storage info:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            // View toggle
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    // Re-render current files with new view
+                    const currentView = btn.dataset.view;
+                    renderFiles(currentPage.files, currentView);
+                    updateLoadMoreButton();
+                });
+            });
+
+            // Search
+            let searchTimeout;
+            document.getElementById('fileSearch').addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filterFiles(e.target.value);
+                }, 300);
+            });
+
+            // Filters - reset pagination when filters change
+            document.getElementById('fileTypeFilter').addEventListener('change', () => {
+                loadFiles(true); // Reset pagination
+                updateStorageStats(); // Update storage statistics
+            });
+            document.getElementById('sortBy').addEventListener('change', () => {
+                loadFiles(true); // Reset pagination
+                updateStorageStats(); // Update storage statistics
+            });
+        }
+
+        function previewFile(file) {
+            // Create modal content based on file type
+            let content;
+            
+            // Get file type safely (handles different field names and infers from filename)
+            function getFileTypeFromFile(file) {
+                let fileType = file.fileType || file.mimeType || file.type;
+                if (!fileType && file.fileName) {
+                    const fileName = file.fileName.toLowerCase();
+                    if (fileName.includes('.jpg') || fileName.includes('.jpeg')) return 'image/jpeg';
+                    if (fileName.includes('.png')) return 'image/png';
+                    if (fileName.includes('.gif')) return 'image/gif';
+                    if (fileName.includes('.webp')) return 'image/webp';
+                    if (fileName.includes('.pdf')) return 'application/pdf';
+                    if (fileName.includes('.doc') || fileName.includes('.docx')) return 'application/msword';
+                }
+                return fileType || 'application/octet-stream';
+            }
+            const fileType = getFileTypeFromFile(file);
+            
+            if (fileType.startsWith('image/')) {
+                content = `
+                    <img src="${file.downloadURL}" alt="${file.fileName}" style="max-width: 100%; height: auto;">
+                    <div style="margin-top: 1rem;">
+                        <h3>${file.fileName}</h3>
+                        <p>Size: ${formatFileSize(file.fileSize)}</p>
+                        <p>Uploaded: ${formatDate(file.uploadedAt)}</p>
+                    </div>
+                `;
+            } else {
+                content = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 5rem; margin-bottom: 1rem;">${getFallbackIcon(fileType)}</div>
+                        <h3>${file.fileName}</h3>
+                        <p>Type: ${file.category || 'Unknown'}</p>
+                        <p>Size: ${formatFileSize(file.fileSize)}</p>
+                        <p>Uploaded: ${formatDate(file.uploadedAt)}</p>
+                    </div>
+                `;
+            }
+
+            // Create and show modal using centralized Modal component
+            const modal = new Modal({
+                title: file.fileName,
+                content: content,
+                size: 'large',
+                actions: [
+                    {
+                        text: 'Download',
+                        type: 'primary',
+                        action: () => window.open(file.downloadURL, '_blank')
+                    },
+                    {
+                        text: 'Close',
+                        type: 'secondary',
+                        action: () => modal.hide()
+                    }
+                ]
+            });
+
+            modal.show();
+        }
+
+        // Helper functions (getFileIcon removed - using getFallbackIcon from thumbnail-generator.js)
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function filterFiles(searchTerm) {
+            // TODO: Implement search filtering
+            console.log('Searching for:', searchTerm);
+        }
+
+        async function updateStorageStats() {
+            try {
+                const totalUsed = await calculateStorageUsed();
+                const files = await getUserFiles();
+                const breakdown = await getStorageBreakdown();
+
+                // Calculate stats
+                const totalFiles = Object.values(breakdown).reduce((sum, cat) => sum + cat.count, 0);
+                const fileArray = files.files || [];
+                const largestFile = fileArray.reduce((max, file) => 
+                    file.fileSize > max ? file.fileSize : max, 0
+                );
+                const avgSize = totalFiles > 0 ? totalUsed / totalFiles : 0;
+
+                // Update UI
+                document.getElementById('totalUsed').textContent = formatFileSize(totalUsed);
+                document.getElementById('totalFiles').textContent = totalFiles.toLocaleString();
+                document.getElementById('largestFile').textContent = formatFileSize(largestFile);
+                document.getElementById('avgFileSize').textContent = formatFileSize(avgSize);
+
+            } catch (error) {
+                console.error('Error updating storage stats:', error);
+            }
+        }
+
+        function setupStorageEventListeners() {
+            // Optimize button
+            document.getElementById('optimizeBtn').addEventListener('click', async () => {
+                const modal = Modal.confirm({
+                    title: 'Storage Optimization',
+                    message: 'This will analyze your storage and suggest optimizations. Continue?',
+                    confirmText: 'Analyze',
+                    type: 'info',
+                    onConfirm: () => {
+                        // Show loading state
+                        const btn = document.getElementById('optimizeBtn');
+                        const originalText = btn.querySelector('.action-text').textContent;
+                        btn.querySelector('.action-text').textContent = 'Analyzing...';
+                        btn.disabled = true;
+
+                        // Simulate optimization process
+                        setTimeout(() => {
+                            btn.querySelector('.action-text').textContent = originalText;
+                            btn.disabled = false;
+                            showNotification('Storage optimization complete! Check your files for potential savings.', 'success');
+                        }, 2000);
+                    }
+                });
+                modal.show();
+            });
+
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                showNotification('Storage report export feature coming soon!', 'info');
+            });
+        }
+
+        // Select All Functionality
+        function setupSelectAllFunctionality() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const batchActions = document.querySelector('.batch-actions');
+            const selectedCount = document.querySelector('.selected-count');
+
+            // Handle select all checkbox change
+            selectAllCheckbox.addEventListener('change', function() {
+                const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+                const isChecked = this.checked;
+                
+                fileCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    updateFileItemSelection(checkbox);
+                });
+                
+                updateBatchActions();
+            });
+
+            // Update select all state when individual checkboxes change
+            function updateSelectAllState() {
+                const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+                const checkedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                
+                if (fileCheckboxes.length === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (checkedCheckboxes.length === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (checkedCheckboxes.length === fileCheckboxes.length) {
+                    selectAllCheckbox.checked = true;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = true;
+                }
+            }
+
+            // Update visual state of file item
+            function updateFileItemSelection(checkbox) {
+                const fileItem = checkbox.closest('.file-grid-item, .file-list-item');
+                if (fileItem) {
+                    if (checkbox.checked) {
+                        fileItem.classList.add('selected');
+                    } else {
+                        fileItem.classList.remove('selected');
+                    }
+                }
+            }
+
+            // Update batch actions visibility and count
+            function updateBatchActions() {
+                const checkedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                const count = checkedCheckboxes.length;
+                
+                if (count > 0) {
+                    batchActions.style.display = 'flex';
+                    selectedCount.textContent = `${count} selected`;
+                } else {
+                    batchActions.style.display = 'none';
+                }
+                
+                updateSelectAllState();
+            }
+
+            // Set up individual checkbox listeners (called after rendering files)
+            window.setupFileCheckboxListeners = function() {
+                document.querySelectorAll('.file-checkbox').forEach(checkbox => {
+                    // Remove existing listeners to prevent duplicates
+                    checkbox.removeEventListener('change', handleCheckboxChange);
+                    checkbox.addEventListener('change', handleCheckboxChange);
+                });
+            };
+
+            function handleCheckboxChange(event) {
+                updateFileItemSelection(event.target);
+                updateBatchActions();
+            }
+
+            // Set up batch action buttons
+            document.querySelector('.btn-batch-download').addEventListener('click', function() {
+                const selectedFiles = getSelectedFiles();
+                if (selectedFiles.length === 0) {
+                    showNotification('No files selected for download', 'error');
+                    return;
+                }
+                // Implement batch download logic here
+                showNotification(`Downloading ${selectedFiles.length} files...`, 'info');
+            });
+
+            document.querySelector('.btn-batch-delete').addEventListener('click', function() {
+                const selectedFiles = getSelectedFiles();
+                if (selectedFiles.length === 0) {
+                    showNotification('No files selected for deletion', 'error');
+                    return;
+                }
+                
+                const modal = Modal.confirm({
+                    title: 'Delete Files',
+                    message: `Are you sure you want to delete ${selectedFiles.length} files? This action cannot be undone.`,
+                    confirmText: 'Delete',
+                    type: 'danger',
+                    onConfirm: () => {
+                        // Implement batch delete logic here
+                        showNotification(`Deleting ${selectedFiles.length} files...`, 'info');
+                        
+                        // Clear selections after delete
+                        setTimeout(() => {
+                            document.querySelectorAll('.file-checkbox:checked').forEach(cb => cb.checked = false);
+                            updateBatchActions();
+                        }, 1000);
+                    }
+                });
+                modal.show();
+            });
+
+            function getSelectedFiles() {
+                const selectedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                return Array.from(selectedCheckboxes).map(checkbox => {
+                    const fileItem = checkbox.closest('.file-grid-item, .file-list-item');
+                    return {
+                        id: fileItem?.dataset.fileId,
+                        element: fileItem
+                    };
+                }).filter(file => file.id);
+            }
+        }
+    </script>
+</body>
+</html>
