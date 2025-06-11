@@ -292,6 +292,9 @@ async function initializeServices() {
                     messageInput.disabled = false;
                     messageInput.placeholder = 'Share your response here...';
                 }
+                
+                // Set Winston to idle state after initialization
+                setWinstonState('idle');
             } else {
                 console.error('❌ Interview started but missing required IDs:', { currentInterviewId, currentSessionId });
                 console.warn('Interview started but audio service unavailable');
@@ -476,7 +479,6 @@ async function startInterviewWithOrchestrator(interviewType = 'new', subject = n
             throw new Error('Failed to send start interview message');
         }
         
-        setWinstonState('idle');
         console.log('Interview started with data:', interviewData);
         
     } catch (error) {
