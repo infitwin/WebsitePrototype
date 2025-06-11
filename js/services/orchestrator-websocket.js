@@ -806,8 +806,8 @@ class OrchestratorWebSocketService {
           interviewId: this.currentInterviewId,
           sessionId: this.currentSessionId || this.currentInterviewId,
           turnId: 'pending****',
-          userId: 'demo-user',
-          twinId: 'winston-interviewer',
+          userId: this.currentUserId || 'demo-user',
+          twinId: this.currentTwinId || 'winston-interviewer',
           timestamp: timestamp,
           senderTarget: 'UI',
           recipientTarget: 'Orchestrator'

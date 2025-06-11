@@ -537,10 +537,31 @@ async function startInterviewWithOrchestrator(interviewType = 'new', subject = n
             console.log('Connected! Starting interview session...');
         }
         
+        // Get authenticated user data
+        const userEmail = localStorage.getItem('userEmail');
+        const userName = localStorage.getItem('userName');
+        
+        if (!userEmail) {
+            throw new Error('No authenticated user found. Please log in first.');
+        }
+
+        // Create user ID from email (remove @ and domain for clean ID)
+        const userId = userEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, '-');
+        
+        // Use winston as the default interviewer twin
+        const twinId = 'winston-interviewer';
+
+        console.log('🔍 Starting interview with authenticated user:', {
+            userEmail,
+            userName,
+            userId,
+            twinId
+        });
+
         // Prepare interview data in the correct format for the message builder
         const interviewData = {
-            userId: 'demo-user', // TODO: Get from auth in production
-            twinId: 'winston-interviewer',
+            userId: userId,
+            twinId: twinId,
             subject: subject || (interviewType === 'artifact' ? 'Artifact-based Memory' : 'Memory Interview'),
             interviewType: 'voice', // Always 'voice' for now
             interviewId: generateInterviewId(), // Generate unique ID
