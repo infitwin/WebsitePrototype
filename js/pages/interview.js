@@ -281,6 +281,10 @@ async function initializeServices() {
                 // Initialize audio WebSocket connection and wait for it
                 await initializeAudioWebSocket();
                 
+                // Add Winston's greeting to chat once services are ready
+                const winstonGreeting = "Hello! I'm Winston, your memory curator. Let's begin by choosing a topic for today's interview. What would you like to explore? I'll guide you through about 30 focused questions to help capture your memories.";
+                addMessage(winstonGreeting, 'winston');
+                
                 // Enable inputs now that services are ready
                 const micButton = document.getElementById('micBtn');
                 const messageInput = document.getElementById('messageInput');
@@ -328,8 +332,11 @@ async function initializeServices() {
                 // Update the question display
                 updateInterviewQuestion(questionText);
                 
-                // Add Winston's message to the chat
-                addMessage(questionText, 'winston');
+                // Only add to chat if it's not the initial greeting
+                if (!isInitialGreeting) {
+                    // Add Winston's message to the chat
+                    addMessage(questionText, 'winston');
+                }
             }
             
             // If TTS audio is provided, play it
@@ -384,6 +391,25 @@ function updateInterviewQuestion(question) {
     const questionElement = document.querySelector('.interview-question');
     if (questionElement && question) {
         questionElement.textContent = question;
+    }
+}
+
+// Type out question in the CURRENT QUESTION display area
+function typeOutQuestion(question) {
+    const questionElement = document.querySelector('.interview-question');
+    if (questionElement && question) {
+        questionElement.textContent = '';
+        let index = 0;
+        const typingSpeed = 20; // milliseconds per character
+        
+        const typeInterval = setInterval(() => {
+            if (index < question.length) {
+                questionElement.textContent += question[index];
+                index++;
+            } else {
+                clearInterval(typeInterval);
+            }
+        }, typingSpeed);
     }
 }
 
@@ -776,10 +802,11 @@ async function startNewInterview(type) {
             messageInput.placeholder = 'Waiting for Winston to start the interview...';
         }
         
-        // Show Winston's greeting with typing animation while services initialize
+        // Show Winston's greeting in the CURRENT QUESTION area with typing animation
         const winstonGreeting = "Hello! I'm Winston, your memory curator. Let's begin by choosing a topic for today's interview. What would you like to explore? I'll guide you through about 30 focused questions to help capture your memories.";
-        addMessage(winstonGreeting, 'winston', true);
-        updateInterviewQuestion(winstonGreeting);
+        
+        // Type out the greeting in the question display area, not in chat
+        typeOutQuestion(winstonGreeting);
         
         // Mark that we've shown the initial greeting
         window.initialGreetingShown = true;
