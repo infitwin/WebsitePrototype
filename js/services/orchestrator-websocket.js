@@ -120,6 +120,12 @@ class OrchestratorWebSocketService {
       }
     });
     
+    // Handle connection confirmation from orchestrator
+    this.messageHandlers.set('connection', (parsedMessage) => {
+      console.log('Orchestrator connection confirmed:', parsedMessage);
+      // Connection acknowledgment from orchestrator
+    });
+    
     // Handle any other message types
     this.messageHandlers.set('default', (parsedMessage, rawMessage) => {
       console.log('Unhandled message type:', rawMessage.type, parsedMessage);
@@ -163,7 +169,7 @@ class OrchestratorWebSocketService {
           this.lastMessage = rawMessage;
           
           // Parse the message for easier access
-          const parsedMessage = parseOrchestratorMessage(rawMessage);
+          const parsedMessage = this.parseMessage(rawMessage);
           
           // Fire receive spans based on message type (safe fallback)
           this.fireReceiveSpan(rawMessage.type, parsedMessage);
@@ -509,6 +515,48 @@ class OrchestratorWebSocketService {
 
   getError() {
     return this.error;
+  }
+
+  /**
+   * Parse orchestrator message to extract common fields
+   */
+  parseMessage(rawMessage) {
+    if (!rawMessage || typeof rawMessage !== 'object') {
+      return rawMessage;
+    }
+    
+    // Extract common fields from various message formats
+    const parsed = {
+      type: rawMessage.type,
+      timestamp: rawMessage.timestamp,
+      ...rawMessage
+    };
+    
+    // Extract nested payload data if present
+    if (rawMessage.payload) {
+      // Extract metadata fields
+      if (rawMessage.payload.metadata) {
+        parsed.interviewId = rawMessage.payload.metadata.interviewId;
+        parsed.sessionId = rawMessage.payload.metadata.sessionId;
+        parsed.correlationId = rawMessage.payload.metadata.correlationId;
+        parsed.userId = rawMessage.payload.metadata.userId;
+        parsed.twinId = rawMessage.payload.metadata.twinId;
+      }
+      
+      // Extract content fields
+      if (rawMessage.payload.content) {
+        Object.assign(parsed, rawMessage.payload.content);
+      }
+      
+      // Extract other payload fields
+      Object.keys(rawMessage.payload).forEach(key => {
+        if (key !== 'metadata' && key !== 'content' && !(key in parsed)) {
+          parsed[key] = rawMessage.payload[key];
+        }
+      });
+    }
+    
+    return parsed;
   }
 
   /**
