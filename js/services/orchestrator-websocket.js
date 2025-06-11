@@ -36,6 +36,9 @@ class OrchestratorWebSocketService {
     this.currentCorrelationId = null;
     this.wasConnectedBefore = false;
     
+    // Session closure tracking
+    this.pendingSessionClosure = false;
+    
     // Callback properties (similar to React hook pattern)
     this.onInterviewStarted = null;
     this.onQuestionReceived = null;
@@ -175,8 +178,17 @@ class OrchestratorWebSocketService {
       const newState = parsedMessage.data?.state;
       const success = parsedMessage.data?.success;
       
-      if (newState === 'closed' && success && this.onSessionClosed) {
-        this.onSessionClosed({ success: true });
+      if (newState === 'closed' && success) {
+        // Always emit the event, regardless of callback
+        this.emit('sessionClosed', { success: true, state: newState });
+        
+        // Also call callback if it exists
+        if (this.onSessionClosed) {
+          this.onSessionClosed({ success: true });
+        }
+        
+        // Clear the pending flag
+        this.pendingSessionClosure = false;
       }
     });
     
@@ -758,7 +770,11 @@ class OrchestratorWebSocketService {
       }
       
       console.log(`Sending state update: ${state}`, message);
+      console.log('🔍 DEBUG: WebSocket readyState:', this.ws.readyState);
+      console.log('🔍 DEBUG: Message being sent:', JSON.stringify(message));
+      
       this.ws.send(JSON.stringify(message));
+      console.log('🔍 DEBUG: Message sent successfully');
       
       return true;
     } catch (error) {
@@ -773,6 +789,7 @@ class OrchestratorWebSocketService {
    * @returns {boolean} Success status
    */
   closeSession(reason = 'User requested close') {
+    this.pendingSessionClosure = true;
     return this.sendStateUpdate('close', reason);
   }
 

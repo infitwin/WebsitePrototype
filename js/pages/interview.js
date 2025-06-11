@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof Neo4jCompactControl !== 'undefined') {
                     // Create React element for Neo4jCompactControl
                     const nexusElement = React.createElement(Neo4jCompactControl, {
-                        data: window.currentGraphData || window.mockInterviewData || [],
+                        data: window.currentGraphData || [],
                         width: containerWidth,
                         height: containerHeight,
                         mode: 'interview',
@@ -981,14 +981,97 @@ async function viewInterview(interviewId) {
 
 // Session Management
 function pauseInterview() {
-    showToast('Interview paused. Your progress has been saved.', 'success');
-    // TODO: Send pause message to orchestrator
-    if (orchestratorWebSocket && orchestratorWebSocket.isConnected()) {
-        // You can add orchestrator pause logic here if needed
+    console.log('Pausing interview (closing session)...');
+    addMessage('Pausing interview...', 'winston');
+    
+    // Stop any active recording
+    if (isRecording) {
+        toggleRecording();
     }
+    
+    // Stop any TTS playback
+    if (ttsPlayer) {
+        ttsPlayer.stopAndClearQueue();
+    }
+    
+    // Send session close message to orchestrator
+    if (orchestratorWebSocket && orchestratorWebSocket.isConnected() && isInterviewActive) {
+        // Set up one-time event listener for session closed
+        const handleSessionClosed = (data) => {
+            console.log('Session closed confirmation received:', data);
+            addMessage('Interview paused. Your progress has been saved.', 'winston');
+            
+            // Remove the listener after handling
+            orchestratorWebSocket.off('sessionClosed', handleSessionClosed);
+            
+            // Complete the pause process
+            setTimeout(() => completeInterviewPause(), 1500);
+        };
+        
+        // Register the event listener BEFORE sending the message
+        orchestratorWebSocket.on('sessionClosed', handleSessionClosed);
+        
+        // Send the close session message
+        const success = orchestratorWebSocket.closeSession('User paused interview');
+        
+        if (!success) {
+            console.warn('Failed to send close session message');
+            orchestratorWebSocket.off('sessionClosed', handleSessionClosed);
+            addMessage('Failed to close session. Proceeding with cleanup.', 'winston');
+            setTimeout(() => completeInterviewPause(), 1500);
+        } else {
+            // Set a timeout in case we don't get a response
+            setTimeout(() => {
+                if (orchestratorWebSocket.pendingSessionClosure) {
+                    console.warn('Session close timeout - proceeding anyway');
+                    orchestratorWebSocket.off('sessionClosed', handleSessionClosed);
+                    addMessage('Session close timeout. Proceeding anyway.', 'winston');
+                    setTimeout(() => completeInterviewPause(), 1500);
+                }
+            }, 5000);
+        }
+    } else {
+        console.log('No active session to close');
+        addMessage('No active session. Cleaning up locally.', 'winston');
+        setTimeout(() => completeInterviewPause(), 1500);
+    }
+}
+
+// Helper function to complete the interview pause process
+function completeInterviewPause() {
+    console.log('Completing interview pause...');
+    
+    // Mark interview as inactive
+    isInterviewActive = false;
+    currentInterviewId = null;
+    currentSessionId = null;
+    
+    // Disconnect audio WebSocket
+    if (audioWebSocket) {
+        audioWebSocket.disconnect();
+        audioWebSocket = null;
+    }
+    
+    // Stop idea clouds
+    if (cloudInterval) {
+        clearInterval(cloudInterval);
+        cloudInterval = null;
+    }
+    
+    // Clear idea clouds from UI
+    const banner = document.getElementById('ideaClouds');
+    if (banner) {
+        banner.innerHTML = '';
+    }
+    activeClouds = [];
+    
+    // Reset Winston state
+    setWinstonState('idle');
+    
+    // Navigate to dashboard
     setTimeout(() => {
         window.location.href = '../dashboard.html';
-    }, 1500);
+    }, 100);
 }
 
 function submitForReview() {
@@ -1170,3 +1253,5 @@ window.viewInterview = viewInterview;
 window.showInterviewSelection = showInterviewSelection;
 window.saveAndExit = saveAndExit;
 window.stopSession = stopSession;
+window.pauseInterview = pauseInterview;
+window.submitForReview = submitForReview;
