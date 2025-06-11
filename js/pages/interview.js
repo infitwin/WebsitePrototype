@@ -820,11 +820,34 @@ async function viewInterview(interviewId) {
 }
 
 // Session Management
-function saveAndExit() {
-    showToast('Interview saved. Returning to dashboard...', 'success');
+function pauseInterview() {
+    showToast('Interview paused. Your progress has been saved.', 'success');
+    // TODO: Send pause message to orchestrator
+    if (orchestratorWebSocket && orchestratorWebSocket.isConnected()) {
+        // You can add orchestrator pause logic here if needed
+    }
     setTimeout(() => {
         window.location.href = '../dashboard.html';
     }, 1500);
+}
+
+function submitForReview() {
+    // Show confirmation dialog
+    if (confirm('Are you ready to submit this interview for final review? This will end the current session.')) {
+        showToast('Submitting interview for final review...', 'success');
+        // TODO: Send submit message to orchestrator
+        if (orchestratorWebSocket && orchestratorWebSocket.isConnected()) {
+            // You can add orchestrator submit logic here if needed
+        }
+        setTimeout(() => {
+            window.location.href = '../dashboard.html';
+        }, 2000);
+    }
+}
+
+// Deprecated - kept for backward compatibility
+function saveAndExit() {
+    pauseInterview();
 }
 
 function stopSession() {
