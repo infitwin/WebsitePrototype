@@ -273,9 +273,19 @@ async function initializeServices() {
             isInterviewActive = true;
             showToast('Interview session started with Winston', 'success');
             
-            // Initialize audio WebSocket connection and wait for it
-            await initializeAudioWebSocket();
-            showToast('Audio service ready - you can start recording', 'success');
+            // CRITICAL FIX: Only initialize audio WebSocket AFTER we have valid IDs
+            if (currentInterviewId && currentSessionId) {
+                console.log('✅ Interview IDs confirmed, initializing audio WebSocket...');
+                console.log(`  - InterviewId: ${currentInterviewId}`);
+                console.log(`  - SessionId: ${currentSessionId}`);
+                
+                // Initialize audio WebSocket connection and wait for it
+                await initializeAudioWebSocket();
+                showToast('Audio service ready - you can start recording', 'success');
+            } else {
+                console.error('❌ Interview started but missing required IDs:', { currentInterviewId, currentSessionId });
+                showToast('Interview started but audio service unavailable', 'warning');
+            }
         };
         
         orchestratorWebSocket.onQuestionReceived = (data) => {

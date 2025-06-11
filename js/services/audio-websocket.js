@@ -134,7 +134,8 @@ class AudioWebSocketService {
       payload: {
         sessionId: this.currentSessionId,
         interviewId: this.currentInterviewId,
-        turnId: 'pending****',
+        userId: 'demo-user', // TODO: Get from auth in production
+        twinId: 'winston-interviewer',
         audioConfig: {
           sampleRate: 16000,
           encoding: 'LINEAR16',
@@ -165,7 +166,6 @@ class AudioWebSocketService {
       const header = {
         chunkIndex: chunkIndex,
         sessionId: this.currentSessionId,
-        turnId: 'pending****',
         timestamp: new Date().toISOString(),
         isFinal: isFinal
       };
@@ -385,8 +385,7 @@ class AudioWebSocketService {
           sessionId: this.currentSessionId,
           correlationId: `transcript_${Date.now()}`,
           timestamp: new Date().toISOString(),
-          messageType: 'UserResponse',
-          turnId: `turn_${Date.now()}`
+          messageType: 'UserResponse'
         },
         data: {
           messageContent: {
