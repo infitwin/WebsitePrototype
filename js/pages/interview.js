@@ -644,27 +644,41 @@ function sendMessage() {
     
     if (!message) return;
     
-    // Add user message
+    // Add user message to UI immediately
     addMessage(message, 'user');
     input.value = '';
     
-    // Simulate Winston thinking
-    setWinstonState('thinking');
-    
-    // Simulate response after delay
-    setTimeout(() => {
-        const responses = [
-            "That's a wonderful memory! Can you tell me more about how that made you feel?",
-            "I can see this is important to you. What details stand out most in your mind?",
-            "Thank you for sharing that. How did this experience shape who you are today?",
-            "That sounds meaningful. Are there other people connected to this memory?",
-            "I'm capturing this in your knowledge graph. What happened next?"
-        ];
+    // Send to orchestrator for processing
+    if (orchestratorWebSocket && orchestratorWebSocket.isConnected()) {
+        // Send text message to orchestrator
+        const success = orchestratorWebSocket.sendUserTextMessage(message);
         
-        const response = responses[Math.floor(Math.random() * responses.length)];
-        addMessage(response, 'winston');
-        setWinstonState('idle');
-    }, 2000);
+        if (success) {
+            setWinstonState('thinking');
+            console.log('Text message sent to orchestrator:', message);
+        } else {
+            showToast('Failed to send message', 'error');
+            setWinstonState('idle');
+        }
+    } else {
+        showToast('Not connected to interview service', 'error');
+        
+        // Fallback to demo mode if not connected
+        setWinstonState('thinking');
+        setTimeout(() => {
+            const responses = [
+                "That's a wonderful memory! Can you tell me more about how that made you feel?",
+                "I can see this is important to you. What details stand out most in your mind?",
+                "Thank you for sharing that. How did this experience shape who you are today?",
+                "That sounds meaningful. Are there other people connected to this memory?",
+                "I'm capturing this in your knowledge graph. What happened next?"
+            ];
+            
+            const response = responses[Math.floor(Math.random() * responses.length)];
+            addMessage(response, 'winston');
+            setWinstonState('idle');
+        }, 2000);
+    }
 }
 
 function addMessage(text, sender) {

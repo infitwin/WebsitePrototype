@@ -30,6 +30,7 @@ class OrchestratorWebSocketService {
     
     // Interview state
     this.currentInterviewId = null;
+    this.currentSessionId = null;
     this.currentCorrelationId = null;
     this.wasConnectedBefore = false;
     
@@ -60,6 +61,7 @@ class OrchestratorWebSocketService {
     // Handle InterviewStarted
     this.messageHandlers.set('InterviewStarted', (parsedMessage) => {
       this.currentInterviewId = parsedMessage.interviewId;
+      this.currentSessionId = parsedMessage.sessionId || parsedMessage.sessionDetails?.id;
       this.currentCorrelationId = parsedMessage.correlationId;
       
       if (this.onInterviewStarted) {
@@ -78,6 +80,21 @@ class OrchestratorWebSocketService {
     this.messageHandlers.set('ReturnAudioChunks', (parsedMessage) => {
       if (this.onAudioChunkRequested) {
         this.onAudioChunkRequested(parsedMessage);
+      }
+    });
+    
+    // Handle ForwardTranscript from AudioProcessingService
+    this.messageHandlers.set('ForwardTranscript', (parsedMessage) => {
+      console.log('ForwardTranscript received from AudioProcessingService:', parsedMessage);
+      
+      // Extract transcript data
+      const transcript = parsedMessage.payload?.content?.transcript;
+      if (transcript && transcript.text) {
+        // The orchestrator will process this and send back AI response
+        console.log('User transcript being processed by orchestrator:', transcript.text);
+        
+        // Note: The orchestrator backend should send the transcript back to UI
+        // for display after recording it in SessionManager
       }
     });
     
@@ -492,6 +509,57 @@ class OrchestratorWebSocketService {
 
   getError() {
     return this.error;
+  }
+
+  /**
+   * Send user text message to orchestrator
+   */
+  sendUserTextMessage(text) {
+    if (!this.isConnected()) {
+      console.error('Cannot send text message: Not connected');
+      return false;
+    }
+    
+    if (!this.currentInterviewId) {
+      console.warn('Cannot send text message: No active interview');
+      return false;
+    }
+    
+    const message = {
+      messageId: `ui-text-${Date.now()}`,
+      type: 'UserTextMessage',
+      timestamp: new Date().toISOString(),
+      source: {
+        service: 'UI',
+        instanceId: 'browser-session-' + Math.random().toString(36).substr(2, 9)
+      },
+      target: {
+        service: 'Orchestrator'
+      },
+      payload: {
+        metadata: {
+          interviewId: this.currentInterviewId,
+          sessionId: this.currentSessionId || this.currentInterviewId,
+          userId: 'demo-user',
+          twinId: 'winston-interviewer',
+          timestamp: new Date().toISOString()
+        },
+        content: {
+          text: text,
+          inputType: 'text',
+          timestamp: new Date().toISOString()
+        }
+      }
+    };
+    
+    try {
+      this.ws.send(JSON.stringify(message));
+      console.log('Sent UserTextMessage:', message);
+      return true;
+    } catch (error) {
+      console.error('Failed to send text message:', error);
+      return false;
+    }
   }
 }
 
