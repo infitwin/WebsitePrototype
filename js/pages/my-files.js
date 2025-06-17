@@ -28,7 +28,7 @@ export async function initializeMyFiles() {
     // Check authentication
     console.log('🔐 Checking authentication...');
     const allowed = await guardPage({
-        requireVerified: false,  // Temporarily disabled for testing
+        requireVerified: false,  // Allow unverified emails
         redirectTo: '/pages/auth.html'
     });
     
@@ -40,10 +40,81 @@ export async function initializeMyFiles() {
     
     console.log('✅ Authentication passed');
 
+    // Check Firebase services initialization
+    await checkFirebaseServices();
+
     // Initialize components
     initializeButtons();
     initializeSearch();
     await initializeFileBrowser();
+}
+
+/**
+ * Check if Firebase services are properly initialized
+ * This is critical for file uploads to work
+ */
+async function checkFirebaseServices() {
+    console.log('🔥 Checking Firebase services initialization...');
+    
+    try {
+        const { auth } = await import('../firebase-config.js');
+        
+        // Check if user is actually logged in
+        if (!auth.currentUser) {
+            console.warn('⚠️ No authenticated user found');
+            console.log('💡 File uploads require authentication');
+            
+            // Show warning to user
+            showNotification(
+                'Please log in to upload files. File uploads require authentication.', 
+                'warning',
+                10000 // Show for 10 seconds
+            );
+            
+            // Show login prompt in empty state
+            showLoginRequiredState();
+            return false;
+        }
+        
+        console.log('✅ Firebase services initialized with user:', auth.currentUser.uid);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Firebase services check failed:', error);
+        showNotification('Firebase services unavailable. Please refresh the page.', 'error');
+        return false;
+    }
+}
+
+/**
+ * Show login required state for file uploads
+ */
+function showLoginRequiredState() {
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState && !document.getElementById('filesContainer')?.children.length) {
+        emptyState.style.display = 'block';
+        emptyState.innerHTML = `
+            <div class="empty-icon">🔐</div>
+            <h3>Login Required for File Uploads</h3>
+            <p>Your upload interface is ready, but file uploads require authentication.</p>
+            <p>Please log in to upload and manage your files.</p>
+            <div id="login-prompt-button-container"></div>
+        `;
+        
+        // Add login button
+        const loginBtn = new Button({
+            text: 'Go to Login',
+            type: 'primary',
+            icon: '🔑',
+            onClick: () => {
+                window.location.href = '/pages/auth.html';
+            }
+        });
+        const loginContainer = document.getElementById('login-prompt-button-container');
+        if (loginContainer) {
+            loginContainer.appendChild(loginBtn.element);
+        }
+    }
 }
 
 /**
@@ -166,7 +237,10 @@ async function initializeFileBrowser() {
     
     try {
         // Initialize drag and drop
-        initializeDragDrop();
+        const dropZone = document.getElementById('dropZone');
+        if (dropZone) {
+            initializeDragDrop(dropZone, handleDragDropFiles);
+        }
         
         // Initialize upload queue
         uploadQueue = createUploadQueue();
@@ -216,12 +290,68 @@ async function initializeFileBrowser() {
 async function handleFileSelect(event) {
     const files = Array.from(event.target.files);
     if (files.length > 0) {
+        // Check authentication before processing uploads
+        const isAuthenticated = await checkAuthenticationForUpload();
+        if (!isAuthenticated) {
+            event.target.value = ''; // Reset input
+            return;
+        }
+        
         await processFilesForUpload(files);
         event.target.value = ''; // Reset input
         
         // Reload files after upload
         setTimeout(() => loadFiles(), 1000);
     }
+}
+
+/**
+ * Check if user is authenticated for file uploads
+ */
+async function checkAuthenticationForUpload() {
+    try {
+        const { auth } = await import('../firebase-config.js');
+        
+        if (!auth.currentUser) {
+            showNotification(
+                'Please log in to upload files. Redirecting to login page...', 
+                'warning',
+                5000
+            );
+            
+            // Redirect to login after a brief delay
+            setTimeout(() => {
+                window.location.href = '/pages/auth.html';
+            }, 2000);
+            
+            return false;
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Authentication check failed:', error);
+        showNotification('Authentication service unavailable. Please refresh the page.', 'error');
+        return false;
+    }
+}
+
+/**
+ * Handle files dropped on the drag-drop zone
+ */
+async function handleDragDropFiles(files) {
+    console.log('📂 Files dropped:', files.length);
+    
+    // Check authentication before processing uploads
+    const isAuthenticated = await checkAuthenticationForUpload();
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    await processFilesForUpload(files);
+    
+    // Reload files after upload
+    setTimeout(() => loadFiles(), 1000);
 }
 
 /**
@@ -301,11 +431,45 @@ function handleFileTypeFilter(filterType) {
         // Show faces view
         filesContainer.style.display = 'none';
         facesContainer.style.display = 'block';
+        
+        // Hide batch actions - faces shouldn't have file operations
+        const batchActions = document.querySelector('.batch-actions');
+        if (batchActions) {
+            batchActions.style.display = 'none';
+        }
+        
+        // Disable and hide select all checkbox for faces
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.checked = false;
+            selectAll.style.display = 'none';
+            const selectAllLabel = selectAll.parentElement;
+            if (selectAllLabel) {
+                selectAllLabel.style.display = 'none';
+            }
+        }
+        
         loadExtractedFaces();
     } else {
         // Show files view
         filesContainer.style.display = currentView === 'grid' ? 'grid' : 'block';
         facesContainer.style.display = 'none';
+        
+        // Show batch actions for file operations
+        const batchActions = document.querySelector('.batch-actions');
+        if (batchActions) {
+            batchActions.style.display = 'flex';
+        }
+        
+        // Restore select all checkbox for files
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.style.display = 'inline';
+            const selectAllLabel = selectAll.parentElement;
+            if (selectAllLabel) {
+                selectAllLabel.style.display = 'block';
+            }
+        }
         
         // Filter files by type
         if (filterType === 'all') {
@@ -461,8 +625,12 @@ function renderFiles(files) {
         return;
     }
     
-    // Hide empty state
+    // Hide loading and empty states
+    const loadingState = document.getElementById('loadingState');
     const emptyState = document.getElementById('emptyState');
+    if (loadingState) {
+        loadingState.style.display = 'none';
+    }
     if (emptyState) {
         emptyState.style.display = 'none';
     }
@@ -647,9 +815,9 @@ function createFileActions(file) {
     
     // Download button
     const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'action-btn';
+    downloadBtn.className = 'action-btn download-btn';
     downloadBtn.title = 'Download';
-    downloadBtn.innerHTML = '⬇';
+    downloadBtn.innerHTML = '<span style="font-size: 16px;">↓</span>';
     downloadBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         downloadFile(file);
@@ -657,9 +825,9 @@ function createFileActions(file) {
     
     // Delete button
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'action-btn';
+    deleteBtn.className = 'action-btn delete-btn';
     deleteBtn.title = 'Delete';
-    deleteBtn.innerHTML = '🗑';
+    deleteBtn.innerHTML = '<span style="font-size: 16px; color: #ef4444;">✕</span>';
     deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         confirmDelete(file);
@@ -690,6 +858,7 @@ function downloadFile(file) {
  * Confirm file deletion
  */
 function confirmDelete(file) {
+    console.log('🗑️ confirmDelete called for file:', file);
     const fileName = file.fileName || file.name;
     const modal = Modal.confirm({
         title: 'Delete File',
@@ -697,9 +866,12 @@ function confirmDelete(file) {
         confirmText: 'Delete',
         type: 'danger',
         onConfirm: async () => {
+            console.log('🗑️ User confirmed deletion for:', fileName);
             await handleDelete(file);
         }
     });
+    console.log('🗑️ Modal created:', modal);
+    modal.show();
 }
 
 /**
@@ -986,97 +1158,96 @@ async function performVectorization(files) {
         const endpoints = getEndpoints(window.location.hostname === 'localhost');
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // Prepare payload
-        const payload = {
-            files: files.map(file => ({
-                fileId: file.id,
-                downloadURL: file.downloadURL || file.url,
-                userId: user.uid,
-                twinId: twinId
-            })),
-            processType: "vectorize-photos"
-        };
-        
-        console.log('Vectorization payload:', payload);
+        console.log(`Starting vectorization for ${files.length} files`);
         console.log('Endpoint:', apiEndpoint);
         
-        // Call Artifact Processor with proper headers
-        const response = await fetch(apiEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await user.getIdToken()}`,
-                'Origin': window.location.origin
-            },
-            mode: 'cors',
-            body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Vectorization response error:', errorText);
-            throw new Error(`Vectorization failed: ${response.statusText}`);
+        // Process each file individually as the real server expects
+        const results = [];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // Prepare individual file payload
+            const payload = {
+                fileId: file.id,
+                fileName: file.fileName || file.name,
+                fileUrl: file.downloadURL || file.url,
+                contentType: file.fileType || file.type,
+                userId: user.uid,
+                twinId: twinId
+            };
+            
+            console.log(`Processing file ${i + 1}/${files.length}:`, payload.fileName);
+            
+            try {
+                // Call Artifact Processor for individual file
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${await user.getIdToken()}`,
+                        'Origin': window.location.origin
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`Vectorization failed for ${payload.fileName}:`, errorText);
+                    results.push({
+                        success: false,
+                        error: `Failed: ${response.statusText}`,
+                        fileId: file.id
+                    });
+                    continue;
+                }
+                
+                const result = await response.json();
+                console.log(`✅ Vectorization started for ${payload.fileName}:`, result);
+                
+                // Store the processing request info
+                results.push({
+                    success: true,
+                    fileId: file.id,
+                    status: result.status,
+                    message: result.message,
+                    estimatedTime: result.estimatedTime
+                });
+                
+            } catch (error) {
+                console.error(`Error processing ${payload.fileName}:`, error);
+                results.push({
+                    success: false,
+                    error: error.message,
+                    fileId: file.id
+                });
+            }
         }
         
-        const result = await response.json();
-        console.log('Vectorization result:', result);
+        console.log('All vectorization requests completed:', results);
         
-        // Process the vectorization results
-        if (result.success && result.results && Array.isArray(result.results)) {
-            let totalFacesExtracted = 0;
-            
-            // Update each file with vectorization results
+        // Process the vectorization request results
+        const successfulRequests = results.filter(r => r.success);
+        if (successfulRequests.length > 0) {
+            // Update files to show they are being processed
             const { doc, updateDoc } = await import('firebase/firestore');
             const { db } = await import('../firebase-config.js');
             
-            for (let i = 0; i < result.results.length; i++) {
-                const fileResult = result.results[i];
-                const originalFile = files[i];
+            for (let i = 0; i < successfulRequests.length; i++) {
+                const requestResult = successfulRequests[i];
+                const originalFile = files.find(f => f.id === requestResult.fileId);
                 
                 if (!originalFile) continue;
                 
                 try {
-                    const updateData = {
-                        vectorizationStatus: fileResult.success ? 'completed' : 'failed',
-                        vectorizationCompletedAt: new Date().toISOString(),
-                        vectorizationError: fileResult.error || null
-                    };
+                    // Update file status to show processing has started
+                    await updateDoc(doc(db, 'files', originalFile.id), {
+                        vectorizationStatus: 'processing',
+                        vectorizationStartedAt: new Date().toISOString(),
+                        vectorizationError: null
+                    });
                     
-                    // Add face extraction data if available
-                    if (fileResult.faces && Array.isArray(fileResult.faces) && fileResult.faces.length > 0) {
-                        const facesData = fileResult.faces.map((face, faceIndex) => ({
-                            id: `${originalFile.id}_face_${faceIndex}`,
-                            confidence: face.confidence || 0.8,
-                            boundingBox: face.boundingBox || face.bbox || {
-                                x: face.x || 0,
-                                y: face.y || 0,
-                                width: face.width || 100,
-                                height: face.height || 100
-                            },
-                            thumbnail: face.thumbnail || face.croppedImage || face.url,
-                            embedding: face.embedding || face.vector || [],
-                            extractedAt: new Date().toISOString(),
-                            fileName: originalFile.fileName || originalFile.name
-                        }));
-                        
-                        updateData.extractedFaces = facesData;
-                        updateData.faceCount = facesData.length;
-                        totalFacesExtracted += facesData.length;
-                        
-                        console.log(`👤 Extracted ${facesData.length} faces from ${originalFile.fileName}`);
-                    } else {
-                        updateData.extractedFaces = [];
-                        updateData.faceCount = 0;
-                    }
-                    
-                    // Add vector embedding if available
-                    if (fileResult.embedding || fileResult.vector) {
-                        updateData.vectorEmbedding = fileResult.embedding || fileResult.vector;
-                        updateData.embeddingDimensions = (fileResult.embedding || fileResult.vector).length;
-                    }
-                    
-                    await updateDoc(doc(db, 'files', originalFile.id), updateData);
-                    console.log(`✅ Updated file ${originalFile.id} with vectorization results`);
+                    console.log(`🔄 Updated ${originalFile.fileName || originalFile.name} status to processing`);
                     
                 } catch (updateError) {
                     console.error(`❌ Error updating file ${originalFile.id}:`, updateError);
@@ -1084,27 +1255,13 @@ async function performVectorization(files) {
             }
             
             showNotification(
-                `Vectorization completed! Extracted ${totalFacesExtracted} faces from ${files.length} images`, 
+                `Vectorization started for ${successfulRequests.length} images. Processing will complete in the background.`, 
                 'success'
             );
             
         } else {
-            // Fallback: mark as processing (for async processing)
-            showNotification(`Vectorization started for ${files.length} images`, 'info');
-            
-            const { doc, updateDoc } = await import('firebase/firestore');
-            const { db } = await import('../firebase-config.js');
-            
-            for (const file of files) {
-                try {
-                    await updateDoc(doc(db, 'files', file.id), {
-                        vectorizationStatus: 'processing',
-                        vectorizationStartedAt: new Date().toISOString()
-                    });
-                } catch (updateError) {
-                    console.error('Error updating file status:', updateError);
-                }
-            }
+            // All requests failed
+            showNotification(`Vectorization failed for all ${files.length} images`, 'error');
         }
         
         // Clear selection
