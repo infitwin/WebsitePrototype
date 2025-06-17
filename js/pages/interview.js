@@ -991,7 +991,8 @@ function pauseInterview() {
     
     // Stop any TTS playback
     if (ttsPlayer) {
-        ttsPlayer.stopAndClearQueue();
+        ttsPlayer.stop();
+        ttsPlayer.clearQueue();
     }
     
     // Send session close message to orchestrator
@@ -1006,11 +1007,16 @@ function pauseInterview() {
             console.log('✅ handleSessionClosed called with data:', data);
             addMessage('Interview paused. Your progress has been saved.', 'winston');
             
+            // Clear the timeout since we got a response
+            if (handleSessionClosed.timeoutId) {
+                clearTimeout(handleSessionClosed.timeoutId);
+            }
+            
             // Remove the listener after handling
             orchestratorWebSocket.off('sessionClosed', handleSessionClosed);
             
             // Complete the pause process
-            setTimeout(() => completeInterviewPause(), 1500);
+            setTimeout(() => completeInterviewPause(), 2000);
         };
         
         console.log('🔍 DEBUG: Setting up sessionClosed event listener');
@@ -1025,17 +1031,20 @@ function pauseInterview() {
             console.warn('Failed to send close session message');
             orchestratorWebSocket.off('sessionClosed', handleSessionClosed);
             addMessage('Failed to close session. Proceeding with cleanup.', 'winston');
-            setTimeout(() => completeInterviewPause(), 1500);
+            setTimeout(() => completeInterviewPause(), 2000);
         } else {
             // Set a timeout in case we don't get a response
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 if (orchestratorWebSocket.pendingSessionClosure) {
                     console.warn('Session close timeout - proceeding anyway');
                     orchestratorWebSocket.off('sessionClosed', handleSessionClosed);
-                    addMessage('Session close timeout. Proceeding anyway.', 'winston');
-                    setTimeout(() => completeInterviewPause(), 1500);
+                    addMessage('Session closed locally. Proceeding with cleanup.', 'winston');
+                    setTimeout(() => completeInterviewPause(), 2000);
                 }
-            }, 5000);
+            }, 5000); // Wait 5 seconds for response
+            
+            // Store timeout ID so we can clear it if we get a response
+            handleSessionClosed.timeoutId = timeoutId;
         }
     } else {
         console.log('No active session to close');
@@ -1075,9 +1084,35 @@ function completeInterviewPause() {
     // Reset Winston state
     setWinstonState('idle');
     
-    // Navigate to dashboard
+    // Show prominent session closed message with countdown
+    addMessage('<strong style="font-size: 1.2em;">Session is Closed.</strong>', 'winston');
+    
+    // Countdown to dashboard
+    let countdown = 5;
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+            // Update the last message with countdown
+            const messages = document.getElementById('chatMessages');
+            const lastMessage = messages.lastElementChild;
+            if (lastMessage && lastMessage.querySelector('.message-content')) {
+                lastMessage.querySelector('.message-content').innerHTML = 
+                    `<strong style="font-size: 1.2em;">Session is Closed. Moving to dashboard in ${countdown} seconds...</strong>`;
+            }
+        } else {
+            clearInterval(countdownInterval);
+            window.location.href = '/pages/dashboard.html';
+        }
+    }, 1000);
+    
+    // Initial countdown message
     setTimeout(() => {
-        window.location.href = '../dashboard.html';
+        const messages = document.getElementById('chatMessages');
+        const lastMessage = messages.lastElementChild;
+        if (lastMessage && lastMessage.querySelector('.message-content')) {
+            lastMessage.querySelector('.message-content').innerHTML = 
+                `<strong style="font-size: 1.2em;">Session is Closed. Moving to dashboard in ${countdown} seconds...</strong>`;
+        }
     }, 100);
 }
 
@@ -1090,7 +1125,7 @@ function submitForReview() {
             // You can add orchestrator submit logic here if needed
         }
         setTimeout(() => {
-            window.location.href = '../dashboard.html';
+            window.location.href = '/pages/dashboard.html';
         }, 2000);
     }
 }
@@ -1110,7 +1145,8 @@ function stopSession() {
         
         // Stop any active TTS playback
         if (ttsPlayer) {
-            ttsPlayer.stopAndClearQueue();
+            ttsPlayer.stop();
+            ttsPlayer.clearQueue();
         }
         
         // Close WebSocket connections if active
@@ -1146,7 +1182,7 @@ function stopSession() {
         // Optionally navigate back to dashboard after a delay
         setTimeout(() => {
             if (confirm('Would you like to return to the dashboard?')) {
-                window.location.href = '../dashboard.html';
+                window.location.href = '/pages/dashboard.html';
             }
         }, 2000);
     }

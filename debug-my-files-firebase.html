@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug My Files Firebase Connection</title>
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/storage": "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"
+        }
+    }
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { margin: 5px 0; padding: 5px; border-radius: 3px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { margin: 10px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Debug My Files Firebase Connection</h1>
+    <button onclick="testLogin()">1. Test Login</button>
+    <button onclick="testFirestoreQuery()">2. Test Firestore Query</button>
+    <button onclick="loadFilesDirectly()">3. Load Files Directly</button>
+    <div id="logs"></div>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+        import { getFirestore, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDk1wCWpg5VGLKNoNMJZAOKOvVuRWPMm88",
+            authDomain: "infitwin-53bfb.firebaseapp.com",
+            projectId: "infitwin-53bfb",
+            storageBucket: "infitwin-53bfb.appspot.com",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:0c37b3c39a21ca92e7cbf0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logs.appendChild(div);
+            console.log(message);
+        }
+
+        window.testLogin = async function() {
+            try {
+                log('Logging in...');
+                const userCredential = await signInWithEmailAndPassword(auth, 'weezer@yev.com', '123456');
+                log(`Logged in successfully! UID: ${userCredential.user.uid}`, 'success');
+                log(`Email: ${userCredential.user.email}`, 'success');
+            } catch (error) {
+                log(`Login error: ${error.message}`, 'error');
+            }
+        }
+
+        window.testFirestoreQuery = async function() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    log('Not logged in! Please login first.', 'error');
+                    return;
+                }
+
+                log(`Testing Firestore query for user: ${user.uid}`);
+                
+                // Test basic collection access
+                const filesRef = collection(db, 'files');
+                log('Collection reference created successfully');
+
+                // Test simple query
+                const q = query(filesRef, where('userId', '==', user.uid));
+                log('Query created successfully');
+                
+                const snapshot = await getDocs(q);
+                log(`Query executed successfully! Found ${snapshot.size} documents`, 'success');
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    log(`File: ${data.fileName} (ID: ${doc.id})`, 'info');
+                });
+
+            } catch (error) {
+                log(`Firestore error: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`, 'error');
+                if (error.stack) {
+                    log(`Stack: ${error.stack}`, 'error');
+                }
+            }
+        }
+
+        window.loadFilesDirectly = async function() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    log('Not logged in! Please login first.', 'error');
+                    return;
+                }
+
+                log('Loading files using exact getUserFiles logic...');
+                
+                const filesQuery = query(
+                    collection(db, "files"),
+                    where("userId", "==", user.uid),
+                    orderBy("uploadedAt", "desc"),
+                    limit(10)
+                );
+                
+                const querySnapshot = await getDocs(filesQuery);
+                
+                const files = [];
+                querySnapshot.forEach((doc) => {
+                    files.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                log(`Found ${files.length} files:`, 'success');
+                files.forEach(file => {
+                    log(`- ${file.fileName} (${file.fileType})`, 'info');
+                });
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

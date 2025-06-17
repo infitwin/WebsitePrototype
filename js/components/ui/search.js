@@ -20,11 +20,6 @@ import { ComponentRegistry } from '../core/component-registry.js';
 import { FormInput } from './form.js';
 import { Button } from './button.js';
 
-// Register component types to prevent duplicates
-ComponentRegistry.registerType('Search', Search);
-ComponentRegistry.registerType('SearchWithFilters', SearchWithFilters);
-ComponentRegistry.registerType('SearchSuggestions', SearchSuggestions);
-
 export class Search extends BaseComponent {
   constructor(options = {}) {
     super({
@@ -804,3 +799,8 @@ export function createSearch(options) {
 export function createSearchWithFilters(options) {
   return new SearchWithFilters(options);
 }
+
+// Register component types to prevent duplicates
+ComponentRegistry.registerType('Search', Search);
+ComponentRegistry.registerType('SearchWithFilters', SearchWithFilters);
+ComponentRegistry.registerType('SearchSuggestions', SearchSuggestions);

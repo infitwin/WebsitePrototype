@@ -15,13 +15,15 @@ const ORCHESTRATION_ENDPOINTS = {
   
   // REST API endpoints
   STATE_MANAGER: 'https://interview-session-manager-833139648849.us-central1.run.app/api/interview/state',
+  ARTIFACT_PROCESSOR: 'https://artifactprocessor-833139648849.us-central1.run.app/process-webhook',
   
   // Development endpoints (for local testing)
   DEV: {
     API_BASE: 'http://localhost:8000',
     ORCHESTRATOR_WS: 'ws://localhost:8000/ws',
     AUDIO_WS: 'ws://localhost:8001/audio/ws',
-    STATE_MANAGER: 'http://localhost:8000/api/interview/state'
+    STATE_MANAGER: 'http://localhost:8000/api/interview/state',
+    ARTIFACT_PROCESSOR: 'http://localhost:8000/process-webhook'
   }
 };
 
@@ -59,7 +61,8 @@ function getEndpoints(isDevelopment = false) {
       API_BASE: ORCHESTRATION_ENDPOINTS.DEV.API_BASE,
       ORCHESTRATOR_WS: ORCHESTRATION_ENDPOINTS.DEV.ORCHESTRATOR_WS,
       AUDIO_WS: ORCHESTRATION_ENDPOINTS.DEV.AUDIO_WS,
-      STATE_MANAGER: ORCHESTRATION_ENDPOINTS.DEV.STATE_MANAGER
+      STATE_MANAGER: ORCHESTRATION_ENDPOINTS.DEV.STATE_MANAGER,
+      ARTIFACT_PROCESSOR: ORCHESTRATION_ENDPOINTS.DEV.ARTIFACT_PROCESSOR
     };
   }
   
@@ -67,7 +70,8 @@ function getEndpoints(isDevelopment = false) {
     API_BASE: ORCHESTRATION_ENDPOINTS.API_BASE,
     ORCHESTRATOR_WS: ORCHESTRATION_ENDPOINTS.ORCHESTRATOR_WS,
     AUDIO_WS: ORCHESTRATION_ENDPOINTS.AUDIO_WS,
-    STATE_MANAGER: ORCHESTRATION_ENDPOINTS.STATE_MANAGER
+    STATE_MANAGER: ORCHESTRATION_ENDPOINTS.STATE_MANAGER,
+    ARTIFACT_PROCESSOR: ORCHESTRATION_ENDPOINTS.ARTIFACT_PROCESSOR
   };
 }
 
@@ -76,3 +80,6 @@ window.ORCHESTRATION_ENDPOINTS = ORCHESTRATION_ENDPOINTS;
 window.getBusinessWebSocketUrl = getBusinessWebSocketUrl;
 window.getAudioWebSocketUrl = getAudioWebSocketUrl;
 window.getEndpoints = getEndpoints;
+
+// ES Module exports
+export { ORCHESTRATION_ENDPOINTS, getBusinessWebSocketUrl, getAudioWebSocketUrl, getEndpoints };

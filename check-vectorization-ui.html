@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Vectorization UI</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ccc; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Vectorization UI Check</h1>
+    <div id="status"></div>
+    <button onclick="checkUI()">Check UI Elements</button>
+    <button onclick="testVectorization()">Test Vectorization Flow</button>
+    
+    <h2>My Files Page Preview:</h2>
+    <iframe src="/pages/my-files.html" id="myFilesFrame"></iframe>
+    
+    <script>
+        function checkUI() {
+            const frame = document.getElementById('myFilesFrame');
+            const doc = frame.contentDocument || frame.contentWindow.document;
+            const status = document.getElementById('status');
+            
+            const checks = [
+                { selector: '.vectorization-quota', name: 'Vectorization Quota Widget' },
+                { selector: '.btn-batch-vectorize', name: 'Vectorize Button' },
+                { selector: '.quota-text', name: 'Quota Text' },
+                { selector: '.quota-progress', name: 'Quota Progress Bar' }
+            ];
+            
+            let html = '<h3>UI Element Check:</h3>';
+            checks.forEach(check => {
+                const element = doc.querySelector(check.selector);
+                if (element) {
+                    html += `<div class="status success">✓ ${check.name} found</div>`;
+                } else {
+                    html += `<div class="status error">✗ ${check.name} not found</div>`;
+                }
+            });
+            
+            status.innerHTML = html;
+        }
+        
+        function testVectorization() {
+            const frame = document.getElementById('myFilesFrame');
+            const doc = frame.contentDocument || frame.contentWindow.document;
+            
+            // Check if user is logged in
+            const loginState = doc.querySelector('.user-info');
+            if (!loginState || !loginState.textContent.trim()) {
+                alert('Please log in first to test vectorization');
+                return;
+            }
+            
+            // Simulate selecting files
+            const checkboxes = doc.querySelectorAll('.file-checkbox');
+            if (checkboxes.length === 0) {
+                alert('No files found. Please upload some images first.');
+                return;
+            }
+            
+            // Select first few files
+            for (let i = 0; i < Math.min(3, checkboxes.length); i++) {
+                checkboxes[i].checked = true;
+            }
+            
+            // Trigger update batch actions
+            const event = new Event('change', { bubbles: true });
+            checkboxes[0].dispatchEvent(event);
+            
+            alert('Files selected. Click the "Vectorize Selected" button to test the flow.');
+        }
+        
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkUI, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -62,11 +62,13 @@
                 <!-- Upload Section -->
                 <section class="upload-section">
                     <div class="file-drop-zone" id="dropZone">
-                        <input type="file" id="fileInput" multiple hidden accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.epub">
+                        <input type="file" id="fileInput" multiple hidden accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.epub,.ged">
+                        <input type="file" id="gedcomInput" accept=".ged" hidden>
                         <div class="drop-zone-icon">📁</div>
                         <div class="drop-zone-text">Drag files here or click to browse</div>
-                        <div class="drop-zone-subtext">Supported: Images, Documents, Spreadsheets, Ebooks (Max 10MB per file)</div>
+                        <div class="drop-zone-subtext">Supported: Images, Documents, Spreadsheets, Ebooks, GEDCOM files (Max 10MB per file)</div>
                         <div id="choose-files-button" class="button-placeholder"></div>
+                        <div id="gedcom-import-button" class="button-placeholder"></div>
                     </div>
                     
                     <!-- Upload Queue -->
@@ -91,6 +93,9 @@
                                 <option value="documents">Documents</option>
                                 <option value="spreadsheets">Spreadsheets</option>
                                 <option value="ebooks">Ebooks</option>
+                                <option value="gedcom">GEDCOM Files</option>
+                                <option value="vectorized">Vectorized Images</option>
+                                <option value="faces">Extracted Faces</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -111,6 +116,7 @@
                     <div class="batch-actions">
                         <span class="selected-count">0 selected</span>
                         <div class="batch-buttons">
+                            <button class="btn btn-primary btn-batch-vectorize">Vectorize Selected</button>
                             <button class="btn btn-secondary btn-batch-delete">Delete Selected</button>
                         </div>
                     </div>
@@ -118,6 +124,17 @@
                     <!-- Files Container -->
                     <div id="filesContainer" class="files-container grid-view">
                         <!-- Files will be dynamically inserted here -->
+                    </div>
+
+                    <!-- Faces Container -->
+                    <div id="facesContainer" class="faces-container" style="display: none;">
+                        <div class="faces-header">
+                            <h3>Extracted Faces</h3>
+                            <p class="faces-subtitle">Faces detected from your vectorized images</p>
+                        </div>
+                        <div id="facesGrid" class="faces-grid">
+                            <!-- Face thumbnails will be dynamically inserted here -->
+                        </div>
                     </div>
 
                     <!-- Empty State -->
@@ -165,6 +182,10 @@
                                     <span class="storage-size">0 MB</span>
                                 </div>
                                 <div class="storage-item">
+                                    <span class="storage-type">GEDCOM</span>
+                                    <span class="storage-size">0 MB</span>
+                                </div>
+                                <div class="storage-item">
                                     <span class="storage-type">Other</span>
                                     <span class="storage-size">0 MB</span>
                                 </div>
@@ -176,6 +197,7 @@
         </div>
     </div>
 
+    <script src="../js/config/orchestration-endpoints.js"></script>
     <script src="../js/navigation.js"></script>
     <script type="module">
         import { initializeMyFiles } from '../js/pages/my-files.js';

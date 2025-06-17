@@ -9,7 +9,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+// import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 // Firebase configuration object
 const firebaseConfig = {
@@ -29,7 +29,7 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // Initialize Functions with region
-export const functions = getFunctions(app, 'us-east4');
+// export const functions = getFunctions(app, 'us-east4');
 
 // Connect to emulators for local development
 // DISABLED: Using real Firebase backend for testing
@@ -44,8 +44,8 @@ const firebaseServices = {
     app,
     auth,
     storage,
-    db,
-    functions
+    db
+    // functions
 };
 
 export default firebaseServices;

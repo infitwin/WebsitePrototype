@@ -32,6 +32,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Interview stats API endpoint
+app.get('/api/interviews/stats', (req, res) => {
+  res.json({
+    activeInterviews: 0,
+    totalInterviews: 0,
+    completedInterviews: 0,
+    averageDuration: 0,
+    status: 'ok'
+  });
+});
+
 // Serve main pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
