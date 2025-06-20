@@ -760,13 +760,13 @@ async function performVectorization(fileIds) {
         try {
             // Ensure ORCHESTRATION_ENDPOINTS is available
             if (!window.ORCHESTRATION_ENDPOINTS) {
-                console.warn('⚠️ ORCHESTRATION_ENDPOINTS not loaded, using fallback');
+                console.warn('⚠️ ORCHESTRATION_ENDPOINTS not loaded, using production fallback');
                 window.ORCHESTRATION_ENDPOINTS = {
                     ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image'
                 };
             }
             
-            // Call artifact processor
+            // Call artifact processor (V1 format that worked for existing files)
             const response = await fetch(window.ORCHESTRATION_ENDPOINTS.ARTIFACT_PROCESSOR, {
                 method: 'POST',
                 headers: {
