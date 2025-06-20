@@ -170,7 +170,7 @@ export function getFileCategory(mimeType) {
 export function generateStoragePath(userId, fileName) {
     const timestamp = Date.now();
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    return `users/${userId}/files/${timestamp}_${sanitizedFileName}`;
+    return `uploads/${userId}/${timestamp}_${sanitizedFileName}`;
 }
 
 /**
@@ -228,7 +228,7 @@ export async function uploadFile(file, onProgress, onError) {
                         // Generate unique file ID
                         const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                         
-                        // Create base metadata object
+                        // Create base metadata object per data-standard-section-1-4.md
                         const fileMetadata = {
                             id: fileId,
                             userId: user.uid,
@@ -240,6 +240,21 @@ export async function uploadFile(file, onProgress, onError) {
                             uploadedAt: new Date().toISOString(),
                             category: getFileCategory(file.type)
                         };
+                        
+                        // Add vectorizationStatus for images per data standard
+                        if (file.type.startsWith('image/')) {
+                            fileMetadata.vectorizationStatus = {
+                                faces: {
+                                    processed: false,
+                                    processedAt: null
+                                },
+                                fullImage: {
+                                    processed: false,
+                                    processedAt: null
+                                }
+                            };
+                            fileMetadata.extractedFaces = [];
+                        }
                         
                         // Generate thumbnail for images
                         try {
@@ -285,9 +300,9 @@ async function saveFileMetadata(metadata) {
         throw new Error('User must be authenticated');
     }
     
-    console.log('💾 saveFileMetadata: Saving to ROOT collection like UI Studio');
-    // Use the same collection structure as UI Studio - root level "files" collection
-    const docRef = doc(db, 'files', metadata.id);
+    console.log('💾 saveFileMetadata: Saving to user-based collection structure');
+    // CRITICAL: Per data-standard-section-1-4.md - All files stored in /users/{userId}/files/{fileId}
+    const docRef = doc(db, 'users', user.uid, 'files', metadata.id);
     await setDoc(docRef, {
         ...metadata,
         serverTimestamp: serverTimestamp()
@@ -314,13 +329,12 @@ export async function getUserFiles(options = {}) {
     }
     
     try {
-        console.log('🔍 getUserFiles: Using ROOT collection path like UI Studio');
+        console.log('🔍 getUserFiles: Using user-based collection structure');
         console.log('🔍 getUserFiles: Current user:', user.uid, user.email);
         
-        // Use the EXACT same query structure as UI Studio
+        // Query user's files from user-based collection per data-standard-section-1-4.md
         const filesQuery = query(
-            collection(db, "files"),
-            where("userId", "==", user.uid),
+            collection(db, "users", user.uid, "files"),
             orderBy("uploadedAt", "desc"),
             limit(pageSize || 10)
         );
@@ -371,10 +385,10 @@ export async function getAllUserFiles() {
     }
     
     try {
-        console.log('🔍 getAllUserFiles: Using ROOT collection like UI Studio');
-        // Use the same collection structure as UI Studio - root level "files" collection
-        const filesRef = collection(db, 'files');
-        const q = query(filesRef, where('userId', '==', user.uid), orderBy('uploadedAt', 'desc'));
+        console.log('🔍 getAllUserFiles: Using user-based collection structure');
+        // Query user's files from user-based collection per data-standard-section-1-4.md
+        const filesRef = collection(db, 'users', user.uid, 'files');
+        const q = query(filesRef, orderBy('uploadedAt', 'desc'));
         const querySnapshot = await getDocs(q);
         
         const files = [];
@@ -408,14 +422,61 @@ export async function deleteFile(fileId, storagePath) {
     }
     
     try {
-        // Delete from Storage
-        const storageRef = ref(storage, storagePath);
-        await deleteObject(storageRef);
+        console.log('🗑️ deleteFile called with:', { fileId, storagePath });
         
-        console.log('🗑️ deleteFile: Deleting from ROOT collection like UI Studio');
-        // Delete from Firestore - use root collection like UI Studio
-        const docRef = doc(db, 'files', fileId);
+        // Get file document first to ensure we have the correct storage path
+        const docRef = doc(db, 'users', user.uid, 'files', fileId);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            throw new Error('File document not found');
+        }
+        
+        const fileData = docSnap.data();
+        console.log('🗑️ File data:', fileData);
+        
+        // Try to get storage path from file data if not provided or invalid
+        let actualStoragePath = storagePath || fileData.storagePath || fileData.path;
+        
+        // If still no path, try to construct from file URL
+        if (!actualStoragePath && fileData.downloadURL) {
+            try {
+                // Extract path from download URL
+                const url = new URL(fileData.downloadURL);
+                const pathMatch = url.pathname.match(/\/o\/(.+?)\?/);
+                if (pathMatch) {
+                    actualStoragePath = decodeURIComponent(pathMatch[1]);
+                }
+            } catch (e) {
+                console.warn('Could not extract path from URL:', e);
+            }
+        }
+        
+        console.log('🗑️ Using storage path:', actualStoragePath);
+        
+        // Delete from Storage if we have a valid path
+        if (actualStoragePath && actualStoragePath !== '') {
+            const storageRef = ref(storage, actualStoragePath);
+            console.log('🗑️ Deleting from storage:', actualStoragePath);
+            await deleteObject(storageRef);
+            console.log('✅ Storage deletion successful');
+        } else {
+            console.warn('⚠️ No valid storage path found, skipping storage deletion');
+        }
+        
+        console.log('🗑️ deleteFile: Deleting from user-based collection');
+        
+        // If the file has extracted faces, we need to clean those up too
+        if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces)) {
+            console.log(`🗑️ Cleaning up ${fileData.extractedFaces.length} extracted faces`);
+            // The faces are stored within the file document, so they'll be deleted
+            // when we delete the document. No separate cleanup needed.
+        }
+        
+        // Delete from Firestore - use user-based collection
         await deleteDoc(docRef);
+        console.log('✅ Firestore deletion successful');
+        
     } catch (error) {
         console.error('Error deleting file:', error);
         throw error;
@@ -424,9 +485,16 @@ export async function deleteFile(fileId, storagePath) {
 
 /**
  * Calculate total storage used by user
- * @returns {Promise<number>} Total bytes used
+ * @returns {Promise<{used: number, total: number, percentage: number}>} Storage usage data
  */
 export async function calculateStorageUsed() {
     const files = await getAllUserFiles();
-    return files.reduce((total, file) => total + (file.fileSize || 0), 0);
+    const used = files.reduce((total, file) => total + (file.fileSize || 0), 0);
+    const total = 10 * 1024 * 1024 * 1024; // 10GB limit
+    
+    return {
+        used,
+        total,
+        percentage: Math.round((used / total) * 100)
+    };
 }

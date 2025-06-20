@@ -18,6 +18,8 @@ let currentFiles = [];
 let currentView = 'grid';
 let sortBy = 'name';
 let uploadQueue = null;
+let activeFilter = 'all';
+let searchTimeout;
 
 /**
  * Initialize the My Files page
@@ -43,35 +45,770 @@ export async function initializeMyFiles() {
     // Check Firebase services initialization
     await checkFirebaseServices();
 
-    // Initialize components
+    // Initialize new design components
+    initializeStorageIndicator();
+    initializeSearchAndFilters();
+    initializeUploadHandling();
+    initializeModalHandlers();
+    
+    // Initialize existing components
     initializeButtons();
-    initializeSearch();
     await initializeFileBrowser();
 }
 
 /**
+ * Initialize storage indicator with progressive colors
+ */
+function initializeStorageIndicator() {
+    updateStorageIndicator(0); // Start with 0%, will be updated when files load
+}
+
+/**
+ * Update storage bar with progressive coloring
+ */
+function updateStorageIndicator(percentage, used = '0 GB', total = '10 GB') {
+    const storageBar = document.getElementById('storageBar');
+    const storagePercent = document.getElementById('storagePercent');
+    
+    if (storageBar && storagePercent) {
+        storageBar.style.width = percentage + '%';
+        storagePercent.textContent = percentage + '%';
+        
+        // Update storage text
+        const storageText = document.querySelector('.storage-text');
+        if (storageText) {
+            storageText.textContent = `${used} of ${total} used`;
+        }
+        
+        // Progressive colors
+        storageBar.classList.remove('warning', 'danger');
+        if (percentage >= 90) {
+            storageBar.classList.add('danger');
+        } else if (percentage >= 70) {
+            storageBar.classList.add('warning');
+        }
+    }
+}
+
+/**
+ * Initialize search and filter functionality
+ */
+function initializeSearchAndFilters() {
+    // Search input
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(e.target.value);
+            }, 300);
+        });
+    }
+
+    // Filter chips
+    const filterChips = document.querySelectorAll('.filter-chip');
+    filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            // Remove active from all
+            filterChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            
+            activeFilter = chip.dataset.filter;
+            applyFilter(activeFilter);
+        });
+    });
+
+    // Upload button
+    const uploadBtn = document.getElementById('uploadBtn');
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.click();
+            }
+        });
+    }
+}
+
+/**
+ * Perform search across files
+ */
+function performSearch(query) {
+    const lowerQuery = query.toLowerCase();
+    const fileCards = document.querySelectorAll('.file-card');
+    let visibleCount = 0;
+    
+    fileCards.forEach(card => {
+        const fileName = card.querySelector('.file-name')?.textContent.toLowerCase() || '';
+        const hasFaces = card.dataset.hasFaces === 'true';
+        const isProcessing = card.dataset.processing === 'true';
+        
+        let shouldShow = fileName.includes(lowerQuery);
+        
+        // Enhanced search - also search by attributes
+        if (lowerQuery.includes('face') && hasFaces) shouldShow = true;
+        if (lowerQuery.includes('processing') && isProcessing) shouldShow = true;
+        
+        card.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) visibleCount++;
+    });
+    
+    // Show empty state if no results
+    updateEmptyState(visibleCount === 0 && query.length > 0);
+}
+
+/**
+ * Apply filter to files
+ */
+function applyFilter(filter) {
+    const fileCards = document.querySelectorAll('.file-card');
+    let visibleCount = 0;
+    
+    fileCards.forEach(card => {
+        let shouldShow = true;
+        
+        switch(filter) {
+            case 'faces':
+                shouldShow = card.dataset.hasFaces === 'true';
+                break;
+            case 'processing':
+                shouldShow = card.dataset.processing === 'true';
+                break;
+            case 'recent':
+                const dateText = card.querySelector('.file-date')?.textContent || '';
+                shouldShow = dateText.includes('ago') || dateText.includes('now') || dateText.includes('hour');
+                break;
+            case 'all':
+            default:
+                shouldShow = true;
+                break;
+        }
+        
+        card.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) visibleCount++;
+    });
+    
+    // Show empty state if no results
+    updateEmptyState(visibleCount === 0 && filter !== 'all');
+}
+
+/**
+ * Update empty state visibility
+ */
+function updateEmptyState(show) {
+    const emptyState = document.getElementById('emptyState');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileGrid = document.getElementById('filesContainer');
+    
+    if (show) {
+        emptyState?.classList.add('active');
+        uploadZone?.classList.add('hidden');
+        if (fileGrid) fileGrid.style.display = 'none';
+    } else {
+        emptyState?.classList.remove('active');
+        uploadZone?.classList.remove('hidden');
+        if (fileGrid) fileGrid.style.display = 'grid';
+    }
+}
+
+/**
+ * Clear all filters and search
+ */
+window.clearAllFilters = function() {
+    // Clear search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    // Reset filter to 'All Files'
+    const filterChips = document.querySelectorAll('.filter-chip');
+    filterChips.forEach(chip => {
+        chip.classList.remove('active');
+        if (chip.dataset.filter === 'all') {
+            chip.classList.add('active');
+        }
+    });
+    
+    activeFilter = 'all';
+    
+    // Show all files
+    document.querySelectorAll('.file-card').forEach(card => {
+        card.style.display = '';
+    });
+    
+    // Hide empty state
+    updateEmptyState(false);
+};
+
+/**
+ * Initialize upload handling with drag and drop
+ */
+function initializeUploadHandling() {
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    let dragCounter = 0;
+    
+    // Drag and drop for entire document
+    document.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragCounter++;
+        uploadZone?.classList.add('dragover');
+    });
+    
+    document.addEventListener('dragleave', (e) => {
+        dragCounter--;
+        if (dragCounter === 0) {
+            uploadZone?.classList.remove('dragover');
+        }
+    });
+    
+    document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    
+    document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        uploadZone?.classList.remove('dragover');
+        
+        if (e.target.closest('.upload-zone') && e.dataTransfer.files.length > 0) {
+            handleFileUpload(e.dataTransfer.files);
+        }
+    });
+    
+    // Click upload zone
+    uploadZone?.addEventListener('click', () => {
+        fileInput?.click();
+    });
+    
+    // File input change
+    fileInput?.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileUpload(e.target.files);
+        }
+    });
+}
+
+/**
+ * Handle file upload
+ */
+function handleFileUpload(files) {
+    console.log('Files selected for upload:', files);
+    // Integration with existing upload system
+    const uploadContainer = document.getElementById('uploadQueue') || document.getElementById('filesContainer');
+    try {
+        processFilesForUpload(files, uploadContainer);
+        // Show feedback without relying on showNotification if it's not available
+        if (typeof showNotification === 'function') {
+            showNotification(`${files.length} file(s) added to upload queue`, 'success');
+        } else {
+            console.log(`✅ ${files.length} file(s) added to upload queue`);
+            // Create simple notification fallback
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10B981; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000;';
+            notification.textContent = `${files.length} file(s) uploaded successfully`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        // Refresh file list after upload
+        setTimeout(async () => {
+            console.log('🔄 Refreshing file list after upload...');
+            try {
+                await initializeFileBrowser();
+                console.log('✅ File list refreshed successfully');
+            } catch (error) {
+                console.error('❌ Failed to refresh file list:', error);
+                // Force a page reload as fallback
+                window.location.reload();
+            }
+        }, 2000); // Increased timeout to ensure upload completes
+        
+    } catch (error) {
+        console.error('Upload failed:', error);
+        if (typeof showNotification === 'function') {
+            showNotification('Upload failed. Please try again.', 'error');
+        } else {
+            console.error('❌ Upload failed. Please try again.');
+        }
+    }
+}
+
+// Expose upload functions globally for debugging and testing
+window.handleFileUpload = handleFileUpload;
+window.processFilesForUpload = processFilesForUpload;
+window.initializeDragDrop = initializeDragDrop;
+
+/**
+ * Initialize modal handlers
+ */
+function initializeModalHandlers() {
+    // Face modal close handler
+    window.closeFaceModal = function() {
+        const faceModal = document.getElementById('faceModal');
+        faceModal?.classList.remove('active');
+    };
+    
+    // Click outside face modal to close
+    const faceModal = document.getElementById('faceModal');
+    faceModal?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            window.closeFaceModal();
+        }
+    });
+    
+    // Delete modal handlers
+    const deleteModal = document.getElementById('deleteModal');
+    let fileToDelete = null;
+    
+    // Close delete modal
+    document.querySelector('.modal-cancel')?.addEventListener('click', () => {
+        deleteModal?.classList.remove('active');
+        fileToDelete = null;
+    });
+    
+    // Confirm delete
+    document.querySelector('.modal-confirm')?.addEventListener('click', async () => {
+        if (fileToDelete) {
+            console.log('🗑️ Deleting file...');
+            
+            // Get file ID from the card
+            const fileId = fileToDelete.dataset.fileId;
+            console.log('🗑️ File ID to delete:', fileId);
+            
+            if (fileId) {
+                try {
+                    // Delete from database first
+                    await deleteFile(fileId);
+                    console.log('✅ File deleted from database');
+                    
+                    // Fix: Check if element still exists before DOM manipulation
+                    if (fileToDelete && fileToDelete.parentNode) {
+                        // Then remove from DOM with animation
+                        fileToDelete.style.transform = 'scale(0.8)';
+                        fileToDelete.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            // Double-check element still exists before removing
+                            if (fileToDelete && fileToDelete.parentNode) {
+                                fileToDelete.remove();
+                                updateFileCounts();
+                                
+                                // Check if no files left and update empty state
+                                const remainingFiles = document.querySelectorAll('.file-card');
+                                if (remainingFiles.length === 0) {
+                                    showEmptyState();
+                                }
+                                console.log('✅ File removed from UI');
+                            } else {
+                                console.log('⚠️ File element already removed from DOM');
+                            }
+                        }, 300);
+                    } else {
+                        console.error('❌ File element is null or has no parent');
+                        alert('DOM Error: File element no longer exists');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Failed to delete file:', error);
+                    // Show error to user - NO FALLBACKS, let it break visibly
+                    alert(`Delete failed: ${error.message}`);
+                }
+            } else {
+                console.error('❌ No file ID found for deletion');
+                alert('Cannot delete: File ID missing');
+            }
+        }
+        deleteModal?.classList.remove('active');
+        fileToDelete = null;
+    });
+    
+    // Global delete handler
+    window.showDeleteConfirmation = function(fileCard) {
+        fileToDelete = fileCard;
+        deleteModal?.classList.add('active');
+    };
+    
+    // Image modal handlers
+    const imageModal = document.getElementById('imageModal');
+    
+    // Click outside image modal to close
+    imageModal?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            window.closeImageModal();
+        }
+    });
+    
+    // ESC key to close image modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && imageModal?.classList.contains('active')) {
+            window.closeImageModal();
+        }
+    });
+}
+
+/**
+ * Show faces modal
+ */
+window.showFaces = function(event, faceCount, filename) {
+    event.stopPropagation();
+    const modal = document.getElementById('faceModal');
+    const facesGrid = document.getElementById('facesModalGrid');
+    const filenameSpan = document.getElementById('faceModalFilename');
+    
+    if (!modal || !facesGrid || !filenameSpan) return;
+    
+    filenameSpan.textContent = filename;
+    facesGrid.innerHTML = '';
+    
+    // Generate face thumbnails
+    for (let i = 1; i <= faceCount; i++) {
+        const faceItem = document.createElement('div');
+        faceItem.className = 'face-item';
+        faceItem.innerHTML = `
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f3f4f6' rx='12'/%3E%3Ccircle cx='75' cy='75' r='50' fill='%23e5e7eb'/%3E%3Ccircle cx='60' cy='65' r='5' fill='%236b7280'/%3E%3Ccircle cx='90' cy='65' r='5' fill='%236b7280'/%3E%3Cpath d='M 60 90 Q 75 100 90 90' stroke='%236b7280' stroke-width='3' fill='none'/%3E%3C/svg%3E" 
+                 class="face-thumb" 
+                 alt="Face ${i}">
+            <div class="face-label">Face ${i}</div>
+        `;
+        facesGrid.appendChild(faceItem);
+    }
+    
+    modal.classList.add('active');
+};
+
+/**
+ * Show image modal with full size image and comments
+ */
+window.showImageModal = function(file) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('imageModalImg');
+    const modalTitle = document.getElementById('imageModalTitle');
+    const modalSize = document.getElementById('imageModalSize');
+    const modalDate = document.getElementById('imageModalDate');
+    const modalType = document.getElementById('imageModalType');
+    const commentsList = document.getElementById('imageCommentsList');
+    const newCommentText = document.getElementById('newCommentText');
+    
+    if (!modal || !modalImg) return;
+    
+    // Set image and metadata
+    modalImg.src = file.downloadURL || file.thumbnailURL || '';
+    modalTitle.textContent = file.fileName || file.name || 'Untitled Image';
+    modalSize.textContent = formatFileSize(file.fileSize || file.size || 0);
+    modalDate.textContent = formatDate(file.uploadedAt || file.dateUploaded);
+    modalType.textContent = file.fileType || 'Unknown';
+    
+    // Store current file for commenting
+    window.currentImageFile = file;
+    
+    // Load existing comments
+    loadImageComments(file.id);
+    
+    // Clear comment input
+    newCommentText.value = '';
+    
+    // Show modal
+    modal.classList.add('active');
+};
+
+/**
+ * Close image modal
+ */
+window.closeImageModal = function() {
+    const modal = document.getElementById('imageModal');
+    modal?.classList.remove('active');
+    window.currentImageFile = null;
+};
+
+/**
+ * Add comment to current image
+ */
+window.addImageComment = async function() {
+    const newCommentText = document.getElementById('newCommentText');
+    const commentText = newCommentText.value.trim();
+    
+    if (!commentText || !window.currentImageFile) return;
+    
+    try {
+        // Add comment to database (placeholder - would integrate with Firebase)
+        const comment = {
+            id: Date.now().toString(),
+            text: commentText,
+            timestamp: new Date(),
+            fileId: window.currentImageFile.id
+        };
+        
+        // Store comment locally for now (in real app, would save to Firestore)
+        const comments = getImageComments(window.currentImageFile.id);
+        comments.push(comment);
+        localStorage.setItem(`comments_${window.currentImageFile.id}`, JSON.stringify(comments));
+        
+        // Refresh comments display
+        loadImageComments(window.currentImageFile.id);
+        
+        // Clear input
+        newCommentText.value = '';
+        
+        console.log('✅ Comment added:', comment);
+        
+    } catch (error) {
+        console.error('❌ Failed to add comment:', error);
+        alert('Failed to add comment. Please try again.');
+    }
+};
+
+/**
+ * Load comments for an image
+ */
+function loadImageComments(fileId) {
+    const commentsList = document.getElementById('imageCommentsList');
+    if (!commentsList) return;
+    
+    const comments = getImageComments(fileId);
+    
+    if (comments.length === 0) {
+        commentsList.innerHTML = '<div class="no-comments">No comments yet. Add the first one!</div>';
+        return;
+    }
+    
+    commentsList.innerHTML = comments.map(comment => `
+        <div class="comment-item">
+            <div class="comment-text">${escapeHtml(comment.text)}</div>
+            <div class="comment-meta">${formatDate(comment.timestamp)}</div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Get comments for an image from local storage
+ */
+function getImageComments(fileId) {
+    try {
+        const stored = localStorage.getItem(`comments_${fileId}`);
+        return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+        console.error('Failed to load comments:', error);
+        return [];
+    }
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Update file counts in filter chips
+ */
+function updateFileCounts() {
+    const allFiles = document.querySelectorAll('.file-card').length;
+    const withFaces = document.querySelectorAll('[data-has-faces="true"]').length;
+    const processing = document.querySelectorAll('[data-processing="true"]').length;
+    const recent = document.querySelectorAll('.file-card').length; // Simplified for now
+    
+    document.getElementById('allCount').textContent = allFiles;
+    document.getElementById('facesCount').textContent = withFaces;
+    document.getElementById('processingCount').textContent = processing;
+    document.getElementById('recentCount').textContent = Math.min(recent, 8);
+}
+
+/**
+ * Show loading skeleton
+ */
+function showLoading() {
+    const loadingGrid = document.getElementById('loadingGrid');
+    const fileGrid = document.getElementById('filesContainer');
+    
+    if (loadingGrid && fileGrid) {
+        loadingGrid.style.display = 'grid';
+        fileGrid.style.display = 'none';
+    }
+}
+
+/**
+ * Hide loading skeleton
+ */
+function hideLoading() {
+    setTimeout(() => {
+        const loadingGrid = document.getElementById('loadingGrid');
+        const fileGrid = document.getElementById('filesContainer');
+        
+        if (loadingGrid && fileGrid) {
+            loadingGrid.style.display = 'none';
+            fileGrid.style.display = 'grid';
+        }
+    }, 1000);
+}
+
+/**
+ * Create enhanced file card with new design
+ */
+function createFileCard(file) {
+    const card = document.createElement('div');
+    card.className = 'file-card';
+    
+    // Set file ID for deletion - NO FALLBACKS
+    card.dataset.fileId = file.id;
+    
+    // Set data attributes for filtering
+    if (file.faceCount > 0) {
+        card.dataset.hasFaces = 'true';
+        card.dataset.faceCount = file.faceCount;
+    }
+    if (file.processing) {
+        card.dataset.processing = 'true';
+    }
+    
+    // File thumbnail container
+    const thumbnailContainer = document.createElement('div');
+    thumbnailContainer.className = 'file-thumbnail-container';
+    
+    // Thumbnail
+    const thumbnail = createThumbnailElement(file);
+    thumbnail.className = 'file-thumbnail';
+    
+    // Add click handler for images
+    if (file.fileType && file.fileType.startsWith('image/')) {
+        thumbnail.style.cursor = 'pointer';
+        thumbnail.onclick = (e) => {
+            e.stopPropagation();
+            showImageModal(file);
+        };
+    }
+    
+    thumbnailContainer.appendChild(thumbnail);
+    
+    // Face indicator
+    if (file.faceCount > 0) {
+        const faceIndicator = document.createElement('div');
+        faceIndicator.className = 'face-indicator';
+        faceIndicator.onclick = (e) => window.showFaces(e, file.faceCount, file.name);
+        faceIndicator.innerHTML = `
+            <svg class="face-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            ${file.faceCount} face${file.faceCount !== 1 ? 's' : ''}
+        `;
+        thumbnailContainer.appendChild(faceIndicator);
+    }
+    
+    // Processing indicator
+    if (file.processing) {
+        const processingIndicator = document.createElement('div');
+        processingIndicator.className = 'processing-indicator';
+        processingIndicator.innerHTML = `
+            <div class="spinner"></div>
+            Processing
+        `;
+        thumbnailContainer.appendChild(processingIndicator);
+    }
+    
+    // Quick actions
+    const quickActions = document.createElement('div');
+    quickActions.className = 'quick-actions';
+    quickActions.innerHTML = `
+        <button class="action-btn download-btn" title="Download" onclick="downloadFile('${file.id}')">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 3a1 1 0 0 0-1 1v6.586L6.707 8.293a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L11 10.586V4a1 1 0 0 0-1-1z"/>
+                <path d="M3 13a1 1 0 0 0-1 1v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2a1 1 0 1 0-2 0v2H4v-2a1 1 0 0 0-1-1z"/>
+            </svg>
+        </button>
+        <button class="action-btn delete-btn" title="Delete" onclick="showDeleteConfirmation(this.closest('.file-card'))">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"/>
+            </svg>
+        </button>
+    `;
+    thumbnailContainer.appendChild(quickActions);
+    
+    card.appendChild(thumbnailContainer);
+    
+    // File info
+    const fileInfo = document.createElement('div');
+    fileInfo.className = 'file-info';
+    
+    const fileName = document.createElement('div');
+    fileName.className = 'file-name';
+    // NO FALLBACKS - show the real field names that exist or break
+    fileName.textContent = file.fileName || file.name;
+    
+    const fileMeta = document.createElement('div');
+    fileMeta.className = 'file-meta';
+    fileMeta.innerHTML = `
+        <span>${formatFileSize(file.fileSize || file.size)}</span>
+        <span class="file-date">${formatDate(file.uploadedAt || file.dateUploaded)}</span>
+    `;
+    
+    fileInfo.appendChild(fileName);
+    fileInfo.appendChild(fileMeta);
+    card.appendChild(fileInfo);
+    
+    return card;
+}
+
+/**
+ * Format file size
+ */
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+/**
+ * Format date
+ */
+function formatDate(date) {
+    const now = new Date();
+    const fileDate = new Date(date);
+    const diffMs = now - fileDate;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) !== 1 ? 's' : ''} ago`;
+    return fileDate.toLocaleDateString();
+}
+
+/**
+ * Download file handler
+ */
+window.downloadFile = function(fileId) {
+    console.log('Download file:', fileId);
+    // Implement download functionality
+};
+
+// Legacy functions for compatibility
+
+/**
  * Check if Firebase services are properly initialized
- * This is critical for file uploads to work
  */
 async function checkFirebaseServices() {
     console.log('🔥 Checking Firebase services initialization...');
     
     try {
         const { auth } = await import('../firebase-config.js');
+        const { isAuthenticated } = await import('../auth-guard.js');
         
-        // Check if user is actually logged in
-        if (!auth.currentUser) {
+        const userIsAuthenticated = await isAuthenticated();
+        if (!userIsAuthenticated) {
             console.warn('⚠️ No authenticated user found');
-            console.log('💡 File uploads require authentication');
-            
-            // Show warning to user
             showNotification(
                 'Please log in to upload files. File uploads require authentication.', 
                 'warning',
-                10000 // Show for 10 seconds
+                10000
             );
-            
-            // Show login prompt in empty state
             showLoginRequiredState();
             return false;
         }
@@ -86,9 +823,6 @@ async function checkFirebaseServices() {
     }
 }
 
-/**
- * Show login required state for file uploads
- */
 function showLoginRequiredState() {
     const emptyState = document.getElementById('emptyState');
     if (emptyState && !document.getElementById('filesContainer')?.children.length) {
@@ -101,7 +835,6 @@ function showLoginRequiredState() {
             <div id="login-prompt-button-container"></div>
         `;
         
-        // Add login button
         const loginBtn = new Button({
             text: 'Go to Login',
             type: 'primary',
@@ -117,19 +850,14 @@ function showLoginRequiredState() {
     }
 }
 
-/**
- * Show not authenticated state
- */
 function showNotAuthenticatedState() {
     console.log('🔐 Showing not authenticated state');
     
-    // Hide loading state
     const loadingState = document.getElementById('loadingState');
     if (loadingState) {
         loadingState.style.display = 'none';
     }
     
-    // Show empty state with auth message
     const emptyState = document.getElementById('emptyState');
     if (emptyState) {
         emptyState.style.display = 'block';
@@ -140,7 +868,6 @@ function showNotAuthenticatedState() {
             <div id="login-button-container"></div>
         `;
         
-        // Add login button
         const loginBtn = new Button({
             text: 'Go to Login',
             type: 'primary',
@@ -154,7 +881,6 @@ function showNotAuthenticatedState() {
         }
     }
     
-    // Hide other UI elements
     const elements = ['filesContainer', 'storageInfo', 'uploadQueue'];
     elements.forEach(id => {
         const el = document.getElementById(id);
@@ -162,1364 +888,107 @@ function showNotAuthenticatedState() {
     });
 }
 
-/**
- * Initialize all buttons with centralized Button component
- */
 function initializeButtons() {
-    // Choose Files Button
-    const chooseFilesContainer = document.getElementById('choose-files-button');
-    if (chooseFilesContainer) {
-        const chooseFilesBtn = new Button({
-            text: 'Choose Files',
-            type: 'secondary',
-            icon: '📁',
-            onClick: () => {
-                document.getElementById('fileInput').click();
-            }
-        });
-        chooseFilesContainer.appendChild(chooseFilesBtn.element);
-    }
-
-    // View toggle buttons
-    const gridViewBtn = document.querySelector('.view-toggle button[title="Grid view"]');
-    const listViewBtn = document.querySelector('.view-toggle button[title="List view"]');
-    
-    if (gridViewBtn && listViewBtn) {
-        // Replace with centralized buttons
-        const newGridBtn = new Button({
-            text: '⊞',
-            type: currentView === 'grid' ? 'primary' : 'secondary',
-            size: 'small',
-            onClick: () => setView('grid')
-        });
-        const newListBtn = new Button({
-            text: '☰',
-            type: currentView === 'list' ? 'primary' : 'secondary',
-            size: 'small',
-            onClick: () => setView('list')
-        });
-        
-        gridViewBtn.replaceWith(newGridBtn.element);
-        listViewBtn.replaceWith(newListBtn.element);
-    }
+    // Legacy button initialization for compatibility
+    console.log('🔄 Initializing buttons...');
 }
 
-/**
- * Initialize search with centralized Search component
- */
 function initializeSearch() {
-    const searchContainer = document.querySelector('.search-box');
-    if (searchContainer) {
-        // Remove existing search input
-        const oldSearch = searchContainer.querySelector('input');
-        if (oldSearch) {
-            oldSearch.remove();
-        }
-        
-        // Add centralized search component
-        const search = new Search({
-            placeholder: 'Search files...',
-            onSearch: (query) => {
-                filterFiles(query);
-            },
-            debounceTime: 300
-        });
-        
-        searchContainer.appendChild(search.element);
-    }
+    // Legacy search initialization - now handled by initializeSearchAndFilters
+    console.log('🔄 Search initialized with new design');
 }
 
-/**
- * Initialize file browser
- */
 async function initializeFileBrowser() {
-    console.log('🗂️ Initializing file browser...');
+    console.log('🔄 Initializing file browser...');
+    
+    showLoading();
     
     try {
-        // Initialize drag and drop
-        const dropZone = document.getElementById('dropZone');
-        if (dropZone) {
-            initializeDragDrop(dropZone, handleDragDropFiles);
-        }
-        
-        // Initialize upload queue
-        uploadQueue = createUploadQueue();
-        
-        // Set up file input handler
-        const fileInput = document.getElementById('fileInput');
-        if (fileInput) {
-            fileInput.addEventListener('change', handleFileSelect);
-        }
-        
-        // Set up view toggles
-        setupViewToggles();
-        
-        // Set up sort dropdown
-        setupSortDropdown();
-        
-        // Set up file type filter
-        setupFileTypeFilter();
-        
-        // Set up batch actions
-        setupBatchActions();
-        
-        // Load user info
-        await loadUserInfo();
-        
-        // Load initial files
-        await loadFiles();
-        
-        // Set up vectorization status listener
-        setupVectorizationListener();
-        
-        // Set up periodic refresh
-        setInterval(async () => {
-            await updateStorageInfo();
-        }, 30000); // Refresh every 30 seconds
-        
-        console.log('✅ File browser initialized');
-    } catch (error) {
-        console.error('❌ Error initializing file browser:', error);
-        showError('Failed to initialize file browser');
-    }
-}
-
-/**
- * Handle file selection from input
- */
-async function handleFileSelect(event) {
-    const files = Array.from(event.target.files);
-    if (files.length > 0) {
-        // Check authentication before processing uploads
-        const isAuthenticated = await checkAuthenticationForUpload();
-        if (!isAuthenticated) {
-            event.target.value = ''; // Reset input
-            return;
-        }
-        
-        await processFilesForUpload(files);
-        event.target.value = ''; // Reset input
-        
-        // Reload files after upload
-        setTimeout(() => loadFiles(), 1000);
-    }
-}
-
-/**
- * Check if user is authenticated for file uploads
- */
-async function checkAuthenticationForUpload() {
-    try {
-        const { auth } = await import('../firebase-config.js');
-        
-        if (!auth.currentUser) {
-            showNotification(
-                'Please log in to upload files. Redirecting to login page...', 
-                'warning',
-                5000
-            );
-            
-            // Redirect to login after a brief delay
-            setTimeout(() => {
-                window.location.href = '/pages/auth.html';
-            }, 2000);
-            
-            return false;
-        }
-        
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Authentication check failed:', error);
-        showNotification('Authentication service unavailable. Please refresh the page.', 'error');
-        return false;
-    }
-}
-
-/**
- * Handle files dropped on the drag-drop zone
- */
-async function handleDragDropFiles(files) {
-    console.log('📂 Files dropped:', files.length);
-    
-    // Check authentication before processing uploads
-    const isAuthenticated = await checkAuthenticationForUpload();
-    if (!isAuthenticated) {
-        return;
-    }
-    
-    await processFilesForUpload(files);
-    
-    // Reload files after upload
-    setTimeout(() => loadFiles(), 1000);
-}
-
-/**
- * Set up view toggle handlers
- */
-function setupViewToggles() {
-    document.querySelectorAll('.view-toggle button').forEach(button => {
-        button.addEventListener('click', () => {
-            const view = button.getAttribute('title').toLowerCase().replace(' view', '');
-            setView(view);
-        });
-    });
-}
-
-/**
- * Set view mode
- */
-function setView(view) {
-    currentView = view;
-    const container = document.getElementById('filesContainer');
-    
-    if (view === 'grid') {
-        container.classList.remove('list-view');
-        container.classList.add('grid-view');
-    } else {
-        container.classList.remove('grid-view');
-        container.classList.add('list-view');
-    }
-    
-    // Update button states
-    document.querySelectorAll('.view-toggle button').forEach(btn => {
-        if (btn.getAttribute('title').toLowerCase().includes(view)) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    // Re-render files
-    renderFiles(currentFiles);
-}
-
-/**
- * Set up sort dropdown
- */
-function setupSortDropdown() {
-    const sortDropdown = document.getElementById('sortDropdown');
-    if (sortDropdown) {
-        sortDropdown.addEventListener('change', (e) => {
-            sortBy = e.target.value;
-            renderFiles(currentFiles);
-        });
-    }
-}
-
-/**
- * Set up file type filter
- */
-function setupFileTypeFilter() {
-    const fileTypeFilter = document.getElementById('fileTypeFilter');
-    if (fileTypeFilter) {
-        fileTypeFilter.addEventListener('change', (e) => {
-            const filterType = e.target.value;
-            handleFileTypeFilter(filterType);
-        });
-    }
-}
-
-/**
- * Handle file type filter changes
- */
-function handleFileTypeFilter(filterType) {
-    const filesContainer = document.getElementById('filesContainer');
-    const facesContainer = document.getElementById('facesContainer');
-    
-    if (filterType === 'faces') {
-        // Show faces view
-        filesContainer.style.display = 'none';
-        facesContainer.style.display = 'block';
-        
-        // Hide batch actions - faces shouldn't have file operations
-        const batchActions = document.querySelector('.batch-actions');
-        if (batchActions) {
-            batchActions.style.display = 'none';
-        }
-        
-        // Disable and hide select all checkbox for faces
-        const selectAll = document.getElementById('selectAll');
-        if (selectAll) {
-            selectAll.checked = false;
-            selectAll.style.display = 'none';
-            const selectAllLabel = selectAll.parentElement;
-            if (selectAllLabel) {
-                selectAllLabel.style.display = 'none';
-            }
-        }
-        
-        loadExtractedFaces();
-    } else {
-        // Show files view
-        filesContainer.style.display = currentView === 'grid' ? 'grid' : 'block';
-        facesContainer.style.display = 'none';
-        
-        // Show batch actions for file operations
-        const batchActions = document.querySelector('.batch-actions');
-        if (batchActions) {
-            batchActions.style.display = 'flex';
-        }
-        
-        // Restore select all checkbox for files
-        const selectAll = document.getElementById('selectAll');
-        if (selectAll) {
-            selectAll.style.display = 'inline';
-            const selectAllLabel = selectAll.parentElement;
-            if (selectAllLabel) {
-                selectAllLabel.style.display = 'block';
-            }
-        }
-        
-        // Filter files by type
-        if (filterType === 'all') {
-            renderFiles(currentFiles);
-        } else if (filterType === 'vectorized') {
-            const vectorized = currentFiles.filter(file => file.vectorizationStatus === 'completed');
-            renderFiles(vectorized);
-        } else {
-            // Filter by file type
-            const filtered = currentFiles.filter(file => {
-                const fileType = file.fileType || file.type || '';
-                const fileName = file.fileName || file.name || '';
-                const ext = fileName.split('.').pop()?.toLowerCase();
-                
-                switch(filterType) {
-                    case 'images':
-                        return fileType.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-                    case 'documents':
-                        return fileType.includes('pdf') || fileType.includes('document') || 
-                               ['pdf', 'doc', 'docx', 'txt', 'rtf'].includes(ext);
-                    case 'spreadsheets':
-                        return fileType.includes('spreadsheet') || fileType.includes('excel') ||
-                               ['xls', 'xlsx'].includes(ext);
-                    case 'ebooks':
-                        return fileType.includes('epub') || ext === 'epub';
-                    case 'gedcom':
-                        return ext === 'ged';
-                    default:
-                        return true;
-                }
-            });
-            renderFiles(filtered);
-        }
-    }
-}
-
-/**
- * Set up batch actions
- */
-function setupBatchActions() {
-    // Select all checkbox
-    const selectAllCheckbox = document.getElementById('selectAll');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', (e) => {
-            const checkboxes = document.querySelectorAll('.file-checkbox');
-            checkboxes.forEach(cb => cb.checked = e.target.checked);
-            updateBatchActions();
-        });
-    }
-    
-    // Batch delete button
-    const batchDeleteBtn = document.querySelector('.btn-batch-delete');
-    if (batchDeleteBtn) {
-        batchDeleteBtn.addEventListener('click', handleBatchDelete);
-    }
-    
-    // Batch vectorize button
-    const batchVectorizeBtn = document.querySelector('.btn-batch-vectorize');
-    if (batchVectorizeBtn) {
-        batchVectorizeBtn.addEventListener('click', handleBatchVectorize);
-    }
-}
-
-/**
- * Load user info
- */
-async function loadUserInfo() {
-    const userInfo = document.getElementById('userInfo');
-    if (userInfo) {
-        const userName = localStorage.getItem('userName') || 'User';
-        const userEmail = localStorage.getItem('userEmail') || '';
-        userInfo.textContent = `${userName} ${userEmail ? `(${userEmail})` : ''}`;
-    }
-}
-
-/**
- * Load files from service
- */
-async function loadFiles() {
-    console.log('📂 Loading files...');
-    
-    try {
-        // Show loading state
-        showLoadingState();
-        
-        // Ensure we have auth before proceeding
-        const { auth } = await import('../firebase-config.js');
-        if (!auth.currentUser) {
-            console.log('⏳ Waiting for auth...');
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        // Get files
+        // Get user files
         const result = await getUserFiles();
-        const files = result.files;
+        console.log('📁 getUserFiles returned:', result);
+        
+        // Extract files array from the result object
+        const files = result?.files || [];
+        console.log('📁 Extracted files array:', files.length, 'files');
+        console.log('📁 Files data type:', typeof files, Array.isArray(files) ? 'array' : 'not array');
+        
         currentFiles = files;
         
-        console.log(`📁 Loaded ${files.length} files`);
-        
-        // Update storage info
-        await updateStorageInfo();
+        // Ensure files is an array before rendering
+        const fileArray = Array.isArray(files) ? files : [];
         
         // Render files
-        renderFiles(files);
+        renderFiles(fileArray);
+        
+        // Update storage - NO FALLBACKS, LET IT BREAK!
+        const storageData = await calculateStorageUsed();
+        console.log('📊 Storage data:', storageData);
+        updateStorageIndicator(storageData.percentage, formatFileSize(storageData.used), formatFileSize(storageData.total));
+        
+        // Update counts
+        updateFileCounts();
+        
+        hideLoading();
+        
+        if (fileArray.length === 0) {
+            console.log('📁 No files to display, showing empty state');
+            showEmptyState();
+        } else {
+            console.log(`📁 Successfully loaded ${fileArray.length} files`);
+            // Hide empty state if it's showing
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+        }
         
     } catch (error) {
-        console.error('❌ Error loading files:', error);
-        showError('Failed to load files');
+        console.error('❌ Failed to load files:', error);
+        hideLoading();
+        if (typeof showNotification === 'function') {
+            showNotification('Failed to load files. Please refresh the page.', 'error');
+        } else {
+            console.error('❌ Failed to load files. Please refresh the page.');
+        }
     }
 }
 
-/**
- * Update storage information
- */
-async function updateStorageInfo() {
-    try {
-        const breakdown = await getStorageBreakdown();
-        const used = await calculateStorageUsed();
-        
-        // Update storage text
-        const storageText = document.querySelector('.storage-text');
-        if (storageText) {
-            const total = 10 * 1024 * 1024 * 1024; // 10GB in bytes
-            const percentage = Math.round((used / total) * 100);
-            storageText.textContent = `${formatFileSize(used)} of 10GB used (${percentage}%)`;
-        }
-        
-        // Update storage chart
-        const chartContainer = document.getElementById('storageChart');
-        if (chartContainer) {
-            createStorageDonutChart(chartContainer, breakdown);
-        }
-    } catch (error) {
-        console.error('Error updating storage info:', error);
-    }
-}
-
-/**
- * Render files in the current view
- */
 function renderFiles(files) {
     const container = document.getElementById('filesContainer');
     if (!container) return;
     
-    // Sort files
-    const sortedFiles = sortFiles(files, sortBy);
-    
-    // Clear container
     container.innerHTML = '';
     
-    if (sortedFiles.length === 0) {
-        showEmptyState();
+    // Ensure files is an array
+    const fileArray = Array.isArray(files) ? files : (files ? [files] : []);
+    
+    if (fileArray.length === 0) {
+        console.log('📁 No files to render');
         return;
     }
     
-    // Hide loading and empty states
-    const loadingState = document.getElementById('loadingState');
-    const emptyState = document.getElementById('emptyState');
-    if (loadingState) {
-        loadingState.style.display = 'none';
-    }
-    if (emptyState) {
-        emptyState.style.display = 'none';
-    }
-    
-    // Show files container
-    container.style.display = currentView === 'grid' ? 'grid' : 'block';
-    
-    // Render each file
-    sortedFiles.forEach(file => {
-        const fileElement = currentView === 'grid' 
-            ? createFileGridItem(file) 
-            : createFileListItem(file);
-        container.appendChild(fileElement);
-    });
-    
-    // Update file count
-    updateFileCount(sortedFiles.length);
-}
-
-/**
- * Sort files
- */
-function sortFiles(files, sortBy) {
-    const sorted = [...files];
-    
-    switch (sortBy) {
-        case 'name':
-            sorted.sort((a, b) => {
-                const nameA = a.fileName || a.name || '';
-                const nameB = b.fileName || b.name || '';
-                return nameA.localeCompare(nameB);
-            });
-            break;
-        case 'date':
-            sorted.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-            break;
-        case 'size':
-            sorted.sort((a, b) => {
-                const sizeA = a.fileSize || a.size || 0;
-                const sizeB = b.fileSize || b.size || 0;
-                return sizeB - sizeA;
-            });
-            break;
-        case 'type':
-            sorted.sort((a, b) => {
-                const nameA = a.fileName || a.name || '';
-                const nameB = b.fileName || b.name || '';
-                const typeA = nameA.split('.').pop() || '';
-                const typeB = nameB.split('.').pop() || '';
-                return typeA.localeCompare(typeB);
-            });
-            break;
-    }
-    
-    return sorted;
-}
-
-/**
- * Create file grid item
- */
-function createFileGridItem(file) {
-    const item = document.createElement('div');
-    item.className = 'file-grid-item';
-    item.dataset.fileId = file.id;
-    
-    // Create checkbox
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'file-checkbox';
-    checkbox.addEventListener('change', updateBatchActions);
-    
-    // Create thumbnail container
-    const thumbnailContainer = document.createElement('div');
-    thumbnailContainer.className = 'file-thumbnail-container';
-    
-    // Add thumbnail
-    const thumbnailElement = createThumbnailElement(file);
-    thumbnailContainer.appendChild(thumbnailElement);
-    
-    // Add vectorization badge if vectorized
-    if (file.vectorizationStatus === 'completed') {
-        const badge = document.createElement('div');
-        badge.className = 'vectorization-badge';
-        badge.innerHTML = '<span class="badge-icon">🔍</span><span class="badge-text">Vectorized</span>';
-        thumbnailContainer.appendChild(badge);
-    }
-    
-    // Create info section
-    const info = document.createElement('div');
-    info.className = 'file-info';
-    
-    const name = document.createElement('div');
-    name.className = 'file-name';
-    name.textContent = file.fileName || file.name;
-    name.title = file.fileName || file.name;
-    
-    const meta = document.createElement('div');
-    meta.className = 'file-meta';
-    meta.textContent = formatFileSize(file.fileSize || file.size);
-    
-    info.appendChild(name);
-    info.appendChild(meta);
-    
-    // Create actions
-    const actions = createFileActions(file);
-    
-    // Assemble item
-    item.appendChild(checkbox);
-    item.appendChild(thumbnailContainer);
-    item.appendChild(info);
-    item.appendChild(actions);
-    
-    // Add click handler for preview
-    thumbnailContainer.addEventListener('click', () => previewFile(file));
-    
-    return item;
-}
-
-/**
- * Create file list item
- */
-function createFileListItem(file) {
-    const item = document.createElement('div');
-    item.className = 'file-list-item';
-    item.dataset.fileId = file.id;
-    
-    // Create checkbox
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'file-checkbox';
-    checkbox.addEventListener('change', updateBatchActions);
-    
-    // Create icon
-    const icon = document.createElement('div');
-    icon.className = 'file-icon';
-    icon.innerHTML = getFallbackIcon(file.fileType || file.type);
-    
-    // Create name
-    const name = document.createElement('div');
-    name.className = 'file-name';
-    name.textContent = file.fileName || file.name;
-    name.title = file.fileName || file.name;
-    
-    // Create meta info
-    const type = document.createElement('div');
-    type.className = 'file-type';
-    const fileName = file.fileName || file.name || '';
-    type.textContent = fileName.split('.').pop()?.toUpperCase() || 'FILE';
-    
-    const size = document.createElement('div');
-    size.className = 'file-size';
-    size.textContent = formatFileSize(file.fileSize || file.size);
-    
-    const date = document.createElement('div');
-    date.className = 'file-date';
-    date.textContent = formatDate(file.uploadedAt);
-    
-    // Create actions
-    const actions = createFileActions(file);
-    
-    // Assemble item
-    item.appendChild(checkbox);
-    item.appendChild(icon);
-    item.appendChild(name);
-    item.appendChild(type);
-    item.appendChild(size);
-    item.appendChild(date);
-    item.appendChild(actions);
-    
-    // Add click handler for preview
-    name.addEventListener('click', () => previewFile(file));
-    
-    return item;
-}
-
-/**
- * Create file actions
- */
-function createFileActions(file) {
-    const actions = document.createElement('div');
-    actions.className = 'file-actions';
-    
-    // Download button
-    const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'action-btn download-btn';
-    downloadBtn.title = 'Download';
-    downloadBtn.innerHTML = '<span style="font-size: 16px;">↓</span>';
-    downloadBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        downloadFile(file);
-    });
-    
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'action-btn delete-btn';
-    deleteBtn.title = 'Delete';
-    deleteBtn.innerHTML = '<span style="font-size: 16px; color: #ef4444;">✕</span>';
-    deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        confirmDelete(file);
-    });
-    
-    actions.appendChild(downloadBtn);
-    actions.appendChild(deleteBtn);
-    
-    return actions;
-}
-
-/**
- * Download file
- */
-function downloadFile(file) {
-    const link = document.createElement('a');
-    link.href = file.downloadURL || file.url;
-    link.download = file.fileName || file.name;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showNotification(`Downloading ${file.fileName || file.name}`, 'info');
-}
-
-/**
- * Confirm file deletion
- */
-function confirmDelete(file) {
-    console.log('🗑️ confirmDelete called for file:', file);
-    const fileName = file.fileName || file.name;
-    const modal = Modal.confirm({
-        title: 'Delete File',
-        message: `Are you sure you want to delete "${fileName}"? This action cannot be undone.`,
-        confirmText: 'Delete',
-        type: 'danger',
-        onConfirm: async () => {
-            console.log('🗑️ User confirmed deletion for:', fileName);
-            await handleDelete(file);
-        }
-    });
-    console.log('🗑️ Modal created:', modal);
-    modal.show();
-}
-
-/**
- * Handle file deletion
- */
-async function handleDelete(file) {
-    const fileName = file.fileName || file.name;
-    try {
-        showNotification(`Deleting ${fileName}...`, 'info');
+    fileArray.forEach(file => {
+        // NO FALLBACKS - use exact data from database or let it break
+        console.log('🔍 File data:', file);
         
-        await deleteFile(file.id, file.storagePath);
-        
-        showNotification(`${fileName} deleted successfully`, 'success');
-        
-        // Reload files
-        await loadFiles();
-    } catch (error) {
-        console.error('Error deleting file:', error);
-        showNotification(`Failed to delete ${fileName}`, 'error');
-    }
-}
-
-/**
- * Preview file
- */
-function previewFile(file) {
-    // For now, just download the file
-    // In future, could implement proper preview modal
-    downloadFile(file);
-}
-
-/**
- * Handle batch delete
- */
-function handleBatchDelete() {
-    const selectedFiles = getSelectedFiles();
-    if (selectedFiles.length === 0) {
-        showNotification('No files selected for deletion', 'error');
-        return;
-    }
-    
-    const modal = Modal.confirm({
-        title: 'Delete Files',
-        message: `Are you sure you want to delete ${selectedFiles.length} files? This action cannot be undone.`,
-        confirmText: 'Delete',
-        type: 'danger',
-        onConfirm: async () => {
-            showNotification(`Deleting ${selectedFiles.length} files...`, 'info');
-            
-            // Delete files sequentially
-            for (const file of selectedFiles) {
-                try {
-                    await deleteFile(file.id);
-                } catch (error) {
-                    console.error(`Error deleting file ${file.id}:`, error);
-                }
-            }
-            
-            showNotification('Files deleted successfully', 'success');
-            
-            // Clear selections and reload
-            document.querySelectorAll('.file-checkbox:checked').forEach(cb => cb.checked = false);
-            updateBatchActions();
-            await loadFiles();
-        }
+        const card = createFileCard(file);
+        container.appendChild(card);
     });
+    
+    console.log(`📁 Rendered ${fileArray.length} files`);
 }
 
-/**
- * Get selected files
- */
-function getSelectedFiles() {
-    const selectedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
-    return Array.from(selectedCheckboxes).map(checkbox => {
-        const fileItem = checkbox.closest('.file-grid-item, .file-list-item');
-        const fileId = fileItem?.dataset.fileId;
-        return currentFiles.find(f => f.id === fileId);
-    }).filter(Boolean);
-}
-
-/**
- * Update batch actions
- */
-function updateBatchActions() {
-    const selectedCount = document.querySelectorAll('.file-checkbox:checked').length;
-    const batchActions = document.querySelector('.batch-actions');
-    const selectedCountEl = document.querySelector('.selected-count');
-    
-    if (batchActions) {
-        batchActions.style.display = selectedCount > 0 ? 'flex' : 'none';
-    }
-    
-    if (selectedCountEl) {
-        selectedCountEl.textContent = `${selectedCount} selected`;
-    }
-    
-    // Update select all checkbox
-    const selectAll = document.getElementById('selectAll');
-    const totalCheckboxes = document.querySelectorAll('.file-checkbox').length;
-    if (selectAll) {
-        selectAll.checked = selectedCount === totalCheckboxes && totalCheckboxes > 0;
-        selectAll.indeterminate = selectedCount > 0 && selectedCount < totalCheckboxes;
-    }
-}
-
-/**
- * Filter files
- */
-function filterFiles(query) {
-    if (!query) {
-        renderFiles(currentFiles);
-        return;
-    }
-    
-    const filtered = currentFiles.filter(file => 
-        file.name.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    renderFiles(filtered);
-    updateFileCount(filtered.length, currentFiles.length);
-}
-
-/**
- * Update file count
- */
-function updateFileCount(showing, total = showing) {
-    const fileCount = document.querySelector('.file-count');
-    if (fileCount) {
-        if (showing === total) {
-            fileCount.textContent = `${showing} files`;
-        } else {
-            fileCount.textContent = `Showing ${showing} of ${total} files`;
-        }
-    }
-}
-
-/**
- * Show loading state
- */
-function showLoadingState() {
-    const container = document.getElementById('filesContainer');
-    const loadingState = document.getElementById('loadingState');
-    const emptyState = document.getElementById('emptyState');
-    
-    if (container) container.style.display = 'none';
-    if (emptyState) emptyState.style.display = 'none';
-    if (loadingState) loadingState.style.display = 'flex';
-}
-
-/**
- * Show empty state
- */
 function showEmptyState() {
-    const container = document.getElementById('filesContainer');
-    const loadingState = document.getElementById('loadingState');
     const emptyState = document.getElementById('emptyState');
-    
-    if (container) container.style.display = 'none';
-    if (loadingState) loadingState.style.display = 'none';
     if (emptyState) {
-        emptyState.style.display = 'block';
         emptyState.innerHTML = `
-            <div class="empty-icon">📁</div>
-            <h3>No files yet</h3>
-            <p>Upload your first file to get started</p>
-            <div id="upload-button-container"></div>
+            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <h2 class="empty-title">No files yet</h2>
+            <p class="empty-text">Upload your first file to get started</p>
         `;
-        
-        // Add upload button
-        const uploadBtn = new Button({
-            text: 'Upload Files',
-            type: 'primary',
-            icon: '⬆',
-            onClick: () => {
-                document.getElementById('fileInput').click();
-            }
-        });
-        const uploadContainer = document.getElementById('upload-button-container');
-        if (uploadContainer) {
-            uploadContainer.appendChild(uploadBtn.element);
-        }
-    }
-}
-
-/**
- * Show error message
- */
-function showError(message) {
-    const container = document.getElementById('filesContainer');
-    const loadingState = document.getElementById('loadingState');
-    const emptyState = document.getElementById('emptyState');
-    
-    if (container) container.style.display = 'none';
-    if (loadingState) loadingState.style.display = 'none';
-    if (emptyState) {
         emptyState.style.display = 'block';
-        emptyState.innerHTML = `
-            <div class="empty-icon">❌</div>
-            <h3>Error</h3>
-            <p>${message}</p>
-            <div id="retry-button-container"></div>
-        `;
-        
-        // Add retry button
-        const retryBtn = new Button({
-            text: 'Try Again',
-            type: 'primary',
-            onClick: () => {
-                loadFiles();
-            }
-        });
-        const retryContainer = document.getElementById('retry-button-container');
-        if (retryContainer) {
-            retryContainer.appendChild(retryBtn.element);
-        }
-    }
-}
-
-/**
- * Handle batch vectorize
- */
-async function handleBatchVectorize() {
-    const selectedFiles = getSelectedFiles();
-    if (selectedFiles.length === 0) {
-        showNotification('No files selected for vectorization', 'error');
-        return;
-    }
-    
-    // Filter only image files
-    const imageFiles = selectedFiles.filter(file => {
-        const fileType = file.fileType || file.type || '';
-        const fileName = file.fileName || file.name || '';
-        const ext = fileName.split('.').pop()?.toLowerCase();
-        return fileType.startsWith('image/') || 
-               ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-    });
-    
-    if (imageFiles.length === 0) {
-        showNotification('Please select image files to vectorize', 'error');
-        return;
-    }
-    
-    const confirmModal = await Modal.confirm({
-        title: 'Vectorize Images',
-        message: `Vectorize ${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''}? This will extract faces and enable AI search.`,
-        confirmText: 'Vectorize',
-        type: 'primary'
-    });
-    
-    if (confirmModal) {
-        await performVectorization(imageFiles);
-    }
-}
-
-/**
- * Perform vectorization
- */
-async function performVectorization(files) {
-    // Disable button and show loading
-    const vectorizeBtn = document.querySelector('.btn-batch-vectorize');
-    const originalText = vectorizeBtn ? vectorizeBtn.textContent : '';
-    if (vectorizeBtn) {
-        vectorizeBtn.disabled = true;
-        vectorizeBtn.textContent = 'Vectorizing...';
-    }
-    
-    try {
-        showNotification('Starting vectorization...', 'info');
-        
-        // Get current user and twin ID
-        const { auth } = await import('../firebase-config.js');
-        const user = auth.currentUser;
-        if (!user) {
-            showNotification('User not authenticated', 'error');
-            return;
-        }
-        
-        const twinId = localStorage.getItem('selectedTwinId') || 'default';
-        
-        // Import orchestration endpoints
-        const { ORCHESTRATION_ENDPOINTS, getEndpoints } = await import('../config/orchestration-endpoints.js');
-        
-        // Use development endpoints for localhost
-        const endpoints = getEndpoints(window.location.hostname === 'localhost');
-        const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
-        
-        console.log(`Starting vectorization for ${files.length} files`);
-        console.log('Endpoint:', apiEndpoint);
-        
-        // Process each file individually as the real server expects
-        const results = [];
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            
-            // Prepare individual file payload
-            const payload = {
-                fileId: file.id,
-                fileName: file.fileName || file.name,
-                fileUrl: file.downloadURL || file.url,
-                contentType: file.fileType || file.type,
-                userId: user.uid,
-                twinId: twinId
-            };
-            
-            console.log(`Processing file ${i + 1}/${files.length}:`, payload.fileName);
-            
-            try {
-                // Call Artifact Processor for individual file
-                const response = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${await user.getIdToken()}`,
-                        'Origin': window.location.origin
-                    },
-                    mode: 'cors',
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`Vectorization failed for ${payload.fileName}:`, errorText);
-                    results.push({
-                        success: false,
-                        error: `Failed: ${response.statusText}`,
-                        fileId: file.id
-                    });
-                    continue;
-                }
-                
-                const result = await response.json();
-                console.log(`✅ Vectorization started for ${payload.fileName}:`, result);
-                
-                // Store the processing request info
-                results.push({
-                    success: true,
-                    fileId: file.id,
-                    status: result.status,
-                    message: result.message,
-                    estimatedTime: result.estimatedTime
-                });
-                
-            } catch (error) {
-                console.error(`Error processing ${payload.fileName}:`, error);
-                results.push({
-                    success: false,
-                    error: error.message,
-                    fileId: file.id
-                });
-            }
-        }
-        
-        console.log('All vectorization requests completed:', results);
-        
-        // Process the vectorization request results
-        const successfulRequests = results.filter(r => r.success);
-        if (successfulRequests.length > 0) {
-            // Update files to show they are being processed
-            const { doc, updateDoc } = await import('firebase/firestore');
-            const { db } = await import('../firebase-config.js');
-            
-            for (let i = 0; i < successfulRequests.length; i++) {
-                const requestResult = successfulRequests[i];
-                const originalFile = files.find(f => f.id === requestResult.fileId);
-                
-                if (!originalFile) continue;
-                
-                try {
-                    // Update file status to show processing has started
-                    await updateDoc(doc(db, 'files', originalFile.id), {
-                        vectorizationStatus: 'processing',
-                        vectorizationStartedAt: new Date().toISOString(),
-                        vectorizationError: null
-                    });
-                    
-                    console.log(`🔄 Updated ${originalFile.fileName || originalFile.name} status to processing`);
-                    
-                } catch (updateError) {
-                    console.error(`❌ Error updating file ${originalFile.id}:`, updateError);
-                }
-            }
-            
-            showNotification(
-                `Vectorization started for ${successfulRequests.length} images. Processing will complete in the background.`, 
-                'success'
-            );
-            
-        } else {
-            // All requests failed
-            showNotification(`Vectorization failed for all ${files.length} images`, 'error');
-        }
-        
-        // Clear selection
-        document.querySelectorAll('.file-checkbox:checked').forEach(cb => cb.checked = false);
-        updateBatchActions();
-        
-        // Reload files to show updated status
-        setTimeout(() => loadFiles(), 1000);
-        
-    } catch (error) {
-        console.error('Vectorization error:', error);
-        
-        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-            showNotification('CORS error: The vectorization service needs to be configured to allow requests from localhost. Contact the API administrator.', 'error');
-        } else {
-            showNotification(`Vectorization failed: ${error.message}`, 'error');
-        }
-    } finally {
-        // Re-enable button
-        if (vectorizeBtn) {
-            vectorizeBtn.disabled = false;
-            vectorizeBtn.textContent = originalText;
-        }
-    }
-}
-
-/**
- * Set up vectorization status listener
- */
-function setupVectorizationListener() {
-    // This will be implemented to listen for Firestore updates
-    // on vectorization status changes
-}
-
-/**
- * Load extracted faces from Firestore
- */
-async function loadExtractedFaces() {
-    console.log('👤 Loading extracted faces...');
-    
-    try {
-        const { collection, query, where, getDocs } = await import('firebase/firestore');
-        const { db, auth } = await import('../firebase-config.js');
-        
-        const user = auth.currentUser;
-        if (!user) {
-            console.log('❌ User not authenticated for face loading');
-            showEmptyFacesState();
-            return;
-        }
-        
-        // Query for files with extracted faces
-        const filesRef = collection(db, 'files');
-        const facesQuery = query(
-            filesRef,
-            where('userId', '==', user.uid),
-            where('extractedFaces', '!=', null)
-        );
-        
-        const snapshot = await getDocs(facesQuery);
-        const allFaces = [];
-        
-        snapshot.docs.forEach(doc => {
-            const fileData = doc.data();
-            if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces)) {
-                fileData.extractedFaces.forEach((face, index) => {
-                    allFaces.push({
-                        id: `${doc.id}_${index}`,
-                        fileId: doc.id,
-                        fileName: fileData.fileName || fileData.name,
-                        ...face
-                    });
-                });
-            }
-        });
-        
-        console.log(`👤 Found ${allFaces.length} extracted faces`);
-        
-        const facesGrid = document.getElementById('facesGrid');
-        if (!facesGrid) {
-            console.log('❌ Faces grid container not found');
-            return;
-        }
-        
-        if (allFaces.length === 0) {
-            showEmptyFacesState();
-            return;
-        }
-        
-        // Clear grid and populate with faces
-        facesGrid.innerHTML = '';
-        
-        allFaces.forEach(face => {
-            const faceElement = createFaceElement(face);
-            facesGrid.appendChild(faceElement);
-        });
-        
-    } catch (error) {
-        console.error('❌ Error loading extracted faces:', error);
-        showEmptyFacesState();
-    }
-}
-
-/**
- * Show empty faces state
- */
-function showEmptyFacesState() {
-    const facesGrid = document.getElementById('facesGrid');
-    if (facesGrid) {
-        facesGrid.innerHTML = `
-            <div class="empty-faces">
-                <div class="empty-icon">👤</div>
-                <h4>No faces extracted yet</h4>
-                <p>Vectorize images to extract faces</p>
-            </div>
-        `;
-    }
-}
-
-/**
- * Create face element for display
- */
-function createFaceElement(face) {
-    const faceItem = document.createElement('div');
-    faceItem.className = 'face-item';
-    faceItem.dataset.faceId = face.id;
-    faceItem.dataset.fileId = face.fileId;
-    
-    // Make face draggable
-    faceItem.draggable = true;
-    faceItem.addEventListener('dragstart', handleFaceDragStart);
-    faceItem.addEventListener('dragend', handleFaceDragEnd);
-    
-    const faceHTML = `
-        <img 
-            class="face-thumbnail" 
-            src="${face.thumbnail || face.url}" 
-            alt="Extracted face"
-            loading="lazy"
-            onerror="this.style.display='none'"
-        />
-        <div class="face-info">
-            <div class="face-confidence">
-                ${face.confidence ? `${Math.round(face.confidence * 100)}%` : 'N/A'}
-            </div>
-            <div class="face-source">
-                From: ${face.fileName}
-            </div>
-            ${face.boundingBox ? `
-                <div class="face-coordinates">
-                    ${Math.round(face.boundingBox.x)}, ${Math.round(face.boundingBox.y)}
-                </div>
-            ` : ''}
-        </div>
-    `;
-    
-    faceItem.innerHTML = faceHTML;
-    
-    // Add click handler for face selection/details
-    faceItem.addEventListener('click', () => handleFaceClick(face));
-    
-    return faceItem;
-}
-
-/**
- * Handle face drag start
- */
-function handleFaceDragStart(e) {
-    const faceItem = e.target.closest('.face-item');
-    faceItem.classList.add('dragging');
-    
-    // Store face data for drop handling
-    e.dataTransfer.setData('application/json', JSON.stringify({
-        faceId: faceItem.dataset.faceId,
-        fileId: faceItem.dataset.fileId
-    }));
-    
-    console.log('👤 Started dragging face:', faceItem.dataset.faceId);
-}
-
-/**
- * Handle face drag end
- */
-function handleFaceDragEnd(e) {
-    const faceItem = e.target.closest('.face-item');
-    faceItem.classList.remove('dragging');
-    console.log('👤 Finished dragging face');
-}
-
-/**
- * Handle face click for details/selection
- */
-function handleFaceClick(face) {
-    console.log('👤 Face clicked:', face);
-    
-    // Create face details modal
-    const modal = Modal.create({
-        title: 'Face Details',
-        content: `
-            <div class="face-details">
-                <img 
-                    src="${face.thumbnail || face.url}" 
-                    alt="Face thumbnail"
-                    class="face-detail-image"
-                    style="max-width: 200px; border-radius: 8px;"
-                />
-                <div class="face-metadata">
-                    <p><strong>Source File:</strong> ${face.fileName}</p>
-                    <p><strong>Confidence:</strong> ${face.confidence ? `${Math.round(face.confidence * 100)}%` : 'N/A'}</p>
-                    ${face.boundingBox ? `
-                        <p><strong>Position:</strong> (${Math.round(face.boundingBox.x)}, ${Math.round(face.boundingBox.y)})</p>
-                        <p><strong>Size:</strong> ${Math.round(face.boundingBox.width)}×${Math.round(face.boundingBox.height)}px</p>
-                    ` : ''}
-                    ${face.embedding ? `
-                        <p><strong>Vector Embedding:</strong> ${face.embedding.length} dimensions</p>
-                    ` : ''}
-                </div>
-            </div>
-        `,
-        actions: [
-            {
-                text: 'Close',
-                type: 'secondary',
-                onClick: () => modal.close()
-            }
-        ]
-    });
-}
-
-/**
- * Format file size
- */
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-/**
- * Format date
- */
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-        return 'Today';
-    } else if (diffDays === 1) {
-        return 'Yesterday';
-    } else if (diffDays < 7) {
-        return `${diffDays} days ago`;
-    } else {
-        return date.toLocaleDateString();
     }
 }

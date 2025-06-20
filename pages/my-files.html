@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/components/button.css">
     <link rel="stylesheet" href="../css/file-management.css">
+    <link rel="stylesheet" href="../css/pages/my-files.css">
     
     <!-- Import map for Firebase -->
     <script type="importmap">
@@ -24,7 +25,6 @@
     }
     </script>
     <link rel="stylesheet" href="../css/components/navigation.css">
-    <link rel="stylesheet" href="../css/pages/my-files.css">
 </head>
 <body>
     <div class="symphony-dashboard">
@@ -33,167 +33,195 @@
 
         <!-- Main Content Wrapper -->
         <div class="main-content-wrapper">
+            <!-- Fixed Header with Storage Indicator -->
+            <div class="fixed-header">
+                <div class="header-content">
+                    <h1 class="page-title">My Files</h1>
+                    <div class="storage-indicator">
+                        <svg class="storage-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z"/>
+                            <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z"/>
+                            <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z"/>
+                        </svg>
+                        <div class="storage-details">
+                            <div class="storage-text">Storage Used</div>
+                            <div class="storage-bar-container">
+                                <div class="storage-bar" id="storageBar"></div>
+                            </div>
+                        </div>
+                        <div class="storage-percent" id="storagePercent">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Controls -->
+            <div class="sticky-controls">
+                <div class="controls-content">
+                    <div class="search-container">
+                        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" class="search-box" placeholder="Search files by name, type, or content..." id="searchInput">
+                    </div>
+                    <div class="quick-filters">
+                        <button class="filter-chip active" data-filter="all">All Files<span class="count" id="allCount">0</span></button>
+                        <button class="filter-chip" data-filter="faces">With Faces<span class="count" id="facesCount">0</span></button>
+                        <button class="filter-chip" data-filter="processing">Processing<span class="count" id="processingCount">0</span></button>
+                        <button class="filter-chip" data-filter="recent">Recent<span class="count" id="recentCount">0</span></button>
+                    </div>
+                    <button class="upload-btn" id="uploadBtn">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 3a1 1 0 0 1 .707.293l3 3a1 1 0 0 1-1.414 1.414L11 6.414V13a1 1 0 1 1-2 0V6.414L7.707 7.707a1 1 0 0 1-1.414-1.414l3-3A1 1 0 0 1 10 3z"/>
+                            <path d="M3 9a1 1 0 0 1 1 1v5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-5a1 1 0 1 1 2 0v5a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-5a1 1 0 0 1 1-1z"/>
+                        </svg>
+                        Upload
+                    </button>
+                </div>
+            </div>
+
             <!-- Main Content -->
             <main class="symphony-content">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <div class="header-left">
-                        <h1>My Files</h1>
-                        <p class="page-subtitle">Manage your documents and media files</p>
-                        <p class="user-info" id="userInfo">
-                            <!-- User info will be inserted here -->
-                        </p>
-                    </div>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <!-- Search component will be inserted here -->
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" id="fileInput" multiple hidden accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.epub,.ged">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p style="font-size: 1.25rem; font-weight: 700; color: #6B46C1; margin-bottom: 8px;">Drop files to upload</p>
+                    <p style="color: #6b7280;">or click to browse from your computer</p>
+                    <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 8px;">Supports JPG, PNG, PDF, DOC up to 50MB</p>
+                </div>
+
+                <!-- Upload Queue -->
+                <div id="uploadQueue" class="upload-queue"></div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <h2 class="empty-title">No files match your filter</h2>
+                    <p class="empty-text">Try adjusting your search or filters to find what you're looking for.</p>
+                    <button class="clear-filters-btn" onclick="clearAllFilters()">Clear filters</button>
+                </div>
+
+                <!-- Loading Skeleton -->
+                <div class="file-grid" id="loadingGrid" style="display: none;">
+                    <div class="skeleton-card">
+                        <div class="skeleton-thumbnail"></div>
+                        <div class="skeleton-info">
+                            <div class="skeleton-text"></div>
+                            <div class="skeleton-text small"></div>
                         </div>
-                        <div class="view-toggle">
-                            <button class="view-btn active" data-view="grid" title="Grid view">
-                                <span>⊞</span>
-                            </button>
-                            <button class="view-btn" data-view="list" title="List view">
-                                <span>☰</span>
-                            </button>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="skeleton-thumbnail"></div>
+                        <div class="skeleton-info">
+                            <div class="skeleton-text"></div>
+                            <div class="skeleton-text small"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="skeleton-thumbnail"></div>
+                        <div class="skeleton-info">
+                            <div class="skeleton-text"></div>
+                            <div class="skeleton-text small"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Upload Section -->
-                <section class="upload-section">
-                    <div class="file-drop-zone" id="dropZone">
-                        <input type="file" id="fileInput" multiple hidden accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.epub,.ged">
-                        <input type="file" id="gedcomInput" accept=".ged" hidden>
-                        <div class="drop-zone-icon">📁</div>
-                        <div class="drop-zone-text">Drag files here or click to browse</div>
-                        <div class="drop-zone-subtext">Supported: Images, Documents, Spreadsheets, Ebooks, GEDCOM files (Max 10MB per file)</div>
-                        <div id="choose-files-button" class="button-placeholder"></div>
-                        <div id="gedcom-import-button" class="button-placeholder"></div>
-                    </div>
-                    
-                    <!-- Upload Queue -->
-                    <div id="uploadQueue" class="upload-queue"></div>
-                </section>
+                <!-- Files Container -->
+                <div id="filesContainer" class="file-grid">
+                    <!-- Files will be dynamically inserted here -->
+                </div>
 
-                <!-- File Browser Section -->
-                <section class="file-browser-section">
-                    <!-- Filter Bar -->
-                    <div class="filter-bar">
-                        <div class="filter-group">
-                            <label for="selectAll">
-                                <input type="checkbox" id="selectAll">
-                                Select All
-                            </label>
-                        </div>
-                        <div class="filter-group">
-                            <label for="fileTypeFilter">Type:</label>
-                            <select id="fileTypeFilter" class="filter-select">
-                                <option value="all">All Files</option>
-                                <option value="images">Images</option>
-                                <option value="documents">Documents</option>
-                                <option value="spreadsheets">Spreadsheets</option>
-                                <option value="ebooks">Ebooks</option>
-                                <option value="gedcom">GEDCOM Files</option>
-                                <option value="vectorized">Vectorized Images</option>
-                                <option value="faces">Extracted Faces</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="sortDropdown">Sort by:</label>
-                            <select id="sortDropdown" class="filter-select">
-                                <option value="name">Name</option>
-                                <option value="date">Date</option>
-                                <option value="size">Size</option>
-                                <option value="type">Type</option>
-                            </select>
-                        </div>
-                        <div class="filter-actions">
-                            <span class="file-count">0 files</span>
-                        </div>
+                <!-- Faces Container -->
+                <div id="facesContainer" class="faces-container" style="display: none;">
+                    <div class="faces-header">
+                        <h3>Extracted Faces</h3>
+                        <p class="faces-subtitle">Faces detected from your vectorized images</p>
                     </div>
+                    <div id="facesGrid" class="faces-grid">
+                        <!-- Face thumbnails will be dynamically inserted here -->
+                    </div>
+                </div>
 
-                    <!-- Batch Actions -->
-                    <div class="batch-actions">
-                        <span class="selected-count">0 selected</span>
-                        <div class="batch-buttons">
-                            <button class="btn btn-primary btn-batch-vectorize">Vectorize Selected</button>
-                            <button class="btn btn-secondary btn-batch-delete">Delete Selected</button>
-                        </div>
-                    </div>
-
-                    <!-- Files Container -->
-                    <div id="filesContainer" class="files-container grid-view">
-                        <!-- Files will be dynamically inserted here -->
-                    </div>
-
-                    <!-- Faces Container -->
-                    <div id="facesContainer" class="faces-container" style="display: none;">
-                        <div class="faces-header">
-                            <h3>Extracted Faces</h3>
-                            <p class="faces-subtitle">Faces detected from your vectorized images</p>
-                        </div>
-                        <div id="facesGrid" class="faces-grid">
-                            <!-- Face thumbnails will be dynamically inserted here -->
-                        </div>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div id="emptyState" class="empty-state">
-                        <div class="empty-icon">📁</div>
-                        <h3>No files yet</h3>
-                        <p>Upload your first file to get started</p>
-                        <div id="upload-button-container"></div>
-                    </div>
-
-                    <!-- Loading State -->
-                    <div id="loadingState" class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <p>Loading your files...</p>
-                    </div>
-                </section>
-
-                <!-- Storage Info Section -->
-                <section id="storageInfo" class="storage-info-section">
-                    <h2>Storage Usage</h2>
-                    <div class="storage-content">
-                        <div class="storage-chart-container">
-                            <div id="storageChart"></div>
-                            <div class="storage-summary">
-                                <div class="storage-text">0 GB of 10 GB used</div>
-                            </div>
-                        </div>
-                        <div class="storage-breakdown">
-                            <h3>Breakdown by Type</h3>
-                            <div class="storage-items">
-                                <div class="storage-item">
-                                    <span class="storage-type">Images</span>
-                                    <span class="storage-size">0 MB</span>
-                                </div>
-                                <div class="storage-item">
-                                    <span class="storage-type">Documents</span>
-                                    <span class="storage-size">0 MB</span>
-                                </div>
-                                <div class="storage-item">
-                                    <span class="storage-type">Spreadsheets</span>
-                                    <span class="storage-size">0 MB</span>
-                                </div>
-                                <div class="storage-item">
-                                    <span class="storage-type">Ebooks</span>
-                                    <span class="storage-size">0 MB</span>
-                                </div>
-                                <div class="storage-item">
-                                    <span class="storage-type">GEDCOM</span>
-                                    <span class="storage-size">0 MB</span>
-                                </div>
-                                <div class="storage-item">
-                                    <span class="storage-type">Other</span>
-                                    <span class="storage-size">0 MB</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                <!-- Loading State -->
+                <div id="loadingState" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Loading your files...</p>
+                </div>
             </main>
+        </div>
+    </div>
+
+    <!-- Face View Modal -->
+    <div class="face-modal" id="faceModal">
+        <div class="face-modal-content">
+            <div class="face-modal-header">
+                <h2 class="face-modal-title">Detected Faces - <span id="faceModalFilename"></span></h2>
+                <button class="face-modal-close" onclick="closeFaceModal()">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="face-modal-body">
+                <div class="faces-grid" id="facesModalGrid">
+                    <!-- Dynamic faces will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <svg class="modal-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <h3 class="modal-title">Delete File?</h3>
+            <p class="modal-text">This action cannot be undone. This will permanently delete the file.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-cancel">Cancel</button>
+                <button class="modal-btn modal-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content image-modal-content">
+            <div class="image-modal-header">
+                <h3 class="modal-title" id="imageModalTitle">Image Title</h3>
+                <button class="modal-close" onclick="closeImageModal()">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="image-modal-body">
+                <div class="image-container">
+                    <img id="imageModalImg" class="modal-image" alt="Full size image">
+                </div>
+                <div class="image-info">
+                    <div class="image-metadata">
+                        <span class="image-size" id="imageModalSize">Size</span>
+                        <span class="image-date" id="imageModalDate">Date</span>
+                        <span class="image-type" id="imageModalType">Type</span>
+                    </div>
+                    <div class="image-comments">
+                        <h4>Comments</h4>
+                        <div class="comments-list" id="imageCommentsList">
+                            <div class="no-comments">No comments yet. Add the first one!</div>
+                        </div>
+                        <div class="add-comment">
+                            <textarea id="newCommentText" placeholder="Add a comment..." rows="3"></textarea>
+                            <button class="btn-primary" onclick="addImageComment()">Add Comment</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
