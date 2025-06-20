@@ -974,11 +974,28 @@ function createFileCard(file) {
     // Set file ID for deletion - NO FALLBACKS
     card.dataset.fileId = file.id;
     
+    // Prevent card click from interfering with child elements
+    card.addEventListener('click', (e) => {
+        // Only allow clicks on interactive elements
+        const isInteractive = 
+            e.target.classList.contains('file-checkbox') ||
+            e.target.closest('.file-checkbox') ||
+            e.target.closest('.quick-actions') ||
+            e.target.closest('.face-indicator') ||
+            e.target.classList.contains('file-thumbnail');
+        
+        if (!isInteractive) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+    
     // Add checkbox for selection
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'file-checkbox';
     checkbox.addEventListener('change', (e) => {
+        e.stopPropagation();
         if (e.target.checked) {
             window.selectedFiles.add(file.id);
             card.classList.add('selected');
@@ -987,6 +1004,9 @@ function createFileCard(file) {
             card.classList.remove('selected');
         }
         updateBatchActionsVisibility();
+    });
+    checkbox.addEventListener('click', (e) => {
+        e.stopPropagation();
     });
     card.appendChild(checkbox);
     
@@ -1011,7 +1031,9 @@ function createFileCard(file) {
     if (file.fileType && file.fileType.startsWith('image/')) {
         thumbnail.style.cursor = 'pointer';
         thumbnail.onclick = (e) => {
+            e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             showImageModal(file);
         };
     }
