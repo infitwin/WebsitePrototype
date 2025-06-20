@@ -772,115 +772,74 @@ async function performVectorization(fileIds) {
         try {
             const { getEndpoints } = await import('../config/orchestration-endpoints.js');
             endpoints = getEndpoints(false); // Always use production endpoints
+            // Try webhook endpoint which is the main endpoint per documentation
+            endpoints.ARTIFACT_PROCESSOR = endpoints.ARTIFACT_PROCESSOR.replace('/process-image', '/process-webhook');
         } catch (error) {
             console.warn('⚠️ ORCHESTRATION_ENDPOINTS not loaded, using fallback');
             endpoints = {
-                ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image'
+                ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-webhook'
             };
         }
         
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // Prepare V1 payload format
-        const payload = {
-            files: files.map(file => ({
+        // Use correct V1 format from Artifact Processor documentation
+        // Process each file individually (V1 processes one file per request)
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            const payload = {
                 fileId: file.id,
-                downloadURL: file.downloadURL || file.url,
-                userId: user.uid,
-                twinId: twinId
-            })),
-            processType: "vectorize-photos"
-        };
-        
-        console.log('V1 Vectorization payload:', payload);
-        console.log('V1 Endpoint:', apiEndpoint);
-        
-        // Call Artifact Processor with V1 format and authentication
-        const response = await fetch(apiEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await user.getIdToken()}`,
-                'Origin': window.location.origin
-            },
-            mode: 'cors',
-            body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('V1 Vectorization response error:', errorText);
-            throw new Error(`Vectorization failed: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ V1 Vectorization result:', result);
-        
-        // Process the V1 vectorization results
-        if (result.success && result.results && Array.isArray(result.results)) {
-            let totalFacesExtracted = 0;
+                fileName: file.fileName || file.name,
+                fileUrl: file.downloadURL,
+                contentType: file.fileType || 'image/jpeg',
+                userId: user.uid
+            };
             
-            // Update each file with vectorization results
-            for (let i = 0; i < result.results.length; i++) {
-                const fileResult = result.results[i];
-                const originalFile = files[i];
-                
-                if (!originalFile) continue;
-                
-                try {
-                    // Update Firebase with V1 format
-                    await window.updateFileVectorizationStatus(originalFile.id, fileResult);
-                    
-                    // Update UI with V1 format
-                    window.updateFileVectorizationUI(originalFile.id, fileResult);
-                    
-                    if (fileResult.faces && Array.isArray(fileResult.faces)) {
-                        totalFacesExtracted += fileResult.faces.length;
-                        console.log(`👤 Extracted ${fileResult.faces.length} faces from ${originalFile.fileName}`);
-                    }
-                    
-                } catch (updateError) {
-                    console.error(`❌ Error updating file ${originalFile.id}:`, updateError);
-                }
+            console.log('V1 Vectorization payload:', payload);
+            console.log('V1 Endpoint:', apiEndpoint);
+            
+            // Call Artifact Processor with correct V1 format
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // No Authorization header needed for this endpoint
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`❌ V1 API error for ${file.fileName}:`, errorText);
+                continue; // Skip this file and continue with others
             }
             
-            showNotification(
-                `Vectorization completed! Extracted ${totalFacesExtracted} faces from ${files.length} images`, 
-                'success'
-            );
+            const result = await response.json();
+            console.log(`✅ V1 result for ${file.fileName}:`, result);
             
-        } else {
-            // Fallback: mark as processing (for async processing)
-            showNotification(`Vectorization started for ${files.length} images`, 'info');
-            
-            for (const file of files) {
-                try {
-                    // Mark as processing
-                    await window.updateFileVectorizationStatus(file.id, { 
-                        success: false, 
-                        processing: true,
-                        faces: []
-                    });
-                } catch (updateError) {
-                    console.error('Error updating file status:', updateError);
+            // Update Firebase and UI with result
+            try {
+                await window.updateFileVectorizationStatus(file.id, result);
+                window.updateFileVectorizationUI(file.id, result);
+                
+                if (result.faces && Array.isArray(result.faces)) {
+                    console.log(`👤 Extracted ${result.faces.length} faces from ${file.fileName}`);
                 }
+            } catch (updateError) {
+                console.error(`❌ Error updating ${file.fileName}:`, updateError);
             }
         }
         
-        // Clear selection
+        showNotification(`Vectorization completed for ${files.length} files`, 'success');
+        
+        // Clear selection and refresh
         clearFileSelection();
-        
-        // Refresh file list to show updated data
         await initializeFileBrowser();
         
     } catch (error) {
         console.error('❌ V1 Vectorization error:', error);
-        
-        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-            showNotification('CORS error: The vectorization service needs authentication headers. Trying again...', 'error');
-        } else {
-            showNotification(`Vectorization failed: ${error.message}`, 'error');
-        }
+        showNotification(`Vectorization failed: ${error.message}`, 'error');
     } finally {
         // Re-enable button
         if (vectorizeBtn) {
