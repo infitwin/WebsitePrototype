@@ -1279,6 +1279,7 @@ async function initializeFileBrowser() {
         console.log('📁 Files data type:', typeof files, Array.isArray(files) ? 'array' : 'not array');
         
         currentFiles = files;
+        window.currentFiles = files; // Make available to vectorization handler
         
         // Ensure files is an array before rendering
         const fileArray = Array.isArray(files) ? files : [];
