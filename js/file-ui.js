@@ -38,10 +38,18 @@ export function initializeDragDrop(dropZone, onFilesSelected) {
     // Handle dropped files
     dropZone.addEventListener('drop', (e) => handleDrop(e, onFilesSelected), false);
     
-    // Handle click to browse
+    // Handle click to browse - but avoid double-triggering
     const fileInput = dropZone.querySelector('input[type="file"]');
     if (fileInput) {
-        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('click', (e) => {
+            // Only trigger if clicking on the drop zone itself, not buttons
+            if (e.target === dropZone || e.target.closest('.drop-zone-icon, .drop-zone-text, .drop-zone-subtext')) {
+                fileInput.click();
+            }
+        });
+        // Remove this change handler - it's already handled in my-files.js
+        // This was causing duplicate processing
+        /*
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 const files = Array.from(e.target.files);
@@ -86,6 +94,7 @@ export function initializeDragDrop(dropZone, onFilesSelected) {
                 onFilesSelected(files);
             }
         });
+        */
     }
 }
 
@@ -354,7 +363,7 @@ function updateQueueCount(queue) {
 // Helper functions
 
 function getFileIcon(mimeType) {
-    if (mimeType.startsWith('image/')) return '🖼️';
+    if (mimeType.startsWith('image/')) return ''; // NO FALLBACK for images
     if (mimeType.includes('pdf')) return '📄';
     if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
     if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';

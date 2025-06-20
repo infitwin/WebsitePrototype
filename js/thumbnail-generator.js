@@ -204,7 +204,7 @@ function getFileType(file) {
  */
 export function getFallbackIcon(mimeType) {
     if (!mimeType || typeof mimeType !== 'string') return '📄'; // Default fallback
-    if (mimeType.startsWith('image/')) return '🖼️'; // Image files
+    if (mimeType.startsWith('image/')) return ''; // NO FALLBACK for images
     if (mimeType.includes('pdf')) return '📄';
     if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
     if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
@@ -235,9 +235,9 @@ export function createThumbnailElement(file) {
         img.className = 'thumbnail-image';
         img.loading = 'lazy'; // Lazy loading for performance
         
-        // Add error fallback
+        // NO FALLBACK - just hide if image fails
         img.onerror = function() {
-            container.innerHTML = `<div class="thumbnail-fallback">${getFallbackIcon(fileType)}</div>`;
+            img.style.display = 'none';
         };
         
         container.appendChild(img);
@@ -249,18 +249,15 @@ export function createThumbnailElement(file) {
         img.className = 'thumbnail-image';
         img.loading = 'lazy'; // Lazy loading for performance
         
-        // Add error fallback
+        // NO FALLBACK - just hide if image fails
         img.onerror = function() {
-            container.innerHTML = `<div class="thumbnail-fallback">${getFallbackIcon(fileType)}</div>`;
+            img.style.display = 'none';
         };
         
         container.appendChild(img);
     } else {
-        // Show fallback icon
-        const icon = document.createElement('div');
-        icon.className = 'thumbnail-fallback';
-        icon.textContent = getFallbackIcon(fileType);
-        container.appendChild(icon);
+        // NO FALLBACK - just return empty container
+        // This will show nothing if no thumbnail is available
     }
 
     return container;

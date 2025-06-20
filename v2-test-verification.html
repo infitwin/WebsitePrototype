@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2 Control Visual Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .node {
+            width: 60px;
+            height: 60px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .node:hover {
+            transform: scale(1.1);
+            background: #45a049;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #1976D2;
+        }
+        
+        .beautify-btn {
+            background: #FF9800;
+        }
+        
+        .beautify-btn:hover {
+            background: #F57C00;
+        }
+        
+        .log-area {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .test-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status-pass {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>V2 Control Visual Verification Test</h1>
+    
+    <div class="test-container">
+        <!-- V1 Container -->
+        <div class="panel" id="v1-container">
+            <h2>V1 Controls (Reference)</h2>
+            <div class="nodes-container">
+                <div class="node" data-node="1">A</div>
+                <div class="node" data-node="2">B</div>
+                <div class="node" data-node="3">C</div>
+                <div class="node" data-node="4">D</div>
+            </div>
+            <div class="controls">
+                <button class="beautify-btn" onclick="beautifyV1()">Beautify</button>
+                <button onclick="resetV1()">Reset</button>
+                <button onclick="addNodeV1()">Add Node</button>
+            </div>
+            <div class="log-area" id="v1-log"></div>
+        </div>
+        
+        <!-- V2 Container -->
+        <div class="panel" id="v2-container">
+            <h2>V2 Controls (Testing)</h2>
+            <div class="nodes-container">
+                <div class="node" data-node="1">A</div>
+                <div class="node" data-node="2">B</div>
+                <div class="node" data-node="3">C</div>
+                <div class="node" data-node="4">D</div>
+            </div>
+            <div class="controls">
+                <button class="beautify-btn" onclick="beautifyV2()">Beautify</button>
+                <button onclick="resetV2()">Reset</button>
+                <button onclick="addNodeV2()">Add Node</button>
+            </div>
+            <div class="log-area" id="v2-log"></div>
+        </div>
+    </div>
+    
+    <div class="test-status" id="test-status">
+        <h3>Test Results:</h3>
+        <ul id="test-results"></ul>
+    </div>
+
+    <script>
+        // Logging function
+        function log(container, message) {
+            const logArea = document.getElementById(container + '-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.innerHTML += `[${timestamp}] ${message}<br>`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(`[${container}] ${message}`);
+        }
+        
+        // V1 Functions (Working Reference)
+        function beautifyV1() {
+            log('v1', 'Beautify clicked');
+            const nodes = document.querySelectorAll('#v1-container .node');
+            nodes.forEach((node, index) => {
+                const angle = (index * 360 / nodes.length) * Math.PI / 180;
+                const radius = 100;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                node.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        }
+        
+        function resetV1() {
+            log('v1', 'Reset clicked');
+            const nodes = document.querySelectorAll('#v1-container .node');
+            nodes.forEach(node => {
+                node.style.transform = 'translate(0, 0)';
+            });
+        }
+        
+        function addNodeV1() {
+            log('v1', 'Add Node clicked');
+            const container = document.querySelector('#v1-container .nodes-container');
+            const newNode = document.createElement('div');
+            newNode.className = 'node';
+            newNode.textContent = String.fromCharCode(65 + container.children.length);
+            newNode.dataset.node = container.children.length + 1;
+            container.appendChild(newNode);
+            attachV1Handlers(newNode);
+        }
+        
+        // V2 Functions (Testing)
+        function beautifyV2() {
+            log('v2', 'Beautify clicked');
+            const nodes = document.querySelectorAll('#v2-container .node');
+            nodes.forEach((node, index) => {
+                const angle = (index * 360 / nodes.length) * Math.PI / 180;
+                const radius = 100;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                node.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        }
+        
+        function resetV2() {
+            log('v2', 'Reset clicked');
+            const nodes = document.querySelectorAll('#v2-container .node');
+            nodes.forEach(node => {
+                node.style.transform = 'translate(0, 0)';
+            });
+        }
+        
+        function addNodeV2() {
+            log('v2', 'Add Node clicked');
+            const container = document.querySelector('#v2-container .nodes-container');
+            const newNode = document.createElement('div');
+            newNode.className = 'node';
+            newNode.textContent = String.fromCharCode(65 + container.children.length);
+            newNode.dataset.node = container.children.length + 1;
+            container.appendChild(newNode);
+            attachV2Handlers(newNode);
+        }
+        
+        // Attach event handlers
+        function attachV1Handlers(node) {
+            node.addEventListener('mouseenter', () => {
+                log('v1', `Hover enter: Node ${node.textContent}`);
+            });
+            node.addEventListener('mouseleave', () => {
+                log('v1', `Hover leave: Node ${node.textContent}`);
+            });
+            node.addEventListener('click', () => {
+                log('v1', `Click: Node ${node.textContent}`);
+            });
+        }
+        
+        function attachV2Handlers(node) {
+            node.addEventListener('mouseenter', () => {
+                log('v2', `Hover enter: Node ${node.textContent}`);
+            });
+            node.addEventListener('mouseleave', () => {
+                log('v2', `Hover leave: Node ${node.textContent}`);
+            });
+            node.addEventListener('click', () => {
+                log('v2', `Click: Node ${node.textContent}`);
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attach handlers to existing nodes
+            document.querySelectorAll('#v1-container .node').forEach(attachV1Handlers);
+            document.querySelectorAll('#v2-container .node').forEach(attachV2Handlers);
+            
+            // Run visual tests
+            runVisualTests();
+        });
+        
+        function runVisualTests() {
+            const results = [];
+            const testResults = document.getElementById('test-results');
+            
+            // Test 1: Check if controls exist
+            const v1Controls = document.querySelectorAll('#v1-container button').length;
+            const v2Controls = document.querySelectorAll('#v2-container button').length;
+            results.push({
+                test: 'Control count match',
+                pass: v1Controls === v2Controls,
+                details: `V1: ${v1Controls} controls, V2: ${v2Controls} controls`
+            });
+            
+            // Test 2: Check control sizes
+            const v1Beautify = document.querySelector('#v1-container .beautify-btn');
+            const v2Beautify = document.querySelector('#v2-container .beautify-btn');
+            if (v1Beautify && v2Beautify) {
+                const v1Rect = v1Beautify.getBoundingClientRect();
+                const v2Rect = v2Beautify.getBoundingClientRect();
+                results.push({
+                    test: 'Beautify button size match',
+                    pass: Math.abs(v1Rect.width - v2Rect.width) < 2 && Math.abs(v1Rect.height - v2Rect.height) < 2,
+                    details: `V1: ${v1Rect.width}x${v1Rect.height}, V2: ${v2Rect.width}x${v2Rect.height}`
+                });
+            }
+            
+            // Test 3: Check hover styles
+            const v1Node = document.querySelector('#v1-container .node');
+            const v2Node = document.querySelector('#v2-container .node');
+            if (v1Node && v2Node) {
+                const v1Style = window.getComputedStyle(v1Node);
+                const v2Style = window.getComputedStyle(v2Node);
+                results.push({
+                    test: 'Node styles match',
+                    pass: v1Style.width === v2Style.width && v1Style.height === v2Style.height,
+                    details: `V1: ${v1Style.width}x${v1Style.height}, V2: ${v2Style.width}x${v2Style.height}`
+                });
+            }
+            
+            // Display results
+            testResults.innerHTML = results.map(result => 
+                `<li style="color: ${result.pass ? 'green' : 'red'}">
+                    ${result.pass ? '✓' : '✗'} ${result.test}: ${result.details}
+                </li>`
+            ).join('');
+            
+            const allPassed = results.every(r => r.pass);
+            const statusDiv = document.getElementById('test-status');
+            statusDiv.className = 'test-status ' + (allPassed ? 'status-pass' : 'status-fail');
+            
+            // Log to console for debugging
+            console.log('Visual Test Results:', results);
+        }
+    </script>
+</body>
+</html>

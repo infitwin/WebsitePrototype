@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Firestore</title>
+</head>
+<body>
+    <h1>Checking Firestore...</h1>
+    <div id="output"></div>
+    
+    <script type="module">
+        import { getUserFiles } from './js/file-service.js';
+        import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { db, auth } from './js/firebase-config.js';
+        
+        const output = document.getElementById('output');
+        
+        async function checkFirestore() {
+            try {
+                output.innerHTML += '<p>Starting check...</p>';
+                
+                // Check auth state
+                output.innerHTML += `<p>Current user: ${auth.currentUser ? auth.currentUser.email : 'Not logged in'}</p>`;
+                
+                if (!auth.currentUser) {
+                    output.innerHTML += '<p style="color: red;">Not logged in! Please log in first.</p>';
+                    return;
+                }
+                
+                // Wait for auth
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const user = auth.currentUser;
+                output.innerHTML += `<p>User: ${user.email} (${user.uid})</p>`;
+                
+                // Check files using getUserFiles
+                const result = await getUserFiles();
+                output.innerHTML += `<h2>getUserFiles() returned ${result.files.length} files:</h2>`;
+                result.files.forEach(file => {
+                    output.innerHTML += `<p>- ${file.fileName}: ${file.id}</p>`;
+                });
+                
+                // Direct Firestore query
+                const filesRef = collection(db, 'users', user.uid, 'files');
+                const snapshot = await getDocs(filesRef);
+                output.innerHTML += `<h2>Direct Firestore query found ${snapshot.size} documents:</h2>`;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    output.innerHTML += `<p>- Doc ID: ${doc.id}, Name: ${data.fileName}</p>`;
+                });
+                
+                // Check localStorage
+                output.innerHTML += `<h2>LocalStorage items:</h2>`;
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.includes('file') || key.includes('cache')) {
+                        output.innerHTML += `<p>- ${key}: ${localStorage.getItem(key).substring(0, 100)}...</p>`;
+                    }
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        checkFirestore();
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Vectorization</title>
+</head>
+<body>
+    <h1>Debug Vectorization</h1>
+    <button onclick="testVectorization()">Test Vectorization</button>
+    <div id="output"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBq8p9-r9RG59qFlQZyFSrn3NMpXLKqSbU",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "68550017248",
+            appId: "1:68550017248:web:bc3e07c12a8e23f2b60a0f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Auto-login and check for extracted faces
+        async function initialize() {
+            try {
+                await signInWithEmailAndPassword(auth, 'weezer@yev.com', '123456');
+                console.log('Logged in successfully');
+                
+                // Check for files with extracted faces
+                const user = auth.currentUser;
+                const filesRef = collection(db, 'users', user.uid, 'files');
+                const facesQuery = query(filesRef, where('extractedFaces', '!=', null));
+                
+                const snapshot = await getDocs(facesQuery);
+                
+                document.getElementById('output').innerHTML = `
+                    <h2>Found ${snapshot.docs.length} files with extracted faces</h2>
+                    <pre>${JSON.stringify(snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        data: doc.data()
+                    })), null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        window.testVectorization = async function() {
+            const testPayload = {
+                fileId: 'test_' + Date.now(),
+                fileName: 'test-image.jpg',
+                fileUrl: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/4AD/2Q==',
+                contentType: 'image/jpeg',
+                userId: auth.currentUser.uid,
+                twinId: 'test_twin'
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/process-webhook', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testPayload)
+                });
+
+                const result = await response.json();
+                console.log('Vectorization result:', result);
+                
+                document.getElementById('output').innerHTML += `
+                    <h3>Vectorization Test Result:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Vectorization error:', error);
+                document.getElementById('output').innerHTML += `
+                    <h3>Vectorization Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        };
+
+        // Initialize on page load
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>

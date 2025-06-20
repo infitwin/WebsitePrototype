@@ -15,7 +15,7 @@ const ORCHESTRATION_ENDPOINTS = {
   
   // REST API endpoints
   STATE_MANAGER: 'https://interview-session-manager-833139648849.us-central1.run.app/api/interview/state',
-  ARTIFACT_PROCESSOR: 'https://artifactprocessor-833139648849.us-central1.run.app/process-webhook',
+  ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image',
   
   // Development endpoints (for local testing)
   DEV: {
@@ -23,7 +23,7 @@ const ORCHESTRATION_ENDPOINTS = {
     ORCHESTRATOR_WS: 'ws://localhost:8000/ws',
     AUDIO_WS: 'ws://localhost:8001/audio/ws',
     STATE_MANAGER: 'http://localhost:8000/api/interview/state',
-    ARTIFACT_PROCESSOR: 'http://localhost:8000/process-webhook'
+    ARTIFACT_PROCESSOR: 'http://localhost:5000/process-webhook'
   }
 };
 

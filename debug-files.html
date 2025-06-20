@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Files</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f0f0f0; padding: 10px; overflow: auto; max-height: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Debug Files Analysis</h1>
+    <div id="output"></div>
+    
+    <script type="module">
+        const output = document.getElementById('output');
+        
+        function addSection(title, content, type = 'normal') {
+            const section = document.createElement('div');
+            section.className = 'section';
+            section.innerHTML = `
+                <h3 class="${type}">${title}</h3>
+                <div>${content}</div>
+            `;
+            output.appendChild(section);
+        }
+        
+        async function debugFiles() {
+            try {
+                // Check authentication
+                const { auth } = await import('./js/firebase-config.js');
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for auth
+                
+                if (!auth.currentUser) {
+                    addSection('Authentication', 'Not logged in! Please log in first.', 'error');
+                    return;
+                }
+                
+                addSection('User Info', `Logged in as: ${auth.currentUser.email} (${auth.currentUser.uid})`, 'success');
+                
+                // Check Firestore data
+                const { getUserFiles } = await import('./js/file-service.js');
+                const { db } = await import('./js/firebase-config.js');
+                
+                // Import Firestore functions
+                const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const { collection, getDocs } = firestoreModule;
+                
+                // Get files via getUserFiles function
+                const result = await getUserFiles();
+                addSection('getUserFiles() Result', `
+                    <p>Returned ${result.files.length} files</p>
+                    <pre>${JSON.stringify(result.files, null, 2)}</pre>
+                `);
+                
+                // Direct Firestore query
+                const filesRef = collection(db, 'users', auth.currentUser.uid, 'files');
+                const snapshot = await getDocs(filesRef);
+                addSection('Direct Firestore Query', `
+                    <p>Found ${snapshot.size} documents in /users/${auth.currentUser.uid}/files</p>
+                    ${snapshot.size > 0 ? `<pre>${JSON.stringify(snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})), null, 2)}</pre>` : '<p>No documents found</p>'}
+                `);
+                
+                // Check what's in DOM
+                const filesContainer = document.querySelector('#filesContainer');
+                const facesContainer = document.querySelector('#facesContainer');
+                
+                if (filesContainer) {
+                    const fileItems = filesContainer.querySelectorAll('.file-grid-item, .file-list-item');
+                    addSection('DOM - Files Container', `
+                        <p>Found ${fileItems.length} file items in DOM</p>
+                        ${fileItems.length > 0 ? `<pre>${Array.from(fileItems).map((item, i) => `Item ${i}: ${item.outerHTML.substring(0, 200)}...`).join('\\n\\n')}</pre>` : '<p>No file items in DOM</p>'}
+                    `);
+                } else {
+                    addSection('DOM - Files Container', 'Files container not found in DOM', 'error');
+                }
+                
+                if (facesContainer) {
+                    const faceItems = facesContainer.querySelectorAll('.face-item');
+                    addSection('DOM - Faces Container', `
+                        <p>Found ${faceItems.length} face items in DOM</p>
+                        ${faceItems.length > 0 ? `<pre>${Array.from(faceItems).map((item, i) => `Face ${i}: ${item.outerHTML.substring(0, 200)}...`).join('\\n\\n')}</pre>` : '<p>No face items in DOM</p>'}
+                    `);
+                } else {
+                    addSection('DOM - Faces Container', 'Faces container not found in DOM', 'error');
+                }
+                
+                // Check localStorage
+                const localStorageItems = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.includes('file') || key.includes('cache') || key.includes('firebase')) {
+                        localStorageItems.push(`${key}: ${localStorage.getItem(key).substring(0, 100)}...`);
+                    }
+                }
+                addSection('LocalStorage', localStorageItems.length > 0 ? 
+                    `<pre>${localStorageItems.join('\\n')}</pre>` : 
+                    'No relevant localStorage items found'
+                );
+                
+                // Check what's visible on screen
+                const allImages = document.querySelectorAll('img');
+                const allIcons = document.querySelectorAll('[class*="icon"], [class*="emoji"]');
+                const allThumbnails = document.querySelectorAll('[class*="thumbnail"]');
+                
+                addSection('Page Elements', `
+                    <p>Images on page: ${allImages.length}</p>
+                    <p>Icon elements: ${allIcons.length}</p>
+                    <p>Thumbnail elements: ${allThumbnails.length}</p>
+                    ${allThumbnails.length > 0 ? `<h4>Thumbnail elements:</h4><pre>${Array.from(allThumbnails).map((el, i) => `${i}: ${el.outerHTML.substring(0, 150)}...`).join('\\n')}</pre>` : ''}
+                `);
+                
+            } catch (error) {
+                addSection('Error', `<pre>${error.message}\\n${error.stack}</pre>`, 'error');
+            }
+        }
+        
+        // Start debugging
+        addSection('Status', 'Starting debug analysis...', 'success');
+        debugFiles();
+    </script>
+</body>
+</html>

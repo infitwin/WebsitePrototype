@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["http://localhost:8357", "http://localhost:8080", "https://infitwin.com"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type", "Authorization", "x-goog-*"],
+    "maxAgeSeconds": 3600
+  }
+]

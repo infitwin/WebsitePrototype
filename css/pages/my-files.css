@@ -911,13 +911,12 @@
 
 /* Batch Actions */
 .batch-actions {
-    position: sticky;
-    top: 120px;
-    z-index: 20;
+    position: relative;
+    z-index: 50;
     background: #6366f1;
     color: white;
     padding: 12px 20px;
-    margin: -20px -20px 20px -20px;
+    margin: 0 0 20px 0;
     border-radius: 12px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -1191,26 +1190,7 @@
     box-shadow: none;
 }
 
-/* Batch Actions */
-.batch-actions {
-    display: none;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: var(--color-background);
-    border-radius: 8px;
-    margin-bottom: 1rem;
-}
-
-.batch-buttons {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.selected-count {
-    font-weight: 500;
-    color: var(--color-text-primary);
-}
+/* Legacy batch actions styles removed - using new design from lines 913-972 */
 
 /* Responsive Design */
 @media (max-width: 1400px) {
