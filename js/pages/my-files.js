@@ -50,6 +50,8 @@ export async function initializeMyFiles() {
     initializeSearchAndFilters();
     initializeUploadHandling();
     initializeModalHandlers();
+    initializeBatchSelection();
+    initializeVectorizationQuota();
     
     // Initialize existing components
     initializeButtons();
@@ -619,6 +621,322 @@ function updateFileCounts() {
 }
 
 /**
+ * Initialize batch selection functionality
+ */
+function initializeBatchSelection() {
+    // State for selected files
+    window.selectedFiles = window.selectedFiles || new Set();
+    
+    // Handle vectorize button click
+    const vectorizeBtn = document.getElementById('vectorizeBtn');
+    if (vectorizeBtn) {
+        vectorizeBtn.addEventListener('click', handleBatchVectorize);
+    }
+}
+
+/**
+ * Initialize vectorization quota display
+ */
+async function initializeVectorizationQuota() {
+    try {
+        const quota = await getVectorizationQuota();
+        updateQuotaDisplay(quota);
+    } catch (error) {
+        console.error('Failed to load vectorization quota:', error);
+    }
+}
+
+/**
+ * Get user's vectorization quota
+ */
+async function getVectorizationQuota() {
+    const { auth, db } = await import('../firebase-config.js');
+    const { doc, getDoc } = await import('firebase/firestore');
+    
+    const user = auth.currentUser;
+    if (!user) return { used: 0, limit: 10, tier: 'free' };
+    
+    try {
+        // Get user's usage data
+        const usageDoc = await getDoc(doc(db, 'users', user.uid, 'usage', 'vectorization'));
+        const usage = usageDoc.exists() ? usageDoc.data() : { count: 0, lastReset: new Date() };
+        
+        // For now, assume free tier with 10/month limit
+        return {
+            used: usage.count || 0,
+            limit: 10,
+            tier: 'free',
+            lastReset: usage.lastReset
+        };
+    } catch (error) {
+        console.error('Error fetching quota:', error);
+        return { used: 0, limit: 10, tier: 'free' };
+    }
+}
+
+/**
+ * Update quota display
+ */
+function updateQuotaDisplay(quota) {
+    const quotaBar = document.getElementById('quotaBar');
+    const quotaText = document.getElementById('quotaText');
+    
+    if (quotaBar && quotaText) {
+        const percentage = (quota.used / quota.limit) * 100;
+        quotaBar.style.width = `${percentage}%`;
+        quotaText.textContent = `${quota.used}/${quota.limit} this month`;
+        
+        // Change color based on usage
+        if (percentage >= 90) {
+            quotaBar.style.background = '#ef4444';
+        } else if (percentage >= 70) {
+            quotaBar.style.background = '#f59e0b';
+        }
+    }
+}
+
+/**
+ * Handle batch vectorize button click
+ */
+async function handleBatchVectorize() {
+    const selectedFiles = Array.from(window.selectedFiles);
+    
+    if (selectedFiles.length === 0) {
+        alert('Please select files to vectorize');
+        return;
+    }
+    
+    // Filter only image files
+    const imageFiles = selectedFiles.filter(fileId => {
+        const file = window.currentFiles?.find(f => f.id === fileId);
+        return file && file.fileType && file.fileType.startsWith('image/');
+    });
+    
+    if (imageFiles.length === 0) {
+        alert('Please select image files to vectorize');
+        return;
+    }
+    
+    // Check quota
+    const quota = await getVectorizationQuota();
+    if (quota.used + imageFiles.length > quota.limit) {
+        alert(`Quota exceeded. You have ${quota.limit - quota.used} vectorizations remaining this month.`);
+        return;
+    }
+    
+    // Confirm vectorization
+    if (!confirm(`Vectorize ${imageFiles.length} image(s)? This will use ${imageFiles.length} of your monthly quota.`)) {
+        return;
+    }
+    
+    // Perform vectorization
+    await performVectorization(imageFiles);
+}
+
+/**
+ * Perform vectorization on selected files
+ */
+async function performVectorization(fileIds) {
+    console.log('🚀 Starting vectorization for files:', fileIds);
+    
+    // Show processing state
+    fileIds.forEach(fileId => {
+        const card = document.querySelector(`[data-file-id="${fileId}"]`);
+        if (card) {
+            const badge = card.querySelector('.vectorization-badge') || document.createElement('div');
+            badge.className = 'vectorization-badge pending';
+            badge.textContent = 'Processing';
+            if (!badge.parentNode) {
+                card.appendChild(badge);
+            }
+        }
+    });
+    
+    // Process each file
+    for (const fileId of fileIds) {
+        const file = window.currentFiles?.find(f => f.id === fileId);
+        if (!file) continue;
+        
+        try {
+            // Call artifact processor
+            const response = await fetch(window.ORCHESTRATION_ENDPOINTS.ARTIFACT_PROCESSOR, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fileId: file.id,
+                    fileName: file.fileName || file.name,
+                    fileUrl: file.downloadURL,
+                    contentType: file.fileType || 'image/jpeg'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('✅ Vectorization result:', result);
+            
+            // Update file status in Firebase
+            await updateFileVectorizationStatus(file.id, result);
+            
+            // Update UI
+            updateFileVectorizationUI(file.id, result);
+            
+        } catch (error) {
+            console.error('❌ Vectorization failed for file:', fileId, error);
+            
+            // Update badge to show error
+            const card = document.querySelector(`[data-file-id="${fileId}"]`);
+            if (card) {
+                const badge = card.querySelector('.vectorization-badge');
+                if (badge) {
+                    badge.className = 'vectorization-badge failed';
+                    badge.textContent = 'Failed';
+                }
+            }
+        }
+    }
+    
+    // Update quota
+    const newQuota = await getVectorizationQuota();
+    updateQuotaDisplay(newQuota);
+    
+    // Clear selection
+    clearFileSelection();
+    
+    // Refresh file list to show updated data
+    await initializeFileBrowser();
+}
+
+/**
+ * Update file vectorization status in Firebase
+ */
+async function updateFileVectorizationStatus(fileId, result) {
+    const { auth, db } = await import('../firebase-config.js');
+    const { doc, updateDoc } = await import('firebase/firestore');
+    
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        const fileRef = doc(db, 'users', user.uid, 'files', fileId);
+        
+        // Extract faces from result
+        const faces = result.results?.[0]?.faces || [];
+        
+        await updateDoc(fileRef, {
+            vectorizationStatus: {
+                faces: {
+                    processed: true,
+                    processedAt: new Date()
+                },
+                fullImage: {
+                    processed: true,
+                    processedAt: new Date()
+                }
+            },
+            extractedFaces: faces,
+            faceCount: faces.length,
+            vectorizationCompletedAt: new Date()
+        });
+        
+        // Update usage count
+        const usageRef = doc(db, 'users', user.uid, 'usage', 'vectorization');
+        const { increment } = await import('firebase/firestore');
+        await updateDoc(usageRef, {
+            count: increment(1),
+            lastUsed: new Date()
+        });
+        
+    } catch (error) {
+        console.error('Failed to update vectorization status:', error);
+        throw error;
+    }
+}
+
+/**
+ * Update file UI after vectorization
+ */
+function updateFileVectorizationUI(fileId, result) {
+    const card = document.querySelector(`[data-file-id="${fileId}"]`);
+    if (!card) return;
+    
+    // Update badge
+    const badge = card.querySelector('.vectorization-badge');
+    if (badge) {
+        badge.className = 'vectorization-badge';
+        badge.textContent = 'Vectorized';
+    }
+    
+    // Add/update face count
+    const faces = result.results?.[0]?.faces || [];
+    if (faces.length > 0) {
+        let faceIndicator = card.querySelector('.face-indicator');
+        if (!faceIndicator) {
+            faceIndicator = document.createElement('div');
+            faceIndicator.className = 'face-indicator';
+            const thumbnailContainer = card.querySelector('.file-thumbnail-container');
+            if (thumbnailContainer) {
+                thumbnailContainer.appendChild(faceIndicator);
+            }
+        }
+        
+        faceIndicator.innerHTML = `
+            <svg class="face-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            ${faces.length} face${faces.length !== 1 ? 's' : ''}
+        `;
+        
+        // Update click handler
+        faceIndicator.onclick = (e) => {
+            const file = window.currentFiles?.find(f => f.id === fileId);
+            if (file) {
+                window.showFaces(e, faces.length, file.fileName || file.name);
+            }
+        };
+    }
+}
+
+/**
+ * Clear file selection
+ */
+window.clearFileSelection = function() {
+    // Clear selected files
+    window.selectedFiles.clear();
+    
+    // Remove selected class and uncheck checkboxes
+    document.querySelectorAll('.file-card').forEach(card => {
+        card.classList.remove('selected');
+        const checkbox = card.querySelector('.file-checkbox');
+        if (checkbox) checkbox.checked = false;
+    });
+    
+    // Hide batch actions
+    document.getElementById('batchActions').style.display = 'none';
+    document.getElementById('selectedCount').textContent = '0';
+};
+
+/**
+ * Update batch actions visibility based on selection
+ */
+function updateBatchActionsVisibility() {
+    const batchActions = document.getElementById('batchActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (window.selectedFiles.size > 0) {
+        batchActions.style.display = 'block';
+        selectedCount.textContent = window.selectedFiles.size;
+    } else {
+        batchActions.style.display = 'none';
+    }
+}
+
+/**
  * Show loading skeleton
  */
 function showLoading() {
@@ -656,6 +974,22 @@ function createFileCard(file) {
     // Set file ID for deletion - NO FALLBACKS
     card.dataset.fileId = file.id;
     
+    // Add checkbox for selection
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'file-checkbox';
+    checkbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            window.selectedFiles.add(file.id);
+            card.classList.add('selected');
+        } else {
+            window.selectedFiles.delete(file.id);
+            card.classList.remove('selected');
+        }
+        updateBatchActionsVisibility();
+    });
+    card.appendChild(checkbox);
+    
     // Set data attributes for filtering
     if (file.faceCount > 0) {
         card.dataset.hasFaces = 'true';
@@ -684,17 +1018,26 @@ function createFileCard(file) {
     
     thumbnailContainer.appendChild(thumbnail);
     
+    // Vectorization status badge
+    if (file.vectorizationStatus?.faces?.processed || file.vectorizationStatus?.fullImage?.processed) {
+        const badge = document.createElement('div');
+        badge.className = 'vectorization-badge';
+        badge.textContent = 'Vectorized';
+        card.appendChild(badge);
+    }
+    
     // Face indicator
-    if (file.faceCount > 0) {
+    if (file.faceCount > 0 || file.extractedFaces?.length > 0) {
+        const faceCount = file.faceCount || file.extractedFaces?.length || 0;
         const faceIndicator = document.createElement('div');
         faceIndicator.className = 'face-indicator';
-        faceIndicator.onclick = (e) => window.showFaces(e, file.faceCount, file.name);
+        faceIndicator.onclick = (e) => window.showFaces(e, faceCount, file.fileName || file.name);
         faceIndicator.innerHTML = `
             <svg class="face-icon" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                 <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
             </svg>
-            ${file.faceCount} face${file.faceCount !== 1 ? 's' : ''}
+            ${faceCount} face${faceCount !== 1 ? 's' : ''}
         `;
         thumbnailContainer.appendChild(faceIndicator);
     }
