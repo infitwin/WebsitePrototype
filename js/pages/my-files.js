@@ -772,62 +772,63 @@ async function performVectorization(fileIds) {
         try {
             const { getEndpoints } = await import('../config/orchestration-endpoints.js');
             endpoints = getEndpoints(false); // Always use production endpoints
-            // Try webhook endpoint which is the main endpoint per documentation
-            endpoints.ARTIFACT_PROCESSOR = endpoints.ARTIFACT_PROCESSOR.replace('/process-image', '/process-webhook');
+            // Use original V1 endpoint that worked - DO NOT change to webhook
         } catch (error) {
             console.warn('⚠️ ORCHESTRATION_ENDPOINTS not loaded, using fallback');
             endpoints = {
-                ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-webhook'
+                ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image'
             };
         }
         
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // Use correct V1 format from Artifact Processor documentation
-        // Process each file individually (V1 processes one file per request)
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            
-            const payload = {
+        // V1 payload format that actually worked - files array with processType
+        const twinId = localStorage.getItem('selectedTwinId') || 'default';
+        const payload = {
+            files: files.map(file => ({
                 fileId: file.id,
-                fileName: file.fileName || file.name,
-                fileUrl: file.downloadURL,
-                contentType: file.fileType || 'image/jpeg',
-                userId: user.uid
-            };
-            
-            console.log('V1 Vectorization payload:', payload);
-            console.log('V1 Endpoint:', apiEndpoint);
-            
-            // Call Artifact Processor with correct V1 format
-            const response = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                    // No Authorization header needed for this endpoint
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`❌ V1 API error for ${file.fileName}:`, errorText);
-                continue; // Skip this file and continue with others
-            }
-            
-            const result = await response.json();
-            console.log(`✅ V1 result for ${file.fileName}:`, result);
-            
-            // Update Firebase and UI with result
+                downloadURL: file.downloadURL,
+                userId: user.uid,
+                twinId: twinId
+            })),
+            processType: "vectorize-photos"
+        };
+        
+        console.log('V1 Vectorization payload:', payload);
+        console.log('V1 Endpoint:', apiEndpoint);
+        
+        // Call Artifact Processor with EXACT V1 format that worked
+        const response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await user.getIdToken()}`,
+                'Origin': window.location.origin
+            },
+            mode: 'cors',
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ V1 API error:', errorText);
+            throw new Error(`Vectorization failed: ${response.status} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ V1 result:', result);
+        
+        // Update Firebase and UI with result for all files
+        for (const file of files) {
             try {
                 await window.updateFileVectorizationStatus(file.id, result);
                 window.updateFileVectorizationUI(file.id, result);
                 
                 if (result.faces && Array.isArray(result.faces)) {
-                    console.log(`👤 Extracted ${result.faces.length} faces from ${file.fileName}`);
+                    console.log(`👤 Extracted ${result.faces.length} faces from ${file.fileName || file.name}`);
                 }
             } catch (updateError) {
-                console.error(`❌ Error updating ${file.fileName}:`, updateError);
+                console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
             }
         }
         
