@@ -782,53 +782,55 @@ async function performVectorization(fileIds) {
         
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // V1 payload format that actually worked - files array with processType
-        const twinId = localStorage.getItem('selectedTwinId') || 'default';
-        const payload = {
-            files: files.map(file => ({
-                fileId: file.id,
-                downloadURL: file.downloadURL,
-                userId: user.uid,
-                twinId: twinId
-            })),
-            processType: "vectorize-photos"
-        };
-        
-        console.log('V1 Vectorization payload:', payload);
-        console.log('V1 Endpoint:', apiEndpoint);
-        
-        // Call Artifact Processor with EXACT V1 format that worked
-        const response = await fetch(apiEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await user.getIdToken()}`,
-                'Origin': window.location.origin
-            },
-            mode: 'cors',
-            body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ V1 API error:', errorText);
-            throw new Error(`Vectorization failed: ${response.status} - ${errorText}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ V1 result:', result);
-        
-        // Update Firebase and UI with result for all files
+        // Use webhook payload format with process-image endpoint (process-webhook has CORS issues)
+        // Process files individually as the API expects single file format
         for (const file of files) {
+            const payload = {
+                fileId: file.id,
+                fileName: file.fileName || file.name,
+                fileUrl: file.downloadURL,
+                contentType: file.fileType || 'image/jpeg',
+                userId: user.uid
+            };
+        
+            console.log('🔄 Processing file:', file.fileName || file.name);
+            console.log('📤 Payload:', JSON.stringify(payload, null, 2));
+            
             try {
-                await window.updateFileVectorizationStatus(file.id, result);
-                window.updateFileVectorizationUI(file.id, result);
+                // Call Artifact Processor with webhook format
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${await user.getIdToken()}`,
+                        'Origin': window.location.origin
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(payload)
+                });
                 
-                if (result.faces && Array.isArray(result.faces)) {
-                    console.log(`👤 Extracted ${result.faces.length} faces from ${file.fileName || file.name}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`❌ API error for ${file.fileName}:`, errorText);
+                    continue; // Skip this file and continue with others
                 }
-            } catch (updateError) {
-                console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
+                
+                const result = await response.json();
+                console.log(`✅ Result for ${file.fileName}:`, result);
+                
+                // Update Firebase and UI with result
+                try {
+                    await window.updateFileVectorizationStatus(file.id, result);
+                    window.updateFileVectorizationUI(file.id, result);
+                    
+                    if (result.faces && Array.isArray(result.faces)) {
+                        console.log(`👤 Extracted ${result.faces.length} faces from ${file.fileName || file.name}`);
+                    }
+                } catch (updateError) {
+                    console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
+                }
+            } catch (error) {
+                console.error(`❌ Failed to process ${file.fileName}:`, error);
             }
         }
         
@@ -1308,6 +1310,23 @@ async function initializeFileBrowser() {
     showLoading();
     
     try {
+        // Wait for authentication state to be ready
+        const { auth } = await import('../firebase-config.js');
+        await new Promise((resolve) => {
+            if (auth.currentUser) {
+                // Already authenticated
+                resolve();
+            } else {
+                // Wait for auth state change
+                const unsubscribe = auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        unsubscribe();
+                        resolve();
+                    }
+                });
+            }
+        });
+        
         // Get user files
         const result = await getUserFiles();
         console.log('📁 getUserFiles returned:', result);
