@@ -737,92 +737,163 @@ async function handleBatchVectorize() {
  * Perform vectorization on selected files
  */
 async function performVectorization(fileIds) {
-    console.log('🚀 Starting vectorization for files:', fileIds);
+    console.log('🚀 Starting V1 vectorization for files:', fileIds);
     
-    // Show processing state
-    fileIds.forEach(fileId => {
-        const card = document.querySelector(`[data-file-id="${fileId}"]`);
-        if (card) {
-            const badge = card.querySelector('.vectorization-badge') || document.createElement('div');
-            badge.className = 'vectorization-badge pending';
-            badge.textContent = 'Processing';
-            if (!badge.parentNode) {
-                card.appendChild(badge);
-            }
-        }
-    });
+    // Get files from current files array
+    const files = fileIds.map(id => window.currentFiles?.find(f => f.id === id)).filter(Boolean);
+    if (files.length === 0) {
+        console.error('❌ No files found for vectorization');
+        return;
+    }
     
-    // Process each file
-    for (const fileId of fileIds) {
-        const file = window.currentFiles?.find(f => f.id === fileId);
-        if (!file) continue;
+    // Disable button and show loading
+    const vectorizeBtn = document.querySelector('#vectorizeBtn');
+    const originalText = vectorizeBtn ? vectorizeBtn.textContent : '';
+    if (vectorizeBtn) {
+        vectorizeBtn.disabled = true;
+        vectorizeBtn.textContent = 'Vectorizing...';
+    }
+    
+    try {
+        showNotification('Starting vectorization...', 'info');
         
+        // Get current user and twin ID
+        const { auth } = await import('../firebase-config.js');
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('User not authenticated', 'error');
+            return;
+        }
+        
+        const twinId = localStorage.getItem('selectedTwinId') || 'default';
+        
+        // Import orchestration endpoints (force production for working API)
+        let endpoints;
         try {
-            // Ensure ORCHESTRATION_ENDPOINTS is available
-            if (!window.ORCHESTRATION_ENDPOINTS) {
-                console.warn('⚠️ ORCHESTRATION_ENDPOINTS not loaded, using production fallback');
-                window.ORCHESTRATION_ENDPOINTS = {
-                    ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image'
-                };
-            }
-            
-            // Call artifact processor (V1 format that worked for existing files)
-            const response = await fetch(window.ORCHESTRATION_ENDPOINTS.ARTIFACT_PROCESSOR, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fileId: file.id,
-                    fileName: file.fileName || file.name,
-                    fileUrl: file.downloadURL,
-                    contentType: file.fileType || 'image/jpeg'
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            console.log('✅ Vectorization result:', result);
-            
-            // Update file status in Firebase
-            await updateFileVectorizationStatus(file.id, result);
-            
-            // Update UI
-            updateFileVectorizationUI(file.id, result);
-            
+            const { getEndpoints } = await import('../config/orchestration-endpoints.js');
+            endpoints = getEndpoints(false); // Always use production endpoints
         } catch (error) {
-            console.error('❌ Vectorization failed for file:', fileId, error);
+            console.warn('⚠️ ORCHESTRATION_ENDPOINTS not loaded, using fallback');
+            endpoints = {
+                ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image'
+            };
+        }
+        
+        const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
+        
+        // Prepare V1 payload format
+        const payload = {
+            files: files.map(file => ({
+                fileId: file.id,
+                downloadURL: file.downloadURL || file.url,
+                userId: user.uid,
+                twinId: twinId
+            })),
+            processType: "vectorize-photos"
+        };
+        
+        console.log('V1 Vectorization payload:', payload);
+        console.log('V1 Endpoint:', apiEndpoint);
+        
+        // Call Artifact Processor with V1 format and authentication
+        const response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await user.getIdToken()}`,
+                'Origin': window.location.origin
+            },
+            mode: 'cors',
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('V1 Vectorization response error:', errorText);
+            throw new Error(`Vectorization failed: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ V1 Vectorization result:', result);
+        
+        // Process the V1 vectorization results
+        if (result.success && result.results && Array.isArray(result.results)) {
+            let totalFacesExtracted = 0;
             
-            // Update badge to show error
-            const card = document.querySelector(`[data-file-id="${fileId}"]`);
-            if (card) {
-                const badge = card.querySelector('.vectorization-badge');
-                if (badge) {
-                    badge.className = 'vectorization-badge failed';
-                    badge.textContent = 'Failed';
+            // Update each file with vectorization results
+            for (let i = 0; i < result.results.length; i++) {
+                const fileResult = result.results[i];
+                const originalFile = files[i];
+                
+                if (!originalFile) continue;
+                
+                try {
+                    // Update Firebase with V1 format
+                    await window.updateFileVectorizationStatus(originalFile.id, fileResult);
+                    
+                    // Update UI with V1 format
+                    window.updateFileVectorizationUI(originalFile.id, fileResult);
+                    
+                    if (fileResult.faces && Array.isArray(fileResult.faces)) {
+                        totalFacesExtracted += fileResult.faces.length;
+                        console.log(`👤 Extracted ${fileResult.faces.length} faces from ${originalFile.fileName}`);
+                    }
+                    
+                } catch (updateError) {
+                    console.error(`❌ Error updating file ${originalFile.id}:`, updateError);
+                }
+            }
+            
+            showNotification(
+                `Vectorization completed! Extracted ${totalFacesExtracted} faces from ${files.length} images`, 
+                'success'
+            );
+            
+        } else {
+            // Fallback: mark as processing (for async processing)
+            showNotification(`Vectorization started for ${files.length} images`, 'info');
+            
+            for (const file of files) {
+                try {
+                    // Mark as processing
+                    await window.updateFileVectorizationStatus(file.id, { 
+                        success: false, 
+                        processing: true,
+                        faces: []
+                    });
+                } catch (updateError) {
+                    console.error('Error updating file status:', updateError);
                 }
             }
         }
+        
+        // Clear selection
+        clearFileSelection();
+        
+        // Refresh file list to show updated data
+        await initializeFileBrowser();
+        
+    } catch (error) {
+        console.error('❌ V1 Vectorization error:', error);
+        
+        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+            showNotification('CORS error: The vectorization service needs authentication headers. Trying again...', 'error');
+        } else {
+            showNotification(`Vectorization failed: ${error.message}`, 'error');
+        }
+    } finally {
+        // Re-enable button
+        if (vectorizeBtn) {
+            vectorizeBtn.disabled = false;
+            vectorizeBtn.textContent = originalText;
+        }
     }
-    
-    // Update quota
-    const newQuota = await getVectorizationQuota();
-    updateQuotaDisplay(newQuota);
-    
-    // Clear selection
-    clearFileSelection();
-    
-    // Refresh file list to show updated data
-    await initializeFileBrowser();
 }
 
 /**
  * Update file vectorization status in Firebase
  */
-async function updateFileVectorizationStatus(fileId, result) {
+window.updateFileVectorizationStatus = async function updateFileVectorizationStatus(fileId, result) {
     const { auth, db } = await import('../firebase-config.js');
     const { doc, updateDoc } = await import('firebase/firestore');
     
@@ -832,8 +903,8 @@ async function updateFileVectorizationStatus(fileId, result) {
     try {
         const fileRef = doc(db, 'users', user.uid, 'files', fileId);
         
-        // Extract faces from result
-        const faces = result.results?.[0]?.faces || [];
+        // Extract faces from V1 result format (direct file result, not wrapped)
+        const faces = result.faces || [];
         
         await updateDoc(fileRef, {
             vectorizationStatus: {
@@ -868,7 +939,7 @@ async function updateFileVectorizationStatus(fileId, result) {
 /**
  * Update file UI after vectorization
  */
-function updateFileVectorizationUI(fileId, result) {
+window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, result) {
     const card = document.querySelector(`[data-file-id="${fileId}"]`);
     if (!card) return;
     
@@ -879,8 +950,8 @@ function updateFileVectorizationUI(fileId, result) {
         badge.textContent = 'Vectorized';
     }
     
-    // Add/update face count
-    const faces = result.results?.[0]?.faces || [];
+    // Add/update face count from V1 result format
+    const faces = result.faces || [];
     if (faces.length > 0) {
         let faceIndicator = card.querySelector('.face-indicator');
         if (!faceIndicator) {
@@ -1288,6 +1359,8 @@ async function initializeFileBrowser() {
         
         currentFiles = files;
         window.currentFiles = files; // Make available to vectorization handler
+        
+        // V1 vectorization functions are now globally accessible
         
         // Ensure files is an array before rendering
         const fileArray = Array.isArray(files) ? files : [];
