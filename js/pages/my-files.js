@@ -856,10 +856,6 @@ async function performVectorization(fileIds) {
                 console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
             }
         }
-    } catch (error) {
-        console.error('❌ V1 Vectorization error:', error);
-        showNotification(`Vectorization failed: ${error.message}`, 'error');
-    } finally {
         
         showNotification(`Vectorization completed for ${files.length} files`, 'success');
         
