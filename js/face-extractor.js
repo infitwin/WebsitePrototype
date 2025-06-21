@@ -107,13 +107,6 @@ export function createFaceThumbnailElement(faceData, index) {
     label.className = 'face-label';
     label.textContent = `Face ${index + 1}`;
     
-    if (faceData.confidence) {
-        const confidence = document.createElement('div');
-        confidence.className = 'face-confidence';
-        confidence.textContent = `${Math.round(faceData.confidence * 100)}%`;
-        faceItem.appendChild(confidence);
-    }
-    
     faceItem.appendChild(img);
     faceItem.appendChild(label);
     
