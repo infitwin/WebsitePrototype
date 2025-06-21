@@ -806,46 +806,47 @@ async function performVectorization(fileIds) {
         const endpoints = getEndpoints(false);
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // V1 payload format that worked
-        const payload = {
-            files: files.map(file => ({
-                fileId: file.id,
-                downloadURL: file.downloadURL || file.url,
-                userId: user.uid,
-                twinId: twinId
-            })),
-            processType: "vectorize-photos"
-        };
-        
-        console.log('📤 V1 Payload:', payload);
-        console.log('📍 V1 Endpoint:', apiEndpoint);
-        
-        // V1 API call with authentication
-        const response = await fetch(apiEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await user.getIdToken()}`,
-                'Origin': window.location.origin
-            },
-            mode: 'cors',
-            body: JSON.stringify(payload)
-        });
-        
-        console.log('📥 V1 Response status:', response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ V1 Response error:', errorText);
-            showNotification(`V1 API Error: ${response.status}`, 'error');
-            throw new Error(`Vectorization failed: ${response.status} - ${errorText}`);
-        }
-        
-        const apiResult = await response.json();
-        console.log('✅ V1 API Result:', apiResult);
-        
-        // Update Firebase and UI with result for all files
+        // Process each file individually (API expects single file format)
         for (const file of files) {
+            console.log(`🚀 Processing file: ${file.fileName || file.name}`);
+            
+            // Correct API format from Artifact Processor documentation
+            const payload = {
+                fileId: file.id,
+                fileName: file.fileName || file.name,
+                fileUrl: file.downloadURL,
+                contentType: file.fileType || 'image/jpeg',
+                userId: user.uid
+            };
+            
+            console.log('📤 API Payload:', payload);
+            console.log('📍 API Endpoint:', apiEndpoint);
+            
+            // API call with authentication
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await user.getIdToken()}`,
+                    'Origin': window.location.origin
+                },
+                mode: 'cors',
+                body: JSON.stringify(payload)
+            });
+            
+            console.log(`📥 Response status for ${file.fileName || file.name}: ${response.status}`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`❌ Response error for ${file.fileName || file.name}:`, errorText);
+                showNotification(`API Error for ${file.fileName || file.name}: ${response.status}`, 'error');
+                continue; // Skip this file but continue with others
+            }
+            
+            const apiResult = await response.json();
+            console.log(`✅ API Result for ${file.fileName || file.name}:`, apiResult);
+            
+            // Update Firebase and UI with result for this file
             try {
                 await window.updateFileVectorizationStatus(file.id, apiResult);
                 window.updateFileVectorizationUI(file.id, apiResult);
