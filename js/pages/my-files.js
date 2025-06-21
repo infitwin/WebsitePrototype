@@ -765,6 +765,9 @@ async function handleBatchVectorize() {
     await performVectorization(imageFiles);
 }
 
+// Make function globally accessible for testing
+window.handleBatchVectorize = handleBatchVectorize;
+
 /**
  * Perform vectorization on selected files
  */
