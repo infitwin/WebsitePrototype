@@ -786,11 +786,16 @@ async function performVectorization(fileIds) {
         // Process files individually as the API expects single file format
         for (const file of files) {
             const payload = {
-                fileId: file.id,
+                userId: user.uid,
+                twinId: twinId,
+                fileUrl: file.downloadURL,  // This is the Firebase Storage URL
                 fileName: file.fileName || file.name,
-                fileUrl: file.downloadURL,
                 contentType: file.fileType || 'image/jpeg',
-                userId: user.uid
+                metadata: {
+                    uploadTimestamp: file.uploadedAt || new Date().toISOString(),
+                    fileSize: file.fileSize || 0,
+                    fileId: file.id  // Include our internal file ID in metadata
+                }
             };
         
             console.log('🔄 Processing file:', file.fileName || file.name);
