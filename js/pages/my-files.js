@@ -813,10 +813,12 @@ async function performVectorization(fileIds) {
         for (const file of files) {
             console.log(`🚀 Processing file: ${file.fileName || file.name}`);
             
-            // Use exact V1 working format that was successful on June 19th
+            // Use /process-webhook format per ArtifactProcessor documentation
             const payload = {
                 fileId: file.id,
-                downloadURL: file.downloadURL,
+                fileName: file.fileName || file.name,
+                fileUrl: file.downloadURL,
+                contentType: file.fileType || 'image/jpeg',
                 userId: user.uid,
                 twinId: twinId
             };
