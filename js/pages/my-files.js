@@ -765,77 +765,69 @@ async function performVectorization(fileIds) {
             return;
         }
         
+        // V1 API call exactly as it worked on June 19th
         const twinId = localStorage.getItem('selectedTwinId') || 'default';
         
-        // Import orchestration endpoints (force production for working API)
-        let endpoints;
-        try {
-            const { getEndpoints } = await import('../config/orchestration-endpoints.js');
-            endpoints = getEndpoints(false); // Always use production endpoints
-            // Use original V1 endpoint that worked - DO NOT change to webhook
-        } catch (error) {
-            console.warn('⚠️ ORCHESTRATION_ENDPOINTS not loaded, using fallback');
-            endpoints = {
-                ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image'
-            };
-        }
-        
+        // Import V1 orchestration endpoints
+        const { ORCHESTRATION_ENDPOINTS, getEndpoints } = await import('../config/orchestration-endpoints.js');
+        const endpoints = getEndpoints(window.location.hostname === 'localhost');
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // Use V1 files array format with corrected field name
+        // V1 payload format that worked
         const payload = {
             files: files.map(file => ({
                 fileId: file.id,
-                fileUrl: file.downloadURL,  // Changed from downloadURL to fileUrl
+                downloadURL: file.downloadURL || file.url,
                 userId: user.uid,
                 twinId: twinId
             })),
             processType: "vectorize-photos"
         };
         
-        console.log('🚀 V1 Vectorization payload:', payload);
-        console.log('🔗 V1 Endpoint:', apiEndpoint);
+        console.log('📤 V1 Payload:', payload);
+        console.log('📍 V1 Endpoint:', apiEndpoint);
         
-        try {
-            // Call Artifact Processor with V1 format
-            const response = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await user.getIdToken()}`,
-                    'Origin': window.location.origin
-                },
-                mode: 'cors',
-                body: JSON.stringify(payload)
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ V1 API error:', errorText);
-                throw new Error(`Vectorization failed: ${response.status} - ${errorText}`);
-            }
-            
-            const result = await response.json();
-            console.log('✅ V1 result:', result);
-            
-            // Update Firebase and UI with result for all files
-            for (const file of files) {
-                try {
-                    await window.updateFileVectorizationStatus(file.id, result);
-                    window.updateFileVectorizationUI(file.id, result);
-                    
-                    if (result.faces && Array.isArray(result.faces)) {
-                        console.log(`👤 Extracted ${result.faces.length} faces from ${file.fileName || file.name}`);
-                    }
-                } catch (updateError) {
-                    console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
-                }
-            }
-        } catch (error) {
-            console.error('❌ V1 Vectorization failed:', error);
-            showNotification(`Vectorization failed: ${error.message}`, 'error');
-            throw error;
+        // V1 API call with authentication
+        const response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await user.getIdToken()}`,
+                'Origin': window.location.origin
+            },
+            mode: 'cors',
+            body: JSON.stringify(payload)
+        });
+        
+        console.log('📥 V1 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ V1 Response error:', errorText);
+            showNotification(`V1 API Error: ${response.status}`, 'error');
+            throw new Error(`Vectorization failed: ${response.status} - ${errorText}`);
         }
+        
+        const apiResult = await response.json();
+        console.log('✅ V1 API Result:', apiResult);
+        
+        // Update Firebase and UI with result for all files
+        for (const file of files) {
+            try {
+                await window.updateFileVectorizationStatus(file.id, apiResult);
+                window.updateFileVectorizationUI(file.id, apiResult);
+                
+                if (apiResult.faces && Array.isArray(apiResult.faces)) {
+                    console.log(`👤 Extracted ${apiResult.faces.length} faces from ${file.fileName || file.name}`);
+                }
+            } catch (updateError) {
+                console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
+            }
+        }
+    } catch (error) {
+        console.error('❌ V1 Vectorization error:', error);
+        showNotification(`Vectorization failed: ${error.message}`, 'error');
+    } finally {
         
         showNotification(`Vectorization completed for ${files.length} files`, 'success');
         
