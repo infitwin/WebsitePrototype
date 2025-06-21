@@ -855,8 +855,9 @@ async function performVectorization(fileIds) {
                 await window.updateFileVectorizationStatus(file.id, apiResult);
                 window.updateFileVectorizationUI(file.id, apiResult);
                 
-                if (apiResult.faces && Array.isArray(apiResult.faces)) {
-                    console.log(`👤 Extracted ${apiResult.faces.length} faces from ${file.fileName || file.name}`);
+                const extractedFaces = apiResult.vectorizationResults?.faces || apiResult.faces || [];
+                if (extractedFaces && Array.isArray(extractedFaces)) {
+                    console.log(`👤 Extracted ${extractedFaces.length} faces from ${file.fileName || file.name}`);
                 }
             } catch (updateError) {
                 console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
@@ -894,8 +895,8 @@ window.updateFileVectorizationStatus = async function updateFileVectorizationSta
     try {
         const fileRef = doc(db, 'users', user.uid, 'files', fileId);
         
-        // Extract faces from V1 result format (direct file result, not wrapped)
-        const faces = result.faces || [];
+        // Extract faces from V1 result format (vectorizationResults contains the actual data)
+        const faces = result.vectorizationResults?.faces || result.faces || [];
         
         await updateDoc(fileRef, {
             vectorizationStatus: {
@@ -941,8 +942,8 @@ window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, re
         badge.textContent = 'Vectorized';
     }
     
-    // Add/update face count from V1 result format
-    const faces = result.faces || [];
+    // Add/update face count from V1 result format (vectorizationResults contains the actual data)
+    const faces = result.vectorizationResults?.faces || result.faces || [];
     if (faces.length > 0) {
         let faceIndicator = card.querySelector('.face-indicator');
         if (!faceIndicator) {
