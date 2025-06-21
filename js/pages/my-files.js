@@ -453,31 +453,63 @@ function initializeModalHandlers() {
 /**
  * Show faces modal
  */
-window.showFaces = function(event, faceCount, filename) {
+window.showFaces = async function(event, file) {
     event.stopPropagation();
+    console.log('🔍 showFaces called with file:', file);
+    console.log('🔍 extractedFaces:', file.extractedFaces);
+    
     const modal = document.getElementById('faceModal');
     const facesGrid = document.getElementById('facesModalGrid');
     const filenameSpan = document.getElementById('faceModalFilename');
     
     if (!modal || !facesGrid || !filenameSpan) return;
     
-    filenameSpan.textContent = filename;
-    facesGrid.innerHTML = '';
-    
-    // Generate face thumbnails
-    for (let i = 1; i <= faceCount; i++) {
-        const faceItem = document.createElement('div');
-        faceItem.className = 'face-item';
-        faceItem.innerHTML = `
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f3f4f6' rx='12'/%3E%3Ccircle cx='75' cy='75' r='50' fill='%23e5e7eb'/%3E%3Ccircle cx='60' cy='65' r='5' fill='%236b7280'/%3E%3Ccircle cx='90' cy='65' r='5' fill='%236b7280'/%3E%3Cpath d='M 60 90 Q 75 100 90 90' stroke='%236b7280' stroke-width='3' fill='none'/%3E%3C/svg%3E" 
-                 class="face-thumb" 
-                 alt="Face ${i}">
-            <div class="face-label">Face ${i}</div>
-        `;
-        facesGrid.appendChild(faceItem);
-    }
+    filenameSpan.textContent = file.fileName || file.name;
+    facesGrid.innerHTML = '<div style="text-align: center; padding: 20px;">Loading faces...</div>';
     
     modal.classList.add('active');
+    
+    // Check if we have extracted faces data
+    if (file.extractedFaces && file.extractedFaces.length > 0 && file.downloadURL) {
+        try {
+            // Import face extractor functions
+            const { extractAllFaces, createFaceThumbnailElement } = await import('../face-extractor.js');
+            
+            // Extract all faces from the image
+            const extractedFaces = await extractAllFaces(file.downloadURL, file.extractedFaces);
+            
+            // Clear loading message
+            facesGrid.innerHTML = '';
+            
+            // Display extracted faces
+            if (extractedFaces.length > 0) {
+                extractedFaces.forEach((face, index) => {
+                    const faceElement = createFaceThumbnailElement(face, index);
+                    facesGrid.appendChild(faceElement);
+                });
+            } else {
+                facesGrid.innerHTML = '<div style="text-align: center; padding: 20px;">No faces could be extracted</div>';
+            }
+        } catch (error) {
+            console.error('Error extracting faces:', error);
+            facesGrid.innerHTML = '<div style="text-align: center; padding: 20px; color: #ef4444;">Error loading faces</div>';
+        }
+    } else {
+        // Fallback to placeholder faces if no extracted face data
+        facesGrid.innerHTML = '';
+        const faceCount = file.faceCount || file.extractedFaces?.length || 0;
+        for (let i = 1; i <= faceCount; i++) {
+            const faceItem = document.createElement('div');
+            faceItem.className = 'face-item';
+            faceItem.innerHTML = `
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f3f4f6' rx='12'/%3E%3Ccircle cx='75' cy='75' r='50' fill='%23e5e7eb'/%3E%3Ccircle cx='60' cy='65' r='5' fill='%236b7280'/%3E%3Ccircle cx='90' cy='65' r='5' fill='%236b7280'/%3E%3Cpath d='M 60 90 Q 75 100 90 90' stroke='%236b7280' stroke-width='3' fill='none'/%3E%3C/svg%3E" 
+                     class="face-thumb" 
+                     alt="Face ${i}">
+                <div class="face-label">Face ${i}</div>
+            `;
+            facesGrid.appendChild(faceItem);
+        }
+    }
 };
 
 /**
@@ -1089,7 +1121,7 @@ function createFileCard(file) {
         const faceCount = file.faceCount || file.extractedFaces?.length || 0;
         const faceIndicator = document.createElement('div');
         faceIndicator.className = 'face-indicator';
-        faceIndicator.onclick = (e) => window.showFaces(e, faceCount, file.fileName || file.name);
+        faceIndicator.onclick = (e) => window.showFaces(e, file);
         faceIndicator.innerHTML = `
             <svg class="face-icon" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
