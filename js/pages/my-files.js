@@ -813,11 +813,11 @@ async function performVectorization(fileIds) {
         for (const file of files) {
             console.log(`🚀 Processing file: ${file.fileName || file.name}`);
             
-            // Correct API format from Artifact Processor documentation
+            // Try alternative API format - the service might expect different field names
             const payload = {
                 fileId: file.id,
                 fileName: file.fileName || file.name,
-                fileUrl: file.downloadURL,
+                url: file.downloadURL,  // Try 'url' instead of 'fileUrl'
                 contentType: file.fileType || 'image/jpeg',
                 userId: user.uid
             };
