@@ -15,7 +15,7 @@ const ORCHESTRATION_ENDPOINTS = {
   
   // REST API endpoints
   STATE_MANAGER: 'https://interview-session-manager-833139648849.us-central1.run.app/api/interview/state',
-  ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-image',
+  ARTIFACT_PROCESSOR: 'https://artifact-processor-nfnrbhgy5a-uc.a.run.app/process-webhook',
   
   // Development endpoints (for local testing)
   DEV: {
