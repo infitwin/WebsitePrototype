@@ -802,7 +802,8 @@ async function performVectorization(fileIds) {
         
         // Import V1 orchestration endpoints
         const { ORCHESTRATION_ENDPOINTS, getEndpoints } = await import('../config/orchestration-endpoints.js');
-        const endpoints = getEndpoints(window.location.hostname === 'localhost');
+        // Always use production endpoints for artifact processor (no local dev server)
+        const endpoints = getEndpoints(false);
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
         // V1 payload format that worked
