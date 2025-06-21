@@ -813,13 +813,12 @@ async function performVectorization(fileIds) {
         for (const file of files) {
             console.log(`🚀 Processing file: ${file.fileName || file.name}`);
             
-            // Try alternative API format - the service might expect different field names
+            // Use exact V1 working format that was successful on June 19th
             const payload = {
                 fileId: file.id,
-                fileName: file.fileName || file.name,
-                url: file.downloadURL,  // Try 'url' instead of 'fileUrl'
-                contentType: file.fileType || 'image/jpeg',
-                userId: user.uid
+                downloadURL: file.downloadURL,
+                userId: user.uid,
+                twinId: twinId
             };
             
             console.log('📤 API Payload:', payload);
