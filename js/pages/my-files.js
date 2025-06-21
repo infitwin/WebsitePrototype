@@ -805,7 +805,7 @@ async function performVectorization(fileIds) {
         
         // Import V1 orchestration endpoints
         const { ORCHESTRATION_ENDPOINTS, getEndpoints } = await import('../config/orchestration-endpoints.js');
-        // Always use production endpoints for artifact processor (no local dev server)
+        // Always use production endpoints for artifact processor
         const endpoints = getEndpoints(false);
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
@@ -913,13 +913,13 @@ window.updateFileVectorizationStatus = async function updateFileVectorizationSta
             vectorizationCompletedAt: new Date()
         });
         
-        // Update usage count
+        // Update usage count (create if doesn't exist)
         const usageRef = doc(db, 'users', user.uid, 'usage', 'vectorization');
-        const { increment } = await import('firebase/firestore');
-        await updateDoc(usageRef, {
+        const { increment, setDoc } = await import('firebase/firestore');
+        await setDoc(usageRef, {
             count: increment(1),
             lastUsed: new Date()
-        });
+        }, { merge: true });
         
     } catch (error) {
         console.error('Failed to update vectorization status:', error);
