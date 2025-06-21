@@ -967,7 +967,7 @@ window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, re
         faceIndicator.onclick = (e) => {
             const file = window.currentFiles?.find(f => f.id === fileId);
             if (file) {
-                window.showFaces(e, faces.length, file.fileName || file.name);
+                window.showFaces(e, file);
             }
         };
     }
