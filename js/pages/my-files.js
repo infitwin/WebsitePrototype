@@ -782,48 +782,44 @@ async function performVectorization(fileIds) {
         
         const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // Use webhook payload format with process-image endpoint (process-webhook has CORS issues)
-        // Process files individually as the API expects single file format
-        for (const file of files) {
-            const payload = {
+        // Use V1 files array format with corrected field name
+        const payload = {
+            files: files.map(file => ({
+                fileId: file.id,
+                fileUrl: file.downloadURL,  // Changed from downloadURL to fileUrl
                 userId: user.uid,
-                twinId: twinId,
-                fileUrl: file.downloadURL,  // This is the Firebase Storage URL
-                fileName: file.fileName || file.name,
-                contentType: file.fileType || 'image/jpeg',
-                metadata: {
-                    uploadTimestamp: file.uploadedAt || new Date().toISOString(),
-                    fileSize: file.fileSize || 0,
-                    fileId: file.id  // Include our internal file ID in metadata
-                }
-            };
+                twinId: twinId
+            })),
+            processType: "vectorize-photos"
+        };
         
-            console.log('🔄 Processing file:', file.fileName || file.name);
-            console.log('📤 Payload:', JSON.stringify(payload, null, 2));
+        console.log('🚀 V1 Vectorization payload:', payload);
+        console.log('🔗 V1 Endpoint:', apiEndpoint);
+        
+        try {
+            // Call Artifact Processor with V1 format
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await user.getIdToken()}`,
+                    'Origin': window.location.origin
+                },
+                mode: 'cors',
+                body: JSON.stringify(payload)
+            });
             
-            try {
-                // Call Artifact Processor with webhook format
-                const response = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${await user.getIdToken()}`,
-                        'Origin': window.location.origin
-                    },
-                    mode: 'cors',
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`❌ API error for ${file.fileName}:`, errorText);
-                    continue; // Skip this file and continue with others
-                }
-                
-                const result = await response.json();
-                console.log(`✅ Result for ${file.fileName}:`, result);
-                
-                // Update Firebase and UI with result
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ V1 API error:', errorText);
+                throw new Error(`Vectorization failed: ${response.status} - ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log('✅ V1 result:', result);
+            
+            // Update Firebase and UI with result for all files
+            for (const file of files) {
                 try {
                     await window.updateFileVectorizationStatus(file.id, result);
                     window.updateFileVectorizationUI(file.id, result);
@@ -834,9 +830,11 @@ async function performVectorization(fileIds) {
                 } catch (updateError) {
                     console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
                 }
-            } catch (error) {
-                console.error(`❌ Failed to process ${file.fileName}:`, error);
             }
+        } catch (error) {
+            console.error('❌ V1 Vectorization failed:', error);
+            showNotification(`Vectorization failed: ${error.message}`, 'error');
+            throw error;
         }
         
         showNotification(`Vectorization completed for ${files.length} files`, 'success');
