@@ -10,8 +10,6 @@
  * @returns {Promise<string>} Data URL of the extracted face
  */
 export async function extractFaceFromImage(imageUrl, boundingBox) {
-    console.log('extractFaceFromImage called with:', { imageUrl, boundingBox });
-    
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = 'anonymous'; // Enable CORS for Firebase Storage URLs
@@ -23,7 +21,6 @@ export async function extractFaceFromImage(imageUrl, boundingBox) {
             
             // Check if boundingBox exists
             if (!boundingBox) {
-                console.error('BoundingBox is undefined');
                 reject(new Error('BoundingBox is undefined'));
                 return;
             }
@@ -73,20 +70,12 @@ export async function extractFaceFromImage(imageUrl, boundingBox) {
  * @returns {Promise<Array>} Array of face thumbnails with data URLs
  */
 export async function extractAllFaces(imageUrl, faces) {
-    console.log('extractAllFaces called with:', { imageUrl, facesCount: faces?.length });
-    
     if (!faces || faces.length === 0) {
-        console.log('No faces provided');
         return [];
     }
     
     const facePromises = faces.map(async (face, index) => {
         try {
-            console.log(`Processing face ${index}:`, {
-                hasBoundingBox: !!face.BoundingBox,
-                hasBoundingBoxLower: !!face.boundingBox,
-                boundingBoxData: face.BoundingBox || face.boundingBox
-            });
             const faceDataUrl = await extractFaceFromImage(imageUrl, face.BoundingBox || face.boundingBox);
             return {
                 index: index,

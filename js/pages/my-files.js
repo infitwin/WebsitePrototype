@@ -455,8 +455,6 @@ function initializeModalHandlers() {
  */
 window.showFaces = async function(event, file) {
     event.stopPropagation();
-    console.log('🔍 showFaces called with file:', file);
-    console.log('🔍 extractedFaces:', file.extractedFaces);
     
     const modal = document.getElementById('faceModal');
     const facesGrid = document.getElementById('facesModalGrid');
@@ -472,18 +470,11 @@ window.showFaces = async function(event, file) {
     // Check if we have extracted faces data
     if (file.extractedFaces && file.extractedFaces.length > 0 && file.downloadURL) {
         try {
-            console.log('Starting face extraction...');
-            console.log('File downloadURL:', file.downloadURL);
-            console.log('Number of faces to extract:', file.extractedFaces.length);
-            console.log('First face data:', JSON.stringify(file.extractedFaces[0], null, 2));
-            
             // Import face extractor functions
             const { extractAllFaces, createFaceThumbnailElement } = await import('/js/face-extractor.js');
-            console.log('Face extractor module loaded');
             
             // Extract all faces from the image
             const extractedFaces = await extractAllFaces(file.downloadURL, file.extractedFaces);
-            console.log('Faces extracted:', extractedFaces.length);
             
             // Clear loading message
             facesGrid.innerHTML = '';
