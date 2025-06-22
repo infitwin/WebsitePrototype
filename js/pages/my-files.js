@@ -805,38 +805,56 @@ async function performVectorization(fileIds) {
         
         // Import V1 orchestration endpoints
         const { ORCHESTRATION_ENDPOINTS, getEndpoints } = await import('../config/orchestration-endpoints.js');
-        // Always use production endpoints for artifact processor
-        const endpoints = getEndpoints(false);
-        const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
+        
+        // 🚨 DEBUG MODE: Use local artifact processor for debugging
+        console.log('🐛 DEBUG MODE: Using local artifact processor');
+        const apiEndpoint = 'http://localhost:8080/process-artifact';
+        
+        // Log debug info
+        console.log('🔧 Local server endpoint:', apiEndpoint);
+        console.log('🔬 Debugging face detection issue locally');
         
         // Process each file individually (API expects single file format)
         for (const file of files) {
             console.log(`🚀 Processing file: ${file.fileName || file.name}`);
             
-            // Use /process-webhook format per ArtifactProcessor documentation
+            // Use /process-artifact format per ArtifactProcessor API specification
             const payload = {
-                fileId: file.id,
-                fileName: file.fileName || file.name,
-                fileUrl: file.downloadURL,
-                contentType: file.fileType || 'image/jpeg',
-                userId: user.uid,
-                twinId: twinId
+                artifact_id: file.id,
+                file_url: file.downloadURL,
+                mime_type: file.fileType || 'image/jpeg',
+                user_id: user.uid,
+                options: {},
+                metadata: {
+                    fileName: file.fileName || file.name,
+                    twinId: twinId,
+                    uploadedAt: file.uploadedAt
+                }
             };
             
             console.log('📤 API Payload:', payload);
             console.log('📍 API Endpoint:', apiEndpoint);
             
+            // 🔍 DEBUG: Log full request details
+            const authToken = await user.getIdToken();
+            console.log('🔑 Auth token length:', authToken.length);
+            console.log('🌐 Request origin:', window.location.origin);
+            
             // API call with authentication
+            console.log('🚀 Making fetch request to local server...');
             const response = await fetch(apiEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await user.getIdToken()}`,
+                    'Authorization': `Bearer ${authToken}`,
                     'Origin': window.location.origin
                 },
                 mode: 'cors',
                 body: JSON.stringify(payload)
             });
+            
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response headers:', [...response.headers.entries()]);
             
             console.log(`📥 Response status for ${file.fileName || file.name}: ${response.status}`);
             
