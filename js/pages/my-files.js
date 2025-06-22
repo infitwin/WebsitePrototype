@@ -473,7 +473,7 @@ window.showFaces = async function(event, file) {
     if (file.extractedFaces && file.extractedFaces.length > 0 && file.downloadURL) {
         try {
             // Import face extractor functions
-            const { extractAllFaces, createFaceThumbnailElement } = await import('../face-extractor.js');
+            const { extractAllFaces, createFaceThumbnailElement } = await import('/js/face-extractor.js');
             
             // Extract all faces from the image
             const extractedFaces = await extractAllFaces(file.downloadURL, file.extractedFaces);
@@ -1119,11 +1119,23 @@ function createFileCard(file) {
     // Add click handler for images
     if (file.fileType && file.fileType.startsWith('image/')) {
         thumbnail.style.cursor = 'pointer';
-        thumbnail.onclick = (e) => {
+        thumbnail.onclick = async (e) => {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
-            showImageModal(file);
+            
+            // Show image with face overlays if faces are detected
+            if (file.extractedFaces && file.extractedFaces.length > 0) {
+                try {
+                    const { showImageWithFaces } = await import('/js/face-overlay.js');
+                    showImageWithFaces(file);
+                } catch (error) {
+                    console.error('Error loading face overlay module:', error);
+                    showImageModal(file);
+                }
+            } else {
+                showImageModal(file);
+            }
         };
     }
     

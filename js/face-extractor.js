@@ -70,11 +70,11 @@ export async function extractAllFaces(imageUrl, faces) {
     
     const facePromises = faces.map(async (face, index) => {
         try {
-            const faceDataUrl = await extractFaceFromImage(imageUrl, face.boundingBox);
+            const faceDataUrl = await extractFaceFromImage(imageUrl, face.BoundingBox || face.boundingBox);
             return {
                 index: index,
                 dataUrl: faceDataUrl,
-                confidence: face.confidence,
+                confidence: face.Confidence || face.confidence,
                 faceId: face.faceId,
                 vectorId: face.vectorId
             };
