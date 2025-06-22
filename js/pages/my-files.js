@@ -873,7 +873,7 @@ async function performVectorization(fileIds) {
                 await window.updateFileVectorizationStatus(file.id, apiResult);
                 window.updateFileVectorizationUI(file.id, apiResult);
                 
-                const extractedFaces = apiResult.vectorizationResults?.faces || apiResult.faces || [];
+                const extractedFaces = apiResult.result?.data?.analysis?.faces || apiResult.vectorizationResults?.faces || apiResult.faces || [];
                 if (extractedFaces && Array.isArray(extractedFaces)) {
                     console.log(`👤 Extracted ${extractedFaces.length} faces from ${file.fileName || file.name}`);
                 }
@@ -913,8 +913,8 @@ window.updateFileVectorizationStatus = async function updateFileVectorizationSta
     try {
         const fileRef = doc(db, 'users', user.uid, 'files', fileId);
         
-        // Extract faces from V1 result format (vectorizationResults contains the actual data)
-        const faces = result.vectorizationResults?.faces || result.faces || [];
+        // Extract faces from API result format (result.data.analysis.faces contains the actual data)
+        const faces = result.result?.data?.analysis?.faces || result.vectorizationResults?.faces || result.faces || [];
         
         await updateDoc(fileRef, {
             vectorizationStatus: {
@@ -960,8 +960,8 @@ window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, re
         badge.textContent = 'Vectorized';
     }
     
-    // Add/update face count from V1 result format (vectorizationResults contains the actual data)
-    const faces = result.vectorizationResults?.faces || result.faces || [];
+    // Add/update face count from API result format (result.data.analysis.faces contains the actual data)
+    const faces = result.result?.data?.analysis?.faces || result.vectorizationResults?.faces || result.faces || [];
     if (faces.length > 0) {
         let faceIndicator = card.querySelector('.face-indicator');
         if (!faceIndicator) {
