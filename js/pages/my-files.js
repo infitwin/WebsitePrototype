@@ -475,6 +475,7 @@ window.showFaces = async function(event, file) {
             console.log('Starting face extraction...');
             console.log('File downloadURL:', file.downloadURL);
             console.log('Number of faces to extract:', file.extractedFaces.length);
+            console.log('First face data:', JSON.stringify(file.extractedFaces[0], null, 2));
             
             // Import face extractor functions
             const { extractAllFaces, createFaceThumbnailElement } = await import('/js/face-extractor.js');

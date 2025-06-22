@@ -10,6 +10,8 @@
  * @returns {Promise<string>} Data URL of the extracted face
  */
 export async function extractFaceFromImage(imageUrl, boundingBox) {
+    console.log('extractFaceFromImage called with:', { imageUrl, boundingBox });
+    
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = 'anonymous'; // Enable CORS for Firebase Storage URLs
@@ -18,6 +20,13 @@ export async function extractFaceFromImage(imageUrl, boundingBox) {
             // Create canvas for face extraction
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
+            
+            // Check if boundingBox exists
+            if (!boundingBox) {
+                console.error('BoundingBox is undefined');
+                reject(new Error('BoundingBox is undefined'));
+                return;
+            }
             
             // Convert percentage-based coordinates to pixels
             // Firestore uses: Left, Top, Width, Height (all 0-1)
