@@ -11,35 +11,6 @@
     margin: 0 auto;
 }
 
-.face-overlay-info {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f9fafb;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.face-overlay-info p {
-    margin: 0 0 10px 0;
-    color: #374151;
-    font-weight: 500;
-}
-
-.face-overlay-info .btn-secondary {
-    background-color: #6B46C1;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-.face-overlay-info .btn-secondary:hover {
-    background-color: #553C9A;
-}
-
 /* Layout Adjustments for Purple Sidebar */
 .main-content-wrapper {
     margin-left: 60px; /* Account for purple sidebar */

@@ -138,13 +138,7 @@ export async function showImageWithFaces(file) {
         container.innerHTML = '';
         container.appendChild(canvas);
         
-        // Add face count info below image (without button)
-        const faceInfo = document.createElement('div');
-        faceInfo.className = 'face-overlay-info';
-        faceInfo.innerHTML = `
-            <p>${file.extractedFaces.length} face${file.extractedFaces.length !== 1 ? 's' : ''} detected</p>
-        `;
-        container.appendChild(faceInfo);
+        // No need for face info below image since count is shown in header button
         
     } catch (error) {
         console.error('Error loading image with faces:', error);
