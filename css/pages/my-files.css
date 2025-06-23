@@ -1247,3 +1247,42 @@
         gap: 0.75rem;
     }
 }
+
+/* Vectorization Loading Overlay */
+.vectorization-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+    border-radius: inherit;
+}
+
+.loading-spinner {
+    text-align: center;
+}
+
+.hourglass-icon {
+    color: var(--color-primary);
+    animation: rotate 2s ease-in-out infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+    100% { transform: rotate(180deg); }
+}
+
+.loading-text {
+    color: var(--color-text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 8px;
+}

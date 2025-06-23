@@ -816,6 +816,25 @@ async function performVectorization(fileIds) {
         for (const file of files) {
             console.log(`🚀 Processing file: ${file.fileName || file.name}`);
             
+            // Add loading indicator to the specific file card
+            const fileCard = document.querySelector(`[data-file-id="${file.id}"]`);
+            if (fileCard) {
+                // Add loading overlay
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'vectorization-loading-overlay';
+                loadingOverlay.innerHTML = `
+                    <div class="loading-spinner">
+                        <svg class="hourglass-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M5 8V16C5 17.8856 5 18.8284 5.58579 19.4142C6.17157 20 7.11438 20 9 20H15C16.8856 20 17.8284 20 18.4142 19.4142C19 18.8284 19 17.8856 19 16V8M5 8C5 6.11438 5 5.17157 5.58579 4.58579C6.17157 4 7.11438 4 9 4H15C16.8856 4 17.8284 4 18.4142 4.58579C19 5.17157 19 6.11438 19 8M5 8L12 12L19 8" stroke-width="2" stroke-linecap="round"/>
+                            <animate attributeName="transform" attributeType="XML" values="0 12 12; 180 12 12" dur="1s" repeatCount="indefinite"/>
+                        </svg>
+                        <div class="loading-text">Vectorizing...</div>
+                    </div>
+                `;
+                fileCard.style.position = 'relative';
+                fileCard.appendChild(loadingOverlay);
+            }
+            
             // Use /process-artifact format per ArtifactProcessor API specification
             const payload = {
                 artifact_id: file.id,
@@ -860,6 +879,13 @@ async function performVectorization(fileIds) {
                 const errorText = await response.text();
                 console.error(`❌ Response error for ${file.fileName || file.name}:`, errorText);
                 showNotification(`API Error for ${file.fileName || file.name}: ${response.status}`, 'error');
+                // Remove loading overlay on error
+                if (fileCard) {
+                    const loadingOverlay = fileCard.querySelector('.vectorization-loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.remove();
+                    }
+                }
                 continue; // Skip this file but continue with others
             }
             
@@ -875,16 +901,33 @@ async function performVectorization(fileIds) {
                 if (extractedFaces && Array.isArray(extractedFaces)) {
                     console.log(`👤 Extracted ${extractedFaces.length} faces from ${file.fileName || file.name}`);
                 }
+                
+                // Remove loading overlay from the specific card
+                if (fileCard) {
+                    const loadingOverlay = fileCard.querySelector('.vectorization-loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.remove();
+                    }
+                }
             } catch (updateError) {
                 console.error(`❌ Error updating ${file.fileName || file.name}:`, updateError);
+                
+                // Remove loading overlay even on error
+                if (fileCard) {
+                    const loadingOverlay = fileCard.querySelector('.vectorization-loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.remove();
+                    }
+                }
             }
         }
         
         showNotification(`Vectorization completed for ${files.length} files`, 'success');
         
-        // Clear selection and refresh
+        // Clear selection but DON'T refresh the entire page
         clearFileSelection();
-        await initializeFileBrowser();
+        // Remove this line to prevent full page reload:
+        // await initializeFileBrowser();
         
     } catch (error) {
         console.error('❌ V1 Vectorization error:', error);
