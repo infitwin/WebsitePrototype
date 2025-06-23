@@ -641,13 +641,15 @@ function escapeHtml(text) {
 function updateFileCounts() {
     const allFiles = document.querySelectorAll('.file-card').length;
     const withFaces = document.querySelectorAll('[data-has-faces="true"]').length;
-    const processing = document.querySelectorAll('[data-processing="true"]').length;
     const recent = document.querySelectorAll('.file-card').length; // Simplified for now
     
-    document.getElementById('allCount').textContent = allFiles;
-    document.getElementById('facesCount').textContent = withFaces;
-    document.getElementById('processingCount').textContent = processing;
-    document.getElementById('recentCount').textContent = Math.min(recent, 8);
+    const allCountEl = document.getElementById('allCount');
+    const facesCountEl = document.getElementById('facesCount');
+    const recentCountEl = document.getElementById('recentCount');
+    
+    if (allCountEl) allCountEl.textContent = allFiles;
+    if (facesCountEl) facesCountEl.textContent = withFaces;
+    if (recentCountEl) recentCountEl.textContent = Math.min(recent, 8);
 }
 
 /**
