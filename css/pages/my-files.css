@@ -562,6 +562,21 @@
 
 .face-item {
     text-align: center;
+    position: relative;
+}
+
+.face-thumb-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    /* Ensure the container doesn't interfere with the delete button */
+    pointer-events: none;
+}
+
+.face-thumb-container .face-thumb,
+.face-thumb-container .face-delete-btn {
+    /* Re-enable pointer events for the children */
+    pointer-events: auto;
 }
 
 .face-thumb {
@@ -575,8 +590,46 @@
     transition: transform 0.2s;
 }
 
+/* Remove the hover scale effect that interferes with delete button */
 .face-thumb:hover {
-    transform: scale(1.05);
+    /* transform: scale(1.05); - Removed to prevent interference */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Just enhance shadow instead */
+}
+
+.face-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px; /* Slightly larger for easier clicking */
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.9);
+    border: 2px solid white; /* Add white border for better visibility */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.8; /* Always somewhat visible */
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 10; /* Ensure it stays on top */
+}
+
+.face-thumb-container:hover .face-delete-btn {
+    opacity: 1;
+    background: #dc2626;
+}
+
+.face-delete-btn:hover {
+    background: #b91c1c;
+    transform: scale(1.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.face-delete-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 .face-label {

@@ -19,6 +19,7 @@ A comprehensive web application for Infitwin - a platform that helps people crea
 - **My Files Page**: Complete with face detection visualization
 - **Face Detection**: AWS Rekognition integration via ArtifactProcessor
 - **Face Display**: Extracted faces shown in modal with bounding boxes
+- **Face Deletion**: Remove unwanted faces with hover-to-show delete buttons
 - **Vectorization**: Single and batch file processing
 - **UI/UX**: Loading indicators, face count badges, modal improvements
 - **Firebase Integration**: Face data properly saved and retrieved
@@ -134,10 +135,11 @@ grep -E "🔥|✅|❌|FIREBASE_DEBUG" artifact-processor-fixed.log
 
 ## 🚀 Next Steps
 
-### Priority 1: Frontend Integration
-- Connect My Files page to Firebase face metadata
-- Implement face thumbnail generation from bounding boxes
-- Add face tagging and recognition features
+### Priority 1: Frontend Integration ✅
+- ✅ Connect My Files page to Firebase face metadata
+- ✅ Implement face thumbnail generation from bounding boxes
+- ✅ Add face deletion capability
+- 🔄 Add face tagging and recognition features
 
 ### Priority 2: User Experience
 - Complete authentication flow

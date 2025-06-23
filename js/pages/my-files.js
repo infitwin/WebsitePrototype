@@ -451,6 +451,95 @@ function initializeModalHandlers() {
 }
 
 /**
+ * Handle face deletion
+ * @param {string} fileId - File ID
+ * @param {Object} faceData - Face data to delete
+ * @param {number} faceIndex - Index of face in array
+ */
+async function handleFaceDelete(fileId, faceData, faceIndex) {
+    try {
+        console.log('🗑️ Deleting face:', { fileId, faceId: faceData.faceId, faceIndex });
+        
+        // Show loading state
+        showNotification('Deleting face...', 'info');
+        
+        // Get current user
+        const { auth, db } = await import('../firebase-config.js');
+        const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+        
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('User must be authenticated');
+        }
+        
+        // Get current file document
+        const fileRef = doc(db, 'users', user.uid, 'files', fileId);
+        const fileDoc = await getDoc(fileRef);
+        
+        if (!fileDoc.exists()) {
+            throw new Error('File not found');
+        }
+        
+        const fileData = fileDoc.data();
+        const currentFaces = fileData.extractedFaces || [];
+        
+        // Remove the face at the specified index
+        const updatedFaces = currentFaces.filter((_, index) => index !== faceIndex);
+        
+        // Update Firebase
+        await updateDoc(fileRef, {
+            extractedFaces: updatedFaces,
+            faceCount: updatedFaces.length,
+            faceLastModified: new Date()
+        });
+        
+        // Update local data
+        const file = window.currentFiles?.find(f => f.id === fileId);
+        if (file) {
+            file.extractedFaces = updatedFaces;
+            file.faceCount = updatedFaces.length;
+        }
+        
+        // Update UI
+        const fileCard = document.querySelector(`[data-file-id="${fileId}"]`);
+        if (fileCard) {
+            // Update face count display
+            const faceIndicator = fileCard.querySelector('.face-indicator');
+            if (updatedFaces.length > 0) {
+                if (faceIndicator) {
+                    faceIndicator.innerHTML = `
+                        <svg class="face-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        ${updatedFaces.length} face${updatedFaces.length !== 1 ? 's' : ''}
+                    `;
+                }
+                fileCard.dataset.faceCount = updatedFaces.length;
+            } else {
+                // Remove face indicator if no faces left
+                if (faceIndicator) {
+                    faceIndicator.remove();
+                }
+                fileCard.dataset.hasFaces = 'false';
+                delete fileCard.dataset.faceCount;
+            }
+        }
+        
+        // Update filter counts
+        updateFileCounts();
+        
+        showNotification('Face deleted successfully', 'success');
+        console.log('✅ Face deleted successfully');
+        
+    } catch (error) {
+        console.error('❌ Failed to delete face:', error);
+        showNotification(`Failed to delete face: ${error.message}`, 'error');
+        throw error;
+    }
+}
+
+/**
  * Show faces modal
  */
 window.showFaces = async function(event, file) {
@@ -471,7 +560,7 @@ window.showFaces = async function(event, file) {
     if (file.extractedFaces && file.extractedFaces.length > 0 && file.downloadURL) {
         try {
             // Import face extractor functions
-            const { extractAllFaces, createFaceThumbnailElement } = await import('/js/face-extractor.js');
+            const { extractAllFaces, createFaceThumbnailElement } = await import('/js/face-extractor.js?v=' + Date.now());
             
             // Extract all faces from the image
             const extractedFaces = await extractAllFaces(file.downloadURL, file.extractedFaces);
@@ -481,8 +570,18 @@ window.showFaces = async function(event, file) {
             
             // Display extracted faces
             if (extractedFaces.length > 0) {
+                console.log('🎯 Creating face elements with delete functionality');
                 extractedFaces.forEach((face, index) => {
-                    const faceElement = createFaceThumbnailElement(face, index);
+                    const faceElement = createFaceThumbnailElement(face, index, {
+                        fileId: file.id,
+                        onDelete: async (faceData, faceIndex, fileId) => {
+                            console.log('🗑️ Delete clicked for face:', faceIndex);
+                            await handleFaceDelete(fileId, faceData, faceIndex);
+                            // Refresh the modal
+                            window.showFaces(event, file);
+                        }
+                    });
+                    console.log('✅ Face element created with delete button:', faceElement);
                     facesGrid.appendChild(faceElement);
                 });
             } else {

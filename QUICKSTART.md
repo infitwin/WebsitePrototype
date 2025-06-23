@@ -12,6 +12,7 @@
 3. **UI Improvements**: Moved Face Details button to header, removed redundant text
 4. **Cleanup**: Removed unused processing indicator feature
 5. **Debugging**: Added extensive logging for batch vectorization issue
+6. **Face Deletion**: Added ability to delete unwanted faces from vectorized images
 
 ### ⚠️ KNOWN ISSUE - BATCH VECTORIZATION BUG:
 - **GitHub Issue #133**: Second file in batch returns 0 faces from API
@@ -37,6 +38,28 @@ file_ref.update(update_data)  # ❌ 404 error
 # AFTER (working):
 file_ref.set(update_data, merge=True)  # ✅ Creates document
 ```
+
+## 🆕 FACE DELETION FEATURE
+
+### What's New:
+- **Delete Unwanted Faces**: Remove incorrectly detected or unwanted faces from vectorized images
+- **UI Enhancement**: Red delete button (X) appears on hover over each face thumbnail
+- **Confirmation Dialog**: Prevents accidental deletion with confirmation prompt
+- **Firebase Integration**: Deletions are permanently saved to Firebase
+- **Real-time Updates**: UI updates immediately after deletion
+
+### How to Use:
+1. Click on face count indicator on any vectorized image
+2. In the face modal, hover over any face thumbnail
+3. Click the red X button that appears
+4. Confirm deletion in the dialog
+5. Face is permanently removed from Firebase
+
+### Technical Details:
+- Faces stored at: `users/{userId}/files/{fileId}/extractedFaces`
+- Deleted faces are removed from the array (not soft-deleted)
+- `faceCount` and `faceLastModified` fields are updated
+- Other systems reading Firebase will NOT see deleted faces
 
 ## 🧪 VERIFICATION PROOF
 
