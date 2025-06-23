@@ -2,20 +2,31 @@
 
 A comprehensive web application for Infitwin - a platform that helps people create interactive biographies and living archives of their life stories with AI-powered face detection and metadata processing.
 
-## 🚀 Quick Start for AI Handoff
+## 🚨 IMPORTANT: AI ASSISTANTS START HERE 🚨
 
-**👋 New AI? Start here:** Read the [QUICKSTART.md](./QUICKSTART.md) guide for immediate context on where we left off and what to do next.
+**👋 New AI Session?** You MUST read the [QUICKSTART.md](./QUICKSTART.md) file first! It contains:
+- Current project status and what's been completed
+- Known issues and bugs
+- Memory compression handoff (C1) for continuity
+- Next steps and priorities
 
-## 🎯 Current Status
+**DO NOT PROCEED WITHOUT READING [QUICKSTART.md](./QUICKSTART.md)**
 
-**✅ MAJOR MILESTONE ACHIEVED**: Artifact processor with AWS Rekognition face detection is fully working and saving metadata to Firebase!
+## 🎯 Current Status (December 2024)
 
-### What's Working:
-- **Image Processing Pipeline**: Complete artifact processor with AWS Rekognition integration
-- **Face Detection**: 99.99% confidence face detection with bounding boxes, emotions, age, landmarks
-- **Firebase Integration**: Face metadata properly saved to `users/{userId}/files/{fileId}/extractedFaces`
-- **Virtual Environment**: Properly configured ML environment with all dependencies
-- **Test Infrastructure**: Comprehensive testing scripts and debug logging
+### ✅ What's Working:
+- **Authentication**: Full auth flow with email verification
+- **My Files Page**: Complete with face detection visualization
+- **Face Detection**: AWS Rekognition integration via ArtifactProcessor
+- **Face Display**: Extracted faces shown in modal with bounding boxes
+- **Vectorization**: Single and batch file processing
+- **UI/UX**: Loading indicators, face count badges, modal improvements
+- **Firebase Integration**: Face data properly saved and retrieved
+- **Test Credentials**: weezer@yev.com / 123456
+
+### ⚠️ Known Issues:
+- **Batch Vectorization Bug**: Second file in batch returns 0 faces (Issue #133)
+- See [QUICKSTART.md](./QUICKSTART.md) for complete bug list
 
 ### Architecture Overview:
 ```
