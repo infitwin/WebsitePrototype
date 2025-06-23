@@ -20,6 +20,7 @@ A comprehensive web application for Infitwin - a platform that helps people crea
 - **Face Detection**: AWS Rekognition integration via ArtifactProcessor
 - **Face Display**: Extracted faces shown in modal with bounding boxes
 - **Face Deletion**: Remove unwanted faces with hover-to-show delete buttons
+- **File Rename**: Double-click to edit file names with custom display names
 - **Vectorization**: Single and batch file processing
 - **UI/UX**: Loading indicators, face count badges, modal improvements
 - **Firebase Integration**: Face data properly saved and retrieved

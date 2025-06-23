@@ -13,12 +13,20 @@
 4. **Cleanup**: Removed unused processing indicator feature
 5. **Debugging**: Added extensive logging for batch vectorization issue
 6. **Face Deletion**: Added ability to delete unwanted faces from vectorized images
+7. **File Rename**: Added double-click to rename files with custom display names
 
-### ⚠️ KNOWN ISSUE - BATCH VECTORIZATION BUG:
+### ⚠️ KNOWN ISSUES:
+
+#### 1. BATCH VECTORIZATION BUG
 - **GitHub Issue #133**: Second file in batch returns 0 faces from API
 - **Symptoms**: test-image3.jpg works alone but fails as 2nd file in batch
 - **Workaround**: Vectorize files individually
 - **Status**: API issue, not frontend - needs ArtifactProcessor fix
+
+#### 2. ARTIFACT PROCESSOR CONNECTION
+- **Issue**: Vectorization requires local ArtifactProcessor running on port 8080
+- **Error**: "Failed to fetch" when ArtifactProcessor not running
+- **Fix**: Start artifact processor with `/home/tim/WebsitePrototype/start-artifact-with-proper-imports.sh`
 
 ## 🔧 WHAT WAS FIXED
 
@@ -38,6 +46,28 @@ file_ref.update(update_data)  # ❌ 404 error
 # AFTER (working):
 file_ref.set(update_data, merge=True)  # ✅ Creates document
 ```
+
+## 🆕 FILE RENAME FEATURE
+
+### What's New:
+- **Custom Display Names**: Double-click any file name in image modal to rename
+- **Non-destructive**: Original filename preserved, only display name changes
+- **Persistent**: Names saved to Firebase and sync across all views
+- **Intuitive UI**: Text cursor on hover, inline editing with auto-select
+
+### How to Use:
+1. Click on any image to open the modal
+2. Double-click on the file name in the modal header
+3. Type your new custom name
+4. Press Enter or click outside to save
+5. Press Escape to cancel
+
+### Technical Details:
+- New field `displayName` added to Firebase documents
+- Original `fileName` preserved for reference
+- Display name used throughout UI (file cards, modals, search)
+- Character limit: 100 characters
+- Empty names not allowed
 
 ## 🆕 FACE DELETION FEATURE
 

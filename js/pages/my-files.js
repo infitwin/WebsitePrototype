@@ -451,6 +451,47 @@ function initializeModalHandlers() {
 }
 
 /**
+ * Update file display name in Firebase
+ * @param {string} fileId - File ID
+ * @param {string} displayName - New display name
+ */
+async function updateFileDisplayName(fileId, displayName) {
+    const { auth, db } = await import('../firebase-config.js');
+    const { doc, updateDoc } = await import('firebase/firestore');
+    
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error('User must be authenticated');
+    }
+    
+    console.log('🔄 Updating Firebase for fileId:', fileId, 'with displayName:', displayName);
+    
+    const fileRef = doc(db, 'users', user.uid, 'files', fileId);
+    await updateDoc(fileRef, {
+        displayName: displayName,
+        lastModified: new Date()
+    });
+    
+    console.log('✅ Firebase updated successfully for fileId:', fileId);
+}
+
+/**
+ * Update file card display name in the grid
+ * @param {string} fileId - File ID
+ * @param {string} displayName - New display name
+ */
+function updateFileCardDisplayName(fileId, displayName) {
+    const fileCard = document.querySelector(`[data-file-id="${fileId}"]`);
+    if (fileCard) {
+        const nameElement = fileCard.querySelector('.file-name');
+        if (nameElement) {
+            nameElement.textContent = displayName;
+            console.log('📝 Updated file card name in grid');
+        }
+    }
+}
+
+/**
  * Handle face deletion
  * @param {string} fileId - File ID
  * @param {Object} faceData - Face data to delete
@@ -551,7 +592,7 @@ window.showFaces = async function(event, file) {
     
     if (!modal || !facesGrid || !filenameSpan) return;
     
-    filenameSpan.textContent = file.fileName || file.name;
+    filenameSpan.textContent = file.displayName || file.fileName || file.name;
     facesGrid.innerHTML = '<div style="text-align: center; padding: 20px;">Loading faces...</div>';
     
     modal.classList.add('active');
@@ -610,6 +651,167 @@ window.showFaces = async function(event, file) {
 };
 
 /**
+ * Start editing file name
+ * @param {HTMLElement} titleElement - The title element to edit
+ * @param {Object} file - The file object
+ */
+window.startEditingFileName = function startEditingFileName(titleElement, file) {
+    console.log('📝 Starting edit mode for file:', file?.fileName || 'unknown');
+    
+    // Safety check
+    if (!titleElement || !file) {
+        console.error('❌ Missing titleElement or file object');
+        return;
+    }
+    
+    // Don't allow multiple edit sessions
+    if (titleElement.querySelector('input')) {
+        console.log('⚠️ Edit session already active');
+        return;
+    }
+    
+    // Get current display name
+    const currentName = file.displayName || file.fileName || file.name || 'Untitled Image';
+    
+    // Create input element
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentName;
+    input.className = 'file-name-edit-input';
+    input.style.cssText = `
+        font-size: inherit;
+        font-weight: inherit;
+        font-family: inherit;
+        color: inherit;
+        background: white;
+        border: 2px solid #6B46C1;
+        border-radius: 6px;
+        padding: 4px 8px;
+        width: 100%;
+        max-width: 400px;
+        outline: none;
+    `;
+    
+    // Replace title with input
+    titleElement.textContent = '';
+    titleElement.appendChild(input);
+    
+    // Select all text and focus
+    input.select();
+    input.focus();
+    
+    console.log('✏️ Edit mode activated, current name:', currentName);
+    
+    // Handle Enter key (save) and Escape key (cancel)
+    input.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            await saveFileName(titleElement, input, file);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelFileNameEdit(titleElement, currentName);
+        }
+    });
+    
+    // Handle blur (click outside)
+    input.addEventListener('blur', async () => {
+        // Small delay to allow for button clicks if needed
+        setTimeout(async () => {
+            if (document.activeElement !== input) {
+                await saveFileName(titleElement, input, file);
+            }
+        }, 200);
+    });
+}
+
+/**
+ * Save the edited file name
+ * @param {HTMLElement} titleElement - The title element
+ * @param {HTMLInputElement} input - The input element
+ * @param {Object} file - The file object
+ */
+async function saveFileName(titleElement, input, file) {
+    const newName = input.value.trim();
+    const currentName = file.displayName || file.fileName || file.name || 'Untitled Image';
+    
+    console.log('💾 Saving file name:', { 
+        fileId: file.id, 
+        old: currentName, 
+        new: newName,
+        originalFileName: file.fileName
+    });
+    
+    // Validate input
+    if (!newName) {
+        console.log('❌ Empty name, reverting to original');
+        cancelFileNameEdit(titleElement, currentName);
+        return;
+    }
+    
+    // Check max length
+    if (newName.length > 100) {
+        showNotification('File name must be less than 100 characters', 'error');
+        return;
+    }
+    
+    // Check if name actually changed
+    if (newName === currentName) {
+        console.log('ℹ️ Name unchanged, exiting edit mode');
+        cancelFileNameEdit(titleElement, currentName);
+        return;
+    }
+    
+    // Show loading state
+    titleElement.innerHTML = `<span style="opacity: 0.6">${newName}</span> <span style="font-size: 0.8em">💾</span>`;
+    
+    try {
+        // Update Firebase
+        await updateFileDisplayName(file.id, newName);
+        
+        // Update the file object
+        file.displayName = newName;
+        
+        // Update window.currentImageFile if it exists
+        if (window.currentImageFile) {
+            window.currentImageFile.displayName = newName;
+        }
+        
+        // Update in currentFiles array
+        const fileInArray = window.currentFiles?.find(f => f.id === file.id);
+        if (fileInArray) {
+            fileInArray.displayName = newName;
+        }
+        
+        // Update UI
+        titleElement.textContent = newName;
+        titleElement.style.cursor = 'text';
+        
+        // Update the file card in the grid if visible
+        updateFileCardDisplayName(file.id, newName);
+        
+        console.log('✅ File name updated in Firebase and UI:', newName);
+        showNotification('File name updated', 'success');
+        
+    } catch (error) {
+        console.error('❌ Failed to update file name:', error);
+        showNotification('Failed to update file name', 'error');
+        // Revert to original name on error
+        cancelFileNameEdit(titleElement, currentName);
+    }
+}
+
+/**
+ * Cancel file name editing
+ * @param {HTMLElement} titleElement - The title element
+ * @param {string} originalName - The original name to restore
+ */
+function cancelFileNameEdit(titleElement, originalName) {
+    console.log('❌ Canceling edit, restoring:', originalName);
+    titleElement.textContent = originalName;
+    titleElement.style.cursor = 'text';
+}
+
+/**
  * Show image modal with full size image and comments
  */
 window.showImageModal = function(file) {
@@ -626,13 +828,34 @@ window.showImageModal = function(file) {
     
     // Set image and metadata
     modalImg.src = file.downloadURL || file.thumbnailURL || '';
-    modalTitle.textContent = file.fileName || file.name || 'Untitled Image';
+    modalTitle.textContent = file.displayName || file.fileName || file.name || 'Untitled Image';
     modalSize.textContent = formatFileSize(file.fileSize || file.size || 0);
     modalDate.textContent = formatDate(file.uploadedAt || file.dateUploaded);
     modalType.textContent = file.fileType || 'Unknown';
     
-    // Store current file for commenting
+    // Store current file for commenting and editing
     window.currentImageFile = file;
+    
+    // Add double-click handler for title editing
+    modalTitle.style.cursor = 'text';
+    modalTitle.title = 'Double-click to edit name';
+    
+    // Remove any existing handlers
+    modalTitle.ondblclick = null;
+    modalTitle.removeEventListener('dblclick', modalTitle._editHandler);
+    
+    // Create new handler
+    modalTitle._editHandler = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🖱️ Double-click detected on title:', modalTitle.textContent);
+        // Always use the current file, not the one from when modal opened
+        startEditingFileName(modalTitle, window.currentImageFile || file);
+    };
+    
+    // Add both methods to ensure it works
+    modalTitle.addEventListener('dblclick', modalTitle._editHandler);
+    modalTitle.ondblclick = modalTitle._editHandler;
     
     // Load existing comments
     loadImageComments(file.id);
@@ -1376,18 +1599,9 @@ function createFileCard(file) {
             e.stopPropagation();
             e.stopImmediatePropagation();
             
-            // Show image with face overlays if faces are detected
-            if (file.extractedFaces && file.extractedFaces.length > 0) {
-                try {
-                    const { showImageWithFaces } = await import('/js/face-overlay.js');
-                    showImageWithFaces(file);
-                } catch (error) {
-                    console.error('Error loading face overlay module:', error);
-                    showImageModal(file);
-                }
-            } else {
-                showImageModal(file);
-            }
+            // Always use showImageModal to ensure rename feature works
+            // TODO: Integrate rename feature into face-overlay.js later
+            showImageModal(file);
         };
     }
     
@@ -1445,7 +1659,7 @@ function createFileCard(file) {
     const fileName = document.createElement('div');
     fileName.className = 'file-name';
     // NO FALLBACKS - show the real field names that exist or break
-    fileName.textContent = file.fileName || file.name;
+    fileName.textContent = file.displayName || file.fileName || file.name;
     
     const fileMeta = document.createElement('div');
     fileMeta.className = 'file-meta';

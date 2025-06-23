@@ -680,6 +680,20 @@
     color: #111827;
 }
 
+/* Image modal title hover effect for editing */
+#imageModalTitle {
+    transition: all 0.2s ease;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+#imageModalTitle:hover {
+    background: #f3f4f6;
+    text-decoration: underline dotted;
+}
+
 .modal-text {
     color: #6b7280;
     margin-bottom: 24px;
