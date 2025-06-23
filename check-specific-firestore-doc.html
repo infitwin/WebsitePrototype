@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Specific Firestore Document</title>
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+        import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRuCcwJEqk5cZNJl4QLLnqkXbPtahp-cs",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "102197154708",
+            appId: "1:102197154708:web:d0f2d5dd3e966761c576b5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        async function checkDocument() {
+            const output = document.getElementById('output');
+            
+            try {
+                // Login
+                output.innerHTML += 'Logging in...\n';
+                await signInWithEmailAndPassword(auth, 'weezer@yev.com', '123456');
+                output.innerHTML += 'Logged in successfully\n\n';
+
+                // Get the specific document
+                const docPath = 'users/zsvLTeIPJUYGnZHzWX7hVtLJlJX2/files/file_1750464461079_rt895i9m6';
+                output.innerHTML += `Fetching document: ${docPath}\n\n`;
+                
+                const docRef = doc(db, 'users', 'zsvLTeIPJUYGnZHzWX7hVtLJlJX2', 'files', 'file_1750464461079_rt895i9m6');
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    output.innerHTML += 'Document found!\n\n';
+                    output.innerHTML += 'Full document data:\n';
+                    output.innerHTML += JSON.stringify(data, null, 2) + '\n\n';
+                    
+                    // Check specific face-related fields
+                    output.innerHTML += '=== Face Data Analysis ===\n';
+                    output.innerHTML += `extractedFaces exists: ${'extractedFaces' in data}\n`;
+                    output.innerHTML += `extractedFaces type: ${typeof data.extractedFaces}\n`;
+                    output.innerHTML += `extractedFaces is array: ${Array.isArray(data.extractedFaces)}\n`;
+                    output.innerHTML += `extractedFaces length: ${data.extractedFaces?.length || 0}\n`;
+                    output.innerHTML += `faceCount: ${data.faceCount}\n\n`;
+                    
+                    if (data.extractedFaces && data.extractedFaces.length > 0) {
+                        output.innerHTML += 'Face data found! First face:\n';
+                        output.innerHTML += JSON.stringify(data.extractedFaces[0], null, 2) + '\n';
+                    }
+                    
+                    // Check for any other face-related fields
+                    output.innerHTML += '\n=== All fields containing "face" ===\n';
+                    for (const key of Object.keys(data)) {
+                        if (key.toLowerCase().includes('face')) {
+                            output.innerHTML += `${key}: ${JSON.stringify(data[key], null, 2)}\n`;
+                        }
+                    }
+                } else {
+                    output.innerHTML += 'Document does not exist!';
+                }
+            } catch (error) {
+                output.innerHTML += `Error: ${error.message}\n${error.stack}`;
+            }
+        }
+
+        window.addEventListener('load', checkDocument);
+    </script>
+</head>
+<body>
+    <h1>Firestore Document Check</h1>
+    <pre id="output" style="background: #f0f0f0; padding: 20px; overflow: auto;"></pre>
+</body>
+</html>
