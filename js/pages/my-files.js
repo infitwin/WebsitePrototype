@@ -1167,9 +1167,6 @@ function createFileCard(file) {
         card.dataset.hasFaces = 'true';
         card.dataset.faceCount = file.faceCount;
     }
-    if (file.processing) {
-        card.dataset.processing = 'true';
-    }
     
     // File thumbnail container
     const thumbnailContainer = document.createElement('div');
@@ -1228,16 +1225,6 @@ function createFileCard(file) {
         thumbnailContainer.appendChild(faceIndicator);
     }
     
-    // Processing indicator
-    if (file.processing) {
-        const processingIndicator = document.createElement('div');
-        processingIndicator.className = 'processing-indicator';
-        processingIndicator.innerHTML = `
-            <div class="spinner"></div>
-            Processing
-        `;
-        thumbnailContainer.appendChild(processingIndicator);
-    }
     
     // Quick actions
     const quickActions = document.createElement('div');
