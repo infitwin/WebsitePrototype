@@ -837,10 +837,10 @@ async function performVectorization(fileIds) {
                 fileCard.appendChild(loadingOverlay);
             }
             
-            // Add a small delay between files to prevent overwhelming the API
+            // Add a delay between files to prevent overwhelming the API
             if (processedCount > 1) {
-                console.log('⏳ Waiting 1 second before next file...');
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                console.log('⏳ Waiting 3 seconds before next file to ensure API is ready...');
+                await new Promise(resolve => setTimeout(resolve, 3000));
             }
             
             // Use /process-artifact format per ArtifactProcessor API specification
@@ -857,8 +857,14 @@ async function performVectorization(fileIds) {
                 }
             };
             
-            console.log('📤 API Payload:', payload);
+            console.log('📤 API Payload:', JSON.stringify(payload, null, 2));
             console.log('📍 API Endpoint:', apiEndpoint);
+            console.log('📐 Request details:', {
+                fileNumber: processedCount,
+                fileName: file.fileName,
+                fileUrl: file.downloadURL,
+                timestamp: new Date().toISOString()
+            });
             
             // 🔍 DEBUG: Log full request details
             const authToken = await user.getIdToken();
@@ -897,7 +903,18 @@ async function performVectorization(fileIds) {
                 continue; // Skip this file but continue with others
             }
             
-            const apiResult = await response.json();
+            const responseText = await response.text();
+            console.log(`📄 Raw response length for ${file.fileName}: ${responseText.length} characters`);
+            
+            let apiResult;
+            try {
+                apiResult = JSON.parse(responseText);
+            } catch (e) {
+                console.error(`❌ Failed to parse JSON response for ${file.fileName}:`, e);
+                console.log('Raw response:', responseText.substring(0, 500));
+                continue;
+            }
+            
             console.log(`✅ API Result for ${file.fileName || file.name}:`, apiResult);
             
             // Debug: Log exactly what faces we got from the API
@@ -906,6 +923,11 @@ async function performVectorization(fileIds) {
                            apiResult.faces || 
                            [];
             console.log(`🔍 File ${processedCount}: ${file.fileName} - API returned ${apiFaces.length} faces:`, apiFaces);
+            
+            // Also check if there's an error in the response
+            if (apiResult.error) {
+                console.error(`⚠️ API returned error for ${file.fileName}:`, apiResult.error);
+            }
             
             // Update Firebase and UI with result for this file
             try {
@@ -1051,8 +1073,26 @@ window.updateFileVectorizationStatus = async function updateFileVectorizationSta
  * Update file UI after vectorization
  */
 window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, result) {
+    console.log(`🎨 Updating UI for fileId: ${fileId}`);
     const card = document.querySelector(`[data-file-id="${fileId}"]`);
-    if (!card) return;
+    if (!card) {
+        console.error(`❌ Could not find card for fileId: ${fileId}`);
+        // Try to find by file name as fallback
+        const fileName = window.currentFiles?.find(f => f.id === fileId)?.fileName;
+        if (fileName) {
+            console.log(`🔍 Trying to find card by fileName: ${fileName}`);
+            const allCards = document.querySelectorAll('.file-card');
+            for (const c of allCards) {
+                const nameEl = c.querySelector('.file-name');
+                if (nameEl && nameEl.textContent.includes(fileName)) {
+                    console.log(`✅ Found card by fileName match`);
+                    card = c;
+                    break;
+                }
+            }
+        }
+        if (!card) return;
+    }
     
     // Update badge
     const badge = card.querySelector('.vectorization-badge');
@@ -1065,17 +1105,23 @@ window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, re
     const faces = result.result?.data?.analysis?.faces || result.vectorizationResults?.faces || result.faces || [];
     
     // Update card data attributes for filtering
+    console.log(`🎯 Updating face indicator for ${fileId}: ${faces.length} faces`);
     if (faces.length > 0) {
         card.dataset.hasFaces = 'true';
         card.dataset.faceCount = faces.length;
         let faceIndicator = card.querySelector('.face-indicator');
         if (!faceIndicator) {
+            console.log(`🆕 Creating new face indicator for ${fileId}`);
             faceIndicator = document.createElement('div');
             faceIndicator.className = 'face-indicator';
             const thumbnailContainer = card.querySelector('.file-thumbnail-container');
             if (thumbnailContainer) {
                 thumbnailContainer.appendChild(faceIndicator);
+            } else {
+                console.error(`❌ No thumbnail container found for ${fileId}`);
             }
+        } else {
+            console.log(`♻️ Updating existing face indicator for ${fileId}`);
         }
         
         faceIndicator.innerHTML = `
