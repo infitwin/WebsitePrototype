@@ -813,8 +813,10 @@ async function performVectorization(fileIds) {
         console.log('🔬 Debugging face detection issue locally');
         
         // Process each file individually (API expects single file format)
+        let processedCount = 0;
         for (const file of files) {
-            console.log(`🚀 Processing file: ${file.fileName || file.name}`);
+            processedCount++;
+            console.log(`🚀 Processing file ${processedCount}/${files.length}: ${file.fileName || file.name}`);
             
             // Add loading indicator to the specific file card
             const fileCard = document.querySelector(`[data-file-id="${file.id}"]`);
@@ -833,6 +835,12 @@ async function performVectorization(fileIds) {
                 `;
                 fileCard.style.position = 'relative';
                 fileCard.appendChild(loadingOverlay);
+            }
+            
+            // Add a small delay between files to prevent overwhelming the API
+            if (processedCount > 1) {
+                console.log('⏳ Waiting 1 second before next file...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
             
             // Use /process-artifact format per ArtifactProcessor API specification
@@ -895,26 +903,45 @@ async function performVectorization(fileIds) {
             // Update Firebase and UI with result for this file
             try {
                 await window.updateFileVectorizationStatus(file.id, apiResult);
-                window.updateFileVectorizationUI(file.id, apiResult);
                 
-                const extractedFaces = apiResult.result?.data?.analysis?.faces || apiResult.vectorizationResults?.faces || apiResult.faces || [];
-                if (extractedFaces && Array.isArray(extractedFaces)) {
-                    console.log(`👤 Extracted ${extractedFaces.length} faces from ${file.fileName || file.name}`);
-                    
-                    // Update the file object in currentFiles array with the new face data
-                    const fileIndex = window.currentFiles.findIndex(f => f.id === file.id);
-                    if (fileIndex !== -1) {
-                        window.currentFiles[fileIndex].extractedFaces = extractedFaces;
-                        window.currentFiles[fileIndex].faceCount = extractedFaces.length;
-                        console.log(`📝 Updated currentFiles[${fileIndex}] with ${extractedFaces.length} faces`);
+                // Wait a bit for Firestore to update
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Fetch the updated file data from Firestore to ensure we have the latest
+                const { auth, db } = await import('../firebase-config.js');
+                const { doc, getDoc } = await import('firebase/firestore');
+                const user = auth.currentUser;
+                
+                if (user) {
+                    const fileDoc = await getDoc(doc(db, 'users', user.uid, 'files', file.id));
+                    if (fileDoc.exists()) {
+                        const updatedFileData = fileDoc.data();
+                        const extractedFaces = updatedFileData.extractedFaces || [];
+                        
+                        console.log(`👤 File ${file.fileName} in Firestore has ${extractedFaces.length} faces`);
+                        
+                        // Update the file object in currentFiles array with the new face data
+                        const fileIndex = window.currentFiles.findIndex(f => f.id === file.id);
+                        if (fileIndex !== -1) {
+                            window.currentFiles[fileIndex].extractedFaces = extractedFaces;
+                            window.currentFiles[fileIndex].faceCount = extractedFaces.length;
+                            console.log(`📝 Updated window.currentFiles[${fileIndex}] with ${extractedFaces.length} faces`);
+                        }
+                        
+                        // Also update the local currentFiles array
+                        const localFileIndex = currentFiles.findIndex(f => f.id === file.id);
+                        if (localFileIndex !== -1) {
+                            currentFiles[localFileIndex].extractedFaces = extractedFaces;
+                            currentFiles[localFileIndex].faceCount = extractedFaces.length;
+                            console.log(`📝 Updated local currentFiles[${localFileIndex}] with ${extractedFaces.length} faces`);
+                        }
+                        
+                        // Update UI with the data from Firestore
+                        window.updateFileVectorizationUI(file.id, { faces: extractedFaces });
                     }
-                    
-                    // Also update the local currentFiles array (not just window.currentFiles)
-                    const localFileIndex = currentFiles.findIndex(f => f.id === file.id);
-                    if (localFileIndex !== -1) {
-                        currentFiles[localFileIndex].extractedFaces = extractedFaces;
-                        currentFiles[localFileIndex].faceCount = extractedFaces.length;
-                    }
+                } else {
+                    // Fallback to using API result
+                    window.updateFileVectorizationUI(file.id, apiResult);
                 }
                 
                 // Remove loading overlay from the specific card
