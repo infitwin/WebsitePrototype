@@ -900,6 +900,21 @@ async function performVectorization(fileIds) {
                 const extractedFaces = apiResult.result?.data?.analysis?.faces || apiResult.vectorizationResults?.faces || apiResult.faces || [];
                 if (extractedFaces && Array.isArray(extractedFaces)) {
                     console.log(`👤 Extracted ${extractedFaces.length} faces from ${file.fileName || file.name}`);
+                    
+                    // Update the file object in currentFiles array with the new face data
+                    const fileIndex = window.currentFiles.findIndex(f => f.id === file.id);
+                    if (fileIndex !== -1) {
+                        window.currentFiles[fileIndex].extractedFaces = extractedFaces;
+                        window.currentFiles[fileIndex].faceCount = extractedFaces.length;
+                        console.log(`📝 Updated currentFiles[${fileIndex}] with ${extractedFaces.length} faces`);
+                    }
+                    
+                    // Also update the local currentFiles array (not just window.currentFiles)
+                    const localFileIndex = currentFiles.findIndex(f => f.id === file.id);
+                    if (localFileIndex !== -1) {
+                        currentFiles[localFileIndex].extractedFaces = extractedFaces;
+                        currentFiles[localFileIndex].faceCount = extractedFaces.length;
+                    }
                 }
                 
                 // Remove loading overlay from the specific card
@@ -1003,7 +1018,11 @@ window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, re
     
     // Add/update face count from API result format (result.data.analysis.faces contains the actual data)
     const faces = result.result?.data?.analysis?.faces || result.vectorizationResults?.faces || result.faces || [];
+    
+    // Update card data attributes for filtering
     if (faces.length > 0) {
+        card.dataset.hasFaces = 'true';
+        card.dataset.faceCount = faces.length;
         let faceIndicator = card.querySelector('.face-indicator');
         if (!faceIndicator) {
             faceIndicator = document.createElement('div');
@@ -1022,10 +1041,13 @@ window.updateFileVectorizationUI = function updateFileVectorizationUI(fileId, re
             ${faces.length} face${faces.length !== 1 ? 's' : ''}
         `;
         
-        // Update click handler
+        // Update click handler with the updated file data
         faceIndicator.onclick = (e) => {
             const file = window.currentFiles?.find(f => f.id === fileId);
             if (file) {
+                // Make sure the file has the latest face data
+                file.extractedFaces = faces;
+                file.faceCount = faces.length;
                 window.showFaces(e, file);
             }
         };
