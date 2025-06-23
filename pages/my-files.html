@@ -92,6 +92,17 @@
 
             <!-- Main Content -->
             <main class="symphony-content">
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" id="fileInput" multiple hidden accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.epub,.ged">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p style="font-size: 1.25rem; font-weight: 700; color: #6B46C1; margin-bottom: 8px;">Drop files to upload</p>
+                    <p style="color: #6b7280;">or click to browse from your computer</p>
+                    <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 8px;">Supports JPG, PNG, PDF, DOC up to 50MB</p>
+                </div>
+
                 <!-- Batch Actions -->
                 <div class="batch-actions" id="batchActions" style="display: none;">
                     <div class="batch-actions-inner">
@@ -111,17 +122,6 @@
                             </button>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Upload Zone -->
-                <div class="upload-zone" id="uploadZone">
-                    <input type="file" id="fileInput" multiple hidden accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.epub,.ged">
-                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                    </svg>
-                    <p style="font-size: 1.25rem; font-weight: 700; color: #6B46C1; margin-bottom: 8px;">Drop files to upload</p>
-                    <p style="color: #6b7280;">or click to browse from your computer</p>
-                    <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 8px;">Supports JPG, PNG, PDF, DOC up to 50MB</p>
                 </div>
 
                 <!-- Upload Queue -->
