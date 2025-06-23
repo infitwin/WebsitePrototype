@@ -684,7 +684,7 @@ async function getVectorizationQuota() {
     const { doc, getDoc } = await import('firebase/firestore');
     
     const user = auth.currentUser;
-    if (!user) return { used: 0, limit: 10, tier: 'free' };
+    if (!user) return { used: 0, limit: 1000, tier: 'free' };
     
     try {
         // Get user's usage data
@@ -694,13 +694,13 @@ async function getVectorizationQuota() {
         // For now, assume free tier with 10/month limit
         return {
             used: usage.count || 0,
-            limit: 10,
+            limit: 1000,
             tier: 'free',
             lastReset: usage.lastReset
         };
     } catch (error) {
         console.error('Error fetching quota:', error);
-        return { used: 0, limit: 10, tier: 'free' };
+        return { used: 0, limit: 1000, tier: 'free' };
     }
 }
 
