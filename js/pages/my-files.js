@@ -900,12 +900,22 @@ async function performVectorization(fileIds) {
             const apiResult = await response.json();
             console.log(`✅ API Result for ${file.fileName || file.name}:`, apiResult);
             
+            // Debug: Log exactly what faces we got from the API
+            const apiFaces = apiResult.result?.data?.analysis?.faces || 
+                           apiResult.vectorizationResults?.faces || 
+                           apiResult.faces || 
+                           [];
+            console.log(`🔍 File ${processedCount}: ${file.fileName} - API returned ${apiFaces.length} faces:`, apiFaces);
+            
             // Update Firebase and UI with result for this file
             try {
+                console.log(`📊 Updating Firebase for ${file.fileName} with faces:`, 
+                    apiResult.result?.data?.analysis?.faces || apiResult.faces || []);
+                
                 await window.updateFileVectorizationStatus(file.id, apiResult);
                 
                 // Wait a bit for Firestore to update
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 // Fetch the updated file data from Firestore to ensure we have the latest
                 const { auth, db } = await import('../firebase-config.js');
@@ -998,6 +1008,14 @@ window.updateFileVectorizationStatus = async function updateFileVectorizationSta
         
         // Extract faces from API result format (result.data.analysis.faces contains the actual data)
         const faces = result.result?.data?.analysis?.faces || result.vectorizationResults?.faces || result.faces || [];
+        
+        // Debug logging
+        const fileName = window.currentFiles?.find(f => f.id === fileId)?.fileName || 'unknown';
+        console.log(`💾 Saving to Firebase - ${fileName}:`, {
+            fileId,
+            facesCount: faces.length,
+            faces: faces
+        });
         
         await updateDoc(fileRef, {
             vectorizationStatus: {
