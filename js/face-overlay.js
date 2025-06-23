@@ -91,6 +91,32 @@ export async function showImageWithFaces(file) {
     if (modalDate) modalDate.textContent = formatDate(file.uploadedAt || file.dateUploaded);
     if (modalType) modalType.textContent = file.fileType || 'Unknown';
     
+    // Add Face Details button to header if faces exist
+    const modalHeader = modal.querySelector('.image-modal-header');
+    if (modalHeader && file.extractedFaces?.length > 0) {
+        // Remove any existing face details button
+        const existingBtn = modalHeader.querySelector('.face-details-btn');
+        if (existingBtn) existingBtn.remove();
+        
+        // Create face details button
+        const faceDetailsBtn = document.createElement('button');
+        faceDetailsBtn.className = 'btn-secondary face-details-btn';
+        faceDetailsBtn.style.marginLeft = 'auto';
+        faceDetailsBtn.style.marginRight = '10px';
+        faceDetailsBtn.innerHTML = `
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style="margin-right: 6px;">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            View Faces (${file.extractedFaces.length})
+        `;
+        faceDetailsBtn.onclick = (e) => window.showFaces(e, file);
+        
+        // Insert button before the close button
+        const closeBtn = modalHeader.querySelector('.modal-close');
+        modalHeader.insertBefore(faceDetailsBtn, closeBtn);
+    }
+    
     try {
         // Load image
         const img = new Image();
@@ -112,14 +138,11 @@ export async function showImageWithFaces(file) {
         container.innerHTML = '';
         container.appendChild(canvas);
         
-        // Add face info below image
+        // Add face count info below image (without button)
         const faceInfo = document.createElement('div');
         faceInfo.className = 'face-overlay-info';
         faceInfo.innerHTML = `
             <p>${file.extractedFaces.length} face${file.extractedFaces.length !== 1 ? 's' : ''} detected</p>
-            <button class="btn-secondary" onclick="window.showFaces(event, ${JSON.stringify(file).replace(/"/g, '&quot;')})">
-                View Face Details
-            </button>
         `;
         container.appendChild(faceInfo);
         

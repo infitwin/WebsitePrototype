@@ -738,6 +738,26 @@
     align-items: center;
     padding: 16px 20px;
     border-bottom: 1px solid #e5e7eb;
+    gap: 10px;
+}
+
+/* Face Details button in image modal header */
+.face-details-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.face-details-btn:hover {
+    background: #5856eb;
 }
 
 .modal-close {
