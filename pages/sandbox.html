@@ -900,7 +900,25 @@
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false
+                    useExternalMetadataEditor: false,
+                    onFileDrop: (targetId, fileData, isNode) => {
+                        log(`📥 Item dropped on sandbox: ${JSON.stringify(fileData)}`);
+                        log(`   Target: ${targetId}, Is Node: ${isNode}`);
+                        
+                        // Handle different types of drops
+                        if (fileData.type === 'node') {
+                            log(`🧩 Adding node from production: ${fileData.nodeData.label}`);
+                            // The node data from Neo4j will be in fileData.nodeData
+                            // This should automatically add the node to the sandbox
+                            simulateChange();
+                        } else if (fileData.type === 'face') {
+                            log(`😊 Adding face: ${fileData.faceId}`);
+                            simulateChange();
+                        } else if (fileData.type === 'artifact') {
+                            log(`📎 Adding artifact: ${fileData.fileName}`);
+                            simulateChange();
+                        }
+                    }
                 });
                 
                 sandboxRoot = ReactDOM.createRoot(container);
@@ -1004,7 +1022,12 @@
                     useExternalMetadataEditor: false,
                     width: '100%',
                     height: '100%',
-                    style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
+                    style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+                    onFileDrop: (targetId, fileData, isNode) => {
+                        log(`📥 Item dropped on production: ${JSON.stringify(fileData)}`);
+                        log(`   Target: ${targetId}, Is Node: ${isNode}`);
+                        log(`   Note: Production is read-only, no changes applied`);
+                    }
                 });
                 
                 productionRoot = ReactDOM.createRoot(container);
