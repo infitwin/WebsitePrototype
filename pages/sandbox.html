@@ -1681,7 +1681,7 @@
             loadingDiv.style.alignItems = 'center';
             loadingDiv.style.justifyContent = 'center';
             loadingDiv.style.fontSize = '24px';
-            loadingDiv.textContent = '👤';
+            loadingDiv.textContent = '😊';
             div.appendChild(loadingDiv);
             
             // Extract face using bounding box if available
@@ -1982,7 +1982,11 @@
                         id: record.get('id'),
                         label: props.name || props.firstName ? `${props.firstName || ''} ${props.lastName || ''}`.trim() : record.get('id'),
                         type: nodeType,
-                        props: props
+                        props: props,
+                        // Add sorting keys for alphabetical order
+                        sortKey: nodeType === 'person' ? 
+                            (props.lastName || props.name || record.get('id')).toLowerCase() :
+                            (props.name || record.get('id')).toLowerCase()
                     });
                 });
                 
@@ -2209,8 +2213,15 @@
                 typeHeader.innerHTML = `${getNodeTypeIcon(nodeType)} ${nodeType}s (${nodesByType[nodeType].length})`;
                 container.appendChild(typeHeader);
                 
-                // Add nodes of this type
-                nodesByType[nodeType].forEach(node => {
+                // Sort nodes - alphabetically by last name for people, by name for others
+                const sortedNodes = [...nodesByType[nodeType]].sort((a, b) => {
+                    const aKey = a.sortKey || a.label || a.id;
+                    const bKey = b.sortKey || b.label || b.id;
+                    return aKey.localeCompare(bKey);
+                });
+                
+                // Add sorted nodes of this type
+                sortedNodes.forEach(node => {
                     const nodeElement = createDraggableNodeElement(node);
                     container.appendChild(nodeElement);
                 });
