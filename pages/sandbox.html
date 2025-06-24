@@ -737,7 +737,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="../js/nexus-graph-control-v15.4.0.bundle.min.js"></script>
+    <script src="../js/nexus-graph-control-v15.5.0.bundle.min.js"></script>
 
     <script>
         let sandboxRoot = null;
@@ -897,6 +897,7 @@
                 
                 const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
                     data: sampleData,
+                    title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: false
@@ -997,6 +998,7 @@
                 
                 const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
                     data: productionData,
+                    title: "Production",
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: false,
