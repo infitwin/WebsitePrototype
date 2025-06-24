@@ -1,8 +1,55 @@
 # 🚀 QUICKSTART Guide - AI Handoff
 
-**Current Date**: December 22, 2024  
-**Status**: ✅ Face Detection Frontend Integration COMPLETE (with one known issue)
+**Current Date**: June 24, 2025  
+**Status**: ✅ Sandbox Integration COMPLETE with Neo4j, Node List, Face Detection, and v15.5.0 Nexus Controls
 **Test Login**: weezer@yev.com / 123456
+
+## 🖥️ SERVER STARTUP - ESSENTIAL FIRST STEP
+
+### Start Development Server
+```bash
+# Navigate to project directory
+cd /home/tim/WebsitePrototype
+
+# Start HTTP server - try port 8357 first
+python3 -m http.server 8357
+
+# If port 8357 is busy (Address already in use), use 8358:
+python3 -m http.server 8358
+
+# Server will start and show:
+# "Serving HTTP on 0.0.0.0 port 8357 ..."
+```
+
+### Access Key Pages
+```bash
+# Main sandbox environment (graph editor)
+http://localhost:8357/pages/sandbox.html
+
+# File management with face detection
+http://localhost:8357/pages/my-files.html
+
+# Authentication page
+http://localhost:8357/pages/auth.html
+
+# Admin test data generator (development only)
+http://localhost:8357/pages/admin-test-data.html
+```
+
+### Server Management
+```bash
+# Check if server is running
+curl http://localhost:8357
+
+# Stop server
+Ctrl+C
+
+# Check what's using a port
+lsof -i :8357
+
+# Kill process on port if needed
+pkill -f "python3.*8357"
+```
 
 ## 🎯 TODAY'S SESSION SUMMARY (Dec 22, 2024)
 
@@ -422,3 +469,100 @@ ROLLBACK:
 **🎯 NEXT FOCUS**: Fix batch vectorization bug or work on other My Files improvements.
 
 **⚡ MOMENTUM**: High - all major features working, just need to polish and fix edge cases!
+
+---
+
+## 📝 ADDENDUM: MEMORY COMPRESSION SYSTEM
+
+### C1 Compact Command Instructions
+
+When you need to compress context or hand off to another AI session, use the **C1 Compact Command** from the CLAUDE.md instructions:
+
+### Code: C1 (Coding Handoff)
+
+When using `/compact C1`, focus on: current build plan status with verification results, exact current step and next command to run, working file:line and function, last attempt and result, all credential locations, service ports with start commands, test/verification commands, tools/dashboard URLs, test data examples, rollback commit/version, warnings about critical operations. 
+
+**CRITICAL**: Include all uncommitted code changes, unpushed commits, and pending deployments (Firebase, Cloud Build, etc.) to prevent losing work between compressions. Preserve the problem-solving position, not just project description.
+
+### Memory Compression Handoff Format
+
+Create an inline summary using this exact format when memory gets full:
+
+```
+=== MEMORY COMPRESSION HANDOFF ===
+
+TASK: [One line - what we're building/fixing]
+
+BUILD PLAN:
+[x] Step 1: [task] | VERIFIED: [test command] returned [expected result]
+[x] Step 2: [task] | VERIFIED: [test command] returned [expected result]
+[>] Step 3: [CURRENT: task description]
+    Next: [exact command to run]
+    Verify: [command to check if it worked]
+    Expect: [what success looks like]
+    If fail: [what to try next]
+[ ] Step 4: [task] | Verify: [how to test]
+
+CURRENT CONTEXT:
+Working on: [file:line_number]
+Function: [function_name]
+Problem: [specific issue if any]
+Last attempt: [what was just tried and result]
+
+CREDENTIALS:
+- Service Account: /path/to/service-account.json
+- API Keys: /path/to/apikeys.txt (KEY_NAME=purpose)
+- Env vars needed: VARIABLE=value
+- Auth token: [where to get it or how to generate]
+
+TOOLS/INTERFACES:
+- Development Server: http://localhost:8357 (python3 -m http.server 8357)
+- Sandbox: http://localhost:8357/pages/sandbox.html
+- Admin Panel: http://localhost:8357/pages/admin-test-data.html
+- GitHub: github.com:infitwin/WebsitePrototype.git
+
+VERIFICATION COMMANDS:
+- Test server: curl http://localhost:8357
+- Check git: git status && git log --oneline -5
+- Run tests: [specific test commands]
+
+SERVICES/PORTS:
+- 8357: HTTP server - start: python3 -m http.server 8357
+- 8358: Backup HTTP server if 8357 busy
+- Required external: [any external services needed]
+
+TEST DATA:
+- Test user: weezer@yev.com / 123456
+- Neo4j test data: Generate via admin-test-data.html
+- Test files: [relevant test files and their purposes]
+
+UNCOMMITTED/UNPUSHED CODE:
+- Modified files: [list files with changes]
+- New files created: [list new files]
+- Git status: [uncommitted changes summary]
+- Unpushed commits: [git log origin/main..HEAD summary]
+
+WARNINGS:
+- [Any dangerous operations to avoid]
+- [Critical systems not to break]
+- [DO NOT commands]
+
+ROLLBACK:
+- Last working commit: [commit hash]
+- Safe version: [version number]
+- Rollback command: git reset --hard [commit-hash]
+
+=== END HANDOFF ===
+```
+
+**IMPORTANT**: Create this summary inline in the chat when memory is getting full. Do not save it as a file. This ensures the compressed AI can immediately see and use it.
+
+### When to Use Memory Compression
+
+- Conversation getting long (approaching token limits)
+- About to start a complex multi-step task
+- Need to hand off to another AI session
+- Major milestone completed and moving to next phase
+- Context is getting cluttered with too much detail
+
+This system ensures seamless continuity between AI sessions and prevents losing critical context about the current state of development.

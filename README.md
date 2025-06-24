@@ -5,12 +5,29 @@ A comprehensive web application for Infitwin - a platform that helps people crea
 ## 🚨 IMPORTANT: AI ASSISTANTS START HERE 🚨
 
 **👋 New AI Session?** You MUST read the [QUICKSTART.md](./QUICKSTART.md) file first! It contains:
+- Server startup instructions and development setup
 - Current project status and what's been completed
 - Known issues and bugs
 - Memory compression handoff (C1) for continuity
 - Next steps and priorities
 
 **DO NOT PROCEED WITHOUT READING [QUICKSTART.md](./QUICKSTART.md)**
+
+### Quick Server Start
+```bash
+# Navigate to project directory
+cd /home/tim/WebsitePrototype
+
+# Start server (try port 8357 first, use 8358 if busy)
+python3 -m http.server 8357
+# OR if port 8357 is busy:
+python3 -m http.server 8358
+
+# Access main pages:
+# http://localhost:8357/pages/sandbox.html
+# http://localhost:8357/pages/my-files.html
+# http://localhost:8357/pages/auth.html
+```
 
 ## 🎯 Current Status (December 2024)
 
