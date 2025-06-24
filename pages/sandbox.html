@@ -16,6 +16,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     
+    <!-- Neo4j Driver -->
+    <script src="https://unpkg.com/neo4j-driver@5.15.0/lib/browser/neo4j-web.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -931,7 +934,7 @@
             resizeObserver.observe(panel);
         }
         
-        function initializeProduction() {
+        async function initializeProduction() {
             if (!checkBundle()) {
                 log('❌ Bundle not ready for production');
                 return;
@@ -946,25 +949,25 @@
                     productionRoot = null;
                 }
                 
-                const sampleData = {
-                    nodes: [{
-                        id: 'prod_person',
-                        label: 'Sarah Smith',
-                        type: 'person',
-                        originalData: { name: 'Sarah Smith', type: 'person', role: 'Product Manager' }
-                    }, {
-                        id: 'prod_org',
-                        label: 'TechCorp Inc.',
-                        type: 'organization',
-                        originalData: { name: 'TechCorp Inc.', type: 'organization' }
-                    }],
-                    edges: [{
-                        id: 'edge_1',
-                        from: 'prod_person',
-                        to: 'prod_org',
-                        label: 'works_at'
-                    }]
-                };
+                // Get current user and twin ID
+                let productionData = { nodes: [], edges: [] };
+                
+                if (firebase.auth().currentUser) {
+                    const userId = firebase.auth().currentUser.uid;
+                    const twinId = `${userId}-1`; // Using twin ID format from analysis
+                    
+                    log(`🔍 Loading production data for user ${userId}, twin ${twinId}`);
+                    productionData = await loadProductionDataFromNeo4j(userId, twinId);
+                }
+                
+                // If no data found, show empty graph
+                if (productionData.nodes.length === 0) {
+                    log('📊 No production data found, showing empty graph');
+                    productionData = {
+                        nodes: [],
+                        edges: []
+                    };
+                }
                 
                 // Set container dimensions explicitly
                 container.style.width = '100%';
@@ -976,7 +979,7 @@
                 container.style.bottom = '0';
                 
                 const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
-                    data: sampleData,
+                    data: productionData,
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: false,
@@ -1033,7 +1036,9 @@
                 
                 // Special handling for production panel
                 if (panelId === 'production') {
-                    setTimeout(initializeProduction, 200);
+                    setTimeout(async () => {
+                        await initializeProduction();
+                    }, 200);
                 }
                 
                 // Load artifacts when panel is opened
@@ -1121,6 +1126,14 @@
         
         // Firebase Integration Functions
         let firebaseInitialized = false;
+        
+        // Neo4j Configuration for Production Data
+        const neo4jConfig = {
+            uri: 'neo4j+s://80dc1193.databases.neo4j.io',
+            username: 'neo4j',
+            password: 'lCHngJO-NHNGSF5fcj7ApgdImgBA6qGUGWaKWxAY2eA'
+        };
+        let neo4jDriver = null;
         let firebaseConfig = {
             apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
             authDomain: "infitwin.firebaseapp.com",
@@ -1685,6 +1698,95 @@
             div.addEventListener('dragend', handleFaceDragEnd);
             
             return div;
+        }
+        
+        // Neo4j Functions for Production Data
+        async function initializeNeo4j() {
+            try {
+                if (typeof neo4j === 'undefined') {
+                    throw new Error('Neo4j driver not loaded');
+                }
+                
+                if (!neo4jDriver) {
+                    log('🔗 Connecting to Neo4j for production data...');
+                    neo4jDriver = neo4j.driver(
+                        neo4jConfig.uri,
+                        neo4j.auth.basic(neo4jConfig.username, neo4jConfig.password)
+                    );
+                    
+                    // Test connection
+                    const session = neo4jDriver.session();
+                    const result = await session.run('RETURN 1 as test');
+                    await session.close();
+                    
+                    log('✅ Neo4j connection established for production data');
+                    return true;
+                }
+                return true;
+            } catch (error) {
+                log(`❌ Neo4j connection failed: ${error.message}`);
+                return false;
+            }
+        }
+        
+        async function loadProductionDataFromNeo4j(userId, twinId) {
+            try {
+                log(`🔍 Loading production data for user: ${userId}, twin: ${twinId}`);
+                
+                const connected = await initializeNeo4j();
+                if (!connected) {
+                    throw new Error('Failed to connect to Neo4j');
+                }
+                
+                const session = neo4jDriver.session();
+                
+                // Query nodes for this user/twin
+                const nodesResult = await session.run(`
+                    MATCH (n {userId: $userId, twinId: $twinId})
+                    RETURN n.id as id, labels(n) as labels, properties(n) as props
+                    LIMIT 50
+                `, { userId, twinId });
+                
+                // Query relationships for this user/twin
+                const relsResult = await session.run(`
+                    MATCH (a {userId: $userId, twinId: $twinId})-[r]-(b {userId: $userId, twinId: $twinId})
+                    RETURN a.id as sourceId, b.id as targetId, type(r) as relType, properties(r) as relProps
+                    LIMIT 100
+                `, { userId, twinId });
+                
+                await session.close();
+                
+                // Convert Neo4j results to graph format
+                const nodes = nodesResult.records.map(record => {
+                    const id = record.get('id');
+                    const labels = record.get('labels');
+                    const props = record.get('props');
+                    
+                    return {
+                        id: id,
+                        label: props.name || props.firstName ? `${props.firstName || ''} ${props.lastName || ''}`.trim() : id,
+                        type: labels[0] ? labels[0].toLowerCase() : 'node',
+                        originalData: props
+                    };
+                });
+                
+                const edges = relsResult.records.map((record, index) => ({
+                    id: `edge_${index}`,
+                    from: record.get('sourceId'),
+                    to: record.get('targetId'),
+                    label: record.get('relType').toLowerCase(),
+                    originalData: record.get('relProps')
+                }));
+                
+                log(`✅ Loaded ${nodes.length} nodes and ${edges.length} relationships from Neo4j`);
+                
+                return { nodes, edges };
+                
+            } catch (error) {
+                log(`❌ Failed to load production data: ${error.message}`);
+                // Return empty data on error
+                return { nodes: [], edges: [] };
+            }
         }
         
         // Extract face from image using bounding box
