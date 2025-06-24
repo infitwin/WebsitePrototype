@@ -15,6 +15,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
+    <!-- Neo4j Driver -->
+    <script src="https://unpkg.com/neo4j-driver@5.15.0/lib/browser/neo4j-web.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -460,6 +463,15 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        
+        // Neo4j Configuration
+        const neo4jConfig = {
+            uri: 'neo4j+s://80dc1193.databases.neo4j.io',
+            username: 'neo4j',
+            password: 'lCHngJO-NHNGSF5fcj7ApgdImgBA6qGUGWaKWxAY2eA'
+        };
+        
+        let neo4jDriver = null;
 
         // State
         let selectedSize = null;
@@ -493,6 +505,40 @@
             const env = document.getElementById('environment').textContent;
             return env === 'Development' || window.location.hostname === 'localhost';
         }
+        
+        // Initialize Neo4j connection
+        async function initializeNeo4j() {
+            try {
+                if (!neo4jDriver) {
+                    log('🔗 Connecting to Neo4j...', 'info');
+                    neo4jDriver = neo4j.driver(
+                        neo4jConfig.uri,
+                        neo4j.auth.basic(neo4jConfig.username, neo4jConfig.password)
+                    );
+                    
+                    // Test connection
+                    const session = neo4jDriver.session();
+                    await session.run('RETURN 1 as test');
+                    await session.close();
+                    
+                    log('✅ Neo4j connection established', 'success');
+                    return true;
+                }
+                return true;
+            } catch (error) {
+                log(`❌ Neo4j connection failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Close Neo4j connection
+        async function closeNeo4j() {
+            if (neo4jDriver) {
+                await neo4jDriver.close();
+                neo4jDriver = null;
+                log('🔌 Neo4j connection closed', 'info');
+            }
+        }
 
         // Initialize authentication
         firebase.auth().onAuthStateChanged(async (user) => {
@@ -501,25 +547,31 @@
                 document.getElementById('currentUser').textContent = user.email;
                 log(`User authenticated: ${user.email}`, 'success');
 
-                // Get user's twin ID from Firestore
+                // Get user's twin ID from Firestore or generate default
                 try {
-                    const userDoc = await firebase.firestore()
-                        .collection('users')
-                        .doc(user.uid)
+                    // First check if twin exists in twins collection
+                    const defaultTwinId = `${user.uid}-1`;
+                    const twinDoc = await firebase.firestore()
+                        .collection('twins')
+                        .doc(defaultTwinId)
                         .get();
                     
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        currentTwinId = userData.primaryTwinId || userData.twinId || null;
-                        document.getElementById('currentTwinId').textContent = 
-                            currentTwinId || 'No twin created';
-                        
-                        if (currentTwinId) {
-                            log(`Twin ID loaded: ${currentTwinId}`, 'success');
-                        }
+                    if (twinDoc.exists) {
+                        currentTwinId = defaultTwinId;
+                        log(`Twin ID loaded: ${currentTwinId}`, 'success');
+                    } else {
+                        // If no twin exists, we'll use the default format
+                        currentTwinId = defaultTwinId;
+                        log(`Using default twin ID format: ${currentTwinId}`, 'info');
                     }
+                    
+                    document.getElementById('currentTwinId').textContent = currentTwinId;
+                    
                 } catch (error) {
                     log(`Failed to load twin ID: ${error.message}`, 'error');
+                    // Fallback to default format
+                    currentTwinId = `${user.uid}-1`;
+                    document.getElementById('currentTwinId').textContent = currentTwinId;
                 }
             } else {
                 // Not logged in - redirect to auth
@@ -586,9 +638,16 @@
                 return;
             }
 
-            if (!currentUser || !currentTwinId) {
-                showStatus('Please ensure you are logged in with a twin', 'error');
+            if (!currentUser) {
+                showStatus('Please ensure you are logged in', 'error');
                 return;
+            }
+            
+            if (!currentTwinId) {
+                // Generate default twin ID if not set
+                currentTwinId = `${currentUser.uid}-1`;
+                document.getElementById('currentTwinId').textContent = currentTwinId;
+                log(`Generated twin ID: ${currentTwinId}`, 'info');
             }
 
             generateBtn.disabled = true;
@@ -612,60 +671,273 @@
             }
         });
 
-        // Simulated Neo4j API functions
+        // Real Neo4j data generation functions
         async function generateTestDataInNeo4j(size) {
-            // This simulates the API call to your Neo4j service
-            // In production, replace with actual API endpoint
-            
-            const dataSizes = {
-                small: { nodes: 15, relationships: 20, duration: 5000 },
-                medium: { nodes: 75, relationships: 150, duration: 30000 },
-                large: { nodes: 300, relationships: 750, duration: 120000 }
-            };
-
-            const config = dataSizes[size];
-            const steps = 10;
-            const stepDuration = config.duration / steps;
-
-            // Simulate progress
-            for (let i = 1; i <= steps; i++) {
-                await new Promise(resolve => setTimeout(resolve, stepDuration));
-                const progress = (i / steps) * 100;
-                showProgress(progress, `Creating nodes and relationships... (${i}/${steps})`);
-                
-                if (i === 3) log(`Created ${Math.floor(config.nodes * 0.3)} nodes...`);
-                if (i === 6) log(`Created ${Math.floor(config.relationships * 0.5)} relationships...`);
-                if (i === 9) log(`Finalizing graph structure...`);
+            // Initialize Neo4j connection
+            const connected = await initializeNeo4j();
+            if (!connected) {
+                throw new Error('Failed to connect to Neo4j');
             }
-
-            // In production, this would be the actual response from Neo4j
-            return {
-                success: true,
-                nodesCreated: config.nodes,
-                relationshipsCreated: config.relationships,
-                userId: currentUser.uid,
-                twinId: currentTwinId
-            };
+            
+            // Generate test dataset
+            const dataset = generateTestDataset(size, currentUser.uid, currentTwinId);
+            log(`Generated ${dataset.nodes.length} nodes and ${dataset.relationships.length} relationships`);
+            
+            showProgress(10, 'Creating constraints...');
+            
+            const session = neo4jDriver.session();
+            let nodesCreated = 0;
+            let relationshipsCreated = 0;
+            
+            try {
+                // Create constraints
+                const constraints = [
+                    'CREATE CONSTRAINT person_id_unique IF NOT EXISTS FOR (p:Person) REQUIRE p.id IS UNIQUE',
+                    'CREATE CONSTRAINT org_id_unique IF NOT EXISTS FOR (o:Organization) REQUIRE o.id IS UNIQUE',
+                    'CREATE CONSTRAINT location_id_unique IF NOT EXISTS FOR (l:Location) REQUIRE l.id IS UNIQUE'
+                ];
+                
+                for (const constraint of constraints) {
+                    try {
+                        await session.run(constraint);
+                    } catch (e) {
+                        // Constraint might already exist, continue
+                        log(`Constraint info: ${e.message}`);
+                    }
+                }
+                
+                showProgress(20, 'Creating nodes...');
+                
+                // Create nodes
+                for (let i = 0; i < dataset.nodes.length; i++) {
+                    const node = dataset.nodes[i];
+                    const label = node.type.charAt(0).toUpperCase() + node.type.slice(1);
+                    
+                    const props = Object.entries(node.properties)
+                        .map(([key, value]) => `${key}: $${key}`)
+                        .join(', ');
+                    
+                    const query = `CREATE (n:${label} {id: $id, userId: $userId, twinId: $twinId, ${props}})`;
+                    
+                    await session.run(query, {
+                        id: node.id,
+                        userId: dataset.userId,
+                        twinId: dataset.twinId,
+                        ...node.properties
+                    });
+                    
+                    nodesCreated++;
+                    
+                    if (i % 10 === 0) {
+                        const progress = 20 + (i / dataset.nodes.length) * 50;
+                        showProgress(progress, `Created ${nodesCreated} nodes...`);
+                    }
+                }
+                
+                showProgress(70, 'Creating relationships...');
+                
+                // Create relationships
+                for (let i = 0; i < dataset.relationships.length; i++) {
+                    const rel = dataset.relationships[i];
+                    
+                    const query = `
+                        MATCH (a {id: $sourceId}), (b {id: $targetId})
+                        CREATE (a)-[:${rel.type.toUpperCase()} {since: $since, strength: $strength}]->(b)
+                    `;
+                    
+                    await session.run(query, {
+                        sourceId: rel.source,
+                        targetId: rel.target,
+                        since: rel.properties.since,
+                        strength: rel.properties.strength
+                    });
+                    
+                    relationshipsCreated++;
+                    
+                    if (i % 20 === 0) {
+                        const progress = 70 + (i / dataset.relationships.length) * 30;
+                        showProgress(progress, `Created ${relationshipsCreated} relationships...`);
+                    }
+                }
+                
+                showProgress(100, 'Generation complete!');
+                
+                return {
+                    success: true,
+                    nodesCreated: nodesCreated,
+                    relationshipsCreated: relationshipsCreated,
+                    userId: dataset.userId,
+                    twinId: dataset.twinId
+                };
+                
+            } finally {
+                await session.close();
+            }
         }
 
         async function clearTestDataInNeo4j() {
-            // Simulate clearing data
-            const steps = 5;
-            const stepDuration = 1000;
-
-            for (let i = 1; i <= steps; i++) {
-                await new Promise(resolve => setTimeout(resolve, stepDuration));
-                const progress = (i / steps) * 100;
-                showProgress(progress, `Clearing data... (${i}/${steps})`);
-                
-                if (i === 2) log('Deleting relationships...');
-                if (i === 4) log('Deleting nodes...');
+            // Initialize Neo4j connection
+            const connected = await initializeNeo4j();
+            if (!connected) {
+                throw new Error('Failed to connect to Neo4j');
             }
-
+            
+            const session = neo4jDriver.session();
+            let nodesDeleted = 0;
+            let relationshipsDeleted = 0;
+            
+            try {
+                showProgress(20, 'Counting existing data...');
+                
+                // Count existing data for this user/twin
+                const countResult = await session.run(`
+                    MATCH (n {userId: $userId, twinId: $twinId})
+                    OPTIONAL MATCH (n)-[r]-()
+                    RETURN count(DISTINCT n) as nodes, count(DISTINCT r) as relationships
+                `, {
+                    userId: currentUser.uid,
+                    twinId: currentTwinId
+                });
+                
+                const record = countResult.records[0];
+                const existingNodes = record.get('nodes').toNumber();
+                const existingRels = record.get('relationships').toNumber();
+                
+                log(`Found ${existingNodes} nodes and ${existingRels} relationships to delete`);
+                
+                showProgress(50, 'Deleting relationships...');
+                
+                // Delete relationships first
+                const deleteRelsResult = await session.run(`
+                    MATCH ()-[r]-()
+                    WHERE EXISTS {
+                        MATCH (n {userId: $userId, twinId: $twinId})
+                        WHERE (startNode(r) = n) OR (endNode(r) = n)
+                    }
+                    DELETE r
+                `, {
+                    userId: currentUser.uid,
+                    twinId: currentTwinId
+                });
+                
+                showProgress(80, 'Deleting nodes...');
+                
+                // Delete nodes
+                const deleteNodesResult = await session.run(`
+                    MATCH (n {userId: $userId, twinId: $twinId})
+                    DELETE n
+                `, {
+                    userId: currentUser.uid,
+                    twinId: currentTwinId
+                });
+                
+                showProgress(100, 'Cleanup complete!');
+                
+                return {
+                    success: true,
+                    nodesDeleted: existingNodes,
+                    relationshipsDeleted: existingRels
+                };
+                
+            } finally {
+                await session.close();
+            }
+        }
+        
+        // Include the test data generation functions inline
+        function generateTestDataset(size, userId, twinId) {
+            const firstNames = ['John', 'Jane', 'Robert', 'Mary', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa'];
+            const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+            const organizations = ['TechCorp', 'MediCare Inc', 'EduFirst', 'Global Finance', 'Creative Studios'];
+            const locations = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia'];
+            
+            const configs = {
+                small: { persons: 10, organizations: 3, locations: 2, minRelationships: 15, maxRelationships: 20 },
+                medium: { persons: 50, organizations: 15, locations: 10, minRelationships: 100, maxRelationships: 150 },
+                large: { persons: 200, organizations: 50, locations: 50, minRelationships: 500, maxRelationships: 750 }
+            };
+            
+            const config = configs[size] || configs.small;
+            const nodes = [];
+            const relationships = [];
+            
+            // Generate person nodes
+            for (let i = 0; i < config.persons; i++) {
+                const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                const birthYear = 1940 + Math.floor(Math.random() * 60);
+                
+                nodes.push({
+                    id: `person_${i}`,
+                    type: 'person',
+                    properties: {
+                        name: `${firstName} ${lastName}`,
+                        firstName: firstName,
+                        lastName: lastName,
+                        birthYear: birthYear,
+                        age: new Date().getFullYear() - birthYear,
+                        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`
+                    }
+                });
+            }
+            
+            // Generate organization nodes
+            for (let i = 0; i < config.organizations; i++) {
+                const name = organizations[Math.floor(Math.random() * organizations.length)] + ' ' + i;
+                nodes.push({
+                    id: `org_${i}`,
+                    type: 'organization',
+                    properties: {
+                        name: name,
+                        founded: 1950 + Math.floor(Math.random() * 70),
+                        industry: ['Technology', 'Healthcare', 'Finance', 'Education'][Math.floor(Math.random() * 4)]
+                    }
+                });
+            }
+            
+            // Generate location nodes
+            for (let i = 0; i < config.locations; i++) {
+                const city = locations[Math.floor(Math.random() * locations.length)];
+                nodes.push({
+                    id: `location_${i}`,
+                    type: 'location',
+                    properties: {
+                        name: city,
+                        country: 'USA',
+                        population: Math.floor(Math.random() * 5000000) + 100000
+                    }
+                });
+            }
+            
+            // Generate relationships
+            const totalRelationships = config.minRelationships + 
+                Math.floor(Math.random() * (config.maxRelationships - config.minRelationships));
+            
+            const relationshipTypes = ['KNOWS', 'WORKS_WITH', 'LIVES_IN', 'BORN_IN', 'FOUNDED', 'MEMBER_OF'];
+            
+            for (let i = 0; i < totalRelationships; i++) {
+                const sourceNode = nodes[Math.floor(Math.random() * nodes.length)];
+                const targetNode = nodes[Math.floor(Math.random() * nodes.length)];
+                
+                if (sourceNode.id !== targetNode.id) {
+                    relationships.push({
+                        id: `rel_${i}`,
+                        source: sourceNode.id,
+                        target: targetNode.id,
+                        type: relationshipTypes[Math.floor(Math.random() * relationshipTypes.length)],
+                        properties: {
+                            since: 1990 + Math.floor(Math.random() * 30),
+                            strength: Math.random()
+                        }
+                    });
+                }
+            }
+            
             return {
-                success: true,
-                nodesDeleted: 150,
-                relationshipsDeleted: 350
+                userId: userId,
+                twinId: twinId,
+                nodes: nodes,
+                relationships: relationships
             };
         }
 
@@ -697,6 +969,11 @@
                 document.querySelector('.admin-warning').innerHTML += 
                     '<br><strong>Note:</strong> Admin features are currently disabled.';
             }
+        });
+        
+        // Clean up Neo4j connection on page unload
+        window.addEventListener('beforeunload', async () => {
+            await closeNeo4j();
         });
     </script>
     
