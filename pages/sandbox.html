@@ -600,23 +600,11 @@
                         <button onclick="togglePanel('node-list')" class="panel-close">×</button>
                     </div>
                     <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag nodes from here to the sandbox:</div>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #007bff; cursor: pointer;">
-                                <strong>👤 Person Node</strong><br>
-                                <small>Drag to add a person</small>
-                            </div>
-                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #28a745; cursor: pointer;">
-                                <strong>🏢 Organization</strong><br>
-                                <small>Drag to add an organization</small>
-                            </div>
-                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #dc3545; cursor: pointer;">
-                                <strong>📄 Document</strong><br>
-                                <small>Drag to add a document</small>
-                            </div>
-                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; cursor: pointer;">
-                                <strong>🌐 Website</strong><br>
-                                <small>Drag to add a website</small>
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag actual nodes from your graph:</div>
+                        <div id="nodeListContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="background: white; padding: 15px; border-radius: 4px; text-align: center; color: #666;">
+                                <div style="font-size: 20px; margin-bottom: 5px;">⏳</div>
+                                <div>Loading nodes from Neo4j...</div>
                             </div>
                         </div>
                     </div>
@@ -1059,6 +1047,31 @@
                     setTimeout(async () => {
                         await initializeProduction();
                     }, 200);
+                }
+                
+                // Load node list when panel is opened
+                if (panelId === 'node-list') {
+                    // Initialize Firebase first if needed for authentication
+                    if (!firebaseInitialized) {
+                        initializeFirebase();
+                        // Wait for auth state to be established
+                        setTimeout(() => {
+                            if (firebase.auth().currentUser) {
+                                loadNodeList();
+                            }
+                        }, 2000);
+                    } else if (firebase.auth().currentUser) {
+                        loadNodeList();
+                    } else {
+                        // Try to wait for auth
+                        log('⏳ Waiting for authentication...');
+                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                            if (user) {
+                                loadNodeList();
+                                unsubscribe(); // Stop listening after first auth
+                            }
+                        });
+                    }
                 }
                 
                 // Load artifacts when panel is opened
@@ -1910,6 +1923,174 @@
                 // Return empty data on error
                 return { nodes: [], edges: [] };
             }
+        }
+        
+        // Load actual nodes from Neo4j for the Node List panel
+        async function loadNodeList() {
+            try {
+                log('🔍 Loading node list from Neo4j...');
+                
+                const connected = await initializeNeo4j();
+                if (!connected) {
+                    showNodeListError('Failed to connect to Neo4j');
+                    return;
+                }
+                
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    showNodeListError('User not authenticated');
+                    return;
+                }
+                
+                const userId = user.uid;
+                const twinId = `${userId}-1`;
+                
+                const session = neo4jDriver.session();
+                
+                // Query all nodes for this user/twin, grouped by type
+                const nodesResult = await session.run(`
+                    MATCH (n {userId: $userId, twinId: $twinId})
+                    RETURN n.id as id, labels(n) as labels, properties(n) as props
+                    ORDER BY labels(n)[0], n.name, n.firstName, n.id
+                    LIMIT 100
+                `, { userId, twinId });
+                
+                await session.close();
+                
+                const container = document.getElementById('nodeListContainer');
+                container.innerHTML = '';
+                
+                if (nodesResult.records.length === 0) {
+                    container.innerHTML = `
+                        <div style="background: white; padding: 15px; border-radius: 4px; text-align: center; color: #666;">
+                            <div style="font-size: 20px; margin-bottom: 5px;">📭</div>
+                            <div>No nodes found in your graph</div>
+                            <small style="color: #999;">Use the Admin page to generate test data</small>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Group nodes by type
+                const nodesByType = {};
+                nodesResult.records.forEach(record => {
+                    const props = record.get('props');
+                    const labels = record.get('labels');
+                    const nodeType = labels[0] ? labels[0].toLowerCase() : 'node';
+                    
+                    if (!nodesByType[nodeType]) {
+                        nodesByType[nodeType] = [];
+                    }
+                    
+                    nodesByType[nodeType].push({
+                        id: record.get('id'),
+                        label: props.name || props.firstName ? `${props.firstName || ''} ${props.lastName || ''}`.trim() : record.get('id'),
+                        type: nodeType,
+                        props: props
+                    });
+                });
+                
+                // Create node elements for each type
+                Object.keys(nodesByType).forEach(nodeType => {
+                    // Add type header
+                    const typeHeader = document.createElement('div');
+                    typeHeader.style.cssText = 'font-weight: 600; color: #333; margin: 15px 0 5px 0; font-size: 14px; text-transform: capitalize;';
+                    typeHeader.innerHTML = `${getNodeTypeIcon(nodeType)} ${nodeType}s (${nodesByType[nodeType].length})`;
+                    container.appendChild(typeHeader);
+                    
+                    // Add nodes of this type
+                    nodesByType[nodeType].forEach(node => {
+                        const nodeElement = createDraggableNodeElement(node);
+                        container.appendChild(nodeElement);
+                    });
+                });
+                
+                log(`✅ Loaded ${nodesResult.records.length} nodes for node list`);
+                
+            } catch (error) {
+                log(`❌ Error loading node list: ${error.message}`);
+                showNodeListError(`Error: ${error.message}`);
+            }
+        }
+        
+        function getNodeTypeIcon(type) {
+            const icons = {
+                person: '👤',
+                organization: '🏢',
+                location: '📍',
+                event: '📅',
+                thing: '📦',
+                default: '⚪'
+            };
+            return icons[type] || icons.default;
+        }
+        
+        function createDraggableNodeElement(node) {
+            const div = document.createElement('div');
+            div.className = 'node-list-item';
+            div.draggable = true;
+            div.dataset.nodeId = node.id;
+            div.dataset.nodeType = node.type;
+            div.dataset.nodeData = JSON.stringify(node);
+            
+            const color = getNodeColor(node.type);
+            
+            div.style.cssText = `
+                background: white; 
+                padding: 10px; 
+                border-radius: 4px; 
+                border-left: 4px solid ${color}; 
+                cursor: grab; 
+                transition: all 0.2s;
+                margin-bottom: 5px;
+            `;
+            
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">${getNodeTypeIcon(node.type)}</span>
+                    <div style="flex: 1;">
+                        <strong style="color: #333; font-size: 14px;">${node.label}</strong><br>
+                        <small style="color: #666;">${node.id}</small>
+                    </div>
+                </div>
+            `;
+            
+            // Add hover effects
+            div.addEventListener('mouseenter', () => {
+                div.style.transform = 'translateX(5px)';
+                div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+            });
+            
+            div.addEventListener('mouseleave', () => {
+                div.style.transform = 'translateX(0)';
+                div.style.boxShadow = 'none';
+            });
+            
+            // Add drag event handlers
+            div.addEventListener('dragstart', (e) => {
+                div.style.cursor = 'grabbing';
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'node',
+                    nodeData: node
+                }));
+                log(`🏃 Dragging node: ${node.label} (${node.id})`);
+            });
+            
+            div.addEventListener('dragend', () => {
+                div.style.cursor = 'grab';
+            });
+            
+            return div;
+        }
+        
+        function showNodeListError(message) {
+            const container = document.getElementById('nodeListContainer');
+            container.innerHTML = `
+                <div style="background: white; padding: 15px; border-radius: 4px; text-align: center; color: #dc3545;">
+                    <div style="font-size: 20px; margin-bottom: 5px;">❌</div>
+                    <div>${message}</div>
+                </div>
+            `;
         }
         
         // Extract face from image using bounding box
