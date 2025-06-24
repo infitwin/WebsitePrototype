@@ -4,94 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sandbox - Infitwin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            box-sizing: border-box;
         }
-        
-        .left-nav {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 50px;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            overflow: hidden;
             height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            z-index: 1500;
+            display: flex;
+        }
+
+        /* Shared Navigation Sidebar */
+        .sidebar-nav-container {
+            width: 80px;
+            flex-shrink: 0;
+            z-index: 200;
+        }
+
+        /* Page Content Container */
+        .page-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 10px 0;
-            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        
-        .nav-item {
-            width: 35px;
-            height: 35px;
-            margin: 5px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: background 0.2s;
-            font-size: 16px;
-        }
-        
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .header {
+
+        /* App Header */
+        .sandbox-header {
+            height: 60px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 20px;
-            margin-left: 50px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 30px;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
         }
         
+        /* Main Content Area */
         .main-content {
-            margin-left: 50px;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
         
         .container {
-            max-width: none;
-            margin: 0;
-            padding: 20px;
+            height: 100%;
+            position: relative;
         }
         
+        /* Smart Context Bar */
+        .context-bar {
+            position: fixed;
+            bottom: 0;
+            left: 80px; /* Account for sidebar */
+            right: 0;
+            height: 40px;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            z-index: 999;
+            transform: translateY(40px);
+            opacity: 0;
+            transition: transform 200ms ease, opacity 200ms ease;
+        }
         
-        .btn {
-            padding: 12px 24px;
-            border: none;
+        .context-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            position: fixed;
+            top: 80px;
+            left: 100px;
+            background: white;
+            border: 2px solid #dee2e6;
             border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-right: 10px;
-            font-weight: bold;
+            display: flex;
+            gap: 5px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1100;
         }
         
-        .btn-primary { background: #007bff; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
+        .toolbar-btn {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #dee2e6;
+            background: #f8f9fa;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
         
+        .toolbar-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        /* Content Area */
         .content-area {
             padding: 20px;
-            padding-top: 0;
+            height: 100%;
         }
         
         .sandbox-panel {
             width: 100%;
+            height: calc(100% - 40px);
             background: white;
             border-radius: 8px;
             padding: 20px;
@@ -100,7 +156,7 @@
         
         .sandbox-container {
             width: 100%;
-            height: calc(100vh - 200px);
+            height: calc(100% - 50px);
             border: 2px solid #007bff;
             border-radius: 6px;
             background: #fafafa;
@@ -145,51 +201,7 @@
             border-radius: 0 0 8px 0;
         }
         
-        /* Specific Panel Positioning and Sizes */
-        .node-list-panel {
-            top: 120px;
-            left: 70px;
-            width: 300px;
-            height: 600px;
-        }
-        
-        .ai-assistant-panel {
-            bottom: 20px;
-            left: 70px;
-            width: 300px;
-            height: 400px;
-        }
-        
-        .faces-panel {
-            top: 120px;
-            left: 390px;
-            width: 280px;
-            height: 400px;
-        }
-        
-        .artifacts-panel {
-            top: 120px;
-            right: 20px;
-            width: 320px;
-            height: 450px;
-        }
-        
-        .production-panel {
-            top: 120px;
-            right: 360px;
-            width: 500px;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .tools-panel {
-            bottom: 20px;
-            right: 20px;
-            width: 250px;
-            height: 250px;
-        }
-        
+        /* Panel Header */
         .panel-header {
             cursor: move;
             user-select: none;
@@ -207,71 +219,73 @@
             background: #e9ecef;
         }
         
+        .panel-close {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: none;
+            color: #666;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 18px;
+            line-height: 1;
+        }
+        
+        .panel-close:hover {
+            background: rgba(0,0,0,0.1);
+        }
+        
+        /* Specific Panel Positioning and Sizes */
+        .node-list-panel {
+            top: 140px;
+            left: 120px;
+            width: 300px;
+            height: 600px;
+        }
+        
+        .ai-assistant-panel {
+            bottom: 60px;
+            left: 120px;
+            width: 300px;
+            height: 400px;
+        }
+        
+        .faces-panel {
+            top: 140px;
+            left: 440px;
+            width: 280px;
+            height: 400px;
+        }
+        
+        .artifacts-panel {
+            top: 140px;
+            right: 20px;
+            width: 320px;
+            height: 450px;
+        }
+        
+        .production-panel {
+            top: 140px;
+            right: 360px;
+            width: 500px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tools-panel {
+            bottom: 60px;
+            right: 20px;
+            width: 250px;
+            height: 250px;
+        }
+        
         .production-container {
             width: 100%;
             height: 380px;
             border: 2px solid #28a745;
             border-radius: 6px;
             background: #fafafa;
-        }
-        
-        .toolbar {
-            position: fixed;
-            top: 120px;
-            left: 70px;
-            background: white;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
-            display: flex;
-            gap: 5px;
-            padding: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 1100;
-        }
-        
-        .toolbar-btn {
-            width: 45px;
-            height: 45px;
-            border: 2px solid #dee2e6;
-            background: #f8f9fa;
-            color: #333;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-        
-        .toolbar-btn.active {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        
-        
-        .context-bar {
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 999;
-            transform: translateY(-40px);
-            opacity: 0;
-            transition: transform 200ms ease, opacity 200ms ease;
-        }
-        
-        .context-bar.visible {
-            transform: translateY(0);
-            opacity: 1;
         }
         
         /* Firebase Dropdown Styles */
@@ -348,274 +362,277 @@
     </style>
 </head>
 <body>
-    <!-- Load WebsitePrototype navigation -->
-    <div id="navigation-container"></div>
-
-    <!-- App Header (60px) -->
-    <div class="header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 20px;">⚡</span>
-            <h1 style="margin: 0; font-size: 20px;">Sandbox - Two Graph Views</h1>
-        </div>
-        <div style="display: flex; align-items: center; gap: 20px; font-size: 14px;">
-            <span>Session: active</span>
-            <span>Status: ready</span>
-            
-            <!-- Firebase Dropdown -->
-            <div class="firebase-dropdown">
-                <button class="firebase-dropdown-btn" onclick="toggleFirebaseDropdown()">
-                    🔥 Firebase
-                    <span style="font-size: 10px;">▼</span>
-                </button>
-                <div class="firebase-dropdown-content" id="firebaseDropdown">
-                    <div class="firebase-dropdown-header">
-                        Firebase Integration
-                        <div class="firebase-status connected" id="firebaseStatus">
-                            <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; display: inline-block;"></span>
-                            <span id="firebaseStatusText">Disconnected</span>
-                        </div>
-                    </div>
-                    <div class="firebase-dropdown-item" onclick="syncToFirebase()">
-                        <span>📤</span>
-                        <div>
-                            <div>Sync to Firebase</div>
-                            <div style="font-size: 11px; color: #666;">Save sandbox changes to Firestore</div>
-                        </div>
-                    </div>
-                    <div class="firebase-dropdown-item" onclick="loadFromFirebase()">
-                        <span>📥</span>
-                        <div>
-                            <div>Load from Firebase</div>
-                            <div style="font-size: 11px; color: #666;">Restore previous session</div>
-                        </div>
-                    </div>
-                    <div class="firebase-dropdown-item" onclick="uploadArtifacts()">
-                        <span>📎</span>
-                        <div>
-                            <div>Upload Artifacts</div>
-                            <div style="font-size: 11px; color: #666;">Store files in Firebase Storage</div>
-                        </div>
-                    </div>
-                    <div class="firebase-dropdown-item" onclick="viewFirebaseData()">
-                        <span>📊</span>
-                        <div>
-                            <div>View Data</div>
-                            <div style="font-size: 11px; color: #666;">Browse Firestore collections</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Shared Navigation Sidebar -->
+    <div id="navigation-container" class="sidebar-nav-container"></div>
     
-    <!-- Smart Context Bar -->
-    <div class="context-bar" id="contextBar">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span>✨</span>
-            <span id="changesText">0 changes pending in sandbox</span>
-        </div>
-        <span style="font-size: 12px; opacity: 0.9;">
-            Review changes before posting to production
-        </span>
-    </div>
-    
-    <div class="main-content">
-        <div class="container">
-        
-        <div class="toolbar">
-            <button class="toolbar-btn" title="Node List" onclick="togglePanel('node-list')">📋</button>
-            <button class="toolbar-btn" title="Faces" onclick="togglePanel('faces')">👤</button>
-            <button class="toolbar-btn" title="Artifacts" onclick="togglePanel('artifacts')">📎</button>
-            <button class="toolbar-btn" title="Production Graph" onclick="togglePanel('production')">🔵</button>
-            <button class="toolbar-btn active" title="AI Assistant" onclick="togglePanel('ai-assistant')">🤖</button>
-            <button class="toolbar-btn" title="Tools" onclick="togglePanel('tools')">🛠️</button>
-        </div>
-        
-        <div class="content-area">
-            <div class="sandbox-panel">
-                <h3 style="margin: 0 0 15px 0; color: #007bff;">🔧 Sandbox Control</h3>
-                <div id="sandboxContainer" class="sandbox-container"></div>
+    <!-- Page Content -->
+    <div class="page-content">
+        <!-- App Header -->
+        <div class="sandbox-header">
+            <div class="header-left">
+                <span style="font-size: 20px;">🧪</span>
+                <h1>Sandbox - Graph Editor</h1>
             </div>
-        </div>
-        
-        <!-- Node List Panel -->
-        <div id="node-listPanel" class="floating-panel node-list-panel">
-            <div class="panel-header" id="node-listHeader">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>📋</span>
-                    <span style="font-weight: 600; color: #007bff;">Node List</span>
-                </div>
-                <button onclick="togglePanel('node-list')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
-            </div>
-            <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag nodes from here to the sandbox:</div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #007bff; cursor: pointer;">
-                        <strong>👤 Person Node</strong><br>
-                        <small>Drag to add a person</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #28a745; cursor: pointer;">
-                        <strong>🏢 Organization</strong><br>
-                        <small>Drag to add an organization</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #dc3545; cursor: pointer;">
-                        <strong>📄 Document</strong><br>
-                        <small>Drag to add a document</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; cursor: pointer;">
-                        <strong>🌐 Website</strong><br>
-                        <small>Drag to add a website</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Faces Panel -->
-        <div id="facesPanel" class="floating-panel faces-panel">
-            <div class="panel-header" id="facesHeader">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>👤</span>
-                    <span style="font-weight: 600; color: #6f42c1;">Faces</span>
-                </div>
-                <button onclick="togglePanel('faces')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
-            </div>
-            <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Available faces to assign:</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                        <div style="width: 50px; height: 50px; background: #007bff; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
-                        <small>John Doe</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                        <div style="width: 50px; height: 50px; background: #28a745; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
-                        <small>Jane Smith</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                        <div style="width: 50px; height: 50px; background: #dc3545; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
-                        <small>Bob Wilson</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                        <div style="width: 50px; height: 50px; background: #ffc107; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
-                        <small>Alice Brown</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Artifacts Panel -->
-        <div id="artifactsPanel" class="floating-panel artifacts-panel">
-            <div class="panel-header" id="artifactsHeader">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>📎</span>
-                    <span style="font-weight: 600; color: #fd7e14;">Artifacts</span>
-                </div>
-                <button onclick="togglePanel('artifacts')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
-            </div>
-            <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Document artifacts:</div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #fd7e14; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px;">📄</span>
-                            <div>
-                                <strong>Project Plan.pdf</strong><br>
-                                <small style="color: #666;">2.3 MB • PDF</small>
+            <div class="header-right">
+                <span>Session: active</span>
+                <span>Status: ready</span>
+                
+                <!-- Firebase Dropdown -->
+                <div class="firebase-dropdown">
+                    <button class="firebase-dropdown-btn" onclick="toggleFirebaseDropdown()">
+                        🔥 Firebase
+                        <span style="font-size: 10px;">▼</span>
+                    </button>
+                    <div class="firebase-dropdown-content" id="firebaseDropdown">
+                        <div class="firebase-dropdown-header">
+                            Firebase Integration
+                            <div class="firebase-status connected" id="firebaseStatus">
+                                <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; display: inline-block;"></span>
+                                <span id="firebaseStatusText">Disconnected</span>
                             </div>
                         </div>
-                    </div>
-                    <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #20c997; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px;">📊</span>
+                        <div class="firebase-dropdown-item" onclick="syncToFirebase()">
+                            <span>📤</span>
                             <div>
-                                <strong>Analytics.xlsx</strong><br>
-                                <small style="color: #666;">1.8 MB • Excel</small>
+                                <div>Sync to Firebase</div>
+                                <div style="font-size: 11px; color: #666;">Save sandbox changes to Firestore</div>
                             </div>
                         </div>
-                    </div>
-                    <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #6f42c1; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px;">🖼️</span>
+                        <div class="firebase-dropdown-item" onclick="loadFromFirebase()">
+                            <span>📥</span>
                             <div>
-                                <strong>Screenshot.png</strong><br>
-                                <small style="color: #666;">0.9 MB • Image</small>
+                                <div>Load from Firebase</div>
+                                <div style="font-size: 11px; color: #666;">Restore previous session</div>
+                            </div>
+                        </div>
+                        <div class="firebase-dropdown-item" onclick="uploadArtifacts()">
+                            <span>📎</span>
+                            <div>
+                                <div>Upload Artifacts</div>
+                                <div style="font-size: 11px; color: #666;">Store files in Firebase Storage</div>
+                            </div>
+                        </div>
+                        <div class="firebase-dropdown-item" onclick="viewFirebaseData()">
+                            <span>📊</span>
+                            <div>
+                                <div>View Data</div>
+                                <div style="font-size: 11px; color: #666;">Browse Firestore collections</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Production Panel -->
-        <div id="productionPanel" class="floating-panel production-panel">
-            <div class="panel-header" id="productionHeader">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>🔵</span>
-                    <span style="font-weight: 600; color: #28a745;">Production Graph</span>
-                </div>
-                <button onclick="togglePanel('production')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
+        
+        <!-- Smart Context Bar -->
+        <div class="context-bar" id="contextBar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span>✨</span>
+                <span id="changesText">0 changes pending in sandbox</span>
             </div>
-            <div id="productionContainer" style="flex: 1; overflow: hidden; background: #fafafa; border-radius: 6px; position: relative; min-height: 0; width: 100%; height: calc(100% - 60px);"></div>
-        </div>
-
-        <!-- AI Assistant Panel -->
-        <div id="ai-assistantPanel" class="floating-panel ai-assistant-panel open">
-            <div class="panel-header" id="ai-assistantHeader">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>🤖</span>
-                    <span style="font-weight: 600; color: #007bff;">AI Assistant</span>
-                </div>
-                <button onclick="togglePanel('ai-assistant')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-                <div style="background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                    <div style="font-weight: 600; margin-bottom: 8px;">Quick Actions:</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔍 Analyze</button>
-                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">✓ Validate</button>
-                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔗 Auto-Link</button>
-                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">💡 Suggest</button>
-                    </div>
-                </div>
-                <div style="background: #f8f9fa; border-radius: 6px; padding: 15px; flex: 1;">
-                    <div style="font-weight: 600; margin-bottom: 8px;">AI Insights:</div>
-                    <div style="font-size: 13px; color: #666; line-height: 1.4;">
-                        Ready to assist with graph analysis and suggestions. Click any quick action to interact with the sandbox.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tools Panel -->
-        <div id="toolsPanel" class="floating-panel tools-panel">
-            <div class="panel-header" id="toolsHeader">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>🛠️</span>
-                    <span style="font-weight: 600; color: #6c757d;">Tools</span>
-                </div>
-                <button onclick="togglePanel('tools')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
-            </div>
-            <div style="flex: 1; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
-                        <div style="font-size: 20px; margin-bottom: 5px;">📊</div>
-                        <small>Export</small>
-                    </button>
-                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
-                        <div style="font-size: 20px; margin-bottom: 5px;">🔄</div>
-                        <small>Sync</small>
-                    </button>
-                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
-                        <div style="font-size: 20px; margin-bottom: 5px;">⚙️</div>
-                        <small>Settings</small>
-                    </button>
-                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
-                        <div style="font-size: 20px; margin-bottom: 5px;">🔍</div>
-                        <small>Search</small>
-                    </button>
-                </div>
-            </div>
+            <span style="font-size: 12px; opacity: 0.9;">
+                Review changes before posting to production
+            </span>
         </div>
         
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <button class="toolbar-btn" title="Node List" onclick="togglePanel('node-list')">📋</button>
+                    <button class="toolbar-btn" title="Faces" onclick="togglePanel('faces')">👤</button>
+                    <button class="toolbar-btn" title="Artifacts" onclick="togglePanel('artifacts')">📎</button>
+                    <button class="toolbar-btn" title="Production Graph" onclick="togglePanel('production')">🔵</button>
+                    <button class="toolbar-btn active" title="AI Assistant" onclick="togglePanel('ai-assistant')">🤖</button>
+                    <button class="toolbar-btn" title="Tools" onclick="togglePanel('tools')">🛠️</button>
+                </div>
+                
+                <div class="content-area">
+                    <div class="sandbox-panel">
+                        <h3 style="margin: 0 0 15px 0; color: #007bff;">🔧 Sandbox Control</h3>
+                        <div id="sandboxContainer" class="sandbox-container"></div>
+                    </div>
+                </div>
+                
+                <!-- Node List Panel -->
+                <div id="node-listPanel" class="floating-panel node-list-panel">
+                    <div class="panel-header" id="node-listHeader">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>📋</span>
+                            <span style="font-weight: 600; color: #007bff;">Node List</span>
+                        </div>
+                        <button onclick="togglePanel('node-list')" class="panel-close">×</button>
+                    </div>
+                    <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag nodes from here to the sandbox:</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #007bff; cursor: pointer;">
+                                <strong>👤 Person Node</strong><br>
+                                <small>Drag to add a person</small>
+                            </div>
+                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #28a745; cursor: pointer;">
+                                <strong>🏢 Organization</strong><br>
+                                <small>Drag to add an organization</small>
+                            </div>
+                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #dc3545; cursor: pointer;">
+                                <strong>📄 Document</strong><br>
+                                <small>Drag to add a document</small>
+                            </div>
+                            <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; cursor: pointer;">
+                                <strong>🌐 Website</strong><br>
+                                <small>Drag to add a website</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Faces Panel -->
+                <div id="facesPanel" class="floating-panel faces-panel">
+                    <div class="panel-header" id="facesHeader">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>👤</span>
+                            <span style="font-weight: 600; color: #6f42c1;">Faces</span>
+                        </div>
+                        <button onclick="togglePanel('faces')" class="panel-close">×</button>
+                    </div>
+                    <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Available faces to assign:</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                                <div style="width: 50px; height: 50px; background: #007bff; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
+                                <small>John Doe</small>
+                            </div>
+                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                                <div style="width: 50px; height: 50px; background: #28a745; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
+                                <small>Jane Smith</small>
+                            </div>
+                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                                <div style="width: 50px; height: 50px; background: #dc3545; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
+                                <small>Bob Wilson</small>
+                            </div>
+                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                                <div style="width: 50px; height: 50px; background: #ffc107; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
+                                <small>Alice Brown</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artifacts Panel -->
+                <div id="artifactsPanel" class="floating-panel artifacts-panel">
+                    <div class="panel-header" id="artifactsHeader">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>📎</span>
+                            <span style="font-weight: 600; color: #fd7e14;">Artifacts</span>
+                        </div>
+                        <button onclick="togglePanel('artifacts')" class="panel-close">×</button>
+                    </div>
+                    <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Document artifacts:</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #fd7e14; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 20px;">📄</span>
+                                    <div>
+                                        <strong>Project Plan.pdf</strong><br>
+                                        <small style="color: #666;">2.3 MB • PDF</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #20c997; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 20px;">📊</span>
+                                    <div>
+                                        <strong>Analytics.xlsx</strong><br>
+                                        <small style="color: #666;">1.8 MB • Excel</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #6f42c1; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 20px;">🖼️</span>
+                                    <div>
+                                        <strong>Screenshot.png</strong><br>
+                                        <small style="color: #666;">0.9 MB • Image</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Production Panel -->
+                <div id="productionPanel" class="floating-panel production-panel">
+                    <div class="panel-header" id="productionHeader">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>🔵</span>
+                            <span style="font-weight: 600; color: #28a745;">Production Graph</span>
+                        </div>
+                        <button onclick="togglePanel('production')" class="panel-close">×</button>
+                    </div>
+                    <div id="productionContainer" style="flex: 1; overflow: hidden; background: #fafafa; border-radius: 6px; position: relative; min-height: 0; width: 100%; height: calc(100% - 60px);"></div>
+                </div>
+
+                <!-- AI Assistant Panel -->
+                <div id="ai-assistantPanel" class="floating-panel ai-assistant-panel open">
+                    <div class="panel-header" id="ai-assistantHeader">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>🤖</span>
+                            <span style="font-weight: 600; color: #007bff;">AI Assistant</span>
+                        </div>
+                        <button onclick="togglePanel('ai-assistant')" class="panel-close">×</button>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                        <div style="background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">Quick Actions:</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔍 Analyze</button>
+                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">✓ Validate</button>
+                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔗 Auto-Link</button>
+                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">💡 Suggest</button>
+                            </div>
+                        </div>
+                        <div style="background: #f8f9fa; border-radius: 6px; padding: 15px; flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">AI Insights:</div>
+                            <div style="font-size: 13px; color: #666; line-height: 1.4;">
+                                Ready to assist with graph analysis and suggestions. Click any quick action to interact with the sandbox.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tools Panel -->
+                <div id="toolsPanel" class="floating-panel tools-panel">
+                    <div class="panel-header" id="toolsHeader">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>🛠️</span>
+                            <span style="font-weight: 600; color: #6c757d;">Tools</span>
+                        </div>
+                        <button onclick="togglePanel('tools')" class="panel-close">×</button>
+                    </div>
+                    <div style="flex: 1; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 5px;">📊</div>
+                                <small>Export</small>
+                            </button>
+                            <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 5px;">🔄</div>
+                                <small>Sync</small>
+                            </button>
+                            <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 5px;">⚙️</div>
+                                <small>Settings</small>
+                            </button>
+                            <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 5px;">🔍</div>
+                                <small>Search</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -680,7 +697,7 @@
                 const maxX = window.innerWidth - currentPanel.offsetWidth;
                 const maxY = window.innerHeight - currentPanel.offsetHeight;
                 
-                const constrainedX = Math.max(50, Math.min(x, maxX)); // 50px for left nav
+                const constrainedX = Math.max(80, Math.min(x, maxX)); // 80px for sidebar
                 const constrainedY = Math.max(0, Math.min(y, maxY));
                 
                 currentPanel.style.left = constrainedX + 'px';
