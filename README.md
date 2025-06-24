@@ -24,6 +24,7 @@ A comprehensive web application for Infitwin - a platform that helps people crea
 - **Vectorization**: Single and batch file processing
 - **UI/UX**: Loading indicators, face count badges, modal improvements
 - **Firebase Integration**: Face data properly saved and retrieved
+- **Sandbox Page**: Full graph editing environment with 6 floating panels
 - **Test Credentials**: weezer@yev.com / 123456
 
 ### ⚠️ Known Issues:
@@ -54,6 +55,7 @@ WebsitePrototype/
 │   ├── auth.html                      # Login/registration
 │   ├── dashboard.html                 # Main dashboard
 │   ├── file-browser.html              # File management (My Files)
+│   ├── sandbox.html                   # Graph editing environment
 │   └── ... (other pages)
 ├── test-scripts/                      # Testing infrastructure
 │   ├── test-debug-flow.py             # Main test script
@@ -151,6 +153,29 @@ grep -E "🔥|✅|❌|FIREBASE_DEBUG" artifact-processor-fixed.log
 - Real-time processing status
 - Batch file uploads
 - Advanced search and filtering
+
+## 🧪 Sandbox Feature
+
+The Sandbox page provides a safe environment for editing family graph data during interviews:
+
+### Features:
+- **Dual Graph Views**: Sandbox (editable) and Production (read-only)
+- **6 Floating Panels**:
+  - 📋 Node List - Drag nodes to add to graph
+  - 👤 Faces - Face recognition and mapping
+  - 📎 Artifacts - Document management
+  - 🔵 Production Graph - Read-only production view
+  - 🤖 AI Assistant - Interactive help
+  - 🛠️ Tools - Utility functions
+- **Smart Context Bar**: Tracks changes before committing to production
+- **Firebase Integration**: Save/load sessions, upload artifacts
+- **Nexus Graph Control**: Full graph visualization and editing
+
+### Access:
+- Navigate to Sandbox from the purple sidebar (🧪 icon)
+- URL: `/pages/sandbox.html`
+- All panels are draggable and resizable
+- Press ESC to hide all panels
 
 ## 🎨 Color Palette
 
