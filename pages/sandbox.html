@@ -1842,19 +1842,6 @@
                     };
                 });
                 
-                // Helper function to get node colors
-                function getNodeColor(type) {
-                    const colors = {
-                        person: '#9C88FF',
-                        organization: '#FF9F7F', 
-                        location: '#74B9FF',
-                        event: '#FF7675',
-                        thing: '#6BCF7F',
-                        default: '#9CA3AF'
-                    };
-                    return colors[type] || colors.default;
-                }
-                
                 // Create a set of existing node IDs for validation
                 const nodeIds = new Set(nodes.map(n => n.id));
                 
@@ -2023,6 +2010,18 @@
                 default: '⚪'
             };
             return icons[type] || icons.default;
+        }
+        
+        function getNodeColor(type) {
+            const colors = {
+                person: '#9C88FF',
+                organization: '#FF9F7F', 
+                location: '#74B9FF',
+                event: '#FF7675',
+                thing: '#6BCF7F',
+                default: '#9CA3AF'
+            };
+            return colors[type] || colors.default;
         }
         
         function createDraggableNodeElement(node) {
