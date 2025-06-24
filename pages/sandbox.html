@@ -1761,25 +1761,32 @@
                     LIMIT 50
                 `, { userId, twinId });
                 
-                // First check if any relationships exist at all for this user
-                const allRelsCheck = await session.run(`
-                    MATCH ()-[r]-()
-                    WHERE EXISTS {
-                        MATCH (n {userId: $userId, twinId: $twinId})
-                        WHERE startNode(r) = n OR endNode(r) = n
-                    }
-                    RETURN count(r) as totalRels
+                // First, let's see what relationships exist in the database
+                const allRelsDebug = await session.run(`
+                    MATCH (a)-[r]->(b)
+                    WHERE a.userId = $userId AND a.twinId = $twinId
+                    RETURN a.id as sourceId, b.id as targetId, type(r) as relType, 
+                           a.userId as aUserId, a.twinId as aTwinId,
+                           b.userId as bUserId, b.twinId as bTwinId
+                    LIMIT 10
                 `, { userId, twinId });
                 
-                const totalRels = allRelsCheck.records[0]?.get('totalRels')?.toNumber() || 0;
-                log(`🔍 Total relationships for user ${userId}: ${totalRels}`);
+                log(`🔍 Debug: Found ${allRelsDebug.records.length} relationships where source node matches user/twin`);
+                allRelsDebug.records.forEach((record, i) => {
+                    log(`  Rel ${i}: ${record.get('sourceId')} -> ${record.get('targetId')} (${record.get('relType')})`);
+                    log(`    Source: userId=${record.get('aUserId')}, twinId=${record.get('aTwinId')}`);
+                    log(`    Target: userId=${record.get('bUserId')}, twinId=${record.get('bTwinId')}`);
+                });
                 
-                // Query relationships for this user/twin (try both directions)
+                // Try a more flexible query - just require source node to match
                 const relsResult = await session.run(`
-                    MATCH (a {userId: $userId, twinId: $twinId})-[r]-(b {userId: $userId, twinId: $twinId})
-                    RETURN a.id as sourceId, b.id as targetId, type(r) as relType, properties(r) as relProps
+                    MATCH (a {userId: $userId, twinId: $twinId})-[r]-(b)
+                    RETURN a.id as sourceId, b.id as targetId, type(r) as relType, 
+                           properties(r) as relProps, properties(b) as targetProps
                     LIMIT 100
                 `, { userId, twinId });
+                
+                log(`🔍 Flexible query found ${relsResult.records.length} relationships`);
                 
                 await session.close();
                 
@@ -1797,11 +1804,31 @@
                     };
                 });
                 
+                // Create a set of existing node IDs for validation
+                const nodeIds = new Set(nodes.map(n => n.id));
+                
                 const edges = relsResult.records.map((record, index) => {
+                    const sourceId = record.get('sourceId');
+                    const targetId = record.get('targetId');
+                    const targetProps = record.get('targetProps');
+                    
+                    // If target node isn't in our nodes list, add it
+                    if (!nodeIds.has(targetId) && targetProps) {
+                        const targetNode = {
+                            id: targetId,
+                            label: targetProps.name || targetProps.firstName || targetId,
+                            type: 'node', // Generic type for connected nodes
+                            originalData: targetProps
+                        };
+                        nodes.push(targetNode);
+                        nodeIds.add(targetId);
+                        log(`➕ Added missing target node: ${targetId}`);
+                    }
+                    
                     const edge = {
                         id: `edge_${index}`,
-                        from: record.get('sourceId'),
-                        to: record.get('targetId'),
+                        from: sourceId,
+                        to: targetId,
                         label: record.get('relType').toLowerCase(),
                         originalData: record.get('relProps')
                     };
