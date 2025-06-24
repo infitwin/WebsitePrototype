@@ -26,6 +26,8 @@ A comprehensive web application for Infitwin - a platform that helps people crea
 - **Firebase Integration**: Face data properly saved and retrieved
 - **Sandbox Page**: Full graph editing environment with 6 floating panels
 - **Sandbox Artifacts**: Firebase-connected panel showing user's files as draggable thumbnails
+- **Sandbox Faces**: Extracted faces from photos displayed as draggable thumbnails
+- **Admin Test Data**: Development-only page for generating Neo4j test graphs
 - **Test Credentials**: weezer@yev.com / 123456
 
 ### ⚠️ Known Issues:

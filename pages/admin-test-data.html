@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Test Data Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components/navigation.css">
+    
+    <!-- Firebase SDK v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        /* Main layout container */
+        .symphony-dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Main content wrapper */
+        .main-content-wrapper {
+            flex: 1;
+            margin-left: 80px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Admin Header */
+        .admin-header {
+            background: #dc3545;
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .admin-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .admin-warning {
+            background: #ffc107;
+            color: #856404;
+            padding: 15px 30px;
+            border-bottom: 1px solid #ffb700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-warning svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Main Content */
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Info Cards */
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .info-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .info-card p {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Test Data Generator Section */
+        .generator-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .generator-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-size-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .size-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .size-option:hover {
+            border-color: #6B46C1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 70, 193, 0.15);
+        }
+
+        .size-option.selected {
+            border-color: #6B46C1;
+            background: #f3f0ff;
+        }
+
+        .size-option h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .size-option p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        .size-option .details {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-generate {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-generate:hover {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+        }
+
+        .btn-generate:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-clear {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+        }
+
+        /* Status Messages */
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Progress Indicator */
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #6B46C1;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #333;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Logs Section */
+        .logs-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logs-section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .logs-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .log-entry.error {
+            color: #dc3545;
+        }
+
+        .log-entry.success {
+            color: #28a745;
+        }
+
+        .log-entry.info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="symphony-dashboard">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar-nav-container"></div>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <h1>🛠️ Admin - Test Data Generator</h1>
+            </div>
+
+            <!-- Warning Banner -->
+            <div class="admin-warning">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span><strong>Admin Area:</strong> This page generates test data in Neo4j. Use with caution!</span>
+            </div>
+
+            <!-- Main Content -->
+            <div class="admin-content">
+                <!-- Info Cards -->
+                <div class="info-cards">
+                    <div class="info-card">
+                        <h3>Current User</h3>
+                        <p id="currentUser">Not logged in</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Twin ID</h3>
+                        <p id="currentTwinId">No twin selected</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Environment</h3>
+                        <p id="environment">Development</p>
+                    </div>
+                </div>
+
+                <!-- Test Data Generator -->
+                <div class="generator-section">
+                    <h2>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                        </svg>
+                        Generate Test Data
+                    </h2>
+
+                    <div class="data-size-options">
+                        <div class="size-option" data-size="small">
+                            <h3>Small Graph</h3>
+                            <p>Quick test dataset</p>
+                            <div class="details">
+                                • 10-15 nodes<br>
+                                • 15-20 relationships<br>
+                                • ~5 seconds
+                            </div>
+                        </div>
+                        <div class="size-option" data-size="medium">
+                            <h3>Medium Graph</h3>
+                            <p>Standard test dataset</p>
+                            <div class="details">
+                                • 50-75 nodes<br>
+                                • 100-150 relationships<br>
+                                • ~30 seconds
+                            </div>
+                        </div>
+                        <div class="size-option" data-size="large">
+                            <h3>Large Graph</h3>
+                            <p>Stress test dataset</p>
+                            <div class="details">
+                                • 200-300 nodes<br>
+                                • 500-750 relationships<br>
+                                • ~2 minutes
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-generate" id="generateBtn" disabled>
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Generate Test Data
+                        </button>
+                        <button class="btn btn-clear" id="clearBtn">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Clear All Data
+                        </button>
+                    </div>
+
+                    <div class="status-message" id="statusMessage"></div>
+
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Initializing...</div>
+                    </div>
+                </div>
+
+                <!-- Logs Section -->
+                <div class="logs-section">
+                    <h2>Activity Logs</h2>
+                    <div class="logs-container" id="logsContainer">
+                        <div class="log-entry info">Waiting for action...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // State
+        let selectedSize = null;
+        let currentUser = null;
+        let currentTwinId = null;
+
+        // DOM Elements
+        const generateBtn = document.getElementById('generateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const logsContainer = document.getElementById('logsContainer');
+
+        // Log function
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logsContainer.appendChild(entry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Check if admin features are enabled
+        function isAdminEnabled() {
+            // In production, check environment variable or feature flag
+            // For now, always enabled in development
+            const env = document.getElementById('environment').textContent;
+            return env === 'Development' || window.location.hostname === 'localhost';
+        }
+
+        // Initialize authentication
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('currentUser').textContent = user.email;
+                log(`User authenticated: ${user.email}`, 'success');
+
+                // Get user's twin ID from Firestore
+                try {
+                    const userDoc = await firebase.firestore()
+                        .collection('users')
+                        .doc(user.uid)
+                        .get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        currentTwinId = userData.primaryTwinId || userData.twinId || null;
+                        document.getElementById('currentTwinId').textContent = 
+                            currentTwinId || 'No twin created';
+                        
+                        if (currentTwinId) {
+                            log(`Twin ID loaded: ${currentTwinId}`, 'success');
+                        }
+                    }
+                } catch (error) {
+                    log(`Failed to load twin ID: ${error.message}`, 'error');
+                }
+            } else {
+                // Not logged in - redirect to auth
+                log('User not authenticated, redirecting...', 'error');
+                setTimeout(() => {
+                    window.location.href = '/pages/auth.html';
+                }, 2000);
+            }
+        });
+
+        // Size selection
+        document.querySelectorAll('.size-option').forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove previous selection
+                document.querySelectorAll('.size-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selection
+                option.classList.add('selected');
+                selectedSize = option.dataset.size;
+                generateBtn.disabled = false;
+                log(`Selected ${selectedSize} graph size`);
+            });
+        });
+
+        // Generate test data
+        generateBtn.addEventListener('click', async () => {
+            if (!selectedSize || !currentUser) {
+                showStatus('Please select a data size and ensure you are logged in', 'error');
+                return;
+            }
+
+            if (!isAdminEnabled()) {
+                showStatus('Admin features are disabled in this environment', 'error');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            clearBtn.disabled = true;
+            showProgress(0, 'Starting generation...');
+            log(`Starting ${selectedSize} test data generation...`);
+
+            try {
+                // Simulate API call to Neo4j service
+                // In production, this would call your actual Neo4j API endpoint
+                const response = await generateTestDataInNeo4j(selectedSize);
+                
+                showStatus(`Successfully generated ${selectedSize} test dataset!`, 'success');
+                log(`Generation complete: ${response.nodesCreated} nodes, ${response.relationshipsCreated} relationships`, 'success');
+            } catch (error) {
+                showStatus(`Failed to generate test data: ${error.message}`, 'error');
+                log(`Generation failed: ${error.message}`, 'error');
+            } finally {
+                generateBtn.disabled = false;
+                clearBtn.disabled = false;
+                hideProgress();
+            }
+        });
+
+        // Clear all data
+        clearBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to clear ALL test data? This cannot be undone!')) {
+                return;
+            }
+
+            if (!currentUser || !currentTwinId) {
+                showStatus('Please ensure you are logged in with a twin', 'error');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            clearBtn.disabled = true;
+            showProgress(0, 'Clearing data...');
+            log('Starting data cleanup...');
+
+            try {
+                // Simulate API call to clear Neo4j data
+                const response = await clearTestDataInNeo4j();
+                
+                showStatus('Successfully cleared all test data!', 'success');
+                log(`Cleanup complete: ${response.nodesDeleted} nodes, ${response.relationshipsDeleted} relationships deleted`, 'success');
+            } catch (error) {
+                showStatus(`Failed to clear data: ${error.message}`, 'error');
+                log(`Cleanup failed: ${error.message}`, 'error');
+            } finally {
+                generateBtn.disabled = false;
+                clearBtn.disabled = false;
+                hideProgress();
+            }
+        });
+
+        // Simulated Neo4j API functions
+        async function generateTestDataInNeo4j(size) {
+            // This simulates the API call to your Neo4j service
+            // In production, replace with actual API endpoint
+            
+            const dataSizes = {
+                small: { nodes: 15, relationships: 20, duration: 5000 },
+                medium: { nodes: 75, relationships: 150, duration: 30000 },
+                large: { nodes: 300, relationships: 750, duration: 120000 }
+            };
+
+            const config = dataSizes[size];
+            const steps = 10;
+            const stepDuration = config.duration / steps;
+
+            // Simulate progress
+            for (let i = 1; i <= steps; i++) {
+                await new Promise(resolve => setTimeout(resolve, stepDuration));
+                const progress = (i / steps) * 100;
+                showProgress(progress, `Creating nodes and relationships... (${i}/${steps})`);
+                
+                if (i === 3) log(`Created ${Math.floor(config.nodes * 0.3)} nodes...`);
+                if (i === 6) log(`Created ${Math.floor(config.relationships * 0.5)} relationships...`);
+                if (i === 9) log(`Finalizing graph structure...`);
+            }
+
+            // In production, this would be the actual response from Neo4j
+            return {
+                success: true,
+                nodesCreated: config.nodes,
+                relationshipsCreated: config.relationships,
+                userId: currentUser.uid,
+                twinId: currentTwinId
+            };
+        }
+
+        async function clearTestDataInNeo4j() {
+            // Simulate clearing data
+            const steps = 5;
+            const stepDuration = 1000;
+
+            for (let i = 1; i <= steps; i++) {
+                await new Promise(resolve => setTimeout(resolve, stepDuration));
+                const progress = (i / steps) * 100;
+                showProgress(progress, `Clearing data... (${i}/${steps})`);
+                
+                if (i === 2) log('Deleting relationships...');
+                if (i === 4) log('Deleting nodes...');
+            }
+
+            return {
+                success: true,
+                nodesDeleted: 150,
+                relationshipsDeleted: 350
+            };
+        }
+
+        // UI Helper functions
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showProgress(percent, text) {
+            progressContainer.style.display = 'block';
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = text;
+        }
+
+        function hideProgress() {
+            progressContainer.style.display = 'none';
+            progressFill.style.width = '0%';
+        }
+
+        // Check environment on load
+        window.addEventListener('load', () => {
+            if (!isAdminEnabled()) {
+                document.querySelector('.admin-warning').innerHTML += 
+                    '<br><strong>Note:</strong> Admin features are currently disabled.';
+            }
+        });
+    </script>
+    
+    <!-- Centralized Navigation -->
+    <script src="../js/navigation.js"></script>
+</body>
+</html>

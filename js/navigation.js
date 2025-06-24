@@ -27,7 +27,8 @@ class NavigationManager {
             'talk-to-twin': 'talk',
             'my-files': 'files',
             'file-browser': 'files', // Legacy support
-            'settings': 'settings'
+            'settings': 'settings',
+            'admin-test-data': 'admin'
         };
         
         return pageMap[filename] || 'dashboard';
@@ -40,6 +41,7 @@ class NavigationManager {
         await this.loadSharedNavigation();
         this.setActiveState();
         this.setupLogoutHandler();
+        this.showAdminLinkIfDevelopment();
         // Don't update user info in navigation - only in dropdown
         // this.updateUserInfo();
     }
@@ -129,6 +131,25 @@ class NavigationManager {
         
         // Redirect to auth page
         window.location.href = 'auth.html';
+    }
+
+    /**
+     * Show admin link if in development environment
+     */
+    showAdminLinkIfDevelopment() {
+        // Check if we're in development environment
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1' ||
+                            window.location.hostname.includes('dev') ||
+                            window.location.port === '8357';
+        
+        if (isDevelopment) {
+            const adminLink = document.querySelector('.admin-only');
+            if (adminLink) {
+                adminLink.style.display = 'flex';
+                console.log('🛠️ Admin link enabled in development environment');
+            }
+        }
     }
 
     /**
