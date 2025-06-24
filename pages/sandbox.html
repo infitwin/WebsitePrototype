@@ -579,7 +579,7 @@
                     <button class="toolbar-btn" title="Faces" onclick="togglePanel('faces')">😊</button>
                     <button class="toolbar-btn" title="Artifacts" onclick="togglePanel('artifacts')">📎</button>
                     <button class="toolbar-btn" title="Production Graph" onclick="togglePanel('production')">🔵</button>
-                    <button class="toolbar-btn active" title="AI Assistant" onclick="togglePanel('ai-assistant')">🤖</button>
+                    <button class="toolbar-btn" title="AI Assistant" onclick="togglePanel('ai-assistant')">🤖</button>
                     <button class="toolbar-btn" title="Tools" onclick="togglePanel('tools')">🛠️</button>
                 </div>
                 
@@ -672,7 +672,7 @@
                 </div>
 
                 <!-- AI Assistant Panel -->
-                <div id="ai-assistantPanel" class="floating-panel ai-assistant-panel open">
+                <div id="ai-assistantPanel" class="floating-panel ai-assistant-panel">
                     <div class="panel-header" id="ai-assistantHeader">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span>🤖</span>
@@ -743,7 +743,7 @@
         let sandboxRoot = null;
         let productionRoot = null;
         let debugMessages = [];
-        let openPanels = ['ai-assistant'];
+        let openPanels = [];
         let changesCount = 0;
         let initialDataLoaded = false;
         
@@ -2319,10 +2319,6 @@
                     log('✅ Ready for testing');
                     initializeSandbox();
                     
-                    // Initialize drag for AI Assistant panel (starts open)
-                    initializeDragFunctionality('ai-assistant');
-                    // Initialize resize observer for AI Assistant
-                    observePanelResize('ai-assistant');
                     updateToolbarStates();
                 } else {
                     log('❌ Scripts not loaded properly');
