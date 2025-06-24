@@ -967,6 +967,9 @@
                         nodes: [],
                         edges: []
                     };
+                } else {
+                    log(`🎯 Production data structure:`, productionData);
+                    log(`📊 Nodes: ${productionData.nodes.length}, Edges: ${productionData.edges.length}`);
                 }
                 
                 // Set container dimensions explicitly
@@ -1749,7 +1752,7 @@
                 
                 // Query relationships for this user/twin
                 const relsResult = await session.run(`
-                    MATCH (a {userId: $userId, twinId: $twinId})-[r]-(b {userId: $userId, twinId: $twinId})
+                    MATCH (a {userId: $userId, twinId: $twinId})-[r]->(b {userId: $userId, twinId: $twinId})
                     RETURN a.id as sourceId, b.id as targetId, type(r) as relType, properties(r) as relProps
                     LIMIT 100
                 `, { userId, twinId });
@@ -1770,15 +1773,25 @@
                     };
                 });
                 
-                const edges = relsResult.records.map((record, index) => ({
-                    id: `edge_${index}`,
-                    from: record.get('sourceId'),
-                    to: record.get('targetId'),
-                    label: record.get('relType').toLowerCase(),
-                    originalData: record.get('relProps')
-                }));
+                const edges = relsResult.records.map((record, index) => {
+                    const edge = {
+                        id: `edge_${index}`,
+                        from: record.get('sourceId'),
+                        to: record.get('targetId'),
+                        label: record.get('relType').toLowerCase(),
+                        originalData: record.get('relProps')
+                    };
+                    log(`🔗 Edge ${index}: ${edge.from} -> ${edge.to} (${edge.label})`);
+                    return edge;
+                });
                 
                 log(`✅ Loaded ${nodes.length} nodes and ${edges.length} relationships from Neo4j`);
+                log(`📊 Node IDs: ${nodes.map(n => n.id).join(', ')}`);
+                if (edges.length > 0) {
+                    log(`🔗 First edge example: ${JSON.stringify(edges[0], null, 2)}`);
+                } else {
+                    log(`⚠️ No relationships found for user ${userId}, twin ${twinId}`);
+                }
                 
                 return { nodes, edges };
                 
