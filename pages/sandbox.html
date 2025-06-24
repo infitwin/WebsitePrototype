@@ -599,9 +599,18 @@
                         </div>
                         <button onclick="togglePanel('node-list')" class="panel-close">×</button>
                     </div>
-                    <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                    <div style="flex: 1; display: flex; flex-direction: column; background: #f8f9fa; border-radius: 6px; padding: 15px;">
                         <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag actual nodes from your graph:</div>
-                        <div id="nodeListContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                        
+                        <!-- Node Type Filters -->
+                        <div id="nodeTypeFilters" style="display: none; margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div style="color: #333; font-size: 12px; font-weight: 600; margin-bottom: 8px;">FILTER BY TYPE:</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="nodeTypeFilterButtons">
+                                <!-- Filter buttons will be dynamically added here -->
+                            </div>
+                        </div>
+                        
+                        <div id="nodeListContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
                             <div style="background: white; padding: 15px; border-radius: 4px; text-align: center; color: #666;">
                                 <div style="font-size: 20px; margin-bottom: 5px;">⏳</div>
                                 <div>Loading nodes from Neo4j...</div>
@@ -1977,20 +1986,14 @@
                     });
                 });
                 
-                // Create node elements for each type
-                Object.keys(nodesByType).forEach(nodeType => {
-                    // Add type header
-                    const typeHeader = document.createElement('div');
-                    typeHeader.style.cssText = 'font-weight: 600; color: #333; margin: 15px 0 5px 0; font-size: 14px; text-transform: capitalize;';
-                    typeHeader.innerHTML = `${getNodeTypeIcon(nodeType)} ${nodeType}s (${nodesByType[nodeType].length})`;
-                    container.appendChild(typeHeader);
-                    
-                    // Add nodes of this type
-                    nodesByType[nodeType].forEach(node => {
-                        const nodeElement = createDraggableNodeElement(node);
-                        container.appendChild(nodeElement);
-                    });
-                });
+                // Create filter buttons
+                createNodeTypeFilters(nodesByType);
+                
+                // Store nodes data globally for filtering
+                window.nodeListData = nodesByType;
+                
+                // Render all nodes initially
+                renderFilteredNodes(nodesByType);
                 
                 log(`✅ Loaded ${nodesResult.records.length} nodes for node list`);
                 
@@ -2090,6 +2093,128 @@
                     <div>${message}</div>
                 </div>
             `;
+        }
+        
+        function createNodeTypeFilters(nodesByType) {
+            const filterContainer = document.getElementById('nodeTypeFilterButtons');
+            const filtersDiv = document.getElementById('nodeTypeFilters');
+            
+            if (!filterContainer || !filtersDiv) return;
+            
+            filterContainer.innerHTML = '';
+            
+            // Add "All" button
+            const allButton = createFilterButton('all', '🔄', 'All', Object.values(nodesByType).reduce((sum, arr) => sum + arr.length, 0), true);
+            filterContainer.appendChild(allButton);
+            
+            // Add buttons for each node type
+            Object.keys(nodesByType).forEach(nodeType => {
+                const count = nodesByType[nodeType].length;
+                const icon = getNodeTypeIcon(nodeType);
+                const label = nodeType.charAt(0).toUpperCase() + nodeType.slice(1) + 's';
+                
+                const button = createFilterButton(nodeType, icon, label, count, false);
+                filterContainer.appendChild(button);
+            });
+            
+            // Show the filters section
+            filtersDiv.style.display = 'block';
+        }
+        
+        function createFilterButton(type, icon, label, count, isActive) {
+            const button = document.createElement('button');
+            button.className = 'node-filter-btn';
+            button.dataset.nodeType = type;
+            
+            const color = type === 'all' ? '#6c757d' : getNodeColor(type);
+            const activeClass = isActive ? 'active' : '';
+            
+            button.style.cssText = `
+                padding: 6px 12px;
+                border: 1px solid ${color};
+                background: ${isActive ? color : 'white'};
+                color: ${isActive ? 'white' : color};
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                transition: all 0.2s;
+                user-select: none;
+            `;
+            
+            button.innerHTML = `${icon} ${label} (${count})`;
+            
+            // Add click handler
+            button.addEventListener('click', () => {
+                // Remove active state from all buttons
+                document.querySelectorAll('.node-filter-btn').forEach(btn => {
+                    const btnType = btn.dataset.nodeType;
+                    const btnColor = btnType === 'all' ? '#6c757d' : getNodeColor(btnType);
+                    btn.style.background = 'white';
+                    btn.style.color = btnColor;
+                });
+                
+                // Add active state to clicked button
+                button.style.background = color;
+                button.style.color = 'white';
+                
+                // Filter nodes
+                filterNodesByType(type);
+            });
+            
+            // Add hover effects
+            button.addEventListener('mouseenter', () => {
+                if (button.style.background === 'white' || button.style.background === '') {
+                    button.style.background = color + '20'; // 20% opacity
+                }
+            });
+            
+            button.addEventListener('mouseleave', () => {
+                if (button.style.color !== 'white') {
+                    button.style.background = 'white';
+                }
+            });
+            
+            return button;
+        }
+        
+        function filterNodesByType(selectedType) {
+            if (!window.nodeListData) return;
+            
+            if (selectedType === 'all') {
+                renderFilteredNodes(window.nodeListData);
+            } else {
+                const filteredData = {};
+                filteredData[selectedType] = window.nodeListData[selectedType] || [];
+                renderFilteredNodes(filteredData);
+            }
+            
+            log(`🔍 Filtered node list to show: ${selectedType === 'all' ? 'all types' : selectedType}`);
+        }
+        
+        function renderFilteredNodes(nodesByType) {
+            const container = document.getElementById('nodeListContainer');
+            container.innerHTML = '';
+            
+            // Create node elements for each type
+            Object.keys(nodesByType).forEach(nodeType => {
+                if (nodesByType[nodeType].length === 0) return;
+                
+                // Add type header
+                const typeHeader = document.createElement('div');
+                typeHeader.style.cssText = 'font-weight: 600; color: #333; margin: 15px 0 5px 0; font-size: 14px; text-transform: capitalize;';
+                typeHeader.innerHTML = `${getNodeTypeIcon(nodeType)} ${nodeType}s (${nodesByType[nodeType].length})`;
+                container.appendChild(typeHeader);
+                
+                // Add nodes of this type
+                nodesByType[nodeType].forEach(node => {
+                    const nodeElement = createDraggableNodeElement(node);
+                    container.appendChild(nodeElement);
+                });
+            });
         }
         
         // Extract face from image using bounding box
