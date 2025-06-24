@@ -9,6 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/components/navigation.css">
+    
+    <!-- Firebase SDK v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -371,6 +378,61 @@
         .firebase-status.connected {
             color: #28a745;
         }
+        
+        /* Artifact Thumbnail Styles */
+        .artifact-thumbnail {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: grab;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .artifact-thumbnail:hover {
+            border-color: #fd7e14;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .artifact-thumbnail.dragging {
+            cursor: grabbing;
+            opacity: 0.5;
+        }
+        
+        .artifact-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .artifact-thumbnail-icon {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background: #f8f9fa;
+        }
+        
+        .artifact-thumbnail-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px;
+            font-size: 10px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -542,35 +604,12 @@
                         <button onclick="togglePanel('artifacts')" class="panel-close">×</button>
                     </div>
                     <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Document artifacts:</div>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #fd7e14; cursor: pointer;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 20px;">📄</span>
-                                    <div>
-                                        <strong>Project Plan.pdf</strong><br>
-                                        <small style="color: #666;">2.3 MB • PDF</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #20c997; cursor: pointer;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 20px;">📊</span>
-                                    <div>
-                                        <strong>Analytics.xlsx</strong><br>
-                                        <small style="color: #666;">1.8 MB • Excel</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #6f42c1; cursor: pointer;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 20px;">🖼️</span>
-                                    <div>
-                                        <strong>Screenshot.png</strong><br>
-                                        <small style="color: #666;">0.9 MB • Image</small>
-                                    </div>
-                                </div>
-                            </div>
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag files to the graph:</div>
+                        <div id="artifactsLoading" style="text-align: center; padding: 20px;">
+                            <div style="color: #666;">Loading files...</div>
+                        </div>
+                        <div id="artifactsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;">
+                            <!-- Thumbnails will be loaded here -->
                         </div>
                     </div>
                 </div>
@@ -951,6 +990,11 @@
                 if (panelId === 'production') {
                     setTimeout(initializeProduction, 200);
                 }
+                
+                // Load artifacts when panel is opened
+                if (panelId === 'artifacts' && firebase.auth().currentUser) {
+                    loadUserArtifacts();
+                }
             }
             
             // Update toolbar button states
@@ -987,36 +1031,37 @@
         
         // Firebase Integration Functions
         let firebaseInitialized = false;
-        let firebaseServices = null;
+        let firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
         
         function initializeFirebase() {
             if (firebaseInitialized) return;
             
-            // Check if parent app provides Firebase
-            if (window.parentFirebaseAuth && window.parentFirebaseFirestore) {
-                firebaseServices = {
-                    auth: window.parentFirebaseAuth,
-                    firestore: window.parentFirebaseFirestore,
-                    storage: window.parentFirebaseStorage,
-                    isParentApp: true
-                };
+            try {
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
                 firebaseInitialized = true;
                 updateFirebaseStatus(true);
-                log('🔥 Using parent app Firebase');
-            } else {
-                // Initialize standalone Firebase
-                log('🔥 Initializing standalone Firebase');
-                // In a real implementation, we'd load Firebase SDK here
-                // For now, we'll simulate it
-                firebaseInitialized = true;
-                firebaseServices = {
-                    isParentApp: false,
-                    // Simulated services
-                    auth: { currentUser: { email: 'weezer@yev.com' } },
-                    firestore: {},
-                    storage: {}
-                };
-                updateFirebaseStatus(true);
+                log('🔥 Firebase initialized');
+                
+                // Set up auth state listener
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (user) {
+                        log('👤 User logged in:', user.email);
+                        // Load artifacts when user is authenticated
+                        loadUserArtifacts();
+                    }
+                });
+            } catch (error) {
+                log('❌ Firebase initialization error:', error);
+                updateFirebaseStatus(false);
             }
         }
         
@@ -1210,8 +1255,132 @@
         window.uploadArtifacts = uploadArtifacts;
         window.viewFirebaseData = viewFirebaseData;
         
+        // Load user artifacts from Firebase
+        async function loadUserArtifacts() {
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                log('❌ No user logged in for artifacts');
+                return;
+            }
+            
+            const gridEl = document.getElementById('artifactsGrid');
+            const loadingEl = document.getElementById('artifactsLoading');
+            
+            if (!gridEl || !loadingEl) return;
+            
+            try {
+                log('📎 Loading user artifacts...');
+                
+                // Get user's files from Firestore
+                const filesRef = firebase.firestore().collection('users').doc(user.uid).collection('files');
+                const snapshot = await filesRef.orderBy('uploadedAt', 'desc').get();
+                
+                if (snapshot.empty) {
+                    loadingEl.innerHTML = '<div style="color: #666;">No files uploaded yet</div>';
+                    return;
+                }
+                
+                loadingEl.style.display = 'none';
+                gridEl.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const file = doc.data();
+                    const thumbnail = createArtifactThumbnail(doc.id, file);
+                    gridEl.appendChild(thumbnail);
+                });
+                
+                log('✅ Loaded', snapshot.size, 'artifacts');
+            } catch (error) {
+                log('❌ Error loading artifacts:', error);
+                loadingEl.innerHTML = '<div style="color: #EF4444;">Error loading files</div>';
+            }
+        }
+        
+        // Create draggable thumbnail for artifact
+        function createArtifactThumbnail(fileId, fileData) {
+            const div = document.createElement('div');
+            div.className = 'artifact-thumbnail';
+            div.draggable = true;
+            div.dataset.fileId = fileId;
+            div.dataset.fileName = fileData.fileName || fileData.name || 'Unnamed';
+            div.dataset.fileType = fileData.fileType || 'document';
+            div.dataset.downloadUrl = fileData.downloadURL || '';
+            
+            // Determine content based on file type
+            if (fileData.thumbnailURL) {
+                // Use thumbnail if available
+                div.innerHTML = `
+                    <img src="${fileData.thumbnailURL}" alt="${fileData.fileName}" />
+                    <div class="artifact-thumbnail-name">${fileData.fileName || 'Unnamed'}</div>
+                `;
+            } else if (fileData.fileType && fileData.fileType.startsWith('image/')) {
+                // Use download URL for images without thumbnails
+                div.innerHTML = `
+                    <img src="${fileData.downloadURL}" alt="${fileData.fileName}" />
+                    <div class="artifact-thumbnail-name">${fileData.fileName || 'Unnamed'}</div>
+                `;
+            } else {
+                // Use icon for non-image files
+                const icon = getFileIcon(fileData.fileType);
+                div.innerHTML = `
+                    <div class="artifact-thumbnail-icon">${icon}</div>
+                    <div class="artifact-thumbnail-name">${fileData.fileName || 'Unnamed'}</div>
+                `;
+            }
+            
+            // Add drag event handlers
+            div.addEventListener('dragstart', handleArtifactDragStart);
+            div.addEventListener('dragend', handleArtifactDragEnd);
+            
+            return div;
+        }
+        
+        // Get icon for file type
+        function getFileIcon(fileType) {
+            if (!fileType) return '📄';
+            
+            if (fileType.includes('pdf')) return '📑';
+            if (fileType.includes('word') || fileType.includes('doc')) return '📝';
+            if (fileType.includes('excel') || fileType.includes('sheet')) return '📊';
+            if (fileType.includes('powerpoint') || fileType.includes('presentation')) return '📽️';
+            if (fileType.includes('text')) return '📄';
+            if (fileType.includes('zip') || fileType.includes('archive')) return '📦';
+            if (fileType.includes('video')) return '🎥';
+            if (fileType.includes('audio')) return '🎵';
+            
+            return '📄';
+        }
+        
+        // Handle artifact drag start
+        function handleArtifactDragStart(e) {
+            e.target.classList.add('dragging');
+            
+            // Set drag data
+            const dragData = {
+                type: 'artifact',
+                fileId: e.target.dataset.fileId,
+                fileName: e.target.dataset.fileName,
+                fileType: e.target.dataset.fileType,
+                downloadUrl: e.target.dataset.downloadUrl
+            };
+            
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('application/json', JSON.stringify(dragData));
+            
+            log('🚀 Dragging artifact:', dragData.fileName);
+        }
+        
+        // Handle artifact drag end
+        function handleArtifactDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
         window.addEventListener('load', () => {
             log('📦 Page loaded, checking scripts...');
+            
+            // Initialize Firebase first
+            initializeFirebase();
+            
             setTimeout(() => {
                 if (checkBundle()) {
                     log('✅ Ready for testing');
