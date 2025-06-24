@@ -21,6 +21,7 @@ class NavigationManager {
             'dashboard': 'dashboard',
             'twin-management': 'twin',
             'interview': 'interview',
+            'sandbox': 'sandbox',
             'curator': 'curator',
             'interview-transcripts': 'transcripts',
             'talk-to-twin': 'talk',

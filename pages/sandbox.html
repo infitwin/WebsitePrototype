@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandbox - Infitwin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/sandbox.css">
+    
+    <!-- Firebase SDK v8 Compatibility -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    
+    <!-- React for react-rnd -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- React-RND for draggable panels -->
+    <script src="https://unpkg.com/react-rnd@10.4.1/lib/react-rnd.min.js"></script>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Load shared sidebar component -->
+        <div id="sidebar-container"></div>
+        
+        <div class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="app-header-left">
+                    <h1 class="page-title">🧪 Sandbox</h1>
+                    <p class="page-subtitle">Edit and review graph changes before committing</p>
+                </div>
+                <div class="app-header-right">
+                    <button class="icon-btn" id="sessionStatus" title="Session Status">
+                        <span style="font-size: 20px;">📊</span>
+                    </button>
+                    <button class="icon-btn" id="firebaseBtn" title="Firebase Tools">
+                        <span style="font-size: 20px;">🔥</span>
+                    </button>
+                    <div class="user-info">
+                        <span class="current-user">Loading...</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Smart Context Bar -->
+            <div id="smartContextBar" class="smart-context-bar">
+                <span id="changeCount">0 changes</span>
+                <button class="context-action" onclick="postChanges()">Post Changes →</button>
+            </div>
+
+            <!-- Main Sandbox Area -->
+            <div class="sandbox-container">
+                <!-- Toggle Bar -->
+                <div class="toggle-bar">
+                    <button class="toggle-btn" data-panel="nodeList" title="Node List">📋</button>
+                    <button class="toggle-btn" data-panel="faces" title="Faces">👤</button>
+                    <button class="toggle-btn" data-panel="artifacts" title="Artifacts">📎</button>
+                    <button class="toggle-btn" data-panel="production" title="Production">🔵</button>
+                    <button class="toggle-btn" data-panel="ai" title="AI Assistant">🤖</button>
+                    <button class="toggle-btn" data-panel="tools" title="Tools">🛠️</button>
+                </div>
+
+                <!-- Sandbox Canvas -->
+                <div id="sandboxCanvas" class="sandbox-canvas">
+                    <div id="graphContainer" class="graph-container">
+                        <!-- Nexus Graph Control will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Floating Panels Container -->
+                <div id="floatingPanels" class="floating-panels">
+                    <!-- Panels will be dynamically created here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase dropdown menu -->
+    <div id="firebaseDropdown" class="firebase-dropdown" style="display: none;">
+        <h3>🔥 Firebase Tools</h3>
+        <button onclick="firebaseActions.signOut()">🚪 Sign Out</button>
+        <button onclick="firebaseActions.refreshToken()">🔄 Refresh Token</button>
+        <button onclick="firebaseActions.deleteAllFiles()">🗑️ Delete All Files</button>
+        <button onclick="firebaseActions.uploadTestFile()">📤 Upload Test File</button>
+        <button onclick="firebaseActions.listFiles()">📋 List Files</button>
+        <button onclick="firebaseActions.showUserInfo()">👤 Show User Info</button>
+        <button onclick="firebaseActions.showCollections()">📚 Show Collections</button>
+        <button onclick="firebaseActions.testFileOperations()">🧪 Test File Ops</button>
+    </div>
+
+    <!-- Initialize Firebase -->
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+            authDomain: "infitwin.firebaseapp.com",
+            projectId: "infitwin",
+            storageBucket: "infitwin.firebasestorage.app",
+            messagingSenderId: "833139648849",
+            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+            measurementId: "G-PEJN4ZMCZ6"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Initialize Firebase auth state listener
+        async function initializeFirebase() {
+            return new Promise((resolve) => {
+                firebase.auth().onAuthStateChanged(async (user) => {
+                    if (user) {
+                        console.log('User logged in:', user.email);
+                        document.querySelector('.current-user').textContent = user.email || 'User';
+                        currentUser = user;
+                        resolve(user);
+                    } else {
+                        console.log('No user logged in');
+                        // In development, auto-login with test user
+                        if (window.location.hostname === 'localhost') {
+                            try {
+                                await firebase.auth().signInWithEmailAndPassword('weezer@yev.com', '123456');
+                                console.log('Auto-logged in with test user');
+                            } catch (error) {
+                                console.error('Auto-login failed:', error);
+                            }
+                        }
+                        resolve(null);
+                    }
+                });
+            });
+        }
+    </script>
+    
+    <!-- Nexus Graph Control -->
+    <script src="../js/nexus-graph-control-v15.4.0.bundle.min.js"></script>
+    
+    <!-- Sandbox specific scripts -->
+    <script src="../js/sandbox.js"></script>
+    
+    <script>
+        // Initialize sandbox when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize Firebase first
+            await initializeFirebase();
+            
+            // Initialize sandbox
+            initializeSandbox();
+        });
+    </script>
+    
+    <!-- Centralized Navigation -->
+    <script src="../js/navigation.js"></script>
+</body>
+</html>
