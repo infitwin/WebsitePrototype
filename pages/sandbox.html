@@ -1790,19 +1790,51 @@
                 
                 await session.close();
                 
-                // Convert Neo4j results to graph format
-                const nodes = nodesResult.records.map(record => {
+                // Convert Neo4j results to NexusGraphControl format
+                const nodes = nodesResult.records.map((record, index) => {
                     const id = record.get('id');
                     const labels = record.get('labels');
                     const props = record.get('props');
+                    const nodeType = labels[0] ? labels[0].toLowerCase() : 'person';
                     
                     return {
                         id: id,
-                        label: props.name || props.firstName ? `${props.firstName || ''} ${props.lastName || ''}`.trim() : id,
-                        type: labels[0] ? labels[0].toLowerCase() : 'node',
-                        originalData: props
+                        position: { 
+                            x: 100 + (index % 5) * 150, 
+                            y: 100 + Math.floor(index / 5) * 150 
+                        },
+                        data: {
+                            label: props.name || props.firstName ? `${props.firstName || ''} ${props.lastName || ''}`.trim() : id,
+                            ...props
+                        },
+                        type: nodeType,
+                        style: {
+                            width: 60,
+                            height: 60,
+                            borderRadius: '50%',
+                            backgroundColor: getNodeColor(nodeType),
+                            border: '2px solid #333',
+                            color: '#fff',
+                            fontSize: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }
                     };
                 });
+                
+                // Helper function to get node colors
+                function getNodeColor(type) {
+                    const colors = {
+                        person: '#9C88FF',
+                        organization: '#FF9F7F', 
+                        location: '#74B9FF',
+                        event: '#FF7675',
+                        thing: '#6BCF7F',
+                        default: '#9CA3AF'
+                    };
+                    return colors[type] || colors.default;
+                }
                 
                 // Create a set of existing node IDs for validation
                 const nodeIds = new Set(nodes.map(n => n.id));
@@ -1811,28 +1843,49 @@
                     const sourceId = record.get('sourceId');
                     const targetId = record.get('targetId');
                     const targetProps = record.get('targetProps');
+                    const relType = record.get('relType');
                     
                     // If target node isn't in our nodes list, add it
                     if (!nodeIds.has(targetId) && targetProps) {
                         const targetNode = {
                             id: targetId,
-                            label: targetProps.name || targetProps.firstName || targetId,
-                            type: 'node', // Generic type for connected nodes
-                            originalData: targetProps
+                            position: { 
+                                x: 300 + (nodes.length % 5) * 150, 
+                                y: 300 + Math.floor(nodes.length / 5) * 150 
+                            },
+                            data: {
+                                label: targetProps.name || targetProps.firstName || targetId,
+                                ...targetProps
+                            },
+                            type: 'person', // Default type for connected nodes
+                            style: {
+                                width: 60,
+                                height: 60,
+                                borderRadius: '50%',
+                                backgroundColor: getNodeColor('person'),
+                                border: '2px solid #333',
+                                color: '#fff',
+                                fontSize: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }
                         };
                         nodes.push(targetNode);
                         nodeIds.add(targetId);
                         log(`➕ Added missing target node: ${targetId}`);
                     }
                     
+                    // React Flow edge format
                     const edge = {
-                        id: `edge_${index}`,
-                        from: sourceId,
-                        to: targetId,
-                        label: record.get('relType').toLowerCase(),
-                        originalData: record.get('relProps')
+                        id: `${sourceId}-${targetId}`,
+                        source: sourceId,
+                        target: targetId,
+                        label: relType.toLowerCase(),
+                        data: record.get('relProps'),
+                        type: 'default'
                     };
-                    log(`🔗 Edge ${index}: ${edge.from} -> ${edge.to} (${edge.label})`);
+                    log(`🔗 Edge ${index}: ${edge.source} -> ${edge.target} (${edge.label})`);
                     return edge;
                 });
                 
