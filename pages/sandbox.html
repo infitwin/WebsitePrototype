@@ -992,8 +992,28 @@
                 }
                 
                 // Load artifacts when panel is opened
-                if (panelId === 'artifacts' && firebase.auth().currentUser) {
-                    loadUserArtifacts();
+                if (panelId === 'artifacts') {
+                    // Initialize Firebase first if needed
+                    if (!firebaseInitialized) {
+                        initializeFirebase();
+                        // Wait for auth state to be established
+                        setTimeout(() => {
+                            if (firebase.auth().currentUser) {
+                                loadUserArtifacts();
+                            }
+                        }, 2000);
+                    } else if (firebase.auth().currentUser) {
+                        loadUserArtifacts();
+                    } else {
+                        // Try to wait for auth
+                        log('⏳ Waiting for authentication...');
+                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                            if (user) {
+                                loadUserArtifacts();
+                                unsubscribe(); // Stop listening after first auth
+                            }
+                        });
+                    }
                 }
             }
             
@@ -1052,11 +1072,21 @@
                 log('🔥 Firebase initialized');
                 
                 // Set up auth state listener
-                firebase.auth().onAuthStateChanged((user) => {
+                firebase.auth().onAuthStateChanged(async (user) => {
                     if (user) {
                         log('👤 User logged in:', user.email);
-                        // Load artifacts when user is authenticated
-                        loadUserArtifacts();
+                        // Update Firebase status
+                        updateFirebaseStatus(true);
+                    } else {
+                        log('❌ No user logged in, attempting test login...');
+                        // Try to login with test credentials
+                        try {
+                            await firebase.auth().signInWithEmailAndPassword('weezer@yev.com', '123456');
+                            log('✅ Test user logged in');
+                        } catch (error) {
+                            log('❌ Login failed:', error.message);
+                            updateFirebaseStatus(false);
+                        }
                     }
                 });
             } catch (error) {
@@ -1071,7 +1101,12 @@
             if (statusEl && statusText) {
                 if (connected) {
                     statusEl.classList.add('connected');
-                    statusText.textContent = firebaseServices?.isParentApp ? 'Connected (Parent)' : 'Connected';
+                    const user = firebase.auth().currentUser;
+                    if (user) {
+                        statusText.textContent = 'Connected: ' + user.email;
+                    } else {
+                        statusText.textContent = 'Connected';
+                    }
                     statusEl.querySelector('span').style.background = '#28a745';
                 } else {
                     statusEl.classList.remove('connected');
@@ -1257,26 +1292,44 @@
         
         // Load user artifacts from Firebase
         async function loadUserArtifacts() {
+            if (!firebaseInitialized) {
+                log('⏳ Firebase not initialized yet for artifacts');
+                return;
+            }
+            
             const user = firebase.auth().currentUser;
             if (!user) {
                 log('❌ No user logged in for artifacts');
+                const loadingEl = document.getElementById('artifactsLoading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = '<div style="color: #666;">Please log in to see files</div>';
+                }
                 return;
             }
+            
+            log('📎 Loading artifacts for user:', user.email, 'UID:', user.uid);
             
             const gridEl = document.getElementById('artifactsGrid');
             const loadingEl = document.getElementById('artifactsLoading');
             
-            if (!gridEl || !loadingEl) return;
+            if (!gridEl || !loadingEl) {
+                log('❌ Missing DOM elements for artifacts');
+                return;
+            }
             
             try {
-                log('📎 Loading user artifacts...');
-                
                 // Get user's files from Firestore
-                const filesRef = firebase.firestore().collection('users').doc(user.uid).collection('files');
-                const snapshot = await filesRef.orderBy('uploadedAt', 'desc').get();
+                const db = firebase.firestore();
+                const filesRef = db.collection('users').doc(user.uid).collection('files');
+                log('🔍 Querying path: users/' + user.uid + '/files');
+                
+                // Try a simpler query first
+                const snapshot = await filesRef.limit(50).get();
+                
+                log('📊 Query completed. Empty:', snapshot.empty, 'Size:', snapshot.size);
                 
                 if (snapshot.empty) {
-                    loadingEl.innerHTML = '<div style="color: #666;">No files uploaded yet</div>';
+                    loadingEl.innerHTML = '<div style="color: #666;">No files uploaded yet. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload files</a></div>';
                     return;
                 }
                 
@@ -1285,14 +1338,44 @@
                 
                 snapshot.forEach(doc => {
                     const file = doc.data();
+                    log('📄 File:', doc.id, file.fileName || 'Unnamed');
                     const thumbnail = createArtifactThumbnail(doc.id, file);
                     gridEl.appendChild(thumbnail);
                 });
                 
                 log('✅ Loaded', snapshot.size, 'artifacts');
             } catch (error) {
-                log('❌ Error loading artifacts:', error);
-                loadingEl.innerHTML = '<div style="color: #EF4444;">Error loading files</div>';
+                log('❌ Error loading artifacts:', error.message);
+                console.error('Full error:', error);
+                loadingEl.innerHTML = '<div style="color: #EF4444;">Error: ' + error.message + '</div>';
+                
+                // Check if it's a permission error
+                if (error.code === 'permission-denied') {
+                    loadingEl.innerHTML = '<div style="color: #EF4444;">Permission denied. Please check Firestore rules.</div>';
+                } else if (error.message && error.message.includes('index')) {
+                    // Try without orderBy if it's an index issue
+                    try {
+                        log('🔄 Retrying without orderBy...');
+                        const snapshot = await firebase.firestore()
+                            .collection('users').doc(user.uid).collection('files')
+                            .limit(50).get();
+                        
+                        if (!snapshot.empty) {
+                            loadingEl.style.display = 'none';
+                            gridEl.innerHTML = '';
+                            
+                            snapshot.forEach(doc => {
+                                const file = doc.data();
+                                const thumbnail = createArtifactThumbnail(doc.id, file);
+                                gridEl.appendChild(thumbnail);
+                            });
+                            
+                            log('✅ Loaded', snapshot.size, 'artifacts (without orderBy)');
+                        }
+                    } catch (retryError) {
+                        log('❌ Retry also failed:', retryError.message);
+                    }
+                }
             }
         }
         
