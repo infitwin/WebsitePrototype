@@ -509,16 +509,27 @@
         // Initialize Neo4j connection
         async function initializeNeo4j() {
             try {
+                // Check if neo4j is available
+                if (typeof neo4j === 'undefined') {
+                    throw new Error('Neo4j driver not loaded. Check if the script is available.');
+                }
+                
                 if (!neo4jDriver) {
                     log('🔗 Connecting to Neo4j...', 'info');
+                    log(`URI: ${neo4jConfig.uri}`, 'info');
+                    log(`Username: ${neo4jConfig.username}`, 'info');
+                    
                     neo4jDriver = neo4j.driver(
                         neo4jConfig.uri,
                         neo4j.auth.basic(neo4jConfig.username, neo4jConfig.password)
                     );
                     
+                    log('Driver created, testing connection...', 'info');
+                    
                     // Test connection
                     const session = neo4jDriver.session();
-                    await session.run('RETURN 1 as test');
+                    const result = await session.run('RETURN 1 as test');
+                    log(`Test query result: ${result.records[0].get('test')}`, 'info');
                     await session.close();
                     
                     log('✅ Neo4j connection established', 'success');
@@ -526,6 +537,7 @@
                 }
                 return true;
             } catch (error) {
+                console.error('Neo4j connection error:', error);
                 log(`❌ Neo4j connection failed: ${error.message}`, 'error');
                 return false;
             }
@@ -614,17 +626,19 @@
             clearBtn.disabled = true;
             showProgress(0, 'Starting generation...');
             log(`Starting ${selectedSize} test data generation...`);
+            log(`User: ${currentUser.uid}, Twin: ${currentTwinId}`);
+            log(`Neo4j URI: ${neo4jConfig.uri}`);
 
             try {
-                // Simulate API call to Neo4j service
-                // In production, this would call your actual Neo4j API endpoint
                 const response = await generateTestDataInNeo4j(selectedSize);
                 
                 showStatus(`Successfully generated ${selectedSize} test dataset!`, 'success');
                 log(`Generation complete: ${response.nodesCreated} nodes, ${response.relationshipsCreated} relationships`, 'success');
             } catch (error) {
+                console.error('Full error details:', error);
                 showStatus(`Failed to generate test data: ${error.message}`, 'error');
                 log(`Generation failed: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
             } finally {
                 generateBtn.disabled = false;
                 clearBtn.disabled = false;
