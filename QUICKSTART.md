@@ -14,6 +14,8 @@
 5. **Debugging**: Added extensive logging for batch vectorization issue
 6. **Face Deletion**: Added ability to delete unwanted faces from vectorized images
 7. **File Rename**: Added double-click to rename files with custom display names
+8. **Sandbox Integration**: Added Sandbox page from infitwin-sandbox project
+9. **Sandbox Artifacts**: Connected Artifacts panel to Firebase - shows user's actual files as draggable thumbnails
 
 ### ⚠️ KNOWN ISSUES:
 
@@ -130,6 +132,27 @@ python3 test-debug-flow.py
   "artifactProcessorVersion": "v2.0-aws-rekognition"
 }
 ```
+
+## 🧪 SANDBOX FEATURE INTEGRATION
+
+### What Was Added:
+- **Complete Sandbox Page**: Ported from infitwin-sandbox project
+- **6 Floating Panels**: All draggable and resizable
+- **Firebase Integration**: Artifacts panel connects to user's actual files
+- **Drag-and-Drop**: Files can be dragged from Artifacts panel to graph
+
+### How It Works:
+1. Navigate to Sandbox via purple sidebar (🧪 icon)
+2. Click "Artifacts" button in toolbar to open panel
+3. Panel automatically loads user's files from Firebase
+4. Files appear as draggable thumbnails (images show preview, documents show icons)
+5. Drag files from Artifacts panel to graph for linking
+
+### Technical Details:
+- Uses Firebase v8 SDK (compat mode) for consistency with existing sandbox code
+- Authenticates with test credentials: weezer@yev.com / 123456
+- Queries Firestore path: `users/{userId}/files`
+- Handles missing indexes gracefully with retry logic
 
 ## 🚀 IMMEDIATE NEXT STEPS
 

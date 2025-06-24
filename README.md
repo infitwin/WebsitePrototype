@@ -25,6 +25,7 @@ A comprehensive web application for Infitwin - a platform that helps people crea
 - **UI/UX**: Loading indicators, face count badges, modal improvements
 - **Firebase Integration**: Face data properly saved and retrieved
 - **Sandbox Page**: Full graph editing environment with 6 floating panels
+- **Sandbox Artifacts**: Firebase-connected panel showing user's files as draggable thumbnails
 - **Test Credentials**: weezer@yev.com / 123456
 
 ### ⚠️ Known Issues:
@@ -163,12 +164,16 @@ The Sandbox page provides a safe environment for editing family graph data durin
 - **6 Floating Panels**:
   - 📋 Node List - Drag nodes to add to graph
   - 👤 Faces - Face recognition and mapping
-  - 📎 Artifacts - Document management
+  - 📎 Artifacts - Shows user's actual files from Firebase as draggable thumbnails
   - 🔵 Production Graph - Read-only production view
   - 🤖 AI Assistant - Interactive help
   - 🛠️ Tools - Utility functions
 - **Smart Context Bar**: Tracks changes before committing to production
-- **Firebase Integration**: Save/load sessions, upload artifacts
+- **Firebase Integration**: 
+  - Authentication with test credentials (weezer@yev.com / 123456)
+  - Real-time loading of user's files in Artifacts panel
+  - Drag-and-drop files from Artifacts to graph
+  - Save/load sessions functionality
 - **Nexus Graph Control**: Full graph visualization and editing
 
 ### Access:
