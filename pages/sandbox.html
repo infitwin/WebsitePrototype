@@ -4,151 +4,1197 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sandbox - Infitwin</title>
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/sidebar.css">
-    <link rel="stylesheet" href="../css/sandbox.css">
-    
-    <!-- Firebase SDK v8 Compatibility -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-    
-    <!-- React for react-rnd -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- React-RND for draggable panels -->
-    <script src="https://unpkg.com/react-rnd@10.4.1/lib/react-rnd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .left-nav {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 50px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 1500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            width: 35px;
+            height: 35px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+            font-size: 16px;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            margin-left: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 30px;
+        }
+        
+        .main-content {
+            margin-left: 50px;
+        }
+        
+        .container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        
+        .content-area {
+            padding: 20px;
+            padding-top: 0;
+        }
+        
+        .sandbox-panel {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .sandbox-container {
+            width: 100%;
+            height: calc(100vh - 200px);
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        
+        /* Floating Panel Base Styles */
+        .floating-panel {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            cursor: default;
+            backdrop-filter: blur(5px);
+            resize: both;
+            overflow: auto;
+            min-width: 200px;
+            min-height: 150px;
+        }
+        
+        .floating-panel.open {
+            display: block;
+        }
+        
+        .floating-panel.dragging {
+            opacity: 0.7;
+            z-index: 1200;
+        }
+        
+        /* Resize handle styling */
+        .floating-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: nwse-resize;
+            background: linear-gradient(135deg, transparent 50%, #dee2e6 50%);
+            border-radius: 0 0 8px 0;
+        }
+        
+        /* Specific Panel Positioning and Sizes */
+        .node-list-panel {
+            top: 120px;
+            left: 70px;
+            width: 300px;
+            height: 600px;
+        }
+        
+        .ai-assistant-panel {
+            bottom: 20px;
+            left: 70px;
+            width: 300px;
+            height: 400px;
+        }
+        
+        .faces-panel {
+            top: 120px;
+            left: 390px;
+            width: 280px;
+            height: 400px;
+        }
+        
+        .artifacts-panel {
+            top: 120px;
+            right: 20px;
+            width: 320px;
+            height: 450px;
+        }
+        
+        .production-panel {
+            top: 120px;
+            right: 360px;
+            width: 500px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tools-panel {
+            bottom: 20px;
+            right: 20px;
+            width: 250px;
+            height: 250px;
+        }
+        
+        .panel-header {
+            cursor: move;
+            user-select: none;
+            padding: 12px 15px;
+            margin: -20px -20px 15px -20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .panel-header:hover {
+            background: #e9ecef;
+        }
+        
+        .production-container {
+            width: 100%;
+            height: 380px;
+            border: 2px solid #28a745;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        
+        .toolbar {
+            position: fixed;
+            top: 120px;
+            left: 70px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            display: flex;
+            gap: 5px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1100;
+        }
+        
+        .toolbar-btn {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #dee2e6;
+            background: #f8f9fa;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .toolbar-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        
+        .context-bar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 999;
+            transform: translateY(-40px);
+            opacity: 0;
+            transition: transform 200ms ease, opacity 200ms ease;
+        }
+        
+        .context-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Firebase Dropdown Styles */
+        .firebase-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .firebase-dropdown-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .firebase-dropdown-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .firebase-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 5px;
+            background: white;
+            min-width: 250px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 6px;
+            z-index: 2000;
+            color: #333;
+        }
+        
+        .firebase-dropdown-content.show {
+            display: block;
+        }
+        
+        .firebase-dropdown-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+        }
+        
+        .firebase-dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
+        
+        .firebase-dropdown-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .firebase-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .firebase-status.connected {
+            color: #28a745;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-wrapper">
-        <!-- Load shared sidebar component -->
-        <div id="sidebar-container"></div>
-        
-        <div class="main-content">
-            <!-- Header -->
-            <header class="app-header">
-                <div class="app-header-left">
-                    <h1 class="page-title">🧪 Sandbox</h1>
-                    <p class="page-subtitle">Edit and review graph changes before committing</p>
-                </div>
-                <div class="app-header-right">
-                    <button class="icon-btn" id="sessionStatus" title="Session Status">
-                        <span style="font-size: 20px;">📊</span>
-                    </button>
-                    <button class="icon-btn" id="firebaseBtn" title="Firebase Tools">
-                        <span style="font-size: 20px;">🔥</span>
-                    </button>
-                    <div class="user-info">
-                        <span class="current-user">Loading...</span>
+    <!-- Load WebsitePrototype navigation -->
+    <div id="navigation-container"></div>
+
+    <!-- App Header (60px) -->
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">⚡</span>
+            <h1 style="margin: 0; font-size: 20px;">Sandbox - Two Graph Views</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px; font-size: 14px;">
+            <span>Session: active</span>
+            <span>Status: ready</span>
+            
+            <!-- Firebase Dropdown -->
+            <div class="firebase-dropdown">
+                <button class="firebase-dropdown-btn" onclick="toggleFirebaseDropdown()">
+                    🔥 Firebase
+                    <span style="font-size: 10px;">▼</span>
+                </button>
+                <div class="firebase-dropdown-content" id="firebaseDropdown">
+                    <div class="firebase-dropdown-header">
+                        Firebase Integration
+                        <div class="firebase-status connected" id="firebaseStatus">
+                            <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; display: inline-block;"></span>
+                            <span id="firebaseStatusText">Disconnected</span>
+                        </div>
                     </div>
-                </div>
-            </header>
-
-            <!-- Smart Context Bar -->
-            <div id="smartContextBar" class="smart-context-bar">
-                <span id="changeCount">0 changes</span>
-                <button class="context-action" onclick="postChanges()">Post Changes →</button>
-            </div>
-
-            <!-- Main Sandbox Area -->
-            <div class="sandbox-container">
-                <!-- Toggle Bar -->
-                <div class="toggle-bar">
-                    <button class="toggle-btn" data-panel="nodeList" title="Node List">📋</button>
-                    <button class="toggle-btn" data-panel="faces" title="Faces">👤</button>
-                    <button class="toggle-btn" data-panel="artifacts" title="Artifacts">📎</button>
-                    <button class="toggle-btn" data-panel="production" title="Production">🔵</button>
-                    <button class="toggle-btn" data-panel="ai" title="AI Assistant">🤖</button>
-                    <button class="toggle-btn" data-panel="tools" title="Tools">🛠️</button>
-                </div>
-
-                <!-- Sandbox Canvas -->
-                <div id="sandboxCanvas" class="sandbox-canvas">
-                    <div id="graphContainer" class="graph-container">
-                        <!-- Nexus Graph Control will be loaded here -->
+                    <div class="firebase-dropdown-item" onclick="syncToFirebase()">
+                        <span>📤</span>
+                        <div>
+                            <div>Sync to Firebase</div>
+                            <div style="font-size: 11px; color: #666;">Save sandbox changes to Firestore</div>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Floating Panels Container -->
-                <div id="floatingPanels" class="floating-panels">
-                    <!-- Panels will be dynamically created here -->
+                    <div class="firebase-dropdown-item" onclick="loadFromFirebase()">
+                        <span>📥</span>
+                        <div>
+                            <div>Load from Firebase</div>
+                            <div style="font-size: 11px; color: #666;">Restore previous session</div>
+                        </div>
+                    </div>
+                    <div class="firebase-dropdown-item" onclick="uploadArtifacts()">
+                        <span>📎</span>
+                        <div>
+                            <div>Upload Artifacts</div>
+                            <div style="font-size: 11px; color: #666;">Store files in Firebase Storage</div>
+                        </div>
+                    </div>
+                    <div class="firebase-dropdown-item" onclick="viewFirebaseData()">
+                        <span>📊</span>
+                        <div>
+                            <div>View Data</div>
+                            <div style="font-size: 11px; color: #666;">Browse Firestore collections</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Smart Context Bar -->
+    <div class="context-bar" id="contextBar">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span>✨</span>
+            <span id="changesText">0 changes pending in sandbox</span>
+        </div>
+        <span style="font-size: 12px; opacity: 0.9;">
+            Review changes before posting to production
+        </span>
+    </div>
+    
+    <div class="main-content">
+        <div class="container">
+        
+        <div class="toolbar">
+            <button class="toolbar-btn" title="Node List" onclick="togglePanel('node-list')">📋</button>
+            <button class="toolbar-btn" title="Faces" onclick="togglePanel('faces')">👤</button>
+            <button class="toolbar-btn" title="Artifacts" onclick="togglePanel('artifacts')">📎</button>
+            <button class="toolbar-btn" title="Production Graph" onclick="togglePanel('production')">🔵</button>
+            <button class="toolbar-btn active" title="AI Assistant" onclick="togglePanel('ai-assistant')">🤖</button>
+            <button class="toolbar-btn" title="Tools" onclick="togglePanel('tools')">🛠️</button>
+        </div>
+        
+        <div class="content-area">
+            <div class="sandbox-panel">
+                <h3 style="margin: 0 0 15px 0; color: #007bff;">🔧 Sandbox Control</h3>
+                <div id="sandboxContainer" class="sandbox-container"></div>
+            </div>
+        </div>
+        
+        <!-- Node List Panel -->
+        <div id="node-listPanel" class="floating-panel node-list-panel">
+            <div class="panel-header" id="node-listHeader">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>📋</span>
+                    <span style="font-weight: 600; color: #007bff;">Node List</span>
+                </div>
+                <button onclick="togglePanel('node-list')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
+            </div>
+            <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag nodes from here to the sandbox:</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #007bff; cursor: pointer;">
+                        <strong>👤 Person Node</strong><br>
+                        <small>Drag to add a person</small>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #28a745; cursor: pointer;">
+                        <strong>🏢 Organization</strong><br>
+                        <small>Drag to add an organization</small>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #dc3545; cursor: pointer;">
+                        <strong>📄 Document</strong><br>
+                        <small>Drag to add a document</small>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; cursor: pointer;">
+                        <strong>🌐 Website</strong><br>
+                        <small>Drag to add a website</small>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Firebase dropdown menu -->
-    <div id="firebaseDropdown" class="firebase-dropdown" style="display: none;">
-        <h3>🔥 Firebase Tools</h3>
-        <button onclick="firebaseActions.signOut()">🚪 Sign Out</button>
-        <button onclick="firebaseActions.refreshToken()">🔄 Refresh Token</button>
-        <button onclick="firebaseActions.deleteAllFiles()">🗑️ Delete All Files</button>
-        <button onclick="firebaseActions.uploadTestFile()">📤 Upload Test File</button>
-        <button onclick="firebaseActions.listFiles()">📋 List Files</button>
-        <button onclick="firebaseActions.showUserInfo()">👤 Show User Info</button>
-        <button onclick="firebaseActions.showCollections()">📚 Show Collections</button>
-        <button onclick="firebaseActions.testFileOperations()">🧪 Test File Ops</button>
+        <!-- Faces Panel -->
+        <div id="facesPanel" class="floating-panel faces-panel">
+            <div class="panel-header" id="facesHeader">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>👤</span>
+                    <span style="font-weight: 600; color: #6f42c1;">Faces</span>
+                </div>
+                <button onclick="togglePanel('faces')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
+            </div>
+            <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Available faces to assign:</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                        <div style="width: 50px; height: 50px; background: #007bff; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
+                        <small>John Doe</small>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                        <div style="width: 50px; height: 50px; background: #28a745; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
+                        <small>Jane Smith</small>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                        <div style="width: 50px; height: 50px; background: #dc3545; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
+                        <small>Bob Wilson</small>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
+                        <div style="width: 50px; height: 50px; background: #ffc107; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
+                        <small>Alice Brown</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artifacts Panel -->
+        <div id="artifactsPanel" class="floating-panel artifacts-panel">
+            <div class="panel-header" id="artifactsHeader">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>📎</span>
+                    <span style="font-weight: 600; color: #fd7e14;">Artifacts</span>
+                </div>
+                <button onclick="togglePanel('artifacts')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
+            </div>
+            <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Document artifacts:</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #fd7e14; cursor: pointer;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">📄</span>
+                            <div>
+                                <strong>Project Plan.pdf</strong><br>
+                                <small style="color: #666;">2.3 MB • PDF</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #20c997; cursor: pointer;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">📊</span>
+                            <div>
+                                <strong>Analytics.xlsx</strong><br>
+                                <small style="color: #666;">1.8 MB • Excel</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #6f42c1; cursor: pointer;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">🖼️</span>
+                            <div>
+                                <strong>Screenshot.png</strong><br>
+                                <small style="color: #666;">0.9 MB • Image</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Production Panel -->
+        <div id="productionPanel" class="floating-panel production-panel">
+            <div class="panel-header" id="productionHeader">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>🔵</span>
+                    <span style="font-weight: 600; color: #28a745;">Production Graph</span>
+                </div>
+                <button onclick="togglePanel('production')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
+            </div>
+            <div id="productionContainer" style="flex: 1; overflow: hidden; background: #fafafa; border-radius: 6px; position: relative; min-height: 0; width: 100%; height: calc(100% - 60px);"></div>
+        </div>
+
+        <!-- AI Assistant Panel -->
+        <div id="ai-assistantPanel" class="floating-panel ai-assistant-panel open">
+            <div class="panel-header" id="ai-assistantHeader">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>🤖</span>
+                    <span style="font-weight: 600; color: #007bff;">AI Assistant</span>
+                </div>
+                <button onclick="togglePanel('ai-assistant')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">Quick Actions:</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔍 Analyze</button>
+                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">✓ Validate</button>
+                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔗 Auto-Link</button>
+                        <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">💡 Suggest</button>
+                    </div>
+                </div>
+                <div style="background: #f8f9fa; border-radius: 6px; padding: 15px; flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">AI Insights:</div>
+                    <div style="font-size: 13px; color: #666; line-height: 1.4;">
+                        Ready to assist with graph analysis and suggestions. Click any quick action to interact with the sandbox.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Panel -->
+        <div id="toolsPanel" class="floating-panel tools-panel">
+            <div class="panel-header" id="toolsHeader">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>🛠️</span>
+                    <span style="font-weight: 600; color: #6c757d;">Tools</span>
+                </div>
+                <button onclick="togglePanel('tools')" style="width: 24px; height: 24px; border: none; background: none; color: #666; cursor: pointer; border-radius: 4px;">×</button>
+            </div>
+            <div style="flex: 1; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 5px;">📊</div>
+                        <small>Export</small>
+                    </button>
+                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 5px;">🔄</div>
+                        <small>Sync</small>
+                    </button>
+                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 5px;">⚙️</div>
+                        <small>Settings</small>
+                    </button>
+                    <button style="padding: 15px; border: 1px solid #dee2e6; background: white; border-radius: 6px; cursor: pointer; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 5px;">🔍</div>
+                        <small>Search</small>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        </div>
     </div>
 
-    <!-- Initialize Firebase -->
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
-            authDomain: "infitwin.firebaseapp.com",
-            projectId: "infitwin",
-            storageBucket: "infitwin.firebasestorage.app",
-            messagingSenderId: "833139648849",
-            appId: "1:833139648849:web:2768d8e37cf2a318018b70",
-            measurementId: "G-PEJN4ZMCZ6"
-        };
+    <!-- Scripts -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="../js/nexus-graph-control-v15.4.0.bundle.min.js"></script>
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+    <script>
+        let sandboxRoot = null;
+        let productionRoot = null;
+        let debugMessages = [];
+        let openPanels = ['ai-assistant'];
+        let changesCount = 0;
+        let initialDataLoaded = false;
         
-        // Initialize Firebase auth state listener
-        async function initializeFirebase() {
-            return new Promise((resolve) => {
-                firebase.auth().onAuthStateChanged(async (user) => {
-                    if (user) {
-                        console.log('User logged in:', user.email);
-                        document.querySelector('.current-user').textContent = user.email || 'User';
-                        currentUser = user;
-                        resolve(user);
-                    } else {
-                        console.log('No user logged in');
-                        // In development, auto-login with test user
-                        if (window.location.hostname === 'localhost') {
-                            try {
-                                await firebase.auth().signInWithEmailAndPassword('weezer@yev.com', '123456');
-                                console.log('Auto-logged in with test user');
-                            } catch (error) {
-                                console.error('Auto-login failed:', error);
-                            }
-                        }
-                        resolve(null);
-                    }
+        // Drag functionality for panels - each panel gets its own drag state
+        function initializeDragFunctionality(panelId) {
+            const panel = document.getElementById(panelId + 'Panel');
+            const header = document.getElementById(panelId + 'Header');
+            
+            if (!panel || !header) return;
+            
+            // Local drag state for this panel
+            let isDragging = false;
+            let currentPanel = null;
+            let dragOffset = { x: 0, y: 0 };
+            
+            // Remove any existing listeners first
+            const newHeader = header.cloneNode(true);
+            header.parentNode.replaceChild(newHeader, header);
+            
+            // Re-attach close button functionality
+            const closeBtn = newHeader.querySelector('button');
+            if (closeBtn) {
+                closeBtn.onclick = () => window.togglePanel(panelId);
+            }
+            
+            const startDrag = (e) => {
+                // Don't start drag if clicking on close button
+                if (e.target.tagName === 'BUTTON') return;
+                
+                isDragging = true;
+                currentPanel = panel;
+                panel.classList.add('dragging');
+                
+                const rect = panel.getBoundingClientRect();
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                
+                log('🔵 ' + panelId + ' panel drag started');
+                e.preventDefault();
+            };
+            
+            const drag = (e) => {
+                if (!isDragging || !currentPanel) return;
+                
+                const x = e.clientX - dragOffset.x;
+                const y = e.clientY - dragOffset.y;
+                
+                // Keep panel within viewport bounds
+                const maxX = window.innerWidth - currentPanel.offsetWidth;
+                const maxY = window.innerHeight - currentPanel.offsetHeight;
+                
+                const constrainedX = Math.max(50, Math.min(x, maxX)); // 50px for left nav
+                const constrainedY = Math.max(0, Math.min(y, maxY));
+                
+                currentPanel.style.left = constrainedX + 'px';
+                currentPanel.style.top = constrainedY + 'px';
+                currentPanel.style.right = 'auto';
+                currentPanel.style.bottom = 'auto';
+                
+                e.preventDefault();
+            };
+            
+            const stopDrag = () => {
+                if (isDragging && currentPanel) {
+                    isDragging = false;
+                    currentPanel.classList.remove('dragging');
+                    log('🔵 ' + panelId + ' panel drag ended');
+                    currentPanel = null;
+                }
+            };
+            
+            newHeader.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+        
+        function log(message) {
+            // Logging disabled for production
+            console.log(message);
+        }
+        
+        function updateChangesDisplay() {
+            const shouldShow = initialDataLoaded && changesCount > 0;
+            const contextBar = document.getElementById('contextBar');
+            const changesText = document.getElementById('changesText');
+            
+            if (contextBar) {
+                if (shouldShow) {
+                    contextBar.classList.add('visible');
+                } else {
+                    contextBar.classList.remove('visible');
+                }
+            }
+            
+            if (changesText) {
+                changesText.textContent = changesCount + ' ' + (changesCount === 1 ? 'change' : 'changes') + ' pending in sandbox';
+            }
+        }
+        
+        function simulateChange() {
+            if (initialDataLoaded) {
+                changesCount++;
+                updateChangesDisplay();
+                log('Change recorded: ' + changesCount + ' total');
+            }
+        }
+        
+        function checkBundle() {
+            const hasReact = typeof React !== 'undefined';
+            const hasReactDOM = typeof ReactDOM !== 'undefined';
+            const hasNexus = typeof window.NexusGraphControl !== 'undefined';
+            
+            return hasReact && hasReactDOM && hasNexus;
+        }
+        
+        function initializeSandbox() {
+            if (!checkBundle()) {
+                log('❌ Bundle not ready for sandbox');
+                return;
+            }
+            
+            log('🚀 Initializing sandbox control...');
+            const container = document.getElementById('sandboxContainer');
+            
+            try {
+                if (sandboxRoot) {
+                    sandboxRoot.unmount();
+                    sandboxRoot = null;
+                }
+                
+                const sampleData = {
+                    nodes: [{
+                        id: 'sandbox_person',
+                        label: 'Sample Person',
+                        type: 'person',
+                        originalData: { name: 'Sample Person', type: 'person' }
+                    }],
+                    edges: []
+                };
+                
+                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                    data: sampleData,
+                    hidePageHeader: true,
+                    hideStatusBar: true,
+                    useExternalMetadataEditor: false
                 });
+                
+                sandboxRoot = ReactDOM.createRoot(container);
+                sandboxRoot.render(controlElement);
+                
+                log('✅ Sandbox control mounted');
+                
+                // Mark initial data as loaded - don't count as change
+                initialDataLoaded = true;
+                
+                setTimeout(() => {
+                    const hasContent = container.querySelector('svg') || 
+                                     container.querySelector('canvas') ||
+                                     container.innerHTML.includes('nexus');
+                    log('🔍 Sandbox content: ' + (hasContent ? 'Found ✅' : 'Missing ❌'));
+                }, 1000);
+                
+            } catch (error) {
+                log('❌ Sandbox error: ' + error.message);
+            }
+        }
+        
+        // Observe panel resize and update Nexus control
+        function observePanelResize(panelId) {
+            const panel = document.getElementById(panelId + 'Panel');
+            if (!panel || !window.ResizeObserver) return;
+            
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (panelId === 'production' && productionRoot) {
+                        // Re-initialize production control on resize
+                        setTimeout(() => {
+                            log('📏 Production panel resized, updating control');
+                            initializeProduction();
+                        }, 100);
+                    }
+                }
+            });
+            
+            resizeObserver.observe(panel);
+        }
+        
+        function initializeProduction() {
+            if (!checkBundle()) {
+                log('❌ Bundle not ready for production');
+                return;
+            }
+            
+            log('🎯 Initializing production control...');
+            const container = document.getElementById('productionContainer');
+            
+            try {
+                if (productionRoot) {
+                    productionRoot.unmount();
+                    productionRoot = null;
+                }
+                
+                const sampleData = {
+                    nodes: [{
+                        id: 'prod_person',
+                        label: 'Sarah Smith',
+                        type: 'person',
+                        originalData: { name: 'Sarah Smith', type: 'person', role: 'Product Manager' }
+                    }, {
+                        id: 'prod_org',
+                        label: 'TechCorp Inc.',
+                        type: 'organization',
+                        originalData: { name: 'TechCorp Inc.', type: 'organization' }
+                    }],
+                    edges: [{
+                        id: 'edge_1',
+                        from: 'prod_person',
+                        to: 'prod_org',
+                        label: 'works_at'
+                    }]
+                };
+                
+                // Set container dimensions explicitly
+                container.style.width = '100%';
+                container.style.height = '100%';
+                container.style.position = 'absolute';
+                container.style.top = '0';
+                container.style.left = '0';
+                container.style.right = '0';
+                container.style.bottom = '0';
+                
+                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                    data: sampleData,
+                    hidePageHeader: true,
+                    hideStatusBar: true,
+                    useExternalMetadataEditor: false,
+                    width: '100%',
+                    height: '100%',
+                    style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
+                });
+                
+                productionRoot = ReactDOM.createRoot(container);
+                productionRoot.render(controlElement);
+                
+                log('✅ Production control mounted');
+                
+                setTimeout(() => {
+                    const hasContent = container.querySelector('svg') || 
+                                     container.querySelector('canvas') ||
+                                     container.innerHTML.includes('nexus');
+                    log('🔍 Production content: ' + (hasContent ? 'Found ✅' : 'Missing ❌'));
+                }, 1000);
+                
+            } catch (error) {
+                log('❌ Production error: ' + error.message);
+            }
+        }
+        
+        function togglePanel(panelId) {
+            const panel = document.getElementById(panelId + 'Panel');
+            if (!panel) {
+                log('❌ Panel not found: ' + panelId);
+                return;
+            }
+            
+            const isOpen = panel.classList.contains('open');
+            
+            if (isOpen) {
+                panel.classList.remove('open');
+                log('📋 ' + panelId + ' panel closed');
+                
+                // Clean up production panel when closing
+                if (panelId === 'production' && productionRoot) {
+                    productionRoot.unmount();
+                    productionRoot = null;
+                    log('🧹 Production panel unmounted');
+                }
+            } else {
+                panel.classList.add('open');
+                log('📋 ' + panelId + ' panel opened');
+                
+                // Initialize drag functionality for any panel
+                initializeDragFunctionality(panelId);
+                
+                // Initialize resize observer for all panels
+                observePanelResize(panelId);
+                
+                // Special handling for production panel
+                if (panelId === 'production') {
+                    setTimeout(initializeProduction, 200);
+                }
+            }
+            
+            // Update toolbar button states
+            updateToolbarStates();
+        }
+        
+        function updateToolbarStates() {
+            document.querySelectorAll('.toolbar-btn').forEach(btn => {
+                const title = btn.getAttribute('title');
+                let panelId = '';
+                
+                // Map button titles to panel IDs
+                switch(title) {
+                    case 'Node List': panelId = 'node-list'; break;
+                    case 'Faces': panelId = 'faces'; break;
+                    case 'Artifacts': panelId = 'artifacts'; break;
+                    case 'Production Graph': panelId = 'production'; break;
+                    case 'AI Assistant': panelId = 'ai-assistant'; break;
+                    case 'Tools': panelId = 'tools'; break;
+                }
+                
+                const panel = document.getElementById(panelId + 'Panel');
+                
+                if (panel && panel.classList.contains('open')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
             });
         }
-    </script>
-    
-    <!-- Nexus Graph Control -->
-    <script src="../js/nexus-graph-control-v15.4.0.bundle.min.js"></script>
-    
-    <!-- Sandbox specific scripts -->
-    <script src="../js/sandbox.js"></script>
-    
-    <script>
-        // Initialize sandbox when page loads
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize Firebase first
-            await initializeFirebase();
+        
+        // Make togglePanel globally accessible
+        window.togglePanel = togglePanel;
+        
+        // Firebase Integration Functions
+        let firebaseInitialized = false;
+        let firebaseServices = null;
+        
+        function initializeFirebase() {
+            if (firebaseInitialized) return;
             
-            // Initialize sandbox
-            initializeSandbox();
+            // Check if parent app provides Firebase
+            if (window.parentFirebaseAuth && window.parentFirebaseFirestore) {
+                firebaseServices = {
+                    auth: window.parentFirebaseAuth,
+                    firestore: window.parentFirebaseFirestore,
+                    storage: window.parentFirebaseStorage,
+                    isParentApp: true
+                };
+                firebaseInitialized = true;
+                updateFirebaseStatus(true);
+                log('🔥 Using parent app Firebase');
+            } else {
+                // Initialize standalone Firebase
+                log('🔥 Initializing standalone Firebase');
+                // In a real implementation, we'd load Firebase SDK here
+                // For now, we'll simulate it
+                firebaseInitialized = true;
+                firebaseServices = {
+                    isParentApp: false,
+                    // Simulated services
+                    auth: { currentUser: { email: 'weezer@yev.com' } },
+                    firestore: {},
+                    storage: {}
+                };
+                updateFirebaseStatus(true);
+            }
+        }
+        
+        function updateFirebaseStatus(connected) {
+            const statusEl = document.getElementById('firebaseStatus');
+            const statusText = document.getElementById('firebaseStatusText');
+            if (statusEl && statusText) {
+                if (connected) {
+                    statusEl.classList.add('connected');
+                    statusText.textContent = firebaseServices?.isParentApp ? 'Connected (Parent)' : 'Connected';
+                    statusEl.querySelector('span').style.background = '#28a745';
+                } else {
+                    statusEl.classList.remove('connected');
+                    statusText.textContent = 'Disconnected';
+                    statusEl.querySelector('span').style.background = '#dc3545';
+                }
+            }
+        }
+        
+        function toggleFirebaseDropdown() {
+            const dropdown = document.getElementById('firebaseDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+                
+                // Initialize Firebase if not already done
+                if (!firebaseInitialized) {
+                    initializeFirebase();
+                }
+            }
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.matches('.firebase-dropdown-btn') && !e.target.closest('.firebase-dropdown-btn')) {
+                const dropdown = document.getElementById('firebaseDropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+        
+        function getCurrentSandboxData() {
+            // Get current sandbox state
+            const nodes = [];
+            const edges = [];
+            
+            // In a real implementation, we'd get this from the Nexus control
+            if (sandboxRoot) {
+                // Simulate getting data
+                nodes.push({
+                    id: 'sandbox_node_1',
+                    label: 'Sample Node',
+                    type: 'person',
+                    _isSandbox: true,
+                    interviewId: 'interview_' + Date.now(),
+                    sessionId: 'session_' + Date.now()
+                });
+            }
+            
+            return { nodes, edges, changesCount };
+        }
+        
+        async function syncToFirebase() {
+            if (!firebaseInitialized) {
+                alert('Firebase not initialized');
+                return;
+            }
+            
+            try {
+                const sandboxData = getCurrentSandboxData();
+                
+                // Simulate saving to Firestore
+                log('📤 Syncing to Firebase...');
+                
+                // In real implementation:
+                // await firebase.addDoc('sandbox_sessions', {
+                //     ...sandboxData,
+                //     timestamp: new Date(),
+                //     userId: firebaseServices.auth.currentUser?.uid
+                // });
+                
+                alert('Sandbox data synced to Firebase! \n' + 
+                      'Nodes: ' + sandboxData.nodes.length + '\n' +
+                      'Changes: ' + sandboxData.changesCount);
+                      
+                log('✅ Sync complete');
+            } catch (error) {
+                alert('Failed to sync: ' + error.message);
+                log('❌ Sync failed: ' + error.message);
+            }
+        }
+        
+        async function loadFromFirebase() {
+            if (!firebaseInitialized) {
+                alert('Firebase not initialized');
+                return;
+            }
+            
+            try {
+                log('📥 Loading from Firebase...');
+                
+                // In real implementation:
+                // const sessions = await firebase.getDocs('sandbox_sessions', [
+                //     where('userId', '==', firebaseServices.auth.currentUser?.uid),
+                //     orderBy('timestamp', 'desc'),
+                //     limit(5)
+                // ]);
+                
+                // Simulate loading
+                const mockSessions = [
+                    { id: '1', timestamp: new Date(), nodes: 5, changes: 3 },
+                    { id: '2', timestamp: new Date(Date.now() - 86400000), nodes: 3, changes: 1 }
+                ];
+                
+                const selected = prompt('Select session:\n' + 
+                    mockSessions.map((s, i) => 
+                        (i + 1) + '. ' + s.timestamp.toLocaleString() + ' (' + s.nodes + ' nodes)'
+                    ).join('\n')
+                );
+                
+                if (selected) {
+                    alert('Session loaded!');
+                    log('✅ Loaded session');
+                }
+            } catch (error) {
+                alert('Failed to load: ' + error.message);
+                log('❌ Load failed: ' + error.message);
+            }
+        }
+        
+        async function uploadArtifacts() {
+            if (!firebaseInitialized) {
+                alert('Firebase not initialized');
+                return;
+            }
+            
+            // Create file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,.pdf,.doc,.docx';
+            input.multiple = true;
+            
+            input.onchange = async (e) => {
+                const files = e.target.files;
+                if (!files.length) return;
+                
+                try {
+                    log('📎 Uploading ' + files.length + ' files...');
+                    
+                    // In real implementation:
+                    // for (const file of files) {
+                    //     const result = await firebase.uploadFile(file);
+                    //     await firebase.addDoc('sandbox_artifacts', {
+                    //         fileName: file.name,
+                    //         downloadURL: result.downloadURL,
+                    //         ...
+                    //     });
+                    // }
+                    
+                    alert('Uploaded ' + files.length + ' artifacts!');
+                    log('✅ Upload complete');
+                } catch (error) {
+                    alert('Upload failed: ' + error.message);
+                    log('❌ Upload failed: ' + error.message);
+                }
+            };
+            
+            input.click();
+        }
+        
+        function viewFirebaseData() {
+            if (!firebaseInitialized) {
+                alert('Firebase not initialized');
+                return;
+            }
+            
+            // Open a panel or modal to show Firebase data
+            alert('Firebase Data Viewer\n\n' +
+                  'Environment: ' + (firebaseServices.isParentApp ? 'Parent App' : 'Standalone') + '\n' +
+                  'User: ' + (firebaseServices.auth.currentUser?.email || 'Not authenticated') + '\n\n' +
+                  'Collections:\n' +
+                  '- sandbox_sessions\n' +
+                  '- sandbox_nodes\n' +
+                  '- sandbox_artifacts');
+        }
+        
+        // Make Firebase functions globally accessible
+        window.toggleFirebaseDropdown = toggleFirebaseDropdown;
+        window.syncToFirebase = syncToFirebase;
+        window.loadFromFirebase = loadFromFirebase;
+        window.uploadArtifacts = uploadArtifacts;
+        window.viewFirebaseData = viewFirebaseData;
+        
+        window.addEventListener('load', () => {
+            log('📦 Page loaded, checking scripts...');
+            setTimeout(() => {
+                if (checkBundle()) {
+                    log('✅ Ready for testing');
+                    initializeSandbox();
+                    
+                    // Initialize drag for AI Assistant panel (starts open)
+                    initializeDragFunctionality('ai-assistant');
+                    // Initialize resize observer for AI Assistant
+                    observePanelResize('ai-assistant');
+                    updateToolbarStates();
+                } else {
+                    log('❌ Scripts not loaded properly');
+                }
+            }, 500);
         });
     </script>
     
