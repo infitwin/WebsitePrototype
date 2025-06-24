@@ -664,7 +664,7 @@
 
                 <!-- Production Panel -->
                 <div id="productionPanel" class="floating-panel production-panel">
-                    <div class="panel-header" id="productionHeader">
+                    <div class="panel-header" id="productionHeader" style="position: relative; z-index: 10;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span>🔵</span>
                             <span style="font-weight: 600; color: #28a745;">Production Graph</span>
@@ -755,7 +755,13 @@
             const panel = document.getElementById(panelId + 'Panel');
             const header = document.getElementById(panelId + 'Header');
             
-            if (!panel || !header) return;
+            log(`🔧 Initializing drag for ${panelId} panel`);
+            log(`   Panel found: ${!!panel}, Header found: ${!!header}`);
+            
+            if (!panel || !header) {
+                log(`❌ Missing elements for ${panelId} drag`);
+                return;
+            }
             
             // Local drag state for this panel
             let isDragging = false;
@@ -773,8 +779,13 @@
             }
             
             const startDrag = (e) => {
+                log(`🖱️ ${panelId} header clicked, target: ${e.target.tagName}`);
+                
                 // Don't start drag if clicking on close button
-                if (e.target.tagName === 'BUTTON') return;
+                if (e.target.tagName === 'BUTTON') {
+                    log(`🚫 Clicked close button, not dragging`);
+                    return;
+                }
                 
                 isDragging = true;
                 currentPanel = panel;
@@ -983,14 +994,9 @@
                     }
                 }
                 
-                // Set container dimensions explicitly
+                // Set container dimensions - don't override position to avoid covering header
                 container.style.width = '100%';
                 container.style.height = '100%';
-                container.style.position = 'absolute';
-                container.style.top = '0';
-                container.style.left = '0';
-                container.style.right = '0';
-                container.style.bottom = '0';
                 
                 const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
                     data: productionData,
