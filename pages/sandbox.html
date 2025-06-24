@@ -960,16 +960,27 @@
                     productionData = await loadProductionDataFromNeo4j(userId, twinId);
                 }
                 
-                // If no data found, show empty graph
+                // If no data found, suggest generating test data
                 if (productionData.nodes.length === 0) {
-                    log('📊 No production data found, showing empty graph');
+                    log('📊 No production data found');
+                    log('💡 Tip: Generate test data using the Admin page to see relationships');
                     productionData = {
-                        nodes: [],
+                        nodes: [{
+                            id: 'empty_message',
+                            label: 'No Data Found',
+                            type: 'message',
+                            originalData: { message: 'Generate test data in Admin page' }
+                        }],
                         edges: []
                     };
                 } else {
                     log(`🎯 Production data structure:`, productionData);
                     log(`📊 Nodes: ${productionData.nodes.length}, Edges: ${productionData.edges.length}`);
+                    
+                    // If we have nodes but no edges, show a message
+                    if (productionData.edges.length === 0 && productionData.nodes.length > 0) {
+                        log('⚠️ Found nodes but no relationships - this may be expected for some graphs');
+                    }
                 }
                 
                 // Set container dimensions explicitly
@@ -1750,9 +1761,22 @@
                     LIMIT 50
                 `, { userId, twinId });
                 
-                // Query relationships for this user/twin
+                // First check if any relationships exist at all for this user
+                const allRelsCheck = await session.run(`
+                    MATCH ()-[r]-()
+                    WHERE EXISTS {
+                        MATCH (n {userId: $userId, twinId: $twinId})
+                        WHERE startNode(r) = n OR endNode(r) = n
+                    }
+                    RETURN count(r) as totalRels
+                `, { userId, twinId });
+                
+                const totalRels = allRelsCheck.records[0]?.get('totalRels')?.toNumber() || 0;
+                log(`🔍 Total relationships for user ${userId}: ${totalRels}`);
+                
+                // Query relationships for this user/twin (try both directions)
                 const relsResult = await session.run(`
-                    MATCH (a {userId: $userId, twinId: $twinId})-[r]->(b {userId: $userId, twinId: $twinId})
+                    MATCH (a {userId: $userId, twinId: $twinId})-[r]-(b {userId: $userId, twinId: $twinId})
                     RETURN a.id as sourceId, b.id as targetId, type(r) as relType, properties(r) as relProps
                     LIMIT 100
                 `, { userId, twinId });
