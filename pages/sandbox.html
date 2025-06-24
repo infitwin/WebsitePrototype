@@ -433,6 +433,63 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        
+        /* Face thumbnails */
+        .face-thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: grab;
+            position: relative;
+            background: white;
+            border: 2px solid #dee2e6;
+            transition: all 0.2s;
+        }
+        
+        .face-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #6f42c1;
+        }
+        
+        .face-thumbnail.dragging {
+            cursor: grabbing;
+            opacity: 0.5;
+        }
+        
+        .face-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .face-thumbnail-confidence {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 4px;
+            font-size: 9px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .face-thumbnail-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px;
+            font-size: 9px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -572,24 +629,12 @@
                         <button onclick="togglePanel('faces')" class="panel-close">×</button>
                     </div>
                     <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Available faces to assign:</div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                                <div style="width: 50px; height: 50px; background: #007bff; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
-                                <small>John Doe</small>
-                            </div>
-                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                                <div style="width: 50px; height: 50px; background: #28a745; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
-                                <small>Jane Smith</small>
-                            </div>
-                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                                <div style="width: 50px; height: 50px; background: #dc3545; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👨</div>
-                                <small>Bob Wilson</small>
-                            </div>
-                            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; cursor: pointer;">
-                                <div style="width: 50px; height: 50px; background: #ffc107; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👩</div>
-                                <small>Alice Brown</small>
-                            </div>
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag faces to assign to people:</div>
+                        <div id="facesLoading" style="text-align: center; padding: 20px;">
+                            <div style="color: #666;">Loading faces...</div>
+                        </div>
+                        <div id="facesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;">
+                            <!-- Face thumbnails will be loaded here -->
                         </div>
                     </div>
                 </div>
@@ -1010,6 +1055,31 @@
                         const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
                             if (user) {
                                 loadUserArtifacts();
+                                unsubscribe(); // Stop listening after first auth
+                            }
+                        });
+                    }
+                }
+                
+                // Load faces when panel is opened
+                if (panelId === 'faces') {
+                    // Initialize Firebase first if needed
+                    if (!firebaseInitialized) {
+                        initializeFirebase();
+                        // Wait for auth state to be established
+                        setTimeout(() => {
+                            if (firebase.auth().currentUser) {
+                                loadUserFaces();
+                            }
+                        }, 2000);
+                    } else if (firebase.auth().currentUser) {
+                        loadUserFaces();
+                    } else {
+                        // Try to wait for auth
+                        log('⏳ Waiting for authentication...');
+                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                            if (user) {
+                                loadUserFaces();
                                 unsubscribe(); // Stop listening after first auth
                             }
                         });
@@ -1455,6 +1525,228 @@
         
         // Handle artifact drag end
         function handleArtifactDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        // Load user faces from Firebase
+        async function loadUserFaces() {
+            if (!firebaseInitialized) {
+                log('⏳ Firebase not initialized yet for faces');
+                return;
+            }
+            
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                log('❌ No user logged in for faces');
+                const loadingEl = document.getElementById('facesLoading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = '<div style="color: #666;">Please log in to see faces</div>';
+                }
+                return;
+            }
+            
+            log('👤 Loading faces for user:', user.email, 'UID:', user.uid);
+            
+            const gridEl = document.getElementById('facesGrid');
+            const loadingEl = document.getElementById('facesLoading');
+            
+            if (!gridEl || !loadingEl) {
+                log('❌ Missing DOM elements for faces');
+                return;
+            }
+            
+            try {
+                // Get user's files from Firestore
+                const db = firebase.firestore();
+                const filesRef = db.collection('users').doc(user.uid).collection('files');
+                log('🔍 Querying for files with faces: users/' + user.uid + '/files');
+                
+                // Query for files that have extracted faces
+                const snapshot = await filesRef.limit(100).get();
+                
+                log('📊 Files query completed. Size:', snapshot.size);
+                
+                loadingEl.style.display = 'none';
+                gridEl.innerHTML = '';
+                
+                let totalFaces = 0;
+                
+                // Iterate through files and extract faces
+                snapshot.forEach(doc => {
+                    const fileData = doc.data();
+                    
+                    // Check if file has extracted faces
+                    if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces) && fileData.extractedFaces.length > 0) {
+                        log('📷 Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
+                        
+                        // Create face thumbnails for each extracted face
+                        fileData.extractedFaces.forEach((face, index) => {
+                            const faceThumbnail = createFaceThumbnail(doc.id, fileData, face, index);
+                            gridEl.appendChild(faceThumbnail);
+                            totalFaces++;
+                        });
+                    }
+                });
+                
+                log('✅ Loaded', totalFaces, 'faces from', snapshot.size, 'files');
+                
+                if (totalFaces === 0) {
+                    loadingEl.style.display = 'block';
+                    loadingEl.innerHTML = '<div style="color: #666;">No faces found. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload and vectorize photos</a></div>';
+                }
+                
+            } catch (error) {
+                log('❌ Error loading faces:', error.message);
+                console.error('Full error:', error);
+                loadingEl.innerHTML = '<div style="color: #EF4444;">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Create draggable face thumbnail
+        function createFaceThumbnail(fileId, fileData, face, faceIndex) {
+            const div = document.createElement('div');
+            div.className = 'face-thumbnail';
+            div.draggable = true;
+            div.dataset.fileId = fileId;
+            div.dataset.fileName = fileData.fileName || 'Unnamed';
+            div.dataset.faceId = face.faceId || `face_${faceIndex}`;
+            div.dataset.confidence = face.confidence || 0;
+            
+            // Create loading placeholder
+            const loadingDiv = document.createElement('div');
+            loadingDiv.style.width = '100%';
+            loadingDiv.style.height = '100%';
+            loadingDiv.style.background = '#f0f0f0';
+            loadingDiv.style.display = 'flex';
+            loadingDiv.style.alignItems = 'center';
+            loadingDiv.style.justifyContent = 'center';
+            loadingDiv.style.fontSize = '24px';
+            loadingDiv.textContent = '👤';
+            div.appendChild(loadingDiv);
+            
+            // Extract face using bounding box if available
+            if (fileData.downloadURL && face.boundingBox) {
+                extractFaceFromImage(fileData.downloadURL, face.boundingBox)
+                    .then(faceDataUrl => {
+                        // Replace loading placeholder with extracted face
+                        div.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = faceDataUrl;
+                        img.alt = `Face ${faceIndex + 1}`;
+                        div.appendChild(img);
+                        
+                        // Add confidence badge
+                        if (face.confidence) {
+                            const confidenceBadge = document.createElement('div');
+                            confidenceBadge.className = 'face-thumbnail-confidence';
+                            confidenceBadge.textContent = Math.round(face.confidence) + '%';
+                            div.appendChild(confidenceBadge);
+                        }
+                        
+                        // Add name/label
+                        const nameLabel = document.createElement('div');
+                        nameLabel.className = 'face-thumbnail-name';
+                        nameLabel.textContent = face.name || `Face ${faceIndex + 1}`;
+                        div.appendChild(nameLabel);
+                    })
+                    .catch(error => {
+                        log('❌ Failed to extract face:', error.message);
+                        // Keep the placeholder on error
+                    });
+            }
+            
+            // Store face data for drag operation
+            div.dataset.faceData = JSON.stringify({
+                fileId: fileId,
+                fileName: fileData.fileName,
+                faceId: face.faceId,
+                faceIndex: faceIndex,
+                confidence: face.confidence,
+                boundingBox: face.boundingBox,
+                emotions: face.emotions,
+                ageRange: face.ageRange
+            });
+            
+            // Add drag event handlers
+            div.addEventListener('dragstart', handleFaceDragStart);
+            div.addEventListener('dragend', handleFaceDragEnd);
+            
+            return div;
+        }
+        
+        // Extract face from image using bounding box
+        async function extractFaceFromImage(imageUrl, boundingBox) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous'; // Enable CORS for Firebase Storage URLs
+                
+                img.onload = function() {
+                    // Create canvas for face extraction
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Check if boundingBox exists
+                    if (!boundingBox) {
+                        reject(new Error('BoundingBox is undefined'));
+                        return;
+                    }
+                    
+                    // Convert percentage-based coordinates to pixels
+                    // Firebase/AWS uses: Left, Top, Width, Height (all 0-1)
+                    const x = (boundingBox.Left || boundingBox.left || 0) * img.width;
+                    const y = (boundingBox.Top || boundingBox.top || 0) * img.height;
+                    const width = (boundingBox.Width || boundingBox.width || 0) * img.width;
+                    const height = (boundingBox.Height || boundingBox.height || 0) * img.height;
+                    
+                    // Set canvas size to extracted face dimensions (80x80 for thumbnails)
+                    const thumbnailSize = 80;
+                    canvas.width = thumbnailSize;
+                    canvas.height = thumbnailSize;
+                    
+                    // Draw the face region from the source image, scaled to thumbnail size
+                    ctx.drawImage(
+                        img,
+                        x,                  // Source X (pixels)
+                        y,                  // Source Y (pixels)
+                        width,              // Source Width (pixels)
+                        height,             // Source Height (pixels)
+                        0,                  // Destination X
+                        0,                  // Destination Y
+                        thumbnailSize,      // Destination Width
+                        thumbnailSize       // Destination Height
+                    );
+                    
+                    // Convert to data URL
+                    const faceDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    resolve(faceDataUrl);
+                };
+                
+                img.onerror = function() {
+                    reject(new Error('Failed to load image for face extraction'));
+                };
+                
+                img.src = imageUrl;
+            });
+        }
+        
+        // Handle face drag start
+        function handleFaceDragStart(e) {
+            e.target.classList.add('dragging');
+            
+            const faceData = JSON.parse(e.target.dataset.faceData);
+            const dragData = {
+                type: 'face',
+                ...faceData
+            };
+            
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('application/json', JSON.stringify(dragData));
+            
+            log('🚀 Dragging face:', dragData.faceId, 'from', dragData.fileName);
+        }
+        
+        // Handle face drag end
+        function handleFaceDragEnd(e) {
             e.target.classList.remove('dragging');
         }
         
