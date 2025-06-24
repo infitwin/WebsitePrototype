@@ -1579,6 +1579,11 @@
                     if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces) && fileData.extractedFaces.length > 0) {
                         log('📷 Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
                         
+                        // Log first face structure to understand the data
+                        if (fileData.extractedFaces[0]) {
+                            log('🔍 First face structure:', JSON.stringify(fileData.extractedFaces[0]));
+                        }
+                        
                         // Create face thumbnails for each extracted face
                         fileData.extractedFaces.forEach((face, index) => {
                             const faceThumbnail = createFaceThumbnail(doc.id, fileData, face, index);
@@ -1625,8 +1630,10 @@
             div.appendChild(loadingDiv);
             
             // Extract face using bounding box if available
-            if (fileData.downloadURL && face.boundingBox) {
-                extractFaceFromImage(fileData.downloadURL, face.boundingBox)
+            const boundingBox = face.boundingBox || face.BoundingBox;
+            if (fileData.downloadURL && boundingBox) {
+                log('📐 Extracting face with bounding box:', JSON.stringify(boundingBox));
+                extractFaceFromImage(fileData.downloadURL, boundingBox)
                     .then(faceDataUrl => {
                         // Replace loading placeholder with extracted face
                         div.innerHTML = '';
@@ -1636,10 +1643,11 @@
                         div.appendChild(img);
                         
                         // Add confidence badge
-                        if (face.confidence) {
+                        const confidence = face.confidence || face.Confidence;
+                        if (confidence) {
                             const confidenceBadge = document.createElement('div');
                             confidenceBadge.className = 'face-thumbnail-confidence';
-                            confidenceBadge.textContent = Math.round(face.confidence) + '%';
+                            confidenceBadge.textContent = Math.round(confidence) + '%';
                             div.appendChild(confidenceBadge);
                         }
                         
@@ -1651,8 +1659,13 @@
                     })
                     .catch(error => {
                         log('❌ Failed to extract face:', error.message);
-                        // Keep the placeholder on error
+                        console.error('Face extraction error:', error);
+                        // Show error state instead of placeholder
+                        div.innerHTML = '<div style="color: red; font-size: 10px; padding: 5px;">Error</div>';
                     });
+            } else {
+                log('⚠️ No bounding box for face:', JSON.stringify(face));
+                div.innerHTML = '<div style="color: orange; font-size: 10px; padding: 5px;">No box</div>';
             }
             
             // Store face data for drag operation
@@ -1693,10 +1706,12 @@
                     
                     // Convert percentage-based coordinates to pixels
                     // Firebase/AWS uses: Left, Top, Width, Height (all 0-1)
-                    const x = (boundingBox.Left || boundingBox.left || 0) * img.width;
-                    const y = (boundingBox.Top || boundingBox.top || 0) * img.height;
-                    const width = (boundingBox.Width || boundingBox.width || 0) * img.width;
-                    const height = (boundingBox.Height || boundingBox.height || 0) * img.height;
+                    const x = (boundingBox.Left || boundingBox.left || boundingBox.x || 0) * img.width;
+                    const y = (boundingBox.Top || boundingBox.top || boundingBox.y || 0) * img.height;
+                    const width = (boundingBox.Width || boundingBox.width || boundingBox.w || 0) * img.width;
+                    const height = (boundingBox.Height || boundingBox.height || boundingBox.h || 0) * img.height;
+                    
+                    log('📏 Face extraction coords - X:', x, 'Y:', y, 'W:', width, 'H:', height);
                     
                     // Set canvas size to extracted face dimensions (80x80 for thumbnails)
                     const thumbnailSize = 80;
