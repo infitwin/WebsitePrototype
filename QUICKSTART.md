@@ -154,6 +154,11 @@ python3 test-debug-flow.py
 - Queries Firestore path: `users/{userId}/files`
 - Handles missing indexes gracefully with retry logic
 
+### Twin ID System:
+- **Format**: `{userId}-1` (e.g., if user ID is `abc123`, twin ID is `abc123-1`)
+- **Source**: Analyzed from ui-studio project's `twinService.js`
+- **Usage**: Used in admin test data generation for Neo4j graph scoping
+
 ## 🚀 IMMEDIATE NEXT STEPS
 
 ### Priority 1: Frontend Integration (READY TO START)

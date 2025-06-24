@@ -43,6 +43,14 @@ Image → Artifact Processor → AWS Rekognition → Firebase
       Graph Data → Neo4j (mocked)
 ```
 
+## 🔑 Twin ID Format
+
+Twin IDs in the Infitwin system follow a specific pattern:
+- **Format**: `{userId}-1`
+- **Example**: If Firebase user ID is `abc123def456`, the twin ID is `abc123def456-1`
+- **Location**: Generated in frontend code when creating user's default twin
+- **Storage**: Used as document ID in Firestore `twins` collection
+
 ## 🏗️ Project Structure
 
 ```
