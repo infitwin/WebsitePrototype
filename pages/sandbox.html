@@ -764,6 +764,7 @@
         let changesCount = 0;
         let initialDataLoaded = false;
         let currentSandboxData = { nodes: [], edges: [] };
+        let activeReviewModal = null; // Track active review modal
         
         // Drag functionality for panels - each panel gets its own drag state
         function initializeDragFunctionality(panelId) {
@@ -2797,9 +2798,16 @@
                 return;
             }
             
+            // Close any existing review modal first
+            if (activeReviewModal) {
+                console.log('🔒 Closing existing review modal');
+                activeReviewModal.hide();
+                activeReviewModal = null;
+            }
+            
             // Show review form modal
             if (window.Modal) {
-                const reviewModal = new window.Modal({
+                activeReviewModal = new window.Modal({
                     title: 'Review Changes Before Posting',
                     content: createReviewFormContent(),
                     size: 'medium',
@@ -2815,7 +2823,7 @@
                             text: 'Post to Production',
                             type: 'success',
                             icon: '📤',
-                            action: async () => {
+                            action: () => {
                                 console.log('🔘 Modal Post to Production clicked!');
                                 
                                 // Get review notes
@@ -2824,19 +2832,19 @@
                                 
                                 // Hide the review modal immediately
                                 console.log('🔒 Hiding review modal...');
-                                reviewModal.hide();
+                                activeReviewModal.hide();
+                                activeReviewModal = null;
                                 
-                                // Small delay to ensure modal closes
-                                await new Promise(resolve => setTimeout(resolve, 100));
-                                
-                                // Proceed with posting
-                                console.log('📤 Calling performPostToProduction...');
-                                await performPostToProduction(reviewNotes);
+                                // Proceed with posting after modal is hidden
+                                setTimeout(() => {
+                                    console.log('📤 Calling performPostToProduction...');
+                                    performPostToProduction(reviewNotes);
+                                }, 100);
                             }
                         }
                     ]
                 });
-                reviewModal.show();
+                activeReviewModal.show();
             } else {
                 // Fallback to simple confirm
                 const confirmPost = confirm(`Are you sure you want to post ${changesCount} ${changesCount === 1 ? 'change' : 'changes'} to production?`);
@@ -2894,6 +2902,13 @@
                 // Hide loading modal
                 if (loadingModal) {
                     loadingModal.hide();
+                }
+                
+                // Ensure review modal is closed
+                if (activeReviewModal) {
+                    console.log('🔒 Ensuring review modal is closed after success');
+                    activeReviewModal.hide();
+                    activeReviewModal = null;
                 }
                 
                 // Show success modal or alert
