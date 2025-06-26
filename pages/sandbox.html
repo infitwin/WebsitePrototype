@@ -2779,7 +2779,7 @@
                             {
                                 text: 'OK',
                                 type: 'primary',
-                                onClick: (modal) => modal.hide()
+                                action: () => {} // Modal will auto-hide
                             }
                         ]
                     });
@@ -2802,22 +2802,29 @@
                         {
                             text: 'Cancel',
                             type: 'secondary',
-                            onClick: (modal) => modal.hide()
+                            action: () => {} // Modal will auto-hide
                         },
                         {
                             text: 'Post to Production',
                             type: 'success',
                             icon: '📤',
-                            onClick: async (modal) => {
+                            action: async () => {
+                                console.log('🔘 Modal Post to Production clicked!');
+                                
                                 // Get review notes
                                 const reviewNotes = document.getElementById('reviewNotes')?.value || '';
-                                
-                                // Hide modal
-                                modal.hide();
+                                console.log('📝 Review notes:', reviewNotes);
                                 
                                 // Proceed with posting
+                                console.log('📤 Calling performPostToProduction...');
                                 await performPostToProduction(reviewNotes);
-                            }
+                                
+                                // Return promise to handle loading state
+                                return new Promise((resolve) => {
+                                    setTimeout(resolve, 100); // Let performPostToProduction complete
+                                });
+                            },
+                            closeOnAction: false // We'll close it manually after success
                         }
                     ]
                 });
@@ -2892,7 +2899,7 @@
                             {
                                 text: 'OK',
                                 type: 'primary',
-                                onClick: (modal) => modal.hide()
+                                action: () => {} // Modal will auto-hide
                             }
                         ]
                     });
@@ -2924,7 +2931,7 @@
                             {
                                 text: 'OK',
                                 type: 'primary',
-                                onClick: (modal) => modal.hide()
+                                action: () => {} // Modal will auto-hide
                             }
                         ]
                     });
@@ -3152,6 +3159,13 @@
                         buttonContainer.appendChild(button.element);
                         // Store reference for later use
                         button.element._buttonInstance = button;
+                        
+                        // Also add direct event listener as backup
+                        button.element.addEventListener('click', () => {
+                            console.log('🔘 Direct click event!');
+                            postToProduction();
+                        });
+                        
                         log('✅ Post to Production button initialized with centralized component');
                     } else {
                         // Fallback to simple button
