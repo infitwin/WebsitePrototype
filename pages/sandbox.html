@@ -2823,7 +2823,11 @@
                                 console.log('📝 Review notes:', reviewNotes);
                                 
                                 // Hide the review modal immediately
+                                console.log('🔒 Hiding review modal...');
                                 reviewModal.hide();
+                                
+                                // Small delay to ensure modal closes
+                                await new Promise(resolve => setTimeout(resolve, 100));
                                 
                                 // Proceed with posting
                                 console.log('📤 Calling performPostToProduction...');
