@@ -873,135 +873,30 @@
         
         // Handle file drops on sandbox
         function handleSandboxFileDrop(file, target) {
-            log(`📎 File drop on sandbox: ${file.name} (${file.type}, ${Math.round(file.size/1024)}KB)`);
+            log(`📎 File drop detected: ${file.name} (${file.type}, ${Math.round(file.size/1024)}KB)`);
             log(`🎯 Drop target: ${target.type} ${target.id}`);
             
-            if (!currentSandboxData) {
-                currentSandboxData = { nodes: [], edges: [] };
-            }
-            
-            // Process based on target type
+            // Just log what happened - let the user decide what to do
             if (target.type === 'node') {
-                handleFileDropOnNode(file, target.id, 'sandbox');
+                log(`💡 You could: attach this file to node ${target.id}, set as node image, or upload to server`);
             } else if (target.type === 'edge') {
-                handleFileDropOnEdge(file, target.id, 'sandbox');
+                log(`💡 You could: attach this file to edge ${target.id} or associate with relationship`);
             }
             
-            // Track the change
-            changesCount++;
-            updateChangesDisplay();
+            // Example of what you COULD do (but we won't auto-execute):
+            if (file.type.startsWith('image/')) {
+                log(`🖼️ This is an image - you could set it as background for ${target.type} ${target.id}`);
+            } else {
+                log(`📄 This is a document - you could store metadata or upload to server`);
+            }
             
-            log(`✅ File ${file.name} processed for ${target.type} ${target.id}`);
+            log(`✅ File drop handled - no automatic modifications made`);
         }
         
         // Handle file drops on production (read-only, so just log)
         function handleProductionFileDrop(file, target) {
             log(`📎 File drop on production: ${file.name} - read-only mode`);
-            alert(`Cannot attach files to production graph. Drop "${file.name}" on the sandbox instead.`);
-        }
-        
-        // Handle file drop on node
-        function handleFileDropOnNode(file, nodeId, context) {
-            const isImage = file.type.startsWith('image/');
-            
-            // Find the node
-            const nodeData = context === 'sandbox' ? currentSandboxData : null;
-            if (!nodeData) return;
-            
-            const node = nodeData.nodes.find(n => n.id === nodeId);
-            if (!node) {
-                log(`❌ Node ${nodeId} not found in ${context}`);
-                return;
-            }
-            
-            if (isImage) {
-                // Handle image files - set as node image
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    node.imageUrl = e.target.result;
-                    node.properties = {
-                        ...node.properties,
-                        hasImage: true,
-                        imageFileName: file.name,
-                        imageFileSize: file.size,
-                        imageType: file.type
-                    };
-                    
-                    // Re-render sandbox with image
-                    if (context === 'sandbox' && sandboxRoot) {
-                        const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
-                            data: currentSandboxData,
-                            title: "Sandbox",
-                            hidePageHeader: true,
-                            hideStatusBar: true,
-                            useExternalMetadataEditor: false,
-                            onDataChange: (newData) => {
-                                currentSandboxData = newData;
-                                simulateChange();
-                            },
-                            onNodeDrop: handleSandboxNodeDrop,
-                            onFileDrop: handleSandboxFileDrop
-                        });
-                        sandboxRoot.render(controlElement);
-                    }
-                    
-                    log(`🖼️ Image ${file.name} attached to node ${node.label || nodeId}`);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // Handle other file types - add to attachments
-                if (!node.attachments) {
-                    node.attachments = [];
-                }
-                
-                node.attachments.push({
-                    fileName: file.name,
-                    fileType: file.type,
-                    fileSize: file.size,
-                    attachedAt: new Date().toISOString()
-                });
-                
-                node.properties = {
-                    ...node.properties,
-                    hasAttachments: true,
-                    attachmentCount: node.attachments.length
-                };
-                
-                log(`📄 Document ${file.name} attached to node ${node.label || nodeId}`);
-            }
-        }
-        
-        // Handle file drop on edge
-        function handleFileDropOnEdge(file, edgeId, context) {
-            // Find the edge
-            const nodeData = context === 'sandbox' ? currentSandboxData : null;
-            if (!nodeData) return;
-            
-            const edge = nodeData.edges.find(e => e.id === edgeId);
-            if (!edge) {
-                log(`❌ Edge ${edgeId} not found in ${context}`);
-                return;
-            }
-            
-            // Add file to edge attachments
-            if (!edge.attachments) {
-                edge.attachments = [];
-            }
-            
-            edge.attachments.push({
-                fileName: file.name,
-                fileType: file.type,
-                fileSize: file.size,
-                attachedAt: new Date().toISOString()
-            });
-            
-            edge.properties = {
-                ...edge.properties,
-                hasAttachments: true,
-                attachmentCount: edge.attachments.length
-            };
-            
-            log(`📄 File ${file.name} attached to edge ${edge.label || edgeId}`);
+            log(`💡 Production is read-only. You could copy to sandbox and then attach files there.`);
         }
         
         // Handle artifact drops from the artifacts panel
