@@ -3144,7 +3144,10 @@
                             text: 'Post to Production',
                             type: 'success',
                             icon: '📤',
-                            onClick: postToProduction
+                            onClick: () => {
+                                console.log('🔘 Button clicked!');
+                                postToProduction();
+                            }
                         });
                         buttonContainer.appendChild(button.element);
                         // Store reference for later use
