@@ -1117,6 +1117,79 @@
                 log('🔄 Sandbox re-rendered with artifact attachment');
             }
         }
+        
+        // Handle face drops from the faces panel
+        function handleFaceDropOnSandbox(targetId, faceNodeData, dropType, position) {
+            log(`😊 Face drop: ${faceNodeData.name} on ${dropType}`);
+            const faceData = faceNodeData.originalData;
+            
+            if (dropType === 'onto-canvas') {
+                // Create a new person node with the face
+                const newNode = {
+                    id: faceNodeData.id,
+                    name: faceNodeData.name,
+                    label: faceNodeData.name,
+                    type: 'person',
+                    properties: {
+                        ...faceData,
+                        droppedAt: new Date().toISOString(),
+                        source: 'faces-panel'
+                    }
+                };
+                
+                // Add position if provided
+                if (position) {
+                    newNode.x = position.x;
+                    newNode.y = position.y;
+                }
+                
+                currentSandboxData = {
+                    ...currentSandboxData,
+                    nodes: [...currentSandboxData.nodes, newNode]
+                };
+                
+                log(`✅ Created person node from face: ${newNode.name}`);
+                
+            } else if (dropType === 'onto-node' && targetId) {
+                // Attach face to existing node (e.g., assign face to person)
+                const targetNode = currentSandboxData.nodes.find(n => n.id === targetId);
+                if (targetNode) {
+                    targetNode.properties = {
+                        ...targetNode.properties,
+                        faceData: faceData,
+                        hasFace: true,
+                        assignedAt: new Date().toISOString()
+                    };
+                    
+                    log(`✅ Assigned face to node ${targetNode.label || targetId}`);
+                }
+            }
+            
+            // Re-render the sandbox with updated data
+            if (sandboxRoot) {
+                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                    data: currentSandboxData,
+                    title: "Sandbox",
+                    hidePageHeader: true,
+                    hideStatusBar: true,
+                    useExternalMetadataEditor: false,
+                    onDataChange: (newData) => {
+                        currentSandboxData = newData;
+                        simulateChange();
+                    },
+                    onNodeDrop: handleSandboxNodeDrop,
+                    onFileDrop: handleSandboxFileDrop
+                });
+                
+                sandboxRoot.render(controlElement);
+                
+                // Track the change
+                changesCount++;
+                updateChangesDisplay();
+                
+                log('🔄 Sandbox re-rendered with face assignment');
+            }
+        }
 
         function initializeSandbox() {
             if (!checkBundle()) {
@@ -1295,8 +1368,14 @@
             }
             
             // Check if this is an artifact drop (from the artifacts panel)
-            if (nodeData.type === 'artifact') {
-                handleArtifactDropOnSandbox(targetId, nodeData, dropType, position);
+            if (nodeData.originalData && nodeData.originalData.type === 'artifact') {
+                handleArtifactDropOnSandbox(targetId, nodeData.originalData, dropType, position);
+                return;
+            }
+            
+            // Check if this is a face drop (from the faces panel)
+            if (nodeData.originalData && nodeData.originalData.type === 'face') {
+                handleFaceDropOnSandbox(targetId, nodeData, dropType, position);
                 return;
             }
             
@@ -2027,19 +2106,35 @@
         function handleArtifactDragStart(e) {
             e.target.classList.add('dragging');
             
-            // Set drag data for artifact drops
+            // Use node drag format as per NODE_DRAG_DROP_GUIDE.md
             const dragData = {
-                type: 'artifact',
-                fileId: e.target.dataset.fileId,
-                fileName: e.target.dataset.fileName,
-                fileType: e.target.dataset.fileType,
-                downloadUrl: e.target.dataset.downloadUrl
+                dragType: 'node',           // REQUIRED: Identifies this as a node drag
+                sourceControl: 'node-list', // REQUIRED: Must be 'node-list' for the drop to work
+                id: `artifact_${e.target.dataset.fileId}`,
+                name: e.target.dataset.fileName,
+                type: 'thing',              // Artifacts are 'thing' type nodes
+                label: e.target.dataset.fileName,
+                properties: {
+                    fileId: e.target.dataset.fileId,
+                    fileName: e.target.dataset.fileName,
+                    fileType: e.target.dataset.fileType,
+                    downloadUrl: e.target.dataset.downloadUrl,
+                    source: 'artifacts-panel'
+                },
+                // Keep original artifact data for compatibility
+                originalData: {
+                    type: 'artifact',
+                    fileId: e.target.dataset.fileId,
+                    fileName: e.target.dataset.fileName,
+                    fileType: e.target.dataset.fileType,
+                    downloadUrl: e.target.dataset.downloadUrl
+                }
             };
             
             e.dataTransfer.effectAllowed = 'copy';
-            e.dataTransfer.setData('application/json', JSON.stringify(dragData));
+            e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
             
-            log('🚀 Dragging artifact:', dragData.fileName);
+            log('🚀 Dragging artifact as node:', dragData.name);
         }
         
         // Handle artifact drag end
@@ -2771,15 +2866,30 @@
             e.target.classList.add('dragging');
             
             const faceData = JSON.parse(e.target.dataset.faceData);
+            
+            // Use node drag format as per NODE_DRAG_DROP_GUIDE.md
             const dragData = {
-                type: 'face',
-                ...faceData
+                dragType: 'node',           // REQUIRED: Identifies this as a node drag
+                sourceControl: 'node-list', // REQUIRED: Must be 'node-list' for the drop to work
+                id: `face_${faceData.faceId}_${Date.now()}`,
+                name: faceData.fileName || `Face ${faceData.faceIndex + 1}`,
+                type: 'person',             // Faces represent people
+                label: faceData.fileName || `Face ${faceData.faceIndex + 1}`,
+                properties: {
+                    ...faceData,
+                    source: 'faces-panel'
+                },
+                // Keep original face data for compatibility
+                originalData: {
+                    type: 'face',
+                    ...faceData
+                }
             };
             
             e.dataTransfer.effectAllowed = 'copy';
-            e.dataTransfer.setData('application/json', JSON.stringify(dragData));
+            e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
             
-            log('🚀 Dragging face:', dragData.faceId, 'from', dragData.fileName);
+            log('🚀 Dragging face as person node:', dragData.name);
         }
         
         // Handle face drag end
