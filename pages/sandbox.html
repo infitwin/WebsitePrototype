@@ -33,6 +33,7 @@
         import { handleSandboxFileDrop, handleRealFile, handleArtifactFile, handleTestData, handleProductionFileDrop } from '../js/sandbox/file-handlers.js';
         import { initializeDragFunctionality, handleArtifactDragStart, handleArtifactDragEnd, handleFaceDragStart, handleFaceDragEnd } from '../js/sandbox/drag-handlers.js';
         import { Neo4jDataService } from '../js/services/neo4j-data-service.js';
+        import { MetadataEditorIntegration } from '../js/sandbox/metadata-editor-integration.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -52,6 +53,8 @@
         window.handleFaceDragStart = (e) => handleFaceDragStart(e, log);
         window.handleFaceDragEnd = handleFaceDragEnd;
         window.Neo4jDataService = Neo4jDataService;
+        // Initialize metadata editor
+        window.metadataEditor = new MetadataEditorIntegration();
     </script>
     
     <style>
@@ -890,12 +893,20 @@
                     title: "Production",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false,
-                    readOnly: true,
+                    useExternalMetadataEditor: true,  // Use our metadata editor
+                    readOnly: false,  // Allow editing with the form
                     hideAddButton: true,
                     showCopyButton: true,
                     onCopyClick: handleProductionCopyToSandbox,
                     onFileDrop: handleProductionFileDrop,
+                    onNodeClick: (node) => {
+                        // Show metadata editor in modal
+                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
+                            log('📝 Node updated:', updatedNode);
+                            // The graph should auto-update when data changes
+                            // If not, we may need to trigger a refresh
+                        });
+                    },
                     width: '100%',
                     height: '100%',
                     style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
