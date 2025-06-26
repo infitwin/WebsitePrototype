@@ -31,6 +31,7 @@
         import { Modal } from '../js/components/ui/modal.js';
         import { getFileIcon, getNodeTypeIcon, getNodeColor, checkBundle, extractFaceFromImage } from '../js/utils/sandbox-utils.js';
         import { handleSandboxFileDrop, handleRealFile, handleArtifactFile, handleTestData, handleProductionFileDrop } from '../js/sandbox/file-handlers.js';
+        import { initializeDragFunctionality, handleArtifactDragStart, handleArtifactDragEnd, handleFaceDragStart, handleFaceDragEnd } from '../js/sandbox/drag-handlers.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -43,6 +44,12 @@
         window.handleArtifactFile = handleArtifactFile;
         window.handleTestData = handleTestData;
         window.handleProductionFileDrop = handleProductionFileDrop;
+        // Wrapper functions for drag handlers with dependencies
+        window.initializeDragFunctionality = (panelId) => initializeDragFunctionality(panelId, log, togglePanel);
+        window.handleArtifactDragStart = (e) => handleArtifactDragStart(e, log);
+        window.handleArtifactDragEnd = handleArtifactDragEnd;
+        window.handleFaceDragStart = (e) => handleFaceDragStart(e, log);
+        window.handleFaceDragEnd = handleFaceDragEnd;
     </script>
     
     <style>
@@ -416,89 +423,6 @@
         let currentSandboxData = { nodes: [], edges: [] };
         let activeReviewModal = null; // Track active review modal
         
-        // Drag functionality for panels - each panel gets its own drag state
-        function initializeDragFunctionality(panelId) {
-            const panel = document.getElementById(panelId + 'Panel');
-            const header = document.getElementById(panelId + 'Header');
-            
-            log(`🔧 Initializing drag for ${panelId} panel`);
-            log(`   Panel found: ${!!panel}, Header found: ${!!header}`);
-            
-            if (!panel || !header) {
-                log(`❌ Missing elements for ${panelId} drag`);
-                return;
-            }
-            
-            // Local drag state for this panel
-            let isDragging = false;
-            let currentPanel = null;
-            let dragOffset = { x: 0, y: 0 };
-            
-            // Remove any existing listeners first
-            const newHeader = header.cloneNode(true);
-            header.parentNode.replaceChild(newHeader, header);
-            
-            // Re-attach close button functionality
-            const closeBtn = newHeader.querySelector('button');
-            if (closeBtn) {
-                closeBtn.onclick = () => window.togglePanel(panelId);
-            }
-            
-            const startDrag = (e) => {
-                log(`🖱️ ${panelId} header clicked, target: ${e.target.tagName}`);
-                
-                // Don't start drag if clicking on close button
-                if (e.target.tagName === 'BUTTON') {
-                    log(`🚫 Clicked close button, not dragging`);
-                    return;
-                }
-                
-                isDragging = true;
-                currentPanel = panel;
-                panel.classList.add('dragging');
-                
-                const rect = panel.getBoundingClientRect();
-                dragOffset.x = e.clientX - rect.left;
-                dragOffset.y = e.clientY - rect.top;
-                
-                log('🔵 ' + panelId + ' panel drag started');
-                e.preventDefault();
-            };
-            
-            const drag = (e) => {
-                if (!isDragging || !currentPanel) return;
-                
-                const x = e.clientX - dragOffset.x;
-                const y = e.clientY - dragOffset.y;
-                
-                // Keep panel within viewport bounds
-                const maxX = window.innerWidth - currentPanel.offsetWidth;
-                const maxY = window.innerHeight - currentPanel.offsetHeight;
-                
-                const constrainedX = Math.max(80, Math.min(x, maxX)); // 80px for sidebar
-                const constrainedY = Math.max(0, Math.min(y, maxY));
-                
-                currentPanel.style.left = constrainedX + 'px';
-                currentPanel.style.top = constrainedY + 'px';
-                currentPanel.style.right = 'auto';
-                currentPanel.style.bottom = 'auto';
-                
-                e.preventDefault();
-            };
-            
-            const stopDrag = () => {
-                if (isDragging && currentPanel) {
-                    isDragging = false;
-                    currentPanel.classList.remove('dragging');
-                    log('🔵 ' + panelId + ' panel drag ended');
-                    currentPanel = null;
-                }
-            };
-            
-            newHeader.addEventListener('mousedown', startDrag);
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-        }
         
         function log(message) {
             // Logging disabled for production
@@ -1362,30 +1286,6 @@
             return div;
         }
         
-        // Handle artifact drag start - following updated FILE_DROP_GUIDE.md
-        function handleArtifactDragStart(e) {
-            e.target.classList.add('dragging');
-            
-            // CRITICAL: Set drag data as JSON per FILE_DROP_GUIDE.md
-            e.dataTransfer.setData('text/plain', JSON.stringify({
-                name: e.target.dataset.fileName,
-                type: e.target.dataset.fileType,
-                url: e.target.dataset.downloadUrl,
-                size: parseInt(e.target.dataset.fileSize) || 0,
-                // Add custom metadata
-                source: 'artifact-panel',
-                fileId: e.target.dataset.fileId,
-                timestamp: new Date().toISOString()
-            }));
-            e.dataTransfer.effectAllowed = 'copy';
-            
-            log('🚀 Dragging artifact for attachment:', e.target.dataset.fileName);
-        }
-        
-        // Handle artifact drag end
-        function handleArtifactDragEnd(e) {
-            e.target.classList.remove('dragging');
-        }
         
         // Load user faces from Firebase
         async function loadUserFaces() {
@@ -2081,41 +1981,6 @@
             });
         }
         
-        // Handle face drag start
-        function handleFaceDragStart(e) {
-            e.target.classList.add('dragging');
-            
-            const faceData = JSON.parse(e.target.dataset.faceData);
-            
-            // Use node drag format as per NODE_DRAG_DROP_GUIDE.md
-            const dragData = {
-                dragType: 'node',           // REQUIRED: Identifies this as a node drag
-                sourceControl: 'node-list', // REQUIRED: Must be 'node-list' for the drop to work
-                id: `face_${faceData.faceId}_${Date.now()}`,
-                name: faceData.fileName || `Face ${faceData.faceIndex + 1}`,
-                type: 'person',             // Faces represent people
-                label: faceData.fileName || `Face ${faceData.faceIndex + 1}`,
-                properties: {
-                    ...faceData,
-                    source: 'faces-panel'
-                },
-                // Keep original face data for compatibility
-                originalData: {
-                    type: 'face',
-                    ...faceData
-                }
-            };
-            
-            e.dataTransfer.effectAllowed = 'copy';
-            e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
-            
-            log('🚀 Dragging face as person node:', dragData.name);
-        }
-        
-        // Handle face drag end
-        function handleFaceDragEnd(e) {
-            e.target.classList.remove('dragging');
-        }
         
         // Create review form content
         function createReviewFormContent() {
