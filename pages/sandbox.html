@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/components/navigation.css">
+    <link rel="stylesheet" href="../css/components/modal.css">
+    <link rel="stylesheet" href="../css/components/button.css">
     
     <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -18,6 +20,17 @@
     
     <!-- Neo4j Driver -->
     <script src="https://unpkg.com/neo4j-driver@5.15.0/lib/browser/neo4j-web.min.js"></script>
+    
+    <!-- Centralized Neo4j Connection -->
+    <script src="../js/neo4j-connection.js"></script>
+    
+    <!-- Centralized UI Components -->
+    <script type="module">
+        import { Button } from '../js/components/ui/button.js';
+        import { Modal } from '../js/components/ui/modal.js';
+        window.Button = Button;
+        window.Modal = Modal;
+    </script>
     
     <style>
         * {
@@ -85,6 +98,7 @@
             gap: 20px;
             font-size: 14px;
         }
+        
         
         /* Main Content Area */
         .main-content {
@@ -512,6 +526,14 @@
                 <span>Session: active</span>
                 <span>Status: ready</span>
                 
+                <!-- Post to Production Button -->
+                <div id="postToProductionButton"></div>
+                
+                <!-- Test Neo4j Connection Button (Temporary) -->
+                <button class="test-neo4j-btn" onclick="testNeo4jConnection()" style="background: #FF6B6B; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; margin-left: 10px;">
+                    🔍 Test Neo4j
+                </button>
+                
                 <!-- Firebase Dropdown -->
                 <div class="firebase-dropdown">
                     <button class="firebase-dropdown-btn" onclick="toggleFirebaseDropdown()">
@@ -746,7 +768,7 @@
         let openPanels = [];
         let changesCount = 0;
         let initialDataLoaded = false;
-        let currentSandboxData = null;
+        let currentSandboxData = { nodes: [], edges: [] };
         
         // Drag functionality for panels - each panel gets its own drag state
         function initializeDragFunctionality(panelId) {
@@ -1018,15 +1040,10 @@
                     sandboxRoot = null;
                 }
                 
-                // Initialize or use existing sandbox data
+                // Initialize with empty sandbox data
                 if (!currentSandboxData) {
                     currentSandboxData = {
-                        nodes: [{
-                            id: 'sandbox_person',
-                            label: 'Sample Person',
-                            type: 'person',
-                            originalData: { name: 'Sample Person', type: 'person' }
-                        }],
+                        nodes: [],
                         edges: []
                     };
                 }
@@ -2126,22 +2143,23 @@
             try {
                 log(`🔍 Loading production data for user: ${userId}, twin: ${twinId}`);
                 
-                const connected = await initializeNeo4j();
-                if (!connected) {
-                    throw new Error('Failed to connect to Neo4j');
+                // Connect to Neo4j if not already connected
+                if (!window.Neo4jConnection.isConnected) {
+                    const connected = await window.Neo4jConnection.connect();
+                    if (!connected) {
+                        throw new Error('Failed to connect to Neo4j');
+                    }
                 }
                 
-                const session = neo4jDriver.session();
-                
                 // Query nodes for this user/twin
-                const nodesResult = await session.run(`
+                const nodesResult = await window.Neo4jConnection.run(`
                     MATCH (n {userId: $userId, twinId: $twinId})
                     RETURN n.id as id, labels(n) as labels, properties(n) as props
                     LIMIT 50
                 `, { userId, twinId });
                 
                 // First, let's see what relationships exist in the database
-                const allRelsDebug = await session.run(`
+                const allRelsDebug = await window.Neo4jConnection.run(`
                     MATCH (a)-[r]->(b)
                     WHERE a.userId = $userId AND a.twinId = $twinId
                     RETURN a.id as sourceId, b.id as targetId, type(r) as relType, 
@@ -2158,7 +2176,7 @@
                 });
                 
                 // Try a more flexible query - just require source node to match
-                const relsResult = await session.run(`
+                const relsResult = await window.Neo4jConnection.run(`
                     MATCH (a {userId: $userId, twinId: $twinId})-[r]-(b)
                     RETURN a.id as sourceId, b.id as targetId, type(r) as relType, 
                            properties(r) as relProps, properties(b) as targetProps
@@ -2166,8 +2184,6 @@
                 `, { userId, twinId });
                 
                 log(`🔍 Flexible query found ${relsResult.records.length} relationships`);
-                
-                await session.close();
                 
                 // Convert Neo4j results to NexusGraphControl format
                 const nodes = nodesResult.records.map((record, index) => {
@@ -2689,11 +2705,467 @@
             e.target.classList.remove('dragging');
         }
         
+        // Create review form content
+        function createReviewFormContent() {
+            const container = document.createElement('div');
+            container.style.cssText = 'padding: 20px;';
+            
+            // Summary section
+            const summary = document.createElement('div');
+            summary.style.cssText = 'margin-bottom: 20px;';
+            summary.innerHTML = `
+                <h3 style="margin-bottom: 10px; color: #374151;">Changes Summary</h3>
+                <div style="background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #6B7280;">Total Changes:</span>
+                        <span style="font-weight: 600; color: #374151;">${changesCount}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #6B7280;">Nodes Added:</span>
+                        <span style="font-weight: 600; color: #10B981;">${currentSandboxData.nodes.length || 0}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #6B7280;">Edges Added:</span>
+                        <span style="font-weight: 600; color: #3B82F6;">${currentSandboxData.edges.length || 0}</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(summary);
+            
+            // Review notes section
+            const notesSection = document.createElement('div');
+            notesSection.style.cssText = 'margin-bottom: 20px;';
+            notesSection.innerHTML = `
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
+                    Review Notes (Optional)
+                </label>
+                <textarea 
+                    id="reviewNotes" 
+                    placeholder="Add any notes about these changes..."
+                    style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #E5E7EB; border-radius: 6px; font-family: inherit; font-size: 14px; resize: vertical;"
+                ></textarea>
+            `;
+            container.appendChild(notesSection);
+            
+            // Warning section
+            const warning = document.createElement('div');
+            warning.style.cssText = 'background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 6px; padding: 12px; margin-bottom: 20px;';
+            warning.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #F59E0B;">⚠️</span>
+                    <span style="color: #92400E; font-size: 14px;">
+                        This action will update the production graph. All changes will be immediately visible to users.
+                    </span>
+                </div>
+            `;
+            container.appendChild(warning);
+            
+            return container;
+        }
+
+        // Post to Production function
+        async function postToProduction() {
+            if (changesCount === 0) {
+                if (window.Modal) {
+                    const modal = new window.Modal({
+                        title: 'No Changes to Post',
+                        content: 'There are no pending changes in the sandbox to post to production.',
+                        type: 'info',
+                        actions: [
+                            {
+                                text: 'OK',
+                                type: 'primary',
+                                onClick: (modal) => modal.hide()
+                            }
+                        ]
+                    });
+                    modal.show();
+                } else {
+                    alert('No changes to post to production');
+                }
+                return;
+            }
+            
+            // Show review form modal
+            if (window.Modal) {
+                const reviewModal = new window.Modal({
+                    title: 'Review Changes Before Posting',
+                    content: createReviewFormContent(),
+                    size: 'medium',
+                    type: 'default',
+                    closable: true,
+                    actions: [
+                        {
+                            text: 'Cancel',
+                            type: 'secondary',
+                            onClick: (modal) => modal.hide()
+                        },
+                        {
+                            text: 'Post to Production',
+                            type: 'success',
+                            icon: '📤',
+                            onClick: async (modal) => {
+                                // Get review notes
+                                const reviewNotes = document.getElementById('reviewNotes')?.value || '';
+                                
+                                // Hide modal
+                                modal.hide();
+                                
+                                // Proceed with posting
+                                await performPostToProduction(reviewNotes);
+                            }
+                        }
+                    ]
+                });
+                reviewModal.show();
+            } else {
+                // Fallback to simple confirm
+                const confirmPost = confirm(`Are you sure you want to post ${changesCount} ${changesCount === 1 ? 'change' : 'changes'} to production?`);
+                if (!confirmPost) return;
+                await performPostToProduction('');
+            }
+        }
+        
+        // Perform the actual post to production
+        async function performPostToProduction(reviewNotes) {
+            try {
+                // Disable button during processing
+                const button = document.querySelector('#postToProductionButton button');
+                if (button && window.Button) {
+                    const buttonInstance = button._buttonInstance;
+                    if (buttonInstance) {
+                        buttonInstance.setLoading(true);
+                    }
+                }
+                
+                // Show loading modal
+                let loadingModal;
+                if (window.Modal) {
+                    loadingModal = new window.Modal({
+                        title: 'Posting to Production',
+                        content: '<div style="text-align: center; padding: 20px;"><div style="font-size: 48px; margin-bottom: 10px;">⏳</div><div>Processing changes...</div></div>',
+                        size: 'small',
+                        closable: false,
+                        closeOnBackdrop: false,
+                        closeOnEscape: false
+                    });
+                    loadingModal.show();
+                }
+                
+                // Post to production
+                log('📤 Posting changes to production...');
+                log('📝 Review notes:', reviewNotes);
+                log('📊 Nodes to save:', currentSandboxData.nodes.length);
+                log('🔗 Edges to save:', currentSandboxData.edges.length);
+                
+                // Save to Neo4j
+                const success = await saveToNeo4j(currentSandboxData);
+                
+                if (!success) {
+                    throw new Error('Failed to save to Neo4j');
+                }
+                
+                // Reset changes count
+                changesCount = 0;
+                updateChangesDisplay();
+                
+                // Hide loading modal
+                if (loadingModal) {
+                    loadingModal.hide();
+                }
+                
+                // Show success modal or alert
+                if (window.Modal) {
+                    const successModal = new window.Modal({
+                        title: 'Success!',
+                        content: '<div style="text-align: center; padding: 20px;"><div style="font-size: 48px; margin-bottom: 10px; color: #10B981;">✅</div><div>Changes successfully posted to production!</div></div>',
+                        type: 'success',
+                        size: 'small',
+                        actions: [
+                            {
+                                text: 'OK',
+                                type: 'primary',
+                                onClick: (modal) => modal.hide()
+                            }
+                        ]
+                    });
+                    successModal.show();
+                } else {
+                    alert('✅ Changes successfully posted to production!');
+                }
+                
+                log('✅ Production update complete');
+                
+                // Re-enable button
+                if (button && window.Button) {
+                    const buttonInstance = button._buttonInstance;
+                    if (buttonInstance) {
+                        buttonInstance.setLoading(false);
+                    }
+                }
+                
+            } catch (error) {
+                log('❌ Error posting to production:', error);
+                
+                // Show error modal or alert
+                if (window.Modal) {
+                    const errorModal = new window.Modal({
+                        title: 'Error',
+                        content: 'Failed to post changes to production. Please try again.',
+                        type: 'danger',
+                        actions: [
+                            {
+                                text: 'OK',
+                                type: 'primary',
+                                onClick: (modal) => modal.hide()
+                            }
+                        ]
+                    });
+                    errorModal.show();
+                } else {
+                    alert('Error posting to production. Please try again.');
+                }
+                
+                // Re-enable button on error
+                const button = document.querySelector('#postToProductionButton button');
+                if (button && window.Button) {
+                    const buttonInstance = button._buttonInstance;
+                    if (buttonInstance) {
+                        buttonInstance.setLoading(false);
+                    }
+                }
+            }
+        }
+        
+        // Make it globally accessible
+        window.postToProduction = postToProduction;
+
+        // Save sandbox data to Neo4j using centralized connection
+        async function saveToNeo4j(sandboxData) {
+            try {
+                // Get user ID and twin ID
+                const userId = firebase.auth().currentUser?.uid;
+                if (!userId) {
+                    throw new Error('User not logged in');
+                }
+                const twinId = `${userId}-1`;
+                
+                // Connect to Neo4j if not already connected
+                if (!window.Neo4jConnection.isConnected) {
+                    const connected = await window.Neo4jConnection.connect();
+                    if (!connected) {
+                        throw new Error('Failed to connect to Neo4j');
+                    }
+                }
+                
+                // Save sandbox data using centralized connection
+                const success = await window.Neo4jConnection.saveSandboxToProduction(
+                    sandboxData,
+                    userId,
+                    twinId
+                );
+                
+                if (success) {
+                    // Clear sandbox data
+                    currentSandboxData = { nodes: [], edges: [] };
+                    
+                    // Re-render empty sandbox
+                    if (sandboxRoot) {
+                        const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                            data: currentSandboxData,
+                            title: "Sandbox",
+                            hidePageHeader: true,
+                            hideStatusBar: true,
+                            useExternalMetadataEditor: false,
+                            onDataChange: (newData) => {
+                                currentSandboxData = newData;
+                                simulateChange();
+                            },
+                            onNodeDrop: handleSandboxNodeDrop,
+                            onFileDrop: handleSandboxFileDrop
+                        });
+                        
+                        sandboxRoot.render(controlElement);
+                    }
+                    
+                    // Refresh production panel if open
+                    const productionPanel = document.getElementById('productionPanel');
+                    if (productionPanel && productionPanel.classList.contains('open')) {
+                        log('🔄 Refreshing production panel...');
+                        await initializeProduction();
+                    }
+                }
+                
+                return success;
+                
+            } catch (error) {
+                log('❌ Error saving to Neo4j:', error);
+                return false;
+            }
+        }
+
+        // Test Neo4j Connection (Temporary for debugging)
+        async function testNeo4jConnection() {
+            console.log('🔍 Testing Neo4j connection...');
+            
+            try {
+                // Check if user is logged in
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    alert('❌ Not logged in! Please log in first.');
+                    console.error('No user logged in');
+                    return;
+                }
+                
+                console.log('✅ User logged in:', user.email, 'UID:', user.uid);
+                const twinId = `${user.uid}-1`;
+                console.log('📍 Twin ID:', twinId);
+                
+                // Test connection
+                if (!window.Neo4jConnection) {
+                    alert('❌ Neo4j connection module not loaded!');
+                    console.error('window.Neo4jConnection is undefined');
+                    return;
+                }
+                
+                console.log('🔌 Connecting to Neo4j...');
+                const connected = await window.Neo4jConnection.connect();
+                if (!connected) {
+                    alert('❌ Failed to connect to Neo4j!');
+                    return;
+                }
+                
+                console.log('✅ Connected to Neo4j');
+                
+                // Try a simple test query
+                console.log('📊 Running test query...');
+                const result = await window.Neo4jConnection.run('RETURN 1 as test, timestamp() as time');
+                console.log('✅ Test query result:', result.records[0].get('test'), 'Time:', new Date(result.records[0].get('time').toNumber()));
+                
+                // Try to create a test node
+                console.log('🆕 Creating test node...');
+                const testNodeId = `test_node_${Date.now()}`;
+                const createResult = await window.Neo4jConnection.run(
+                    `MERGE (n:TestNode {id: $id})
+                     SET n.userId = $userId
+                     SET n.twinId = $twinId
+                     SET n.name = $name
+                     SET n.createdAt = timestamp()
+                     RETURN n`,
+                    {
+                        id: testNodeId,
+                        userId: user.uid,
+                        twinId: twinId,
+                        name: 'Test Node from Sandbox'
+                    }
+                );
+                
+                console.log('✅ Test node created:', createResult.records[0].get('n').properties);
+                
+                // Count nodes for this user
+                const countResult = await window.Neo4jConnection.run(
+                    'MATCH (n {userId: $userId, twinId: $twinId}) RETURN count(n) as count',
+                    { userId: user.uid, twinId: twinId }
+                );
+                
+                const nodeCount = countResult.records[0].get('count').toNumber();
+                console.log(`📊 Total nodes for user: ${nodeCount}`);
+                
+                alert(`✅ Neo4j Test Successful!\n\nConnected: Yes\nTest node created: ${testNodeId}\nTotal nodes for your user: ${nodeCount}`);
+                
+            } catch (error) {
+                console.error('❌ Neo4j test failed:', error);
+                alert(`❌ Neo4j Test Failed!\n\nError: ${error.message}\n\nCheck console for details.`);
+            }
+        }
+        
+        // Make it globally accessible
+        window.testNeo4jConnection = testNeo4jConnection;
+
+        // Function to add test data to sandbox (for testing only)
+        window.addTestData = function() {
+            currentSandboxData = {
+                nodes: [
+                    { id: 'test_person_1', label: 'Test Person 1', type: 'person', name: 'Test Person 1' },
+                    { id: 'test_person_2', label: 'Test Person 2', type: 'person', name: 'Test Person 2' },
+                    { id: 'test_event_1', label: 'Test Event', type: 'event', name: 'Test Event' }
+                ],
+                edges: [
+                    { id: 'test_edge_1', source: 'test_person_1', target: 'test_event_1', label: 'ATTENDED' },
+                    { id: 'test_edge_2', source: 'test_person_2', target: 'test_event_1', label: 'ORGANIZED' }
+                ]
+            };
+            
+            changesCount = 5;
+            updateChangesDisplay();
+            
+            // Re-render sandbox with test data
+            if (sandboxRoot) {
+                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                    data: currentSandboxData,
+                    title: "Sandbox",
+                    hidePageHeader: true,
+                    hideStatusBar: true,
+                    useExternalMetadataEditor: false,
+                    onDataChange: (newData) => {
+                        currentSandboxData = newData;
+                        simulateChange();
+                    },
+                    onNodeDrop: handleSandboxNodeDrop,
+                    onFileDrop: handleSandboxFileDrop
+                });
+                
+                sandboxRoot.render(controlElement);
+            }
+            
+            log('✅ Test data added to sandbox');
+        };
+
         window.addEventListener('load', () => {
             log('📦 Page loaded, checking scripts...');
             
             // Initialize Firebase first
             initializeFirebase();
+            
+            // Initialize Post to Production button
+            setTimeout(() => {
+                const buttonContainer = document.getElementById('postToProductionButton');
+                if (buttonContainer) {
+                    if (window.Button) {
+                        // Use centralized Button component
+                        const button = new window.Button({
+                            text: 'Post to Production',
+                            type: 'success',
+                            icon: '📤',
+                            onClick: postToProduction
+                        });
+                        buttonContainer.appendChild(button.element);
+                        // Store reference for later use
+                        button.element._buttonInstance = button;
+                        log('✅ Post to Production button initialized with centralized component');
+                    } else {
+                        // Fallback to simple button
+                        const button = document.createElement('button');
+                        button.textContent = '📤 Post to Production';
+                        button.onclick = postToProduction;
+                        button.style.cssText = `
+                            background: #10B981;
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 6px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                        `;
+                        buttonContainer.appendChild(button);
+                        log('✅ Post to Production button initialized with fallback');
+                    }
+                }
+            }, 100);
             
             setTimeout(() => {
                 if (checkBundle()) {
