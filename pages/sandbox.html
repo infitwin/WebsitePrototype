@@ -28,8 +28,15 @@
     <script type="module">
         import { Button } from '../js/components/ui/button.js';
         import { Modal } from '../js/components/ui/modal.js';
+        import { getFileIcon } from '../js/utils/file-utils.js';
+        import { getNodeTypeIcon, getNodeColor } from '../js/utils/node-utils.js';
+        import { checkBundle } from '../js/utils/bundle-utils.js';
         window.Button = Button;
         window.Modal = Modal;
+        window.getFileIcon = getFileIcon;
+        window.getNodeTypeIcon = getNodeTypeIcon;
+        window.getNodeColor = getNodeColor;
+        window.checkBundle = checkBundle;
     </script>
     
     <style>
@@ -773,14 +780,6 @@
                 updateChangesDisplay();
                 log('Change recorded: ' + changesCount + ' total');
             }
-        }
-        
-        function checkBundle() {
-            const hasReact = typeof React !== 'undefined';
-            const hasReactDOM = typeof ReactDOM !== 'undefined';
-            const hasNexus = typeof window.NexusGraphControl !== 'undefined';
-            
-            return hasReact && hasReactDOM && hasNexus;
         }
         
         // Handle file drops on sandbox - updated FILE_DROP_GUIDE.md implementation
@@ -1648,22 +1647,6 @@
             return div;
         }
         
-        // Get icon for file type
-        function getFileIcon(fileType) {
-            if (!fileType) return '📄';
-            
-            if (fileType.includes('pdf')) return '📑';
-            if (fileType.includes('word') || fileType.includes('doc')) return '📝';
-            if (fileType.includes('excel') || fileType.includes('sheet')) return '📊';
-            if (fileType.includes('powerpoint') || fileType.includes('presentation')) return '📽️';
-            if (fileType.includes('text')) return '📄';
-            if (fileType.includes('zip') || fileType.includes('archive')) return '📦';
-            if (fileType.includes('video')) return '🎥';
-            if (fileType.includes('audio')) return '🎵';
-            
-            return '📄';
-        }
-        
         // Handle artifact drag start - following updated FILE_DROP_GUIDE.md
         function handleArtifactDragStart(e) {
             e.target.classList.add('dragging');
@@ -2110,30 +2093,6 @@
                 log(`❌ Error loading node list: ${error.message}`);
                 showNodeListError(`Error: ${error.message}`);
             }
-        }
-        
-        function getNodeTypeIcon(type) {
-            const icons = {
-                person: '👤',
-                organization: '🏢',
-                location: '📍',
-                event: '📅',
-                thing: '📦',
-                default: '⚪'
-            };
-            return icons[type] || icons.default;
-        }
-        
-        function getNodeColor(type) {
-            const colors = {
-                person: '#9C88FF',
-                organization: '#FF9F7F', 
-                location: '#74B9FF',
-                event: '#FF7675',
-                thing: '#6BCF7F',
-                default: '#9CA3AF'
-            };
-            return colors[type] || colors.default;
         }
         
         function createDraggableNodeElement(node) {
