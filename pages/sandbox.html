@@ -529,11 +529,6 @@
                 <!-- Post to Production Button -->
                 <div id="postToProductionButton"></div>
                 
-                <!-- Test Neo4j Connection Button (Temporary) -->
-                <button class="test-neo4j-btn" onclick="testNeo4jConnection()" style="background: #FF6B6B; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; margin-left: 10px;">
-                    🔍 Test Neo4j
-                </button>
-                
                 <!-- Firebase Dropdown -->
                 <div class="firebase-dropdown">
                     <button class="firebase-dropdown-btn" onclick="toggleFirebaseDropdown()">
@@ -3018,83 +3013,6 @@
             }
         }
 
-        // Test Neo4j Connection (Temporary for debugging)
-        async function testNeo4jConnection() {
-            console.log('🔍 Testing Neo4j connection...');
-            
-            try {
-                // Check if user is logged in
-                const user = firebase.auth().currentUser;
-                if (!user) {
-                    alert('❌ Not logged in! Please log in first.');
-                    console.error('No user logged in');
-                    return;
-                }
-                
-                console.log('✅ User logged in:', user.email, 'UID:', user.uid);
-                const twinId = `${user.uid}-1`;
-                console.log('📍 Twin ID:', twinId);
-                
-                // Test connection
-                if (!window.Neo4jConnection) {
-                    alert('❌ Neo4j connection module not loaded!');
-                    console.error('window.Neo4jConnection is undefined');
-                    return;
-                }
-                
-                console.log('🔌 Connecting to Neo4j...');
-                const connected = await window.Neo4jConnection.connect();
-                if (!connected) {
-                    alert('❌ Failed to connect to Neo4j!');
-                    return;
-                }
-                
-                console.log('✅ Connected to Neo4j');
-                
-                // Try a simple test query
-                console.log('📊 Running test query...');
-                const result = await window.Neo4jConnection.run('RETURN 1 as test, timestamp() as time');
-                console.log('✅ Test query result:', result.records[0].get('test'), 'Time:', new Date(result.records[0].get('time').toNumber()));
-                
-                // Try to create a test node
-                console.log('🆕 Creating test node...');
-                const testNodeId = `test_node_${Date.now()}`;
-                const createResult = await window.Neo4jConnection.run(
-                    `MERGE (n:TestNode {id: $id})
-                     SET n.userId = $userId
-                     SET n.twinId = $twinId
-                     SET n.name = $name
-                     SET n.createdAt = timestamp()
-                     RETURN n`,
-                    {
-                        id: testNodeId,
-                        userId: user.uid,
-                        twinId: twinId,
-                        name: 'Test Node from Sandbox'
-                    }
-                );
-                
-                console.log('✅ Test node created:', createResult.records[0].get('n').properties);
-                
-                // Count nodes for this user
-                const countResult = await window.Neo4jConnection.run(
-                    'MATCH (n {userId: $userId, twinId: $twinId}) RETURN count(n) as count',
-                    { userId: user.uid, twinId: twinId }
-                );
-                
-                const nodeCount = countResult.records[0].get('count').toNumber();
-                console.log(`📊 Total nodes for user: ${nodeCount}`);
-                
-                alert(`✅ Neo4j Test Successful!\n\nConnected: Yes\nTest node created: ${testNodeId}\nTotal nodes for your user: ${nodeCount}`);
-                
-            } catch (error) {
-                console.error('❌ Neo4j test failed:', error);
-                alert(`❌ Neo4j Test Failed!\n\nError: ${error.message}\n\nCheck console for details.`);
-            }
-        }
-        
-        // Make it globally accessible
-        window.testNeo4jConnection = testNeo4jConnection;
 
         // Function to add test data to sandbox (for testing only)
         window.addTestData = function() {
