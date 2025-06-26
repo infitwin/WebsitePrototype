@@ -1069,14 +1069,18 @@
             if (firebaseInitialized) return;
             
             try {
-                // Initialize Firebase using centralized configuration
+                // Initialize Firebase with configuration
                 if (!firebase.apps.length) {
-                    // Firebase config should be available from centralized system
-                    if (window.firebaseConfig) {
-                        firebase.initializeApp(window.firebaseConfig);
-                    } else {
-                        throw new Error('Firebase config not available from centralized system');
-                    }
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
+                        authDomain: "infitwin.firebaseapp.com",
+                        projectId: "infitwin",
+                        storageBucket: "infitwin.firebasestorage.app",
+                        messagingSenderId: "833139648849",
+                        appId: "1:833139648849:web:2768d8e37cf2a318018b70",
+                        measurementId: "G-PEJN4ZMCZ6"
+                    };
+                    firebase.initializeApp(firebaseConfig);
                 }
                 firebaseInitialized = true;
                 updateFirebaseStatus(true);
