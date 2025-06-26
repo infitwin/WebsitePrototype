@@ -539,13 +539,20 @@
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false,
+                    useExternalMetadataEditor: true,
                     onDataChange: (newData) => {
                         currentSandboxData = newData;
                         simulateChange();
                     },
                     onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop
+                    onFileDrop: handleSandboxFileDrop,
+                    onNodeClick: (node) => {
+                        // Show metadata editor in modal
+                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
+                            log('📝 Node updated in sandbox:', updatedNode);
+                            // The graph should auto-update when data changes
+                        });
+                    }
                 });
                 
                 sandboxRoot.render(controlElement);
@@ -586,13 +593,20 @@
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false,
+                    useExternalMetadataEditor: true,
                     onDataChange: (newData) => {
                         currentSandboxData = newData;
                         simulateChange();
                     },
                     onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop
+                    onFileDrop: handleSandboxFileDrop,
+                    onNodeClick: (node) => {
+                        // Show metadata editor in modal
+                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
+                            log('📝 Node updated in sandbox:', updatedNode);
+                            // The graph should auto-update when data changes
+                        });
+                    }
                 });
                 
                 sandboxRoot = ReactDOM.createRoot(container);
@@ -697,13 +711,20 @@
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false,
+                    useExternalMetadataEditor: true,
                     onDataChange: (newData) => {
                         currentSandboxData = newData;
                         simulateChange();
                     },
                     onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop
+                    onFileDrop: handleSandboxFileDrop,
+                    onNodeClick: (node) => {
+                        // Show metadata editor in modal
+                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
+                            log('📝 Node updated in sandbox:', updatedNode);
+                            // The graph should auto-update when data changes
+                        });
+                    }
                 });
                 
                 sandboxRoot.render(controlElement);
@@ -816,13 +837,20 @@
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false,
+                    useExternalMetadataEditor: true,
                     onDataChange: (newData) => {
                         currentSandboxData = newData;
                         simulateChange();
                     },
                     onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop
+                    onFileDrop: handleSandboxFileDrop,
+                    onNodeClick: (node) => {
+                        // Show metadata editor in modal
+                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
+                            log('📝 Node updated in sandbox:', updatedNode);
+                            // The graph should auto-update when data changes
+                        });
+                    }
                 });
                 
                 sandboxRoot.render(controlElement);
@@ -2070,7 +2098,7 @@
                             title: "Sandbox",
                             hidePageHeader: true,
                             hideStatusBar: true,
-                            useExternalMetadataEditor: false,
+                            useExternalMetadataEditor: true,
                             onDataChange: (newData) => {
                                 currentSandboxData = newData;
                                 simulateChange();
@@ -2123,13 +2151,20 @@
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false,
+                    useExternalMetadataEditor: true,
                     onDataChange: (newData) => {
                         currentSandboxData = newData;
                         simulateChange();
                     },
                     onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop
+                    onFileDrop: handleSandboxFileDrop,
+                    onNodeClick: (node) => {
+                        // Show metadata editor in modal
+                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
+                            log('📝 Node updated in sandbox:', updatedNode);
+                            // The graph should auto-update when data changes
+                        });
+                    }
                 });
                 
                 sandboxRoot.render(controlElement);
