@@ -3148,11 +3148,11 @@
                     if (window.Button) {
                         // Use centralized Button component
                         const button = new window.Button({
-                            text: 'Post to Production',
+                            text: 'Review & Post',
                             type: 'success',
-                            icon: '📤',
+                            icon: '📋',
                             onClick: () => {
-                                console.log('🔘 Button clicked!');
+                                console.log('🔘 Review & Post button clicked!');
                                 postToProduction();
                             }
                         });
@@ -3170,7 +3170,7 @@
                     } else {
                         // Fallback to simple button
                         const button = document.createElement('button');
-                        button.textContent = '📤 Post to Production';
+                        button.textContent = '📋 Review & Post';
                         button.onclick = postToProduction;
                         button.style.cssText = `
                             background: #10B981;
