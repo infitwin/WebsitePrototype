@@ -737,7 +737,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="../js/nexus-graph-control-v15.5.0.bundle.min.js"></script>
+    <script src="../js/nexus-graph-control-v16.3.0.bundle.min.js"></script>
 
     <script>
         let sandboxRoot = null;
@@ -746,6 +746,7 @@
         let openPanels = [];
         let changesCount = 0;
         let initialDataLoaded = false;
+        let currentSandboxData = null;
         
         // Drag functionality for panels - each panel gets its own drag state
         function initializeDragFunctionality(panelId) {
@@ -885,22 +886,30 @@
                     sandboxRoot = null;
                 }
                 
-                const sampleData = {
-                    nodes: [{
-                        id: 'sandbox_person',
-                        label: 'Sample Person',
-                        type: 'person',
-                        originalData: { name: 'Sample Person', type: 'person' }
-                    }],
-                    edges: []
-                };
+                // Initialize or use existing sandbox data
+                if (!currentSandboxData) {
+                    currentSandboxData = {
+                        nodes: [{
+                            id: 'sandbox_person',
+                            label: 'Sample Person',
+                            type: 'person',
+                            originalData: { name: 'Sample Person', type: 'person' }
+                        }],
+                        edges: []
+                    };
+                }
                 
                 const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
-                    data: sampleData,
+                    data: currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
-                    useExternalMetadataEditor: false
+                    useExternalMetadataEditor: false,
+                    onDataChange: (newData) => {
+                        currentSandboxData = newData;
+                        simulateChange();
+                    },
+                    onNodeDrop: handleSandboxNodeDrop
                 });
                 
                 sandboxRoot = ReactDOM.createRoot(container);
@@ -941,6 +950,198 @@
             });
             
             resizeObserver.observe(panel);
+        }
+        
+        // Handle copying nodes from production to sandbox
+        function handleProductionCopyToSandbox(selectedNodes) {
+            log(`📋 Copying nodes from production to sandbox`);
+            log('🔍 Selected nodes:', selectedNodes);
+            
+            if (!selectedNodes || selectedNodes.length === 0) {
+                log('⚠️ No nodes selected to copy');
+                return;
+            }
+            
+            // Make sure sandbox is open
+            const sandboxPanel = document.querySelector('.sandbox-panel');
+            if (!sandboxPanel) {
+                log('❌ Sandbox panel not found');
+                return;
+            }
+            
+            // Handle both single node and array of nodes
+            const nodesToCopy = Array.isArray(selectedNodes) ? selectedNodes : [selectedNodes];
+            log(`📊 Copying ${nodesToCopy.length} nodes`);
+            
+            // Prepare the copied nodes with new IDs
+            const copiedNodes = nodesToCopy.map((node, index) => {
+                const newId = `${node.id}_copy_${Date.now()}_${index}`;
+                
+                // Extract the actual node data - handle different possible structures
+                const nodeData = node.data || node;
+                const nodeName = nodeData.label || nodeData.name || node.label || node.name || 'Unnamed';
+                const nodeType = nodeData.type || node.type || 'default';
+                
+                return {
+                    id: newId,
+                    name: `${nodeName} (Copy)`,
+                    label: `${nodeName} (Copy)`,
+                    type: nodeType,
+                    originalData: {
+                        ...(nodeData.originalData || {}),
+                        copiedFrom: node.id,
+                        copiedAt: new Date().toISOString()
+                    }
+                };
+            });
+            
+            log('📝 Prepared nodes:', copiedNodes);
+            
+            // Update sandbox data
+            if (!currentSandboxData) {
+                currentSandboxData = { nodes: [], edges: [] };
+            }
+            
+            currentSandboxData = {
+                nodes: [...currentSandboxData.nodes, ...copiedNodes],
+                edges: currentSandboxData.edges
+            };
+            
+            // Re-render the sandbox with new data
+            if (sandboxRoot) {
+                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                    data: currentSandboxData,
+                    title: "Sandbox",
+                    hidePageHeader: true,
+                    hideStatusBar: true,
+                    useExternalMetadataEditor: false,
+                    onDataChange: (newData) => {
+                        currentSandboxData = newData;
+                        simulateChange();
+                    },
+                    onNodeDrop: handleSandboxNodeDrop
+                });
+                
+                sandboxRoot.render(controlElement);
+                
+                // Track the change
+                changesCount += copiedNodes.length;
+                updateChangesDisplay();
+                
+                log(`✅ Successfully copied ${copiedNodes.length} nodes to sandbox`);
+                log(`📊 Sandbox now has ${currentSandboxData.nodes.length} nodes`);
+            } else {
+                log('❌ Sandbox not initialized');
+            }
+        }
+        
+        // Handle node drops on sandbox
+        function handleSandboxNodeDrop(targetId, nodeData, dropType, position) {
+            log(`🎯 Node drop on sandbox: targetId=${targetId}, dropType=${dropType}`);
+            log('📦 Node data:', nodeData);
+            log('📍 Position:', position);
+            
+            if (!currentSandboxData) {
+                currentSandboxData = { nodes: [], edges: [] };
+            }
+            
+            if (dropType === 'onto-canvas') {
+                // Drop on empty canvas - create new node
+                const newNode = {
+                    id: `${nodeData.id}_drop_${Date.now()}`,
+                    name: nodeData.name || nodeData.label || 'Unnamed',
+                    label: nodeData.label || nodeData.name || 'Unnamed',
+                    type: nodeData.type || 'default',
+                    originalData: {
+                        ...nodeData.properties,
+                        sourceId: nodeData.id,
+                        droppedAt: new Date().toISOString(),
+                        dropType: 'canvas'
+                    }
+                };
+                
+                // Add position if provided
+                if (position) {
+                    newNode.x = position.x;
+                    newNode.y = position.y;
+                }
+                
+                currentSandboxData = {
+                    ...currentSandboxData,
+                    nodes: [...currentSandboxData.nodes, newNode]
+                };
+                
+                log(`✅ Created new node: ${newNode.id}`);
+                
+            } else if (dropType === 'onto-node' && targetId) {
+                // Drop on existing node - create relationship
+                const newNodeId = `${nodeData.id}_drop_${Date.now()}`;
+                const newNode = {
+                    id: newNodeId,
+                    name: nodeData.name || nodeData.label || 'Unnamed',
+                    label: nodeData.label || nodeData.name || 'Unnamed',
+                    type: nodeData.type || 'default',
+                    originalData: {
+                        ...nodeData.properties,
+                        sourceId: nodeData.id,
+                        droppedAt: new Date().toISOString(),
+                        dropType: 'node',
+                        linkedTo: targetId
+                    }
+                };
+                
+                // Position near the target node
+                const targetNode = currentSandboxData.nodes.find(n => n.id === targetId);
+                if (targetNode && position) {
+                    newNode.x = position.x;
+                    newNode.y = position.y;
+                }
+                
+                // Create edge between new node and target
+                const newEdge = {
+                    id: `edge_${Date.now()}`,
+                    source: newNodeId,
+                    target: targetId,
+                    label: 'RELATED_TO'
+                };
+                
+                currentSandboxData = {
+                    nodes: [...currentSandboxData.nodes, newNode],
+                    edges: [...currentSandboxData.edges, newEdge]
+                };
+                
+                log(`✅ Created node ${newNodeId} with edge to ${targetId}`);
+                
+            } else if (dropType === 'onto-edge' && targetId) {
+                // Drop on edge - associate with relationship
+                log(`📎 Associating node with edge ${targetId}`);
+                // For now, just log this scenario
+                // Could implement edge metadata updates here
+            }
+            
+            // Re-render the sandbox with updated data
+            if (sandboxRoot) {
+                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                    data: currentSandboxData,
+                    title: "Sandbox",
+                    hidePageHeader: true,
+                    hideStatusBar: true,
+                    useExternalMetadataEditor: false,
+                    onDataChange: (newData) => {
+                        currentSandboxData = newData;
+                        simulateChange();
+                    },
+                    onNodeDrop: handleSandboxNodeDrop
+                });
+                
+                sandboxRoot.render(controlElement);
+                
+                // Track the change
+                changesCount++;
+                updateChangesDisplay();
+                
+                log('🔄 Sandbox re-rendered with dropped node');
+            }
         }
         
         async function initializeProduction() {
@@ -1002,6 +1203,10 @@
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: false,
+                    readOnly: true,
+                    hideAddButton: true,
+                    showCopyButton: true,
+                    onCopyClick: handleProductionCopyToSandbox,
                     width: '100%',
                     height: '100%',
                     style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
@@ -2077,11 +2282,28 @@
             // Add drag event handlers
             div.addEventListener('dragstart', (e) => {
                 div.style.cursor = 'grabbing';
-                e.dataTransfer.setData('application/json', JSON.stringify({
-                    type: 'node',
-                    nodeData: node
-                }));
-                log(`🏃 Dragging node: ${node.label} (${node.id})`);
+                
+                // Use the drag data format from NODE_DRAG_DROP_GUIDE
+                const dragData = {
+                    dragType: 'node',           // REQUIRED: Identifies this as a node (not file)
+                    sourceControl: 'node-list', // REQUIRED: Must be 'node-list' for the drop to work
+                    id: node.id,                // Neo4j node ID
+                    name: node.label,           // Display name
+                    type: node.type,            // Node type (person, organization, etc.)
+                    label: node.label,          // Display label
+                    properties: node.props || {}, // All Neo4j properties
+                    metadata: {
+                        source: 'neo4j',
+                        nodeType: node.type,
+                        draggedAt: new Date().toISOString(),
+                        sourcePanel: 'node-list'
+                    },
+                    originalData: node          // Complete original node data
+                };
+                
+                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+                log(`🏃 Dragging node: ${node.label} (${node.id}) with type: ${node.type}`);
             });
             
             div.addEventListener('dragend', () => {
