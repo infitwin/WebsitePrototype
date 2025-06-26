@@ -30,6 +30,7 @@
         import { Button } from '../js/components/ui/button.js';
         import { Modal } from '../js/components/ui/modal.js';
         import { getFileIcon, getNodeTypeIcon, getNodeColor, checkBundle, extractFaceFromImage } from '../js/utils/sandbox-utils.js';
+        import { handleSandboxFileDrop, handleRealFile, handleArtifactFile, handleTestData, handleProductionFileDrop } from '../js/sandbox/file-handlers.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -37,6 +38,11 @@
         window.getNodeColor = getNodeColor;
         window.checkBundle = checkBundle;
         window.extractFaceFromImage = extractFaceFromImage;
+        window.handleSandboxFileDrop = handleSandboxFileDrop;
+        window.handleRealFile = handleRealFile;
+        window.handleArtifactFile = handleArtifactFile;
+        window.handleTestData = handleTestData;
+        window.handleProductionFileDrop = handleProductionFileDrop;
     </script>
     
     <style>
@@ -536,63 +542,18 @@
             }
         }
         
-        // Handle file drops on sandbox - updated FILE_DROP_GUIDE.md implementation
-        function handleSandboxFileDrop(file, target) {
-            log('File data received:', file);
-            
-            if (file._file) {
-                // Real file from file system
-                log(`📁 Real file dropped: ${file.name} (${file.type})`);
-                handleRealFile(file._file, target);
-                
-            } else if (file.url) {
-                // Artifact from panel (URL-based)
-                log(`📎 Artifact dropped: ${file.name} (${file.url})`);
-                handleArtifactFile(file, target);
-                
-            } else {
-                // Legacy test data
-                log('Test data dropped:', file);
-                handleTestData(file, target);
-            }
+        // Create wrapper functions that provide the log function to imported handlers
+        function handleSandboxFileDropWrapper(file, target) {
+            return window.handleSandboxFileDrop(file, target, log);
         }
         
-        function handleRealFile(fileObject, target) {
-            log(`📁 Processing real file: ${fileObject.name} on ${target.type} ${target.id}`);
-            
-            if (fileObject.type.startsWith('image/')) {
-                log(`🖼️ Real image file - you could: read as data URL, set as node background`);
-                // Example: const reader = new FileReader(); reader.readAsDataURL(fileObject);
-            } else if (fileObject.type === 'application/pdf') {
-                log(`📑 Real PDF file - you could: extract text, store reference`);
-            } else {
-                log(`📄 Real file - you could: upload to server, store metadata`);
-            }
+        function handleProductionFileDropWrapper(file, target) {
+            return window.handleProductionFileDrop(file, target, log);
         }
         
-        function handleArtifactFile(artifactData, target) {
-            log(`📎 Processing artifact: ${artifactData.name} on ${target.type} ${target.id}`);
-            log(`📍 Artifact URL: ${artifactData.url}`);
-            log(`📊 Source: ${artifactData.source}, File ID: ${artifactData.fileId}`);
-            
-            if (artifactData.type.startsWith('image/')) {
-                log(`🖼️ Artifact image - you could: set as node background using URL`);
-            } else if (artifactData.type === 'application/pdf') {
-                log(`📑 Artifact PDF - you could: link to document, show preview`);
-            } else {
-                log(`📄 Artifact file - you could: create attachment, download link`);
-            }
-        }
-        
-        function handleTestData(file, target) {
-            log(`🧪 Test data dropped on ${target.type} ${target.id}:`, file);
-        }
-        
-        // Handle file drops on production (read-only, so just log)
-        function handleProductionFileDrop(file, target) {
-            log(`📎 File drop on production: ${file.name} - read-only mode`);
-            log(`💡 Production is read-only. You could copy to sandbox and then attach files there.`);
-        }
+        // Use the wrapper functions for Nexus callbacks
+        const handleSandboxFileDrop = handleSandboxFileDropWrapper;
+        const handleProductionFileDrop = handleProductionFileDropWrapper;
         
         
         // Handle face drops from the faces panel
