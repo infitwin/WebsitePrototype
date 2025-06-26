@@ -1,6 +1,72 @@
 /**
- * Image processing utility functions
+ * Sandbox-specific utility functions
  */
+
+/**
+ * Get icon for file type
+ * @param {string} fileType - The file type/mime type
+ * @returns {string} Emoji icon for the file type
+ */
+export function getFileIcon(fileType) {
+    if (!fileType) return '📄';
+    
+    if (fileType.includes('pdf')) return '📑';
+    if (fileType.includes('word') || fileType.includes('doc')) return '📝';
+    if (fileType.includes('excel') || fileType.includes('sheet')) return '📊';
+    if (fileType.includes('powerpoint') || fileType.includes('presentation')) return '📽️';
+    if (fileType.includes('text')) return '📄';
+    if (fileType.includes('zip') || fileType.includes('archive')) return '📦';
+    if (fileType.includes('video')) return '🎥';
+    if (fileType.includes('audio')) return '🎵';
+    
+    return '📄';
+}
+
+/**
+ * Get icon for node type
+ * @param {string} type - The node type
+ * @returns {string} Emoji icon for the node type
+ */
+export function getNodeTypeIcon(type) {
+    const icons = {
+        person: '👤',
+        organization: '🏢',
+        location: '📍',
+        event: '📅',
+        thing: '📦',
+        default: '⚪'
+    };
+    return icons[type] || icons.default;
+}
+
+/**
+ * Get color for node type
+ * @param {string} type - The node type
+ * @returns {string} Hex color code for the node type
+ */
+export function getNodeColor(type) {
+    const colors = {
+        person: '#9C88FF',
+        organization: '#FF9F7F', 
+        location: '#74B9FF',
+        event: '#FF7675',
+        thing: '#6BCF7F',
+        default: '#9CA3AF'
+    };
+    return colors[type] || colors.default;
+}
+
+/**
+ * Check if required bundles are loaded
+ * @returns {boolean} True if React, ReactDOM, and NexusGraphControl are loaded
+ */
+export function checkBundle() {
+    const hasReact = typeof React !== 'undefined';
+    const hasReactDOM = typeof ReactDOM !== 'undefined';
+    const hasNexus = typeof window.NexusGraphControl !== 'undefined';
+    
+    return hasReact && hasReactDOM && hasNexus;
+}
 
 /**
  * Extract face from image using bounding box

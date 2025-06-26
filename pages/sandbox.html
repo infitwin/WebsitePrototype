@@ -11,8 +11,7 @@
     <link rel="stylesheet" href="../css/components/navigation.css">
     <link rel="stylesheet" href="../css/components/modal.css">
     <link rel="stylesheet" href="../css/components/button.css">
-    <link rel="stylesheet" href="../css/pages/sandbox-panels.css">
-    <link rel="stylesheet" href="../css/pages/sandbox-thumbnails.css">
+    <link rel="stylesheet" href="../css/pages/sandbox.css">
     
     <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -30,15 +29,14 @@
     <script type="module">
         import { Button } from '../js/components/ui/button.js';
         import { Modal } from '../js/components/ui/modal.js';
-        import { getFileIcon } from '../js/utils/file-utils.js';
-        import { getNodeTypeIcon, getNodeColor } from '../js/utils/node-utils.js';
-        import { checkBundle } from '../js/utils/bundle-utils.js';
+        import { getFileIcon, getNodeTypeIcon, getNodeColor, checkBundle, extractFaceFromImage } from '../js/utils/sandbox-utils.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
         window.getNodeTypeIcon = getNodeTypeIcon;
         window.getNodeColor = getNodeColor;
         window.checkBundle = checkBundle;
+        window.extractFaceFromImage = extractFaceFromImage;
     </script>
     
     <style>
