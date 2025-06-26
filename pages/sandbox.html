@@ -871,42 +871,56 @@
             return hasReact && hasReactDOM && hasNexus;
         }
         
-        // Handle file drops on sandbox - FILE_DROP_GUIDE.md implementation
+        // Handle file drops on sandbox - updated FILE_DROP_GUIDE.md implementation
         function handleSandboxFileDrop(file, target) {
-            log(`📎 File dropped on ${target.type} ${target.id}`);
-            log('File object:', file);
+            log('File data received:', file);
             
-            // This follows FILE_DROP_GUIDE.md exactly:
-            // file: JavaScript File object
-            // target: { type: 'node'|'edge', id: string }
-            
-            if (target.type === 'node') {
-                handleFileDropOnNode(file, target.id);
-            } else if (target.type === 'edge') {
-                handleFileDropOnEdge(file, target.id);
-            }
-        }
-        
-        function handleFileDropOnNode(file, nodeId) {
-            // Check file type as per FILE_DROP_GUIDE.md
-            if (file.type && file.type.startsWith('image/')) {
-                // Handle image files
-                log(`🖼️ Image file dropped on node ${nodeId}: ${file.name}`);
-                log('💡 You could: update node image, create thumbnail, etc.');
-            } else if (file.type === 'application/pdf') {
-                // Handle PDF files
-                log(`📑 PDF file dropped on node ${nodeId}: ${file.name}`);
-                log('💡 You could: attach PDF to node, extract text, etc.');
+            if (file._file) {
+                // Real file from file system
+                log(`📁 Real file dropped: ${file.name} (${file.type})`);
+                handleRealFile(file._file, target);
+                
+            } else if (file.url) {
+                // Artifact from panel (URL-based)
+                log(`📎 Artifact dropped: ${file.name} (${file.url})`);
+                handleArtifactFile(file, target);
+                
             } else {
-                // Handle other file types
-                log(`📄 File dropped on node ${nodeId}: ${file.name || 'Unknown'}`);
-                log('💡 You could: store file reference, upload to server, etc.');
+                // Legacy test data
+                log('Test data dropped:', file);
+                handleTestData(file, target);
             }
         }
         
-        function handleFileDropOnEdge(file, edgeId) {
-            log(`📎 File dropped on edge ${edgeId}: ${file.name || 'Unknown'}`);
-            log('💡 You could: attach file to relationship, store metadata, etc.');
+        function handleRealFile(fileObject, target) {
+            log(`📁 Processing real file: ${fileObject.name} on ${target.type} ${target.id}`);
+            
+            if (fileObject.type.startsWith('image/')) {
+                log(`🖼️ Real image file - you could: read as data URL, set as node background`);
+                // Example: const reader = new FileReader(); reader.readAsDataURL(fileObject);
+            } else if (fileObject.type === 'application/pdf') {
+                log(`📑 Real PDF file - you could: extract text, store reference`);
+            } else {
+                log(`📄 Real file - you could: upload to server, store metadata`);
+            }
+        }
+        
+        function handleArtifactFile(artifactData, target) {
+            log(`📎 Processing artifact: ${artifactData.name} on ${target.type} ${target.id}`);
+            log(`📍 Artifact URL: ${artifactData.url}`);
+            log(`📊 Source: ${artifactData.source}, File ID: ${artifactData.fileId}`);
+            
+            if (artifactData.type.startsWith('image/')) {
+                log(`🖼️ Artifact image - you could: set as node background using URL`);
+            } else if (artifactData.type === 'application/pdf') {
+                log(`📑 Artifact PDF - you could: link to document, show preview`);
+            } else {
+                log(`📄 Artifact file - you could: create attachment, download link`);
+            }
+        }
+        
+        function handleTestData(file, target) {
+            log(`🧪 Test data dropped on ${target.type} ${target.id}:`, file);
         }
         
         // Handle file drops on production (read-only, so just log)
@@ -1848,6 +1862,7 @@
             div.dataset.fileName = fileData.fileName || fileData.name || 'Unnamed';
             div.dataset.fileType = fileData.fileType || 'document';
             div.dataset.downloadUrl = fileData.downloadURL || '';
+            div.dataset.fileSize = fileData.fileSize || fileData.size || '0';
             
             // Determine content based on file type
             if (fileData.thumbnailURL) {
@@ -1894,29 +1909,24 @@
             return '📄';
         }
         
-        // Handle artifact drag start - FOR FILE ATTACHMENTS ONLY
+        // Handle artifact drag start - following updated FILE_DROP_GUIDE.md
         function handleArtifactDragStart(e) {
             e.target.classList.add('dragging');
             
-            // Create a simulated File object for the Nexus control
-            // The control expects File objects, not custom JSON
-            const fileName = e.target.dataset.fileName;
-            const fileType = e.target.dataset.fileType;
-            const downloadUrl = e.target.dataset.downloadUrl;
-            
-            // Store artifact metadata that onFileDrop can access
-            e.dataTransfer.setData('application/x-artifact-metadata', JSON.stringify({
+            // CRITICAL: Set drag data as JSON per FILE_DROP_GUIDE.md
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                name: e.target.dataset.fileName,
+                type: e.target.dataset.fileType,
+                url: e.target.dataset.downloadUrl,
+                size: parseInt(e.target.dataset.fileSize) || 0,
+                // Add custom metadata
+                source: 'artifact-panel',
                 fileId: e.target.dataset.fileId,
-                fileName: fileName,
-                fileType: fileType,
-                downloadUrl: downloadUrl,
-                source: 'artifacts-panel'
+                timestamp: new Date().toISOString()
             }));
-            
-            // The Nexus control will handle this as a file drop, not a node drop
             e.dataTransfer.effectAllowed = 'copy';
             
-            log('🚀 Dragging artifact file for attachment:', fileName);
+            log('🚀 Dragging artifact for attachment:', e.target.dataset.fileName);
         }
         
         // Handle artifact drag end
