@@ -870,6 +870,17 @@
             if (changesText) {
                 changesText.textContent = changesCount + ' ' + (changesCount === 1 ? 'change' : 'changes') + ' pending in sandbox';
             }
+            
+            // Update Review & Post button state
+            const button = document.querySelector('#postToProductionButton button');
+            if (button && button._buttonInstance) {
+                button._buttonInstance.setDisabled(changesCount === 0);
+            } else if (button) {
+                // Fallback for simple button
+                button.disabled = changesCount === 0;
+                button.style.opacity = changesCount === 0 ? '0.5' : '1';
+                button.style.cursor = changesCount === 0 ? 'not-allowed' : 'pointer';
+            }
         }
         
         function simulateChange() {
@@ -3069,6 +3080,7 @@
                             text: 'Review & Post',
                             type: 'success',
                             icon: '📋',
+                            disabled: true, // Start disabled since no changes initially
                             onClick: () => {
                                 console.log('🔘 Review & Post button clicked!');
                                 postToProduction();
@@ -3090,6 +3102,7 @@
                         const button = document.createElement('button');
                         button.textContent = '📋 Review & Post';
                         button.onclick = postToProduction;
+                        button.disabled = true; // Start disabled
                         button.style.cssText = `
                             background: #10B981;
                             color: white;
@@ -3098,7 +3111,8 @@
                             border-radius: 6px;
                             font-size: 14px;
                             font-weight: 500;
-                            cursor: pointer;
+                            cursor: not-allowed;
+                            opacity: 0.5;
                             display: flex;
                             align-items: center;
                             gap: 6px;
