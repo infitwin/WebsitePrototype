@@ -45,6 +45,8 @@ python3 -m http.server 8358
 - **Sandbox Artifacts**: Firebase-connected panel showing user's files as draggable thumbnails
 - **Sandbox Faces**: Extracted faces from photos displayed as draggable thumbnails
 - **Admin Test Data**: Development-only page for generating Neo4j test graphs
+- **Neo4j Integration**: Centralized connection module with transaction support
+- **Sandbox to Production**: Complete posting workflow with review process
 - **Test Credentials**: weezer@yev.com / 123456
 
 ### ⚠️ Known Issues:
@@ -202,12 +204,64 @@ The Sandbox page provides a safe environment for editing family graph data durin
   - Drag-and-drop files from Artifacts to graph
   - Save/load sessions functionality
 - **Nexus Graph Control**: Full graph visualization and editing
+- **Post to Production Workflow**:
+  - "Review & Post" button (disabled when no changes)
+  - Two-stage review process before posting
+  - Automatic Neo4j database updates
+  - Changes tracked and displayed in context bar
 
 ### Access:
 - Navigate to Sandbox from the purple sidebar (🧪 icon)
 - URL: `/pages/sandbox.html`
 - All panels are draggable and resizable
 - Press ESC to hide all panels
+
+## 🗄️ Neo4j Integration
+
+### Centralized Connection:
+- **Module**: `/js/neo4j-connection.js`
+- **Pattern**: Singleton connection manager
+- **Features**:
+  - Automatic connection management
+  - Transaction support with rollback
+  - MERGE operations for idempotent saves
+  - Detailed logging for debugging
+
+### Database Configuration:
+- **URI**: `neo4j+s://80dc1193.databases.neo4j.io`
+- **Authentication**: Credentials stored in connection module
+- **Node Format**: All nodes include `userId` and `twinId` properties
+- **Twin ID Format**: `{userId}-1` (e.g., `abc123def456-1`)
+
+### Post to Production Flow:
+1. Make changes in sandbox graph
+2. Click "Review & Post" button (turns green when changes exist)
+3. Review changes in modal with optional notes
+4. Click "Post to Production" to save to Neo4j
+5. Sandbox clears after successful post
+6. Production panel refreshes automatically
+
+### Data Structure:
+```javascript
+// Nodes saved with:
+{
+  id: "unique_node_id",
+  userId: "firebase_user_id",
+  twinId: "firebase_user_id-1",
+  name: "Node Name",
+  label: "Display Label",
+  type: "person|event|place",
+  lastModified: timestamp
+}
+
+// Relationships saved with:
+{
+  id: "unique_edge_id",
+  source: "source_node_id",
+  target: "target_node_id",
+  type: "RELATIONSHIP_TYPE",
+  lastModified: timestamp
+}
 
 ## 🎨 Color Palette
 
