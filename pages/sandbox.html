@@ -2765,6 +2765,10 @@
 
         // Post to Production function
         async function postToProduction() {
+            console.log('🚀 postToProduction called');
+            console.log('📊 Current sandbox data:', currentSandboxData);
+            console.log('🔢 Changes count:', changesCount);
+            
             if (changesCount === 0) {
                 if (window.Modal) {
                     const modal = new window.Modal({
@@ -2828,6 +2832,9 @@
         
         // Perform the actual post to production
         async function performPostToProduction(reviewNotes) {
+            console.log('🚀 performPostToProduction called');
+            console.log('📝 Review notes:', reviewNotes);
+            
             try {
                 // Disable button during processing
                 const button = document.querySelector('#postToProductionButton button');
