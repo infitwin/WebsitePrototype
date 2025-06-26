@@ -871,6 +871,253 @@
             return hasReact && hasReactDOM && hasNexus;
         }
         
+        // Handle file drops on sandbox
+        function handleSandboxFileDrop(file, target) {
+            log(`📎 File drop on sandbox: ${file.name} (${file.type}, ${Math.round(file.size/1024)}KB)`);
+            log(`🎯 Drop target: ${target.type} ${target.id}`);
+            
+            if (!currentSandboxData) {
+                currentSandboxData = { nodes: [], edges: [] };
+            }
+            
+            // Process based on target type
+            if (target.type === 'node') {
+                handleFileDropOnNode(file, target.id, 'sandbox');
+            } else if (target.type === 'edge') {
+                handleFileDropOnEdge(file, target.id, 'sandbox');
+            }
+            
+            // Track the change
+            changesCount++;
+            updateChangesDisplay();
+            
+            log(`✅ File ${file.name} processed for ${target.type} ${target.id}`);
+        }
+        
+        // Handle file drops on production (read-only, so just log)
+        function handleProductionFileDrop(file, target) {
+            log(`📎 File drop on production: ${file.name} - read-only mode`);
+            alert(`Cannot attach files to production graph. Drop "${file.name}" on the sandbox instead.`);
+        }
+        
+        // Handle file drop on node
+        function handleFileDropOnNode(file, nodeId, context) {
+            const isImage = file.type.startsWith('image/');
+            
+            // Find the node
+            const nodeData = context === 'sandbox' ? currentSandboxData : null;
+            if (!nodeData) return;
+            
+            const node = nodeData.nodes.find(n => n.id === nodeId);
+            if (!node) {
+                log(`❌ Node ${nodeId} not found in ${context}`);
+                return;
+            }
+            
+            if (isImage) {
+                // Handle image files - set as node image
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    node.imageUrl = e.target.result;
+                    node.properties = {
+                        ...node.properties,
+                        hasImage: true,
+                        imageFileName: file.name,
+                        imageFileSize: file.size,
+                        imageType: file.type
+                    };
+                    
+                    // Re-render sandbox with image
+                    if (context === 'sandbox' && sandboxRoot) {
+                        const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                            data: currentSandboxData,
+                            title: "Sandbox",
+                            hidePageHeader: true,
+                            hideStatusBar: true,
+                            useExternalMetadataEditor: false,
+                            onDataChange: (newData) => {
+                                currentSandboxData = newData;
+                                simulateChange();
+                            },
+                            onNodeDrop: handleSandboxNodeDrop,
+                            onFileDrop: handleSandboxFileDrop
+                        });
+                        sandboxRoot.render(controlElement);
+                    }
+                    
+                    log(`🖼️ Image ${file.name} attached to node ${node.label || nodeId}`);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Handle other file types - add to attachments
+                if (!node.attachments) {
+                    node.attachments = [];
+                }
+                
+                node.attachments.push({
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    attachedAt: new Date().toISOString()
+                });
+                
+                node.properties = {
+                    ...node.properties,
+                    hasAttachments: true,
+                    attachmentCount: node.attachments.length
+                };
+                
+                log(`📄 Document ${file.name} attached to node ${node.label || nodeId}`);
+            }
+        }
+        
+        // Handle file drop on edge
+        function handleFileDropOnEdge(file, edgeId, context) {
+            // Find the edge
+            const nodeData = context === 'sandbox' ? currentSandboxData : null;
+            if (!nodeData) return;
+            
+            const edge = nodeData.edges.find(e => e.id === edgeId);
+            if (!edge) {
+                log(`❌ Edge ${edgeId} not found in ${context}`);
+                return;
+            }
+            
+            // Add file to edge attachments
+            if (!edge.attachments) {
+                edge.attachments = [];
+            }
+            
+            edge.attachments.push({
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                attachedAt: new Date().toISOString()
+            });
+            
+            edge.properties = {
+                ...edge.properties,
+                hasAttachments: true,
+                attachmentCount: edge.attachments.length
+            };
+            
+            log(`📄 File ${file.name} attached to edge ${edge.label || edgeId}`);
+        }
+        
+        // Handle artifact drops from the artifacts panel
+        function handleArtifactDropOnSandbox(targetId, artifactData, dropType, position) {
+            log(`📎 Artifact drop: ${artifactData.fileName} on ${dropType}`);
+            
+            if (dropType === 'onto-canvas') {
+                // Create a new node representing the artifact
+                const newNode = {
+                    id: `artifact_${artifactData.fileId}_${Date.now()}`,
+                    name: artifactData.fileName,
+                    label: artifactData.fileName,
+                    type: 'thing',
+                    imageUrl: artifactData.downloadUrl && artifactData.fileType.startsWith('image/') ? artifactData.downloadUrl : null,
+                    properties: {
+                        fileId: artifactData.fileId,
+                        fileName: artifactData.fileName,
+                        fileType: artifactData.fileType,
+                        downloadUrl: artifactData.downloadUrl,
+                        droppedAt: new Date().toISOString(),
+                        source: 'artifacts-panel'
+                    }
+                };
+                
+                // Add position if provided
+                if (position) {
+                    newNode.x = position.x;
+                    newNode.y = position.y;
+                }
+                
+                currentSandboxData = {
+                    ...currentSandboxData,
+                    nodes: [...currentSandboxData.nodes, newNode]
+                };
+                
+                log(`✅ Created artifact node: ${newNode.name}`);
+                
+            } else if (dropType === 'onto-node' && targetId) {
+                // Attach artifact to existing node
+                const targetNode = currentSandboxData.nodes.find(n => n.id === targetId);
+                if (targetNode) {
+                    if (!targetNode.attachments) {
+                        targetNode.attachments = [];
+                    }
+                    
+                    targetNode.attachments.push({
+                        fileId: artifactData.fileId,
+                        fileName: artifactData.fileName,
+                        fileType: artifactData.fileType,
+                        downloadUrl: artifactData.downloadUrl,
+                        attachedAt: new Date().toISOString(),
+                        source: 'artifacts-panel'
+                    });
+                    
+                    targetNode.properties = {
+                        ...targetNode.properties,
+                        hasAttachments: true,
+                        attachmentCount: targetNode.attachments.length
+                    };
+                    
+                    log(`✅ Attached ${artifactData.fileName} to node ${targetNode.label || targetId}`);
+                }
+                
+            } else if (dropType === 'onto-edge' && targetId) {
+                // Attach artifact to edge
+                const targetEdge = currentSandboxData.edges.find(e => e.id === targetId);
+                if (targetEdge) {
+                    if (!targetEdge.attachments) {
+                        targetEdge.attachments = [];
+                    }
+                    
+                    targetEdge.attachments.push({
+                        fileId: artifactData.fileId,
+                        fileName: artifactData.fileName,
+                        fileType: artifactData.fileType,
+                        downloadUrl: artifactData.downloadUrl,
+                        attachedAt: new Date().toISOString(),
+                        source: 'artifacts-panel'
+                    });
+                    
+                    targetEdge.properties = {
+                        ...targetEdge.properties,
+                        hasAttachments: true,
+                        attachmentCount: targetEdge.attachments.length
+                    };
+                    
+                    log(`✅ Attached ${artifactData.fileName} to edge ${targetEdge.label || targetId}`);
+                }
+            }
+            
+            // Re-render the sandbox with updated data
+            if (sandboxRoot) {
+                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                    data: currentSandboxData,
+                    title: "Sandbox",
+                    hidePageHeader: true,
+                    hideStatusBar: true,
+                    useExternalMetadataEditor: false,
+                    onDataChange: (newData) => {
+                        currentSandboxData = newData;
+                        simulateChange();
+                    },
+                    onNodeDrop: handleSandboxNodeDrop,
+                    onFileDrop: handleSandboxFileDrop
+                });
+                
+                sandboxRoot.render(controlElement);
+                
+                // Track the change
+                changesCount++;
+                updateChangesDisplay();
+                
+                log('🔄 Sandbox re-rendered with artifact attachment');
+            }
+        }
+
         function initializeSandbox() {
             if (!checkBundle()) {
                 log('❌ Bundle not ready for sandbox');
@@ -909,7 +1156,8 @@
                         currentSandboxData = newData;
                         simulateChange();
                     },
-                    onNodeDrop: handleSandboxNodeDrop
+                    onNodeDrop: handleSandboxNodeDrop,
+                    onFileDrop: handleSandboxFileDrop
                 });
                 
                 sandboxRoot = ReactDOM.createRoot(container);
@@ -1019,7 +1267,8 @@
                         currentSandboxData = newData;
                         simulateChange();
                     },
-                    onNodeDrop: handleSandboxNodeDrop
+                    onNodeDrop: handleSandboxNodeDrop,
+                    onFileDrop: handleSandboxFileDrop
                 });
                 
                 sandboxRoot.render(controlElement);
@@ -1043,6 +1292,12 @@
             
             if (!currentSandboxData) {
                 currentSandboxData = { nodes: [], edges: [] };
+            }
+            
+            // Check if this is an artifact drop (from the artifacts panel)
+            if (nodeData.type === 'artifact') {
+                handleArtifactDropOnSandbox(targetId, nodeData, dropType, position);
+                return;
             }
             
             if (dropType === 'onto-canvas') {
@@ -1131,7 +1386,8 @@
                         currentSandboxData = newData;
                         simulateChange();
                     },
-                    onNodeDrop: handleSandboxNodeDrop
+                    onNodeDrop: handleSandboxNodeDrop,
+                    onFileDrop: handleSandboxFileDrop
                 });
                 
                 sandboxRoot.render(controlElement);
@@ -1207,6 +1463,7 @@
                     hideAddButton: true,
                     showCopyButton: true,
                     onCopyClick: handleProductionCopyToSandbox,
+                    onFileDrop: handleProductionFileDrop,
                     width: '100%',
                     height: '100%',
                     style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
@@ -1770,7 +2027,7 @@
         function handleArtifactDragStart(e) {
             e.target.classList.add('dragging');
             
-            // Set drag data
+            // Set drag data for artifact drops
             const dragData = {
                 type: 'artifact',
                 fileId: e.target.dataset.fileId,
