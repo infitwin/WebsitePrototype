@@ -2775,7 +2775,8 @@
             console.log('📊 Current sandbox data:', currentSandboxData);
             console.log('🔢 Changes count:', changesCount);
             
-            if (changesCount === 0) {
+            // Double-check we have changes to post
+            if (changesCount === 0 || !currentSandboxData.nodes.length) {
                 if (window.Modal) {
                     const modal = new window.Modal({
                         title: 'No Changes to Post',
@@ -2821,16 +2822,13 @@
                                 const reviewNotes = document.getElementById('reviewNotes')?.value || '';
                                 console.log('📝 Review notes:', reviewNotes);
                                 
+                                // Hide the review modal immediately
+                                reviewModal.hide();
+                                
                                 // Proceed with posting
                                 console.log('📤 Calling performPostToProduction...');
                                 await performPostToProduction(reviewNotes);
-                                
-                                // Return promise to handle loading state
-                                return new Promise((resolve) => {
-                                    setTimeout(resolve, 100); // Let performPostToProduction complete
-                                });
-                            },
-                            closeOnAction: false // We'll close it manually after success
+                            }
                         }
                     ]
                 });
