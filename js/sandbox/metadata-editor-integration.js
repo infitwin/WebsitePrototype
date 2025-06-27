@@ -21,8 +21,8 @@ export class MetadataEditorIntegration {
         if (this.loadPromise) return this.loadPromise;
         
         this.loadPromise = new Promise((resolve, reject) => {
-            // Check if already loaded
-            if (window.NexusMetadataControl) {
+            // Check if already loaded (v2.0.0 uses NexusMetadataEditor)
+            if (window.NexusMetadataEditor || window.NexusMetadataControl) {
                 this.isLoaded = true;
                 resolve(true);
                 return;
@@ -30,24 +30,26 @@ export class MetadataEditorIntegration {
             
             // Load the bundle
             const script = document.createElement('script');
-            script.src = '../bundles/nexus-metadata-control.min.js';
+            script.src = '../bundles/nexus-metadata-editor-v2.0.0.bundle.js';
             script.onload = () => {
-                if (window.NexusMetadataControl) {
+                // v2.0.0 exports as NexusMetadataEditor
+                if (window.NexusMetadataEditor) {
+                    // Create alias for backward compatibility
+                    window.NexusMetadataControl = window.NexusMetadataEditor;
                     this.isLoaded = true;
-                    console.log('✅ Nexus Metadata Editor loaded');
-                    console.log('📦 NexusMetadataControl type:', typeof window.NexusMetadataControl);
-                    console.log('📦 NexusMetadataControl keys:', Object.keys(window.NexusMetadataControl));
-                    console.log('📦 Has mount method?', typeof window.NexusMetadataControl.mount);
-                    console.log('📦 Full object:', window.NexusMetadataControl);
-                    
-                    // Also check for createNexusControl
-                    if (window.createNexusControl) {
-                        console.log('📦 Also found window.createNexusControl');
-                    }
+                    console.log('✅ Nexus Metadata Editor v2.0.0 loaded');
+                    console.log('📦 NexusMetadataEditor type:', typeof window.NexusMetadataEditor);
+                    console.log('📦 NexusMetadataEditor keys:', Object.keys(window.NexusMetadataEditor));
+                    console.log('📦 Has mount method?', typeof window.NexusMetadataEditor.mount);
                     
                     resolve(true);
+                } else if (window.NexusMetadataControl) {
+                    // Fallback for older bundles
+                    this.isLoaded = true;
+                    console.log('✅ Nexus Metadata Editor loaded (legacy)');
+                    resolve(true);
                 } else {
-                    reject(new Error('NexusMetadataControl not found after loading'));
+                    reject(new Error('NexusMetadataEditor not found after loading'));
                 }
             };
             script.onerror = () => {
@@ -190,73 +192,21 @@ export class MetadataEditorIntegration {
             // Show loading state
             container.innerHTML = '<div style="padding: 20px; text-align: center;">Loading editor...</div>';
             
-            // The bundle has a different API than documented
-            // Check what's actually available
-            let mountFunction = null;
-            
-            if (window.NexusMetadataControl && typeof window.NexusMetadataControl.mount === 'function') {
-                // Use the documented API if available
-                mountFunction = (container, config) => window.NexusMetadataControl.mount(container, config);
-            } else if (typeof window.NexusMetadataControl === 'function') {
-                // NexusMetadataControl is the constructor/mount function itself
-                console.log('📦 Using NexusMetadataControl as constructor');
-                mountFunction = window.NexusMetadataControl;
-            } else if (typeof window.createNexusControl === 'function') {
-                // Alternative API
-                console.log('📦 Using createNexusControl function');
-                mountFunction = window.createNexusControl;
-            } else {
-                console.error('❌ No valid mount function found. Available:', {
-                    NexusMetadataControl: window.NexusMetadataControl,
-                    typeOf: typeof window.NexusMetadataControl,
-                    createNexusControl: window.createNexusControl,
-                    keys: window.NexusMetadataControl ? Object.keys(window.NexusMetadataControl) : []
-                });
-                throw new Error('No metadata editor mount function available');
+            // v2.0.0 uses the mount method
+            if (!window.NexusMetadataEditor || typeof window.NexusMetadataEditor.mount !== 'function') {
+                console.error('❌ NexusMetadataEditor.mount not available');
+                throw new Error('NexusMetadataEditor v2.0.0 mount method not found');
             }
             
             console.log('📦 Mounting editor with entity:', entity);
             
-            // Mount using whichever API is available
-            // Use the documented constructor API
-            if (typeof window.NexusMetadataControl === 'function') {
-                // Constructor API as documented in v1.0.0
-                try {
-                    // Create editor instance with correct API
-                    this.currentHandle = new window.NexusMetadataControl({
-                        container: container,
-                        entity: entity,
-                        onSave: (updatedEntity) => {  // Note: onSave, not onChange
-                            // Convert back to node format
-                            const updatedNode = this.prepareNodeUpdate(updatedEntity, node);
-                            
-                            // Call the update callback
-                            if (onUpdate) {
-                                onUpdate(updatedNode, updatedEntity);
-                            }
-                            
-                            // Close the editor
-                            this.hideEditor();
-                            if (onClose) onClose(true);
-                        },
-                        onCancel: () => {
-                            this.hideEditor();
-                            if (onClose) onClose(false);
-                        },
-                        config: {
-                            enableValidation: true,
-                            showOptionalFields: true
-                        }
-                    });
-                } catch (err) {
-                    console.error('❌ Constructor pattern failed:', err);
-                    throw err;
-                }
-            } else {
-                // Try mount pattern for newer API
-                this.currentHandle = mountFunction(container, {
+            // Use v2.0.0 mount API
+            try {
+                this.currentHandle = window.NexusMetadataEditor.mount(container, {
                     entity: entity,
-                    onChange: (updatedEntity) => {
+                    mode: 'inline',  // Always use inline mode
+                    onSave: (updatedEntity) => {
+                        console.log('📝 onSave callback triggered with:', updatedEntity);
                         // Convert back to node format
                         const updatedNode = this.prepareNodeUpdate(updatedEntity, node);
                         
@@ -265,19 +215,20 @@ export class MetadataEditorIntegration {
                             onUpdate(updatedNode, updatedEntity);
                         }
                         
-                        // Close the editor
-                        this.hideEditor();
+                        // Don't hide editor here - let the mount handle do it
                         if (onClose) onClose(true);
                     },
                     onCancel: () => {
-                        this.hideEditor();
+                        console.log('❌ onCancel callback triggered');
+                        // Don't hide editor here - let the mount handle do it
                         if (onClose) onClose(false);
-                    },
-                    config: {
-                        enableValidation: true,
-                        showOptionalFields: true
                     }
                 });
+                
+                console.log('✅ Editor mounted successfully');
+            } catch (err) {
+                console.error('❌ Failed to mount editor:', err);
+                throw err;
             }
             
         } catch (error) {
@@ -313,11 +264,12 @@ export class MetadataEditorIntegration {
     }
 
     /**
-     * Show editor in a modal
+     * Show editor in a modal with handleMetaSave integration
      * @param {Object} node - Graph node to edit
      * @param {Function} onUpdate - Callback when node is updated
+     * @param {Object} graphRef - Reference to Nexus control for handleMetaSave
      */
-    showEditorModal(node, onUpdate) {
+    showEditorModal(node, onUpdate, graphRef = null) {
         // Create modal backdrop
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -346,8 +298,60 @@ export class MetadataEditorIntegration {
         // Add to body
         document.body.appendChild(modal);
         
+        // Modified callback to use handleMetaSave if available
+        const updateCallback = (updatedNode, updatedEntity) => {
+            console.log('📝 Update callback triggered');
+            console.log('Original node:', node);
+            console.log('Updated entity:', updatedEntity);
+            
+            // If graphRef with handleMetaSave is available, use it
+            if (graphRef && graphRef.current && typeof graphRef.current.handleMetaSave === 'function') {
+                // For v2.0.0, updatedEntity contains all fields, not just changes
+                // So we should pass the entire entity as updates
+                const updates = {};
+                
+                // Copy all fields from updatedEntity except id
+                Object.keys(updatedEntity).forEach(key => {
+                    if (key !== 'id') {
+                        updates[key] = updatedEntity[key];
+                    }
+                });
+                
+                // Find deleted fields by checking what was in node.properties but not in updatedEntity
+                const deletedFields = [];
+                const nodeProps = node.properties || node;
+                Object.keys(nodeProps).forEach(key => {
+                    if (!['id', 'type', '_isSandbox', 'interviewId', 'sessionId', 'userId', 'twinId'].includes(key) && 
+                        !(key in updatedEntity)) {
+                        deletedFields.push(key);
+                    }
+                });
+                
+                console.log('Calling handleMetaSave with:', {
+                    entityType: 'node',
+                    entityId: node.id,
+                    action: 'update',
+                    updates: updates,
+                    deletedFields: deletedFields
+                });
+                
+                // Call handleMetaSave with proper structure
+                graphRef.current.handleMetaSave({
+                    entityType: 'node',
+                    entityId: node.id,
+                    action: 'update',  // Always update when editing existing node
+                    updates: updates,
+                    deletedFields: deletedFields,
+                    timestamp: new Date().toISOString()
+                });
+            } else if (onUpdate) {
+                // Fallback to direct callback
+                onUpdate(updatedNode, updatedEntity);
+            }
+        };
+        
         // Show editor
-        this.showEditor(node, content, onUpdate, (saved) => {
+        this.showEditor(node, content, updateCallback, (saved) => {
             document.body.removeChild(modal);
         });
         
