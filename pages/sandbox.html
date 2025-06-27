@@ -416,7 +416,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="../js/nexus-graph-control-v17.0.0.bundle.min.js"></script>
+    <script src="../js/nexus-graph-control-v17.1.0.bundle.min.js"></script>
     <!-- NexusMetadataEditor v2.0.0 bundle -->
     <script src="../bundles/nexus-metadata-editor-v2.0.0.bundle.js"></script>
 
@@ -653,17 +653,22 @@
                                     log('✅ Updated/created sandbox node:', updatedNode);
                                 }
                             } else if (metaData.entityType === 'edge' || metaData.entityType === 'relationship') {
-                                if (metaData.action === 'create') {
-                                    // Create relationship
-                                    const newRel = await window.Neo4jConnection.createSandboxRelationship(
-                                        metaData.source,
-                                        metaData.target,
-                                        metaData.label || 'RELATED_TO',
-                                        metaData.properties || {},
-                                        currentInterviewId
-                                    );
-                                    log('✅ Created sandbox relationship:', newRel);
-                                }
+                                // v3.0.0: No Map conversion needed - data is already JSON-safe!
+                                console.log('=== v3.0.0 JSON-SAFE DATA ===');
+                                console.log('Updates:', metaData.updates);
+                                console.log('Updates can be stringified:', JSON.stringify(metaData.updates));
+                                
+                                // Use the same updateSandboxNode method with MERGE - it doesn't matter if it's a node or relationship
+                                // Just pass the relationship data as a "node" - MERGE will handle it the same way
+                                const updatedRel = await window.Neo4jConnection.updateSandboxNode(
+                                    metaData.entityId,
+                                    metaData.updates,  // v3.0.0: Direct pass - no conversion needed!
+                                    metaData.deletedFields,
+                                    userId,
+                                    twinId,
+                                    currentInterviewId
+                                );
+                                log('✅ Updated/created sandbox relationship using node method:', updatedRel);
                             }
                             
                             simulateChange();
@@ -794,6 +799,64 @@
                     onNodeClick: (node) => {
                         // Show metadata editor in modal with graphRef for handleMetaSave
                         window.metadataEditor.showEditorModal(node, null, sandboxGraphRef);
+                    },
+                    onEdgeClick: (edgeData) => {
+                        console.log('=== EDGE CLICK DEBUG ===');
+                        console.log('Received edgeData:', edgeData);
+                        console.log('edgeData keys:', Object.keys(edgeData || {}));
+                        console.log('edgeData.id:', edgeData?.id);
+                        console.log('edgeData.source:', edgeData?.source);
+                        console.log('edgeData.target:', edgeData?.target);
+                        console.log('edgeData.label:', edgeData?.label);
+                        console.log('edgeData.data:', edgeData?.data);
+                        console.log('========================');
+                        
+                        // Show relationship editor for edges
+                        const edge = edgeData;
+                        
+                        // Debug: Check what's in currentSandboxData
+                        console.log('Current nodes count:', currentSandboxData.nodes.length);
+                        console.log('Current edges count:', currentSandboxData.edges.length);
+                        
+                        // Get nodes from the graph ref if available
+                        let nodes = currentSandboxData.nodes;
+                        if (sandboxGraphRef.current && sandboxGraphRef.current.getData) {
+                            const graphData = sandboxGraphRef.current.getData();
+                            console.log('GraphRef getData result:', graphData);
+                            if (graphData && graphData.nodes) {
+                                nodes = graphData.nodes;
+                                console.log('Using nodes from graphRef, count:', nodes.length);
+                            }
+                        }
+                        
+                        // Get source and target nodes
+                        const sourceNode = nodes.find(n => n.id === edge.source);
+                        const targetNode = nodes.find(n => n.id === edge.target);
+                        
+                        console.log('Source node:', sourceNode);
+                        console.log('Target node:', targetNode);
+                        
+                        if (sourceNode && targetNode) {
+                            try {
+                                console.log('Calling showRelationshipEditorModal...');
+                                window.metadataEditor.showRelationshipEditorModal(
+                                    edge,
+                                    sourceNode,
+                                    targetNode,
+                                    null,
+                                    sandboxGraphRef
+                                );
+                                console.log('showRelationshipEditorModal called successfully');
+                            } catch (error) {
+                                console.error('❌ Error showing relationship editor:', error.message);
+                                console.error('Full error:', error);
+                            }
+                        } else {
+                            console.log('❌ Could not find source or target node for edge');
+                            console.log('Looking for source:', edge.source);
+                            console.log('Looking for target:', edge.target);
+                            console.log('Available node IDs:', nodes.map(n => n.id));
+                        }
                     }
                 });
                 

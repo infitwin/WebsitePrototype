@@ -168,6 +168,11 @@ class Neo4jConnection {
     async updateSandboxNode(nodeId, updates, deletedFields = [], userId = null, twinId = null, interviewId = null) {
         const session = this.getSession();
         try {
+            // v3.0.0: No Map conversion needed - NexusMetadataEditor returns JSON-safe data
+            console.log('=== NEO4J NODE UPDATE ===');
+            console.log('Updates received:', updates);
+            console.log('JSON-safe test:', JSON.stringify(updates));
+            
             // Determine node type from updates or default to Person
             const nodeType = updates.type || 'Person';
             const label = nodeType.charAt(0).toUpperCase() + nodeType.slice(1);
@@ -197,7 +202,7 @@ class Neo4jConnection {
             
             const result = await session.run(query, {
                 nodeId,
-                updates,
+                updates: updates,  // v3.0.0: Direct pass - no conversion needed!
                 userId,
                 twinId,
                 interviewId
@@ -267,6 +272,74 @@ class Neo4jConnection {
             }
             
             return result.records[0].get('r').properties;
+        } finally {
+            await session.close();
+        }
+    }
+
+    /**
+     * Update a sandbox relationship (using MERGE to create if doesn't exist)
+     * @param {string} relId - Relationship ID
+     * @param {object} updates - Properties to update
+     * @param {string} sourceId - Source node ID
+     * @param {string} targetId - Target node ID
+     * @param {string} relType - Relationship type
+     * @param {string} interviewId - Interview ID
+     * @returns {Promise<object>} Updated relationship
+     */
+    async updateSandboxRelationship(relId, updates, sourceId, targetId, relType, interviewId) {
+        const session = this.getSession();
+        try {
+            // v3.0.0: No Map conversion needed - NexusMetadataEditor returns JSON-safe data
+            console.log('=== NEO4J RELATIONSHIP UPDATE ===');
+            console.log('Updates received:', updates);
+            console.log('JSON-safe test:', JSON.stringify(updates));
+            
+            // First try to update existing relationship
+            const updateQuery = `
+                MATCH ()-[r {id: $relId, _isSandbox: true}]-()
+                SET r += $updates
+                SET r.lastModified = timestamp()
+                RETURN r
+            `;
+            
+            const updateResult = await session.run(updateQuery, {
+                relId,
+                updates: updates  // v3.0.0: Direct pass - no conversion needed!
+            });
+            
+            if (updateResult.records.length > 0) {
+                return updateResult.records[0].get('r').properties;
+            }
+            
+            // If not found, create new relationship
+            console.log('Relationship not found, creating new one');
+            const createQuery = `
+                MATCH (source:Sandbox {id: $sourceId})
+                MATCH (target:Sandbox {id: $targetId})
+                CREATE (source)-[r:${relType} {
+                    id: $relId,
+                    _isSandbox: true,
+                    interviewId: $interviewId,
+                    createdAt: timestamp()
+                }]->(target)
+                SET r += $updates
+                RETURN r
+            `;
+            
+            const createResult = await session.run(createQuery, {
+                sourceId,
+                targetId,
+                relId,
+                interviewId,
+                updates: updates  // v3.0.0: Direct pass - no conversion needed!
+            });
+            
+            if (createResult.records.length === 0) {
+                throw new Error(`Could not create/update relationship: source or target node not found`);
+            }
+            
+            return createResult.records[0].get('r').properties;
         } finally {
             await session.close();
         }
