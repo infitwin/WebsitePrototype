@@ -576,7 +576,17 @@
                     
                     // Re-render if already initialized
                     if (sandboxRoot && sandboxGraphRef.current) {
-                        sandboxGraphRef.current.updateData(currentSandboxData);
+                        log('🔄 Updating Nexus control with loaded data...');
+                        if (sandboxGraphRef.current.updateData) {
+                            sandboxGraphRef.current.updateData(currentSandboxData);
+                        } else if (sandboxGraphRef.current.setData) {
+                            sandboxGraphRef.current.setData(currentSandboxData);
+                        } else {
+                            log('⚠️ No update method found on Nexus control, re-initializing...');
+                            initializeSandbox();
+                        }
+                    } else {
+                        log('⚠️ Nexus control not ready yet, data will be loaded on initialization');
                     }
                     
                 } finally {
@@ -691,7 +701,7 @@
             }
         }
 
-        function initializeSandbox() {
+        async function initializeSandbox() {
             if (!checkBundle()) {
                 log('❌ Bundle not ready for sandbox');
                 return;
@@ -714,8 +724,8 @@
                     };
                 }
                 
-                // Load existing sandbox items
-                loadExistingSandboxData();
+                // Load existing sandbox items and wait for completion
+                await loadExistingSandboxData();
                 
                 // Create element with ref support
                 const NexusControl = window.NexusGraphControl.NexusGraphControl;
@@ -1281,7 +1291,7 @@
                 }
                 
                 // Re-render sandbox
-                initializeSandbox();
+                await initializeSandbox();
                 
             } catch (error) {
                 log('❌ Error handling node drop:', error);
@@ -2534,7 +2544,7 @@
                     currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                     
                     // Re-render empty sandbox
-                    initializeSandbox();
+                    await initializeSandbox();
                     
                     // Refresh production panel if open
                     const productionPanel = document.getElementById('productionPanel');
@@ -2660,10 +2670,10 @@
                 }
             }, 100);
             
-            setTimeout(() => {
+            setTimeout(async () => {
                 if (checkBundle()) {
                     log('✅ Ready for testing');
-                    initializeSandbox();
+                    await initializeSandbox();
                     
                     updateToolbarStates();
                 } else {
