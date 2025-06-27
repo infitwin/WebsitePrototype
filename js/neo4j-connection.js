@@ -3,6 +3,12 @@
  * 
  * Provides a single connection point for all pages to access Neo4j database.
  * Uses singleton pattern to ensure only one driver instance exists.
+ * 
+ * Data Type Handling:
+ * - Neo4j can only store primitives and arrays of primitives as properties
+ * - Complex objects (like stateMaps arrays of objects) are serialized to JSON strings
+ * - Serialization happens transparently at the storage boundary
+ * - All other layers work with native JavaScript data structures
  */
 
 // Neo4j Configuration
@@ -173,6 +179,19 @@ class Neo4jConnection {
             console.log('Updates received:', updates);
             console.log('JSON-safe test:', JSON.stringify(updates));
             
+            // Neo4j property type constraint: Can only store primitives and arrays of primitives
+            // stateMaps is an array of objects, so we serialize it to a JSON string for storage
+            // This keeps the data model clean - all other layers work with native JS arrays
+            const processedUpdates = { ...updates };
+            if (processedUpdates.stateMaps) {
+                if (!Array.isArray(processedUpdates.stateMaps)) {
+                    throw new Error('stateMaps must be an array');
+                }
+                // Serialize to JSON string for Neo4j storage
+                processedUpdates.stateMaps = JSON.stringify(processedUpdates.stateMaps);
+                console.log('Serialized stateMaps for Neo4j storage');
+            }
+            
             // Determine node type from updates or default to Person
             const nodeType = updates.type || 'Person';
             const label = nodeType.charAt(0).toUpperCase() + nodeType.slice(1);
@@ -202,13 +221,23 @@ class Neo4jConnection {
             
             const result = await session.run(query, {
                 nodeId,
-                updates: updates,  // v3.0.0: Direct pass - no conversion needed!
+                updates: processedUpdates,  // Use processed updates with stringified stateMaps
                 userId,
                 twinId,
                 interviewId
             });
             
-            return result.records[0].get('n').properties;
+            const node = result.records[0].get('n').properties;
+            // Deserialize stateMaps back to array when returning
+            if (node.stateMaps && typeof node.stateMaps === 'string') {
+                try {
+                    node.stateMaps = JSON.parse(node.stateMaps);
+                } catch (e) {
+                    console.error('Failed to parse stateMaps:', e);
+                    node.stateMaps = []; // Fallback to empty array
+                }
+            }
+            return node;
         } finally {
             await session.close();
         }
@@ -295,6 +324,19 @@ class Neo4jConnection {
             console.log('Updates received:', updates);
             console.log('JSON-safe test:', JSON.stringify(updates));
             
+            // Neo4j property type constraint: Can only store primitives and arrays of primitives
+            // stateMaps is an array of objects, so we serialize it to a JSON string for storage
+            // This keeps the data model clean - all other layers work with native JS arrays
+            const processedUpdates = { ...updates };
+            if (processedUpdates.stateMaps) {
+                if (!Array.isArray(processedUpdates.stateMaps)) {
+                    throw new Error('stateMaps must be an array');
+                }
+                // Serialize to JSON string for Neo4j storage
+                processedUpdates.stateMaps = JSON.stringify(processedUpdates.stateMaps);
+                console.log('Serialized stateMaps for Neo4j storage');
+            }
+            
             // First try to update existing relationship
             const updateQuery = `
                 MATCH ()-[r {id: $relId, _isSandbox: true}]-()
@@ -305,11 +347,21 @@ class Neo4jConnection {
             
             const updateResult = await session.run(updateQuery, {
                 relId,
-                updates: updates  // v3.0.0: Direct pass - no conversion needed!
+                updates: processedUpdates  // Use processed updates with stringified stateMaps
             });
             
             if (updateResult.records.length > 0) {
-                return updateResult.records[0].get('r').properties;
+                const rel = updateResult.records[0].get('r').properties;
+                // Deserialize stateMaps back to array when returning
+                if (rel.stateMaps && typeof rel.stateMaps === 'string') {
+                    try {
+                        rel.stateMaps = JSON.parse(rel.stateMaps);
+                    } catch (e) {
+                        console.error('Failed to parse stateMaps:', e);
+                        rel.stateMaps = []; // Fallback to empty array
+                    }
+                }
+                return rel;
             }
             
             // If not found, create new relationship
@@ -332,14 +384,19 @@ class Neo4jConnection {
                 targetId,
                 relId,
                 interviewId,
-                updates: updates  // v3.0.0: Direct pass - no conversion needed!
+                updates: processedUpdates  // Use processed updates with stringified stateMaps
             });
             
             if (createResult.records.length === 0) {
                 throw new Error(`Could not create/update relationship: source or target node not found`);
             }
             
-            return createResult.records[0].get('r').properties;
+            const rel = createResult.records[0].get('r').properties;
+            // Convert stateMaps back to array when returning
+            if (rel.stateMaps && typeof rel.stateMaps === 'string') {
+                rel.stateMaps = JSON.parse(rel.stateMaps);
+            }
+            return rel;
         } finally {
             await session.close();
         }
