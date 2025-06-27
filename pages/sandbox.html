@@ -467,6 +467,128 @@
             }
         }
         
+        async function loadExistingSandboxData() {
+            log('🔄 Loading existing sandbox data...');
+            
+            try {
+                // Ensure connection
+                if (!window.Neo4jConnection.isConnected) {
+                    await window.Neo4jConnection.connect();
+                }
+                
+                const userId = firebase.auth().currentUser?.uid;
+                const twinId = `${userId}-1`;
+                
+                if (!currentInterviewId) {
+                    log('⚠️ No current interview ID, skipping sandbox load');
+                    return;
+                }
+                
+                const session = window.Neo4jConnection.getSession();
+                
+                try {
+                    // Query for sandbox nodes
+                    const nodesResult = await session.run(`
+                        MATCH (n:Sandbox)
+                        WHERE n.interviewId = $interviewId
+                        AND n.userId = $userId
+                        AND n.twinId = $twinId
+                        RETURN n
+                        ORDER BY n.createdAt DESC
+                    `, {
+                        interviewId: currentInterviewId,
+                        userId: userId,
+                        twinId: twinId
+                    });
+                    
+                    // Query for sandbox relationships
+                    const relsResult = await session.run(`
+                        MATCH (source:Sandbox)-[r]->(target:Sandbox)
+                        WHERE r._isSandbox = true
+                        AND r.interviewId = $interviewId
+                        RETURN r, source.id as sourceId, target.id as targetId, type(r) as relType
+                        ORDER BY r.createdAt DESC
+                    `, {
+                        interviewId: currentInterviewId
+                    });
+                    
+                    // Process nodes
+                    const nodes = nodesResult.records.map(record => {
+                        const node = record.get('n');
+                        const props = node.properties;
+                        
+                        // Handle stateMaps deserialization
+                        if (props.stateMaps && typeof props.stateMaps === 'string') {
+                            try {
+                                props.stateMaps = JSON.parse(props.stateMaps);
+                            } catch (e) {
+                                console.error('Failed to parse node stateMaps:', e);
+                                props.stateMaps = [];
+                            }
+                        }
+                        
+                        return {
+                            id: props.id,
+                            name: props.name || 'Unnamed',
+                            label: props.name || 'Unnamed',
+                            type: props.type?.toLowerCase() || 'thing',
+                            x: props.x || Math.random() * 800,
+                            y: props.y || Math.random() * 600,
+                            properties: props
+                        };
+                    });
+                    
+                    // Process relationships
+                    const edges = relsResult.records.map(record => {
+                        const rel = record.get('r');
+                        const props = rel.properties;
+                        const sourceId = record.get('sourceId');
+                        const targetId = record.get('targetId');
+                        const relType = record.get('relType');
+                        
+                        // Handle stateMaps deserialization
+                        if (props.stateMaps && typeof props.stateMaps === 'string') {
+                            try {
+                                props.stateMaps = JSON.parse(props.stateMaps);
+                            } catch (e) {
+                                console.error('Failed to parse relationship stateMaps:', e);
+                                props.stateMaps = [];
+                            }
+                        }
+                        
+                        return {
+                            id: props.id,
+                            source: sourceId,
+                            target: targetId,
+                            label: relType,
+                            type: relType,
+                            properties: props
+                        };
+                    });
+                    
+                    // Update current sandbox data
+                    currentSandboxData = {
+                        nodes: nodes,
+                        edges: edges
+                    };
+                    
+                    log(`✅ Loaded ${nodes.length} nodes and ${edges.length} relationships from sandbox`);
+                    
+                    // Re-render if already initialized
+                    if (sandboxRoot && sandboxGraphRef.current) {
+                        sandboxGraphRef.current.updateData(currentSandboxData);
+                    }
+                    
+                } finally {
+                    await session.close();
+                }
+                
+            } catch (error) {
+                log('❌ Failed to load sandbox data: ' + error.message);
+                console.error('Load sandbox error:', error);
+            }
+        }
+        
         function simulateChange() {
             if (initialDataLoaded) {
                 changesCount++;
@@ -591,6 +713,9 @@
                         edges: []
                     };
                 }
+                
+                // Load existing sandbox items
+                loadExistingSandboxData();
                 
                 // Create element with ref support
                 const NexusControl = window.NexusGraphControl.NexusGraphControl;
