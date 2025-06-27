@@ -653,22 +653,28 @@
                                     log('✅ Updated/created sandbox node:', updatedNode);
                                 }
                             } else if (metaData.entityType === 'edge' || metaData.entityType === 'relationship') {
-                                // v3.0.0: No Map conversion needed - data is already JSON-safe!
-                                console.log('=== v3.0.0 JSON-SAFE DATA ===');
-                                console.log('Updates:', metaData.updates);
+                                // Handle actual relationships - create proper graph edges, not nodes
+                                console.log('=== RELATIONSHIP SAVE ===');
+                                console.log('Relationship updates:', metaData.updates);
                                 console.log('Updates can be stringified:', JSON.stringify(metaData.updates));
                                 
-                                // Use the same updateSandboxNode method with MERGE - it doesn't matter if it's a node or relationship
-                                // Just pass the relationship data as a "node" - MERGE will handle it the same way
-                                const updatedRel = await window.Neo4jConnection.updateSandboxNode(
+                                // Extract relationship data
+                                const { sourceId, targetId, type, category, stateMaps, ...otherProps } = metaData.updates;
+                                
+                                if (!sourceId || !targetId) {
+                                    throw new Error('Relationship missing sourceId or targetId');
+                                }
+                                
+                                // Use proper relationship method to create actual Neo4j relationships
+                                const updatedRel = await window.Neo4jConnection.updateSandboxRelationship(
                                     metaData.entityId,
-                                    metaData.updates,  // v3.0.0: Direct pass - no conversion needed!
-                                    metaData.deletedFields,
-                                    userId,
-                                    twinId,
+                                    metaData.updates,  // Full relationship data
+                                    sourceId,
+                                    targetId,
+                                    type || 'RELATED_TO',
                                     currentInterviewId
                                 );
-                                log('✅ Updated/created sandbox relationship using node method:', updatedRel);
+                                log('✅ Updated/created sandbox relationship as actual graph edge:', updatedRel);
                             }
                             
                             simulateChange();
