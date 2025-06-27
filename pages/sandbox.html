@@ -479,6 +479,8 @@
                 const userId = firebase.auth().currentUser?.uid;
                 const twinId = `${userId}-1`;
                 
+                log(`🔍 Loading for User: ${userId}, Twin: ${twinId}, Interview: ${currentInterviewId}`);
+                
                 if (!currentInterviewId) {
                     log('⚠️ No current interview ID, skipping sandbox load');
                     return;
@@ -487,19 +489,18 @@
                 const session = window.Neo4jConnection.getSession();
                 
                 try {
-                    // Query for sandbox nodes
+                    // Query for sandbox nodes - use interviewId as primary filter
+                    log(`📊 Querying nodes with interviewId: ${currentInterviewId}`);
                     const nodesResult = await session.run(`
                         MATCH (n:Sandbox)
                         WHERE n.interviewId = $interviewId
-                        AND n.userId = $userId
-                        AND n.twinId = $twinId
                         RETURN n
                         ORDER BY n.createdAt DESC
                     `, {
-                        interviewId: currentInterviewId,
-                        userId: userId,
-                        twinId: twinId
+                        interviewId: currentInterviewId
                     });
+                    
+                    log(`📊 Node query returned ${nodesResult.records.length} records`);
                     
                     // Query for sandbox relationships
                     const relsResult = await session.run(`
