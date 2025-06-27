@@ -30,21 +30,22 @@ export class MetadataEditorIntegration {
             
             // Load the bundle
             const script = document.createElement('script');
-            script.src = '../bundles/nexus-metadata-editor-v3.1.0.bundle.js';
+            script.src = '../bundles/nexus-metadata-editor-v3.2.0.bundle.js';
             script.onload = () => {
-                // v3.1.0 exports as NexusMetadataEditor
+                // v3.2.0 exports as NexusMetadataEditor
                 if (window.NexusMetadataEditor) {
                     // Create alias for backward compatibility
                     window.NexusMetadataControl = window.NexusMetadataEditor;
                     this.isLoaded = true;
-                    console.log('✅ Nexus Metadata Editor v3.1.0 loaded');
+                    console.log('✅ Nexus Metadata Editor v3.2.0 loaded');
                     console.log('📦 NexusMetadataEditor type:', typeof window.NexusMetadataEditor);
                     console.log('📦 NexusMetadataEditor keys:', Object.keys(window.NexusMetadataEditor));
                     console.log('📦 Has mount method?', typeof window.NexusMetadataEditor.mount);
-                    console.log('🎉 v3.1.0 features:');
+                    console.log('🎉 v3.2.0 features:');
                     console.log('  - JSON-safe data (no Map objects)');
                     console.log('  - Temporal data is optional');
                     console.log('  - Empty strings handled properly');
+                    console.log('  - Latest improvements and bug fixes');
                     
                     resolve(true);
                 } else if (window.NexusMetadataControl) {
