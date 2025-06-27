@@ -416,7 +416,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="../js/nexus-graph-control-v16.3.0.bundle.min.js"></script>
+    <script src="../js/nexus-graph-control-v17.0.0.bundle.min.js"></script>
 
     <script>
         let sandboxRoot = null;
@@ -929,6 +929,11 @@
                     onFileDrop: handleProductionFileDrop,
                     onNodeClick: (node) => {
                         // Show metadata editor in modal
+                        log('🖱️ Node clicked:', node);
+                        if (!window.metadataEditor) {
+                            log('❌ Metadata editor not initialized!');
+                            return;
+                        }
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
                             log('📝 Node updated:', updatedNode);
                             // The graph should auto-update when data changes

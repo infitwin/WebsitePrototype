@@ -35,6 +35,16 @@ export class MetadataEditorIntegration {
                 if (window.NexusMetadataControl) {
                     this.isLoaded = true;
                     console.log('✅ Nexus Metadata Editor loaded');
+                    console.log('📦 NexusMetadataControl type:', typeof window.NexusMetadataControl);
+                    console.log('📦 NexusMetadataControl keys:', Object.keys(window.NexusMetadataControl));
+                    console.log('📦 Has mount method?', typeof window.NexusMetadataControl.mount);
+                    console.log('📦 Full object:', window.NexusMetadataControl);
+                    
+                    // Also check for createNexusControl
+                    if (window.createNexusControl) {
+                        console.log('📦 Also found window.createNexusControl');
+                    }
+                    
                     resolve(true);
                 } else {
                     reject(new Error('NexusMetadataControl not found after loading'));
@@ -164,34 +174,111 @@ export class MetadataEditorIntegration {
             // Prepare entity data
             const entity = this.prepareEntity(node);
             
+            // Validate container
+            if (!container) {
+                console.error('❌ Container element is null or undefined');
+                throw new Error('Container element not provided');
+            }
+            
+            if (!(container instanceof HTMLElement)) {
+                console.error('❌ Container is not a DOM element:', container);
+                throw new Error('Container must be a DOM element');
+            }
+            
+            console.log('✅ Container validated:', container);
+            
             // Show loading state
             container.innerHTML = '<div style="padding: 20px; text-align: center;">Loading editor...</div>';
             
-            // Mount the form
-            this.currentHandle = window.NexusMetadataControl.mount(container, {
-                entity: entity,
-                onChange: (updatedEntity) => {
-                    // Convert back to node format
-                    const updatedNode = this.prepareNodeUpdate(updatedEntity, node);
-                    
-                    // Call the update callback
-                    if (onUpdate) {
-                        onUpdate(updatedNode, updatedEntity);
-                    }
-                    
-                    // Close the editor
-                    this.hideEditor();
-                    if (onClose) onClose(true);
-                },
-                onCancel: () => {
-                    this.hideEditor();
-                    if (onClose) onClose(false);
-                },
-                config: {
-                    enableValidation: true,
-                    showOptionalFields: true
+            // The bundle has a different API than documented
+            // Check what's actually available
+            let mountFunction = null;
+            
+            if (window.NexusMetadataControl && typeof window.NexusMetadataControl.mount === 'function') {
+                // Use the documented API if available
+                mountFunction = (container, config) => window.NexusMetadataControl.mount(container, config);
+            } else if (typeof window.NexusMetadataControl === 'function') {
+                // NexusMetadataControl is the constructor/mount function itself
+                console.log('📦 Using NexusMetadataControl as constructor');
+                mountFunction = window.NexusMetadataControl;
+            } else if (typeof window.createNexusControl === 'function') {
+                // Alternative API
+                console.log('📦 Using createNexusControl function');
+                mountFunction = window.createNexusControl;
+            } else {
+                console.error('❌ No valid mount function found. Available:', {
+                    NexusMetadataControl: window.NexusMetadataControl,
+                    typeOf: typeof window.NexusMetadataControl,
+                    createNexusControl: window.createNexusControl,
+                    keys: window.NexusMetadataControl ? Object.keys(window.NexusMetadataControl) : []
+                });
+                throw new Error('No metadata editor mount function available');
+            }
+            
+            console.log('📦 Mounting editor with entity:', entity);
+            
+            // Mount using whichever API is available
+            // Use the documented constructor API
+            if (typeof window.NexusMetadataControl === 'function') {
+                // Constructor API as documented in v1.0.0
+                try {
+                    // Create editor instance with correct API
+                    this.currentHandle = new window.NexusMetadataControl({
+                        container: container,
+                        entity: entity,
+                        onSave: (updatedEntity) => {  // Note: onSave, not onChange
+                            // Convert back to node format
+                            const updatedNode = this.prepareNodeUpdate(updatedEntity, node);
+                            
+                            // Call the update callback
+                            if (onUpdate) {
+                                onUpdate(updatedNode, updatedEntity);
+                            }
+                            
+                            // Close the editor
+                            this.hideEditor();
+                            if (onClose) onClose(true);
+                        },
+                        onCancel: () => {
+                            this.hideEditor();
+                            if (onClose) onClose(false);
+                        },
+                        config: {
+                            enableValidation: true,
+                            showOptionalFields: true
+                        }
+                    });
+                } catch (err) {
+                    console.error('❌ Constructor pattern failed:', err);
+                    throw err;
                 }
-            });
+            } else {
+                // Try mount pattern for newer API
+                this.currentHandle = mountFunction(container, {
+                    entity: entity,
+                    onChange: (updatedEntity) => {
+                        // Convert back to node format
+                        const updatedNode = this.prepareNodeUpdate(updatedEntity, node);
+                        
+                        // Call the update callback
+                        if (onUpdate) {
+                            onUpdate(updatedNode, updatedEntity);
+                        }
+                        
+                        // Close the editor
+                        this.hideEditor();
+                        if (onClose) onClose(true);
+                    },
+                    onCancel: () => {
+                        this.hideEditor();
+                        if (onClose) onClose(false);
+                    },
+                    config: {
+                        enableValidation: true,
+                        showOptionalFields: true
+                    }
+                });
+            }
             
         } catch (error) {
             console.error('❌ Failed to show metadata editor:', error);
@@ -211,7 +298,16 @@ export class MetadataEditorIntegration {
      */
     hideEditor() {
         if (this.currentHandle) {
-            this.currentHandle.unmount();
+            // Try different unmount methods
+            if (typeof this.currentHandle.unmount === 'function') {
+                this.currentHandle.unmount();
+            } else if (typeof this.currentHandle.destroy === 'function') {
+                this.currentHandle.destroy();
+            } else if (typeof this.currentHandle.remove === 'function') {
+                this.currentHandle.remove();
+            } else {
+                console.warn('⚠️ No unmount method found on handle:', this.currentHandle);
+            }
             this.currentHandle = null;
         }
     }

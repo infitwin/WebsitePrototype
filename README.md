@@ -29,7 +29,7 @@ python3 -m http.server 8358
 # http://localhost:8357/pages/auth.html
 ```
 
-## 🎯 Current Status (December 2024)
+## 🎯 Current Status (June 2025)
 
 ### ✅ What's Working:
 - **Authentication**: Full auth flow with email verification
@@ -47,7 +47,23 @@ python3 -m http.server 8358
 - **Admin Test Data**: Development-only page for generating Neo4j test graphs
 - **Neo4j Integration**: Centralized connection module with transaction support
 - **Sandbox to Production**: Complete posting workflow with review process
+- **Nexus Graph Control v17.0.0**: Updated to latest bundle with metadata editor support
+- **Metadata Editor Integration**: External forms for rich entity editing (Person, Organization, Event, Place, Thing)
+- **Refactored Architecture**: Sandbox.html reduced from 3,158 to ~2,200 lines with modular structure
 - **Test Credentials**: weezer@yev.com / 123456
+
+### 🆕 Recent Updates (June 2025):
+- **Nexus Graph Control v17.0.0**: Upgraded from v16.3.0 to v17.0.0 with metadata save integration support
+- **Metadata Editor**: Integrated external metadata forms for rich entity editing
+  - Supports 5 entity types: Person (62 fields), Organization (73 fields), Event (39 fields), Place (45 fields), Thing (58 fields)
+  - Schema.org compliant forms with validation
+  - Modal and panel integration patterns
+- **Code Refactoring**: Extracted modules from sandbox.html:
+  - File handlers: `/js/sandbox/file-handlers.js` (41 lines saved)
+  - Drag handlers: `/js/sandbox/drag-handlers.js` (135 lines saved)  
+  - Neo4j services: `/js/services/neo4j-data-service.js` (228 lines saved)
+  - Metadata integration: `/js/sandbox/metadata-editor-integration.js`
+- **Bundle Management**: Centralized bundle versioning with proper v17.0.0 deployment
 
 ### ⚠️ Known Issues:
 - **Batch Vectorization Bug**: Second file in batch returns 0 faces (Issue #133)
@@ -296,6 +312,6 @@ The Sandbox page provides a safe environment for editing family graph data durin
 
 ---
 
-**Last Updated**: December 2024 - Face detection and Firebase integration completed
-**Status**: ✅ Ready for frontend integration
+**Last Updated**: June 2025 - Nexus Graph Control v17.0.0 deployed with metadata editor integration
+**Status**: ✅ Ready for production with enhanced metadata editing capabilities
 **Next AI**: Read QUICKSTART.md for immediate context
