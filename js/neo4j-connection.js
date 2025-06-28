@@ -264,6 +264,26 @@ class Neo4jConnection {
     }
 
     /**
+     * Delete a sandbox relationship
+     * @param {string} relId - Relationship ID
+     * @returns {Promise<boolean>} True if deleted
+     */
+    async deleteSandboxRelationship(relId) {
+        const session = this.getSession();
+        try {
+            const result = await session.run(`
+                MATCH ()-[r {id: $relId, _isSandbox: true}]->()
+                DELETE r
+                RETURN COUNT(r) as deleted
+            `, { relId });
+            
+            return result.records[0].get('deleted').toNumber() > 0;
+        } finally {
+            await session.close();
+        }
+    }
+
+    /**
      * Create a relationship in sandbox
      * @param {string} sourceId - Source node ID
      * @param {string} targetId - Target node ID

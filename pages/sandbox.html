@@ -950,6 +950,25 @@
                         }
                     },
                     
+                    onEdgeDelete: async (edgeId) => {
+                        log('🗑️ Edge delete triggered:', edgeId);
+                        
+                        try {
+                            const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
+                            
+                            if (deleted) {
+                                // Remove from local data
+                                currentSandboxData.edges = currentSandboxData.edges.filter(e => e.id !== edgeId);
+                                simulateChange();
+                            }
+                            
+                            return deleted;
+                        } catch (error) {
+                            log('❌ Edge delete error:', error);
+                            throw error;
+                        }
+                    },
+                    
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
