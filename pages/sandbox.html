@@ -487,42 +487,44 @@
                 const userId = firebase.auth().currentUser?.uid;
                 const twinId = `${userId}-1`;
                 
-                log(`🔍 Loading for User: ${userId}, Twin: ${twinId}, Interview: ${currentInterviewId}`);
+                log(`🔍 Loading ALL sandbox items for User: ${userId}, Twin: ${twinId}`);
                 
-                if (!currentInterviewId) {
-                    log('⚠️ No current interview ID, skipping sandbox load');
+                if (!userId) {
+                    log('⚠️ No user ID, skipping sandbox load');
                     return;
                 }
                 
                 const session = window.Neo4jConnection.getSession();
                 
                 try {
-                    // Query for sandbox nodes with all required filters
-                    log(`📊 Querying nodes with interviewId: ${currentInterviewId}, userId: ${userId}, twinId: ${twinId}`);
+                    // Query for ALL sandbox nodes for this user/twin
+                    log(`📊 Loading ALL sandbox items for userId: ${userId}, twinId: ${twinId}`);
                     const nodesResult = await session.run(`
                         MATCH (n:Sandbox)
-                        WHERE n.interviewId = $interviewId
-                        AND n.userId = $userId
+                        WHERE n.userId = $userId
                         AND n.twinId = $twinId
                         RETURN n
                         ORDER BY n.createdAt DESC
                     `, {
-                        interviewId: currentInterviewId,
                         userId: userId,
                         twinId: twinId
                     });
                     
                     log(`📊 Node query returned ${nodesResult.records.length} records`);
                     
-                    // Query for sandbox relationships
+                    // Query for ALL sandbox relationships between nodes owned by this user/twin
                     const relsResult = await session.run(`
                         MATCH (source:Sandbox)-[r]->(target:Sandbox)
                         WHERE r._isSandbox = true
-                        AND r.interviewId = $interviewId
+                        AND source.userId = $userId
+                        AND source.twinId = $twinId
+                        AND target.userId = $userId
+                        AND target.twinId = $twinId
                         RETURN r, source.id as sourceId, target.id as targetId, type(r) as relType
                         ORDER BY r.createdAt DESC
                     `, {
-                        interviewId: currentInterviewId
+                        userId: userId,
+                        twinId: twinId
                     });
                     
                     // Process nodes
