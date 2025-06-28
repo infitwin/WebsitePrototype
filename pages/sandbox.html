@@ -430,6 +430,7 @@
         let initialDataLoaded = false;
         let currentSandboxData = { nodes: [], edges: [] };
         let activeReviewModal = null; // Track active review modal
+        let isDeleting = false; // Flag to track deletion operations
         // Check localStorage for existing interview ID, or create a new one
         let currentInterviewId = localStorage.getItem('currentInterviewId');
         if (!currentInterviewId) {
@@ -510,6 +511,12 @@
         }
         
         async function loadExistingSandboxData() {
+            // Don't reload if we're in the middle of a delete operation
+            if (isDeleting) {
+                log('⏸️ Skipping reload during delete operation');
+                return currentSandboxData;
+            }
+            
             log('🔄 Loading existing sandbox data...');
             
             try {
@@ -805,42 +812,60 @@
                             edgesAfter: newData.edges.length
                         });
                         
-                        // Detect deletions by comparing old and new data
-                        const oldNodeIds = new Set(currentSandboxData.nodes.map(n => n.id));
-                        const newNodeIds = new Set(newData.nodes.map(n => n.id));
-                        const oldEdgeIds = new Set(currentSandboxData.edges.map(e => e.id));
-                        const newEdgeIds = new Set(newData.edges.map(e => e.id));
-                        
-                        // Find deleted nodes
-                        for (const nodeId of oldNodeIds) {
-                            if (!newNodeIds.has(nodeId)) {
-                                console.log('🗑️ Node deleted in UI:', nodeId);
-                                // Delete from database
-                                try {
-                                    if (!window.Neo4jConnection.isConnected) {
-                                        await window.Neo4jConnection.connect();
+                        // Only check for deletions if we have initialized data
+                        if (initialDataLoaded && currentSandboxData.nodes.length > 0) {
+                            // Detect deletions by comparing old and new data
+                            const oldNodeIds = new Set(currentSandboxData.nodes.map(n => n.id));
+                            const newNodeIds = new Set(newData.nodes.map(n => n.id));
+                            const oldEdgeIds = new Set(currentSandboxData.edges.map(e => e.id));
+                            const newEdgeIds = new Set(newData.edges.map(e => e.id));
+                            
+                            // Find deleted nodes
+                            for (const nodeId of oldNodeIds) {
+                                if (!newNodeIds.has(nodeId)) {
+                                    console.log('🗑️ Node deleted in UI:', nodeId);
+                                    isDeleting = true;
+                                    // Delete from database
+                                    try {
+                                        if (!window.Neo4jConnection.isConnected) {
+                                            await window.Neo4jConnection.connect();
+                                        }
+                                        const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
+                                        console.log('Database delete result:', deleted);
+                                        if (deleted) {
+                                            log('✅ Node deleted from database: ' + nodeId);
+                                        } else {
+                                            log('⚠️ Node not found in database: ' + nodeId);
+                                        }
+                                    } catch (error) {
+                                        console.error('Failed to delete node from database:', error);
+                                        log('❌ Failed to delete node: ' + error.message);
+                                    } finally {
+                                        isDeleting = false;
                                     }
-                                    const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
-                                    console.log('Database delete result:', deleted);
-                                } catch (error) {
-                                    console.error('Failed to delete node from database:', error);
                                 }
                             }
-                        }
-                        
-                        // Find deleted edges
-                        for (const edgeId of oldEdgeIds) {
-                            if (!newEdgeIds.has(edgeId)) {
-                                console.log('🗑️ Edge deleted in UI:', edgeId);
-                                // Delete from database
-                                try {
-                                    if (!window.Neo4jConnection.isConnected) {
-                                        await window.Neo4jConnection.connect();
+                            
+                            // Find deleted edges
+                            for (const edgeId of oldEdgeIds) {
+                                if (!newEdgeIds.has(edgeId)) {
+                                    console.log('🗑️ Edge deleted in UI:', edgeId);
+                                    // Delete from database
+                                    try {
+                                        if (!window.Neo4jConnection.isConnected) {
+                                            await window.Neo4jConnection.connect();
+                                        }
+                                        const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
+                                        console.log('Database delete result:', deleted);
+                                        if (deleted) {
+                                            log('✅ Edge deleted from database: ' + edgeId);
+                                        } else {
+                                            log('⚠️ Edge not found in database: ' + edgeId);
+                                        }
+                                    } catch (error) {
+                                        console.error('Failed to delete edge from database:', error);
+                                        log('❌ Failed to delete edge: ' + error.message);
                                     }
-                                    const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
-                                    console.log('Database delete result:', deleted);
-                                } catch (error) {
-                                    console.error('Failed to delete edge from database:', error);
                                 }
                             }
                         }
