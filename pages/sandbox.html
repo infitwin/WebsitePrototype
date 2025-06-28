@@ -430,7 +430,15 @@
         let initialDataLoaded = false;
         let currentSandboxData = { nodes: [], edges: [] };
         let activeReviewModal = null; // Track active review modal
-        let currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; // Unique interview ID
+        // Check localStorage for existing interview ID, or create a new one
+        let currentInterviewId = localStorage.getItem('currentInterviewId');
+        if (!currentInterviewId) {
+            currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            localStorage.setItem('currentInterviewId', currentInterviewId);
+            console.log('📝 Created new interview ID:', currentInterviewId);
+        } else {
+            console.log('📋 Using existing interview ID from localStorage:', currentInterviewId);
+        }
         
         
         function log(message) {
@@ -489,15 +497,19 @@
                 const session = window.Neo4jConnection.getSession();
                 
                 try {
-                    // Query for sandbox nodes - use interviewId as primary filter
-                    log(`📊 Querying nodes with interviewId: ${currentInterviewId}`);
+                    // Query for sandbox nodes with all required filters
+                    log(`📊 Querying nodes with interviewId: ${currentInterviewId}, userId: ${userId}, twinId: ${twinId}`);
                     const nodesResult = await session.run(`
                         MATCH (n:Sandbox)
                         WHERE n.interviewId = $interviewId
+                        AND n.userId = $userId
+                        AND n.twinId = $twinId
                         RETURN n
                         ORDER BY n.createdAt DESC
                     `, {
-                        interviewId: currentInterviewId
+                        interviewId: currentInterviewId,
+                        userId: userId,
+                        twinId: twinId
                     });
                     
                     log(`📊 Node query returned ${nodesResult.records.length} records`);
