@@ -446,6 +446,40 @@
             console.log(message);
         }
         
+        // Test delete function - accessible from console
+        window.testDeleteSelected = async function() {
+            console.log('🧪 Testing delete functionality...');
+            
+            if (!sandboxGraphRef || !sandboxGraphRef.current) {
+                console.log('❌ No graph reference available');
+                return;
+            }
+            
+            // Try to get selected nodes
+            const graphData = sandboxGraphRef.current.getData();
+            console.log('Graph data:', graphData);
+            
+            // If no selection method, delete the first node as a test
+            if (graphData && graphData.nodes && graphData.nodes.length > 0) {
+                const nodeToDelete = graphData.nodes[0];
+                console.log('🗑️ Attempting to delete node:', nodeToDelete);
+                
+                // Call the delete callback directly
+                if (sandboxGraphRef.current.onNodeDelete) {
+                    try {
+                        const result = await sandboxGraphRef.current.onNodeDelete(nodeToDelete.id);
+                        console.log('Delete result:', result);
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                    }
+                } else {
+                    console.log('❌ No onNodeDelete callback found');
+                }
+            } else {
+                console.log('❌ No nodes found to delete');
+            }
+        };
+        
         function updateChangesDisplay() {
             const shouldShow = initialDataLoaded && changesCount > 0;
             const contextBar = document.getElementById('contextBar');
@@ -760,9 +794,57 @@
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
+                    enableDelete: true,  // Explicitly enable delete functionality
                     
                     // Data change callback
-                    onDataChange: (newData) => {
+                    onDataChange: async (newData) => {
+                        console.log('📊 Data changed:', {
+                            nodesBefore: currentSandboxData.nodes.length,
+                            nodesAfter: newData.nodes.length,
+                            edgesBefore: currentSandboxData.edges.length,
+                            edgesAfter: newData.edges.length
+                        });
+                        
+                        // Detect deletions by comparing old and new data
+                        const oldNodeIds = new Set(currentSandboxData.nodes.map(n => n.id));
+                        const newNodeIds = new Set(newData.nodes.map(n => n.id));
+                        const oldEdgeIds = new Set(currentSandboxData.edges.map(e => e.id));
+                        const newEdgeIds = new Set(newData.edges.map(e => e.id));
+                        
+                        // Find deleted nodes
+                        for (const nodeId of oldNodeIds) {
+                            if (!newNodeIds.has(nodeId)) {
+                                console.log('🗑️ Node deleted in UI:', nodeId);
+                                // Delete from database
+                                try {
+                                    if (!window.Neo4jConnection.isConnected) {
+                                        await window.Neo4jConnection.connect();
+                                    }
+                                    const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
+                                    console.log('Database delete result:', deleted);
+                                } catch (error) {
+                                    console.error('Failed to delete node from database:', error);
+                                }
+                            }
+                        }
+                        
+                        // Find deleted edges
+                        for (const edgeId of oldEdgeIds) {
+                            if (!newEdgeIds.has(edgeId)) {
+                                console.log('🗑️ Edge deleted in UI:', edgeId);
+                                // Delete from database
+                                try {
+                                    if (!window.Neo4jConnection.isConnected) {
+                                        await window.Neo4jConnection.connect();
+                                    }
+                                    const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
+                                    console.log('Database delete result:', deleted);
+                                } catch (error) {
+                                    console.error('Failed to delete edge from database:', error);
+                                }
+                            }
+                        }
+                        
                         currentSandboxData = newData;
                         simulateChange();
                     },
@@ -904,9 +986,16 @@
                     
                     onNodeDelete: async (nodeId) => {
                         log('🗑️ Node delete triggered:', nodeId);
+                        console.log('DELETE CALLBACK CALLED with nodeId:', nodeId);
                         
                         try {
+                            // Ensure connection
+                            if (!window.Neo4jConnection.isConnected) {
+                                await window.Neo4jConnection.connect();
+                            }
+                            
                             const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
+                            console.log('Delete result:', deleted);
                             
                             if (deleted) {
                                 // Remove from local data
@@ -915,11 +1004,15 @@
                                     e => e.source !== nodeId && e.target !== nodeId
                                 );
                                 simulateChange();
+                                log('✅ Node deleted successfully from database');
+                            } else {
+                                log('⚠️ Node not found in database');
                             }
                             
                             return deleted;
                         } catch (error) {
-                            log('❌ Node delete error:', error);
+                            log('❌ Node delete error:', error.message);
+                            console.error('Full delete error:', error);
                             throw error;
                         }
                     },
