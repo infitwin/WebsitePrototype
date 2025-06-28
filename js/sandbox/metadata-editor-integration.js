@@ -21,7 +21,7 @@ export class MetadataEditorIntegration {
         if (this.loadPromise) return this.loadPromise;
         
         this.loadPromise = new Promise((resolve, reject) => {
-            // Check if already loaded (v2.0.0 uses NexusMetadataEditor)
+            // Check if already loaded
             if (window.NexusMetadataEditor || window.NexusMetadataControl) {
                 this.isLoaded = true;
                 resolve(true);
@@ -30,22 +30,23 @@ export class MetadataEditorIntegration {
             
             // Load the bundle
             const script = document.createElement('script');
-            script.src = '../bundles/nexus-metadata-editor-v3.2.0.bundle.js';
+            script.src = '../bundles/nexus-metadata-editor-v3.3.0.bundle.js';
             script.onload = () => {
-                // v3.2.0 exports as NexusMetadataEditor
+                // v3.3.0 exports as NexusMetadataEditor
                 if (window.NexusMetadataEditor) {
                     // Create alias for backward compatibility
                     window.NexusMetadataControl = window.NexusMetadataEditor;
                     this.isLoaded = true;
-                    console.log('✅ Nexus Metadata Editor v3.2.0 loaded');
+                    console.log('✅ Nexus Metadata Editor v3.3.0 loaded');
                     console.log('📦 NexusMetadataEditor type:', typeof window.NexusMetadataEditor);
                     console.log('📦 NexusMetadataEditor keys:', Object.keys(window.NexusMetadataEditor));
                     console.log('📦 Has mount method?', typeof window.NexusMetadataEditor.mount);
-                    console.log('🎉 v3.2.0 features:');
-                    console.log('  - JSON-safe data (no Map objects)');
-                    console.log('  - Temporal data is optional');
-                    console.log('  - Empty strings handled properly');
-                    console.log('  - Latest improvements and bug fixes');
+                    console.log('📦 Has NexusRelationshipEditorWrapper?', !!window.NexusMetadataEditor.NexusRelationshipEditorWrapper);
+                    console.log('🎉 v3.3.0 features:');
+                    console.log('  - NexusRelationshipEditorWrapper for proper edge integration');
+                    console.log('  - Automatic category inference from relationship type');
+                    console.log('  - Handles Nexus edge data structure properly');
+                    console.log('  - All v3.2.0 fixes included');
                     
                     resolve(true);
                 } else if (window.NexusMetadataControl) {
@@ -507,87 +508,140 @@ export class MetadataEditorIntegration {
             // Ensure editor is loaded
             await this.loadEditor();
             
-            // Check if mount method exists (same for both nodes and relationships)
-            if (!window.NexusMetadataEditor || typeof window.NexusMetadataEditor.mount !== 'function') {
-                console.error('❌ NexusMetadataEditor.mount not available');
-                throw new Error('NexusMetadataEditor v2.0.0 mount method not found');
+            // Check if v3.3.0 wrapper is available
+            if (window.NexusMetadataEditor && window.NexusMetadataEditor.NexusRelationshipEditorWrapper) {
+                console.log('✅ Using v3.3.0 NexusRelationshipEditorWrapper');
+                
+                // Create wrapper element for React component
+                const wrapperDiv = document.createElement('div');
+                container.appendChild(wrapperDiv);
+                
+                // Use the new wrapper component
+                const root = ReactDOM.createRoot(wrapperDiv);
+                const wrapper = React.createElement(window.NexusMetadataEditor.NexusRelationshipEditorWrapper, {
+                    edgeData: edge,
+                    sourceNode: {
+                        id: sourceNode.id,
+                        name: sourceNode.label || sourceNode.name,
+                        type: sourceNode.type || 'Person'
+                    },
+                    targetNode: {
+                        id: targetNode.id,
+                        name: targetNode.label || targetNode.name,
+                        type: targetNode.type || 'Person'
+                    },
+                    onSave: (updatedRelationship) => {
+                        console.log('📝 Relationship save triggered with data:', updatedRelationship);
+                        
+                        try {
+                            // Convert back to edge format
+                            const updatedEdge = {
+                                ...edge,
+                                type: updatedRelationship.type,
+                                category: updatedRelationship.category,
+                                stateMaps: updatedRelationship.stateMaps,
+                                properties: {
+                                    ...updatedRelationship,
+                                    // Remove structural fields that shouldn't be in properties
+                                    category: undefined,
+                                    type: undefined,
+                                    sourceId: undefined,
+                                    targetId: undefined,
+                                    stateMaps: undefined
+                                }
+                            };
+                            
+                            if (onUpdate) {
+                                onUpdate(updatedEdge, updatedRelationship);
+                            }
+                            
+                            if (onClose) onClose(true);
+                            root.unmount();
+                        } catch (error) {
+                            console.error('❌ Error in relationship save callback:', error);
+                        }
+                    },
+                    onCancel: () => {
+                        console.log('❌ Relationship edit cancelled');
+                        if (onClose) onClose(false);
+                        root.unmount();
+                    }
+                });
+                
+                root.render(wrapper);
+                this.currentHandle = { unmount: () => root.unmount() };
+                
+            } else if (window.NexusMetadataEditor && typeof window.NexusMetadataEditor.mount === 'function') {
+                // Fallback to v3.2.0 method
+                console.log('⚠️ Using v3.2.0 mount method (no wrapper available)');
+                
+                // Prepare relationship data as 'entity' (v2.0.0 API)
+                const relationshipEntity = {
+                    category: edge.category || this.inferRelationshipCategory(edge.type || edge.label),
+                    type: edge.type || edge.label || 'RELATED_TO',
+                    sourceId: edge.source,
+                    targetId: edge.target,
+                    stateMaps: edge.stateMaps || [],
+                    // Include any other properties from edge
+                    ...edge.properties
+                };
+                
+                console.log('📦 Mounting relationship editor with entity:', relationshipEntity);
+                
+                // Use the mount() method but pass relationship as 'entity'
+                this.currentHandle = window.NexusMetadataEditor.mount(container, {
+                    entity: relationshipEntity,
+                    sourceNode: {
+                        id: sourceNode.id,
+                        name: sourceNode.label || sourceNode.name,
+                        type: sourceNode.type || 'Person'
+                    },
+                    targetNode: {
+                        id: targetNode.id,
+                        name: targetNode.label || targetNode.name,
+                        type: targetNode.type || 'Person'
+                    },
+                    mode: 'inline',
+                    onSave: (updatedRelationship) => {
+                        console.log('📝 Relationship save triggered with data:', updatedRelationship);
+                        
+                        try {
+                            // Convert back to edge format
+                            const updatedEdge = {
+                                ...edge,
+                                type: updatedRelationship.type,
+                                category: updatedRelationship.category,
+                                stateMaps: updatedRelationship.stateMaps,
+                                properties: {
+                                    ...updatedRelationship,
+                                    // Remove structural fields that shouldn't be in properties
+                                    category: undefined,
+                                    type: undefined,
+                                    sourceId: undefined,
+                                    targetId: undefined,
+                                    stateMaps: undefined
+                                }
+                            };
+                            
+                            if (onUpdate) {
+                                onUpdate(updatedEdge, updatedRelationship);
+                            }
+                            
+                            if (onClose) onClose(true);
+                        } catch (error) {
+                            console.error('❌ Error in relationship save callback:', error);
+                        }
+                    },
+                    onCancel: () => {
+                        console.log('❌ Relationship edit cancelled');
+                        if (onClose) onClose(false);
+                    }
+                });
+            } else {
+                throw new Error('NexusMetadataEditor not properly loaded');
             }
             
-            // Prepare relationship data as 'entity' (v2.0.0 API)
-            const relationshipEntity = {
-                category: edge.category || this.inferRelationshipCategory(edge.type || edge.label),
-                type: edge.type || edge.label || 'RELATED_TO',
-                sourceId: edge.source,
-                targetId: edge.target,
-                stateMaps: edge.stateMaps || [],
-                // Include any other properties from edge
-                ...edge.properties
-            };
-            
-            console.log('📦 Mounting relationship editor with entity:', relationshipEntity);
-            
-            // Debug the mount configuration
-            const mountConfig = {
-                entity: relationshipEntity,  // Pass relationship as 'entity'
-                sourceNode: {
-                    id: sourceNode.id,
-                    name: sourceNode.label || sourceNode.name,
-                    type: sourceNode.type || 'Person'
-                },
-                targetNode: {
-                    id: targetNode.id,
-                    name: targetNode.label || targetNode.name,
-                    type: targetNode.type || 'Person'
-                },
-                mode: 'inline',
-                onSave: (updatedRelationship) => {
-                    console.log('📝 Relationship save triggered with data:', updatedRelationship);
-                    console.log('📝 onUpdate callback exists:', !!onUpdate);
-                    console.log('📝 onClose callback exists:', !!onClose);
-                    
-                    try {
-                        // Convert back to edge format
-                        const updatedEdge = {
-                            ...edge,
-                            type: updatedRelationship.type,
-                            category: updatedRelationship.category,
-                            stateMaps: updatedRelationship.stateMaps,
-                            properties: {
-                                ...updatedRelationship,
-                                // Remove structural fields that shouldn't be in properties
-                                category: undefined,
-                                type: undefined,
-                                sourceId: undefined,
-                                targetId: undefined,
-                                stateMaps: undefined
-                            }
-                        };
-                        
-                        console.log('📝 Calling onUpdate with updatedEdge:', updatedEdge);
-                        
-                        if (onUpdate) {
-                            onUpdate(updatedEdge, updatedRelationship);
-                        }
-                        
-                        console.log('📝 Calling onClose(true)');
-                        if (onClose) onClose(true);
-                    } catch (error) {
-                        console.error('❌ Error in relationship save callback:', error);
-                    }
-                },
-                onCancel: () => {
-                    console.log('❌ Relationship edit cancelled');
-                    if (onClose) onClose(false);
-                }
-            };
-            
-            console.log('🔧 Full mount configuration:', mountConfig);
-            
-            // Use the same mount() method but pass relationship as 'entity'
-            this.currentHandle = window.NexusMetadataEditor.mount(container, mountConfig);
-            
             console.log('✅ Relationship editor mounted successfully');
-            console.log('📦 Handle returned:', this.currentHandle);
             
         } catch (error) {
             console.error('❌ Failed to show relationship editor:', error);
