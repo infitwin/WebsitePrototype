@@ -256,6 +256,48 @@
         </div>
     </div>
 
+    <!-- Text Viewer Modal -->
+    <div class="modal" id="textModal">
+        <div class="modal-content text-modal-content">
+            <div class="text-modal-header">
+                <h3 class="modal-title" id="textModalTitle">Text File</h3>
+                <button class="modal-close" onclick="closeTextModal()">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="text-modal-body">
+                <div class="text-container">
+                    <pre id="textModalContent" class="text-content"></pre>
+                </div>
+                <div class="text-info">
+                    <div class="text-metadata">
+                        <span class="text-size" id="textModalSize">Size</span>
+                        <span class="text-date" id="textModalDate">Date</span>
+                        <span class="text-encoding" id="textModalEncoding">UTF-8</span>
+                    </div>
+                    <div class="text-actions">
+                        <button class="btn-secondary" onclick="copyTextContent()">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                            </svg>
+                            Copy Text
+                        </button>
+                        <button class="btn-secondary" onclick="downloadTextFile()">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 3a1 1 0 00-1 1v6.586L6.707 8.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 10.586V4a1 1 0 00-1-1z"/>
+                                <path d="M3 13a1 1 0 00-1 1v2a2 2 0 002 2h12a2 2 0 002-2v-2a1 1 0 10-2 0v2H4v-2a1 1 0 00-1-1z"/>
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/navigation.js"></script>
     <script type="module">
         import { initializeMyFiles } from '../js/pages/my-files.js';

@@ -460,6 +460,23 @@ function initializeModalHandlers() {
             window.closeImageModal();
         }
     });
+    
+    // Text modal handlers
+    const textModal = document.getElementById('textModal');
+    
+    // Click outside text modal to close
+    textModal?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            window.closeTextModal();
+        }
+    });
+    
+    // ESC key to close text modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && textModal?.classList.contains('active')) {
+            window.closeTextModal();
+        }
+    });
 }
 
 /**
@@ -886,6 +903,93 @@ window.closeImageModal = function() {
     const modal = document.getElementById('imageModal');
     modal?.classList.remove('active');
     window.currentImageFile = null;
+};
+
+/**
+ * Show text file modal
+ */
+window.showTextModal = async function(file) {
+    const modal = document.getElementById('textModal');
+    const modalTitle = document.getElementById('textModalTitle');
+    const modalContent = document.getElementById('textModalContent');
+    const modalSize = document.getElementById('textModalSize');
+    const modalDate = document.getElementById('textModalDate');
+    const modalEncoding = document.getElementById('textModalEncoding');
+    
+    if (!modal || !modalContent) return;
+    
+    // Set metadata
+    modalTitle.textContent = file.displayName || file.fileName || file.name || 'Text File';
+    modalSize.textContent = formatFileSize(file.fileSize || file.size || 0);
+    modalDate.textContent = formatDate(file.uploadedAt || file.dateUploaded);
+    modalEncoding.textContent = 'UTF-8'; // Default encoding
+    
+    // Store current file for actions
+    window.currentTextFile = file;
+    
+    // Show loading state
+    modalContent.textContent = 'Loading text content...';
+    modal.classList.add('active');
+    
+    try {
+        // Fetch text content from download URL
+        const response = await fetch(file.downloadURL);
+        if (!response.ok) {
+            throw new Error('Failed to load text file');
+        }
+        
+        const text = await response.text();
+        
+        // Display text content
+        modalContent.textContent = text;
+        
+        console.log('✅ Loaded text file:', file.fileName);
+        
+    } catch (error) {
+        console.error('❌ Failed to load text file:', error);
+        modalContent.textContent = `Error loading file: ${error.message}`;
+        modalContent.style.color = '#ef4444';
+    }
+};
+
+/**
+ * Close text modal
+ */
+window.closeTextModal = function() {
+    const modal = document.getElementById('textModal');
+    modal?.classList.remove('active');
+    window.currentTextFile = null;
+};
+
+/**
+ * Copy text content to clipboard
+ */
+window.copyTextContent = async function() {
+    const content = document.getElementById('textModalContent')?.textContent;
+    if (!content) return;
+    
+    try {
+        await navigator.clipboard.writeText(content);
+        showNotification('Text copied to clipboard', 'success');
+    } catch (error) {
+        console.error('Failed to copy text:', error);
+        showNotification('Failed to copy text', 'error');
+    }
+};
+
+/**
+ * Download text file
+ */
+window.downloadTextFile = function() {
+    if (!window.currentTextFile) return;
+    
+    // Create a link and trigger download
+    const link = document.createElement('a');
+    link.href = window.currentTextFile.downloadURL;
+    link.download = window.currentTextFile.fileName || 'download.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 };
 
 /**
@@ -1616,6 +1720,18 @@ function createFileCard(file) {
             // Always use showImageModal to ensure rename feature works
             // TODO: Integrate rename feature into face-overlay.js later
             showImageModal(file);
+        };
+    }
+    
+    // Add click handler for text files
+    if (file.fileType && (file.fileType === 'text/plain' || file.fileType.includes('text'))) {
+        thumbnail.style.cursor = 'pointer';
+        thumbnail.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            showTextModal(file);
         };
     }
     
