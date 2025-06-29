@@ -297,8 +297,10 @@ function initializeUploadHandling() {
  */
 async function handleFileUpload(files) {
     console.log('Files selected for upload:', files);
+    // Convert FileList to array
+    const filesArray = Array.from(files);
     // Log file types for debugging
-    files.forEach(file => {
+    filesArray.forEach(file => {
         console.log(`📄 File: ${file.name}, Type: ${file.type || 'unknown'}, Size: ${file.size}`);
     });
     
@@ -307,21 +309,21 @@ async function handleFileUpload(files) {
     try {
         // Show initial notification
         if (typeof showNotification === 'function') {
-            showNotification(`${files.length} file(s) added to upload queue`, 'info');
+            showNotification(`${filesArray.length} file(s) added to upload queue`, 'info');
         }
         
         // AWAIT the upload process to ensure it completes
-        await processFilesForUpload(files, uploadContainer);
+        await processFilesForUpload(filesArray, uploadContainer);
         
         // Show success feedback
         if (typeof showNotification === 'function') {
-            showNotification(`${files.length} file(s) uploaded successfully`, 'success');
+            showNotification(`${filesArray.length} file(s) uploaded successfully`, 'success');
         } else {
-            console.log(`✅ ${files.length} file(s) uploaded successfully`);
+            console.log(`✅ ${filesArray.length} file(s) uploaded successfully`);
             // Create simple notification fallback
             const notification = document.createElement('div');
             notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10B981; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000;';
-            notification.textContent = `${files.length} file(s) uploaded successfully`;
+            notification.textContent = `${filesArray.length} file(s) uploaded successfully`;
             document.body.appendChild(notification);
             setTimeout(() => notification.remove(), 3000);
         }
