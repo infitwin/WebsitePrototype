@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test Text File</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        #downloadLink {
+            display: none;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Create Test Text File</h1>
+    <p>Click the button below to create and download a test text file with content.</p>
+    
+    <button class="button" onclick="createTextFile()">Create Text File</button>
+    
+    <a id="downloadLink" class="button" download="test-content.txt">Download Created File</a>
+    
+    <div id="status"></div>
+    
+    <script>
+        function createTextFile() {
+            // Create text content
+            const content = `This is a test text file created on ${new Date().toLocaleString()}
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+This file contains actual content to test text file uploads.
+It should upload successfully to the My Files page.
+
+Random number: ${Math.random()}
+File created for testing purposes.`;
+            
+            // Create blob
+            const blob = new Blob([content], { type: 'text/plain' });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.getElementById('downloadLink');
+            link.href = url;
+            link.style.display = 'inline-block';
+            
+            // Update status
+            document.getElementById('status').innerHTML = `
+                <p style="color: green;">✓ Text file created with ${blob.size} bytes of content.</p>
+                <p>Now click "Download Created File" and then upload it to My Files.</p>
+            `;
+        }
+    </script>
+</body>
+</html>
