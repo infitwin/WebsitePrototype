@@ -103,7 +103,15 @@ WebsitePrototype/
 ├── css/
 │   └── styles.css                     # Van Gogh-inspired styling
 ├── js/
-│   └── main.js                        # Frontend functionality
+│   ├── main.js                        # Frontend functionality
+│   ├── sandbox/                       # Sandbox-specific modules
+│   │   ├── metadata-editor-integration.js  # NexusMetadataEditor integration
+│   │   ├── file-handlers.js           # File drop handling
+│   │   └── drag-handlers.js           # Drag and drop functionality
+│   └── components/                    # UI component system
+├── bundles/                           # External library bundles
+│   ├── nexus-graph-v17.2.0.bundle.js  # Nexus Graph Control
+│   └── nexus-metadata-editor-v4.0.4.bundle.js  # Metadata Editor
 ├── pages/                             # Application pages
 │   ├── auth.html                      # Login/registration
 │   ├── dashboard.html                 # Main dashboard
@@ -311,11 +319,63 @@ The Sandbox page provides a safe environment for editing family graph data durin
 - AWS keys: `.env` file
 - Never commit credentials to Git
 
+## 📦 Updating External Bundles
+
+### NexusMetadataEditor Updates
+
+When updating to a new version of NexusMetadataEditor:
+
+1. **Copy the new bundle**:
+   ```bash
+   cp /home/tim/current-projects/NexusMetadataEditor/bundles/vX.X.X/nexus-metadata-editor-vX.X.X.bundle.js /home/tim/WebsitePrototype/bundles/
+   ```
+
+2. **Update references in 3 places**:
+   - `pages/sandbox.html` - Update the script tag (~line 421)
+   - `js/sandbox/metadata-editor-integration.js` - Update bundle path (~line 33)
+   - Update version references in console.log statements
+
+3. **Read the version README**:
+   - Always read `/home/tim/current-projects/NexusMetadataEditor/bundles/vX.X.X/README.md`
+   - Check for breaking changes, new features, and migration notes
+
+4. **Test the integration**:
+   - Open sandbox page and verify forms load correctly
+   - Test both node forms (Person, Organization, etc.) and edge forms
+   - Check that theme styling is applied properly
+
+### Nexus Graph Control Updates
+
+When updating to a new version of Nexus Graph Control:
+
+1. **Copy the new bundle**:
+   ```bash
+   cp /home/tim/current-projects/NexusGraphControl/bundles/vX.X.X/nexus-graph-vX.X.X.bundle.js /home/tim/WebsitePrototype/bundles/
+   ```
+
+2. **Update reference**:
+   - `pages/sandbox.html` - Update the script tag (~line 419)
+
+3. **Important Notes**:
+   - **NEVER split the NexusControl** - it's one integrated component
+   - Includes ACTIVE tab (graph) and HISTORY tab (timeline) together
+   - Initialize in a single container with full control
+
+4. **Test the integration**:
+   - Verify graph visualization works
+   - Check node/edge creation and editing
+   - Test sandbox to production posting workflow
+
+### Current Versions
+- **NexusMetadataEditor**: v4.0.4 (Theme system, full edge form support)
+- **Nexus Graph Control**: v17.2.0 (Enhanced graph features)
+
 ## 📚 Documentation
 
 - **Build Process**: See QUICKSTART.md for complete setup
 - **API Integration**: Artifact processor documentation in `/current-projects/ArtifactProcessor/`
 - **Firebase Schema**: User documents structure in `users/{userId}/files/{fileId}`
+- **Bundle Updates**: See "Updating External Bundles" section above
 
 ---
 

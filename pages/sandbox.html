@@ -1256,17 +1256,77 @@
         
         // Handle node drops on sandbox
         async function handleSandboxNodeDrop(targetId, nodeData, dropType, position) {
-            log(`🎯 Node drop on sandbox: targetId=${targetId}, dropType=${dropType}`);
-            log('📦 Node data:', nodeData);
-            log('📍 Position:', position);
+            console.log('🎯 handleSandboxNodeDrop called with arguments:', {
+                targetId,
+                nodeData,
+                dropType,
+                position,
+                argumentsLength: arguments.length,
+                allArguments: Array.from(arguments)
+            });
             
-            if (!currentSandboxData) {
-                currentSandboxData = { nodes: [], edges: [] };
-            }
-            
-            // Check if this is a face drop (from the faces panel)
-            if (nodeData.originalData && nodeData.originalData.type === 'face') {
-                handleFaceDropOnSandbox(targetId, nodeData, dropType, position);
+            try {
+                // Enhanced validation for node data
+                if (!nodeData) {
+                    console.error('❌ nodeData is null or undefined');
+                    throw new Error('No node data provided');
+                }
+                
+                // Check if nodeData is a string that needs parsing
+                if (typeof nodeData === 'string') {
+                    console.log('📝 nodeData is string, attempting to parse...');
+                    try {
+                        nodeData = JSON.parse(nodeData);
+                        console.log('✅ Successfully parsed nodeData:', nodeData);
+                    } catch (parseError) {
+                        console.error('❌ Failed to parse nodeData string:', parseError);
+                        throw new Error('Invalid node data format');
+                    }
+                }
+                
+                // Validate nodeData is an object
+                if (typeof nodeData !== 'object') {
+                    console.error('❌ nodeData is not an object, type:', typeof nodeData);
+                    console.error('nodeData value:', nodeData);
+                    throw new Error(`Expected node data to be an object, got ${typeof nodeData}`);
+                }
+                
+                // Log the structure of nodeData for debugging
+                console.log('📊 nodeData structure:', {
+                    keys: Object.keys(nodeData),
+                    type: nodeData.type,
+                    dragType: nodeData.dragType,
+                    sourceControl: nodeData.sourceControl,
+                    id: nodeData.id,
+                    name: nodeData.name,
+                    label: nodeData.label,
+                    originalData: nodeData.originalData
+                });
+                
+                if (!currentSandboxData) {
+                    currentSandboxData = { nodes: [], edges: [] };
+                }
+                
+                // Check if this is a face drop (from the faces panel)
+                if (nodeData.originalData && nodeData.originalData.type === 'face') {
+                    handleFaceDropOnSandbox(targetId, nodeData, dropType, position);
+                    return;
+                }
+            } catch (validationError) {
+                console.error('❌ Validation error in handleSandboxNodeDrop:', validationError);
+                console.error('Full error:', validationError.stack);
+                
+                // Show user-friendly error
+                if (window.Modal) {
+                    const modal = new window.Modal({
+                        title: 'Drop Error',
+                        content: `Cannot process this drop: ${validationError.message}`,
+                        type: 'danger'
+                    });
+                    modal.show();
+                } else {
+                    alert(`Cannot process this drop: ${validationError.message}`);
+                }
                 return;
             }
             
@@ -1321,6 +1381,15 @@
                         }
                         
                         // Create in Neo4j
+                        console.log('Creating sandbox node with:', {
+                            newNode,
+                            userId,
+                            twinId,
+                            currentInterviewId,
+                            hasNeo4jConnection: !!window.Neo4jConnection,
+                            hasCreateMethod: !!window.Neo4jConnection?.createSandboxNode
+                        });
+                        
                         const createdNode = await window.Neo4jConnection.createSandboxNode(
                             newNode,
                             userId,
@@ -1410,13 +1479,45 @@
                 await initializeSandbox();
                 
             } catch (error) {
-                log('❌ Error handling node drop:', error);
-                if (window.Modal) {
-                    new window.Modal({
-                        title: 'Drop Error',
-                        content: `Failed to add node: ${error.message}`,
-                        type: 'danger'
-                    }).show();
+                console.error('❌ Error handling node drop:', error);
+                console.error('Error stack:', error.stack);
+                console.error('Error details:', {
+                    message: error.message,
+                    name: error.name,
+                    nodeData: nodeData,
+                    dropType: dropType,
+                    targetId: targetId
+                });
+                
+                // Check for specific error types
+                let errorMessage = 'Failed to add node: ';
+                if (error.message && error.message.includes('Type mismatch')) {
+                    errorMessage = 'Node data format error. The dropped node data is not in the expected format. Please check the console for details.';
+                    console.error('🔍 Type mismatch error - nodeData format issue. Expected format should match Nexus control requirements.');
+                    console.error('Received nodeData:', nodeData);
+                } else if (error.message && error.message.includes('expected MaP')) {
+                    errorMessage = 'Internal Nexus control error. The control expects a different data structure. This is a known issue.';
+                    console.error('🔍 MaP error - This is an internal Nexus control issue that needs to be fixed in the control itself.');
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                // Try to show modal, but catch any errors
+                try {
+                    if (window.Modal) {
+                        const modal = new window.Modal({
+                            title: 'Drop Error',
+                            content: errorMessage,
+                            type: 'danger'
+                        });
+                        modal.show();
+                    } else {
+                        // Fallback alert if Modal not available
+                        alert(errorMessage);
+                    }
+                } catch (modalError) {
+                    console.error('Failed to show error modal:', modalError);
+                    alert(errorMessage);
                 }
             }
         }

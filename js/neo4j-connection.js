@@ -431,30 +431,47 @@ class Neo4jConnection {
     async copyProductionNodeToSandbox(productionNodeId, interviewId) {
         const session = this.getSession();
         try {
-            const query = `
+            // First query: Get the production node and its labels
+            const getNodeQuery = `
                 MATCH (p {id: $productionNodeId})
                 WHERE NOT p:Sandbox
-                CREATE (s:Sandbox)
-                SET s = properties(p)
-                SET s._isSandbox = true
-                SET s._originalId = p.id
-                SET s.interviewId = $interviewId
-                SET s.sessionId = $interviewId
-                SET s.copiedAt = timestamp()
-                SET s += labels(p)
-                RETURN s
+                RETURN p, labels(p) as nodeLabels
             `;
             
-            const result = await session.run(query, {
-                productionNodeId,
-                interviewId
+            const nodeResult = await session.run(getNodeQuery, {
+                productionNodeId
             });
             
-            if (result.records.length === 0) {
+            if (nodeResult.records.length === 0) {
                 throw new Error(`Production node ${productionNodeId} not found`);
             }
             
-            return result.records[0].get('s').properties;
+            const productionNode = nodeResult.records[0].get('p');
+            const labels = nodeResult.records[0].get('nodeLabels');
+            
+            // Build label string for CREATE statement (excluding 'Sandbox' which we'll add)
+            const labelString = labels.filter(l => l !== 'Sandbox').join(':');
+            const fullLabelString = labelString ? `:Sandbox:${labelString}` : ':Sandbox';
+            
+            // Second query: Create the sandbox node with all labels
+            const createQuery = `
+                CREATE (s${fullLabelString})
+                SET s = $properties
+                SET s._isSandbox = true
+                SET s._originalId = $originalId
+                SET s.interviewId = $interviewId
+                SET s.sessionId = $interviewId
+                SET s.copiedAt = timestamp()
+                RETURN s
+            `;
+            
+            const createResult = await session.run(createQuery, {
+                properties: productionNode.properties,
+                originalId: productionNodeId,
+                interviewId
+            });
+            
+            return createResult.records[0].get('s').properties;
         } finally {
             await session.close();
         }
