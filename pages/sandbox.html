@@ -416,7 +416,9 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="../bundles/nexus-graph-v17.2.0.bundle.js"></script>
+    <!-- Nexus Graph Control v17.5.0 - Updated Dec 29, 2024
+         New features: Auto-save, floating labels, face drops with isFaceDrop flag -->
+    <script src="../bundles/nexus-graph-v17.5.0.bundle.js"></script>
     <!-- NexusMetadataEditor v4.0.4 bundle -->
     <script src="../bundles/nexus-metadata-editor-v4.0.4.bundle.js"></script>
 
@@ -1053,6 +1055,58 @@
                     
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
+                    onFaceDrop: (nodeId, imageData, isNode) => {
+                        console.log('😊 onFaceDrop callback fired!', {
+                            nodeId: nodeId,
+                            imageData: imageData,
+                            isNode: isNode,
+                            imageDataType: typeof imageData,
+                            imageDataKeys: imageData ? Object.keys(imageData) : 'null'
+                        });
+                        
+                        if (!isNode || !nodeId) {
+                            console.log('❌ Face not dropped on a node');
+                            return;
+                        }
+                        
+                        // Find the node and update its imageUrl
+                        const nodeIndex = currentSandboxData.nodes.findIndex(n => n.id === nodeId);
+                        if (nodeIndex === -1) {
+                            console.log('❌ Node not found:', nodeId);
+                            return;
+                        }
+                        
+                        // Extract the image URL from imageData
+                        let imageUrl = null;
+                        if (typeof imageData === 'string') {
+                            imageUrl = imageData;
+                        } else if (imageData && typeof imageData === 'object') {
+                            imageUrl = imageData.url || imageData.imageUrl || imageData.dataUrl || imageData.src;
+                        }
+                        
+                        if (!imageUrl) {
+                            console.log('❌ No image URL found in imageData:', imageData);
+                            return;
+                        }
+                        
+                        console.log('✅ Updating node with imageUrl:', {
+                            nodeId: nodeId,
+                            imageUrl: imageUrl.substring(0, 50) + '...'
+                        });
+                        
+                        // Update the node
+                        currentSandboxData.nodes[nodeIndex].imageUrl = imageUrl;
+                        
+                        // Force update the graph
+                        if (sandboxGraphRef && sandboxGraphRef.current) {
+                            if (sandboxGraphRef.current.updateData) {
+                                sandboxGraphRef.current.updateData(currentSandboxData);
+                                console.log('📊 Graph updated with face image');
+                            }
+                        }
+                        
+                        simulateChange();
+                    },
                     onNodeClick: (node) => {
                         // Show metadata editor in modal with graphRef for handleMetaSave
                         window.metadataEditor.showEditorModal(node, null, sandboxGraphRef);
@@ -2098,6 +2152,7 @@
                         const img = document.createElement('img');
                         img.src = faceDataUrl;
                         img.alt = `Face ${faceIndex + 1}`;
+                        img.draggable = false; // CRITICAL: Prevent default image drag behavior
                         div.appendChild(img);
                         
                         // Add confidence badge
@@ -2114,6 +2169,14 @@
                         nameLabel.className = 'face-thumbnail-name';
                         nameLabel.textContent = face.name || `Face ${faceIndex + 1}`;
                         div.appendChild(nameLabel);
+                        
+                        // CRITICAL: Update the stored face data to include the extracted image URL
+                        const existingData = JSON.parse(div.dataset.faceData || '{}');
+                        div.dataset.faceData = JSON.stringify({
+                            ...existingData,
+                            imageUrl: faceDataUrl,  // Add the extracted face image URL
+                            dataUrl: faceDataUrl    // Also store as dataUrl for compatibility
+                        });
                     })
                     .catch(error => {
                         log('❌ Failed to extract face:', error.message);

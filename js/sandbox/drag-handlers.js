@@ -128,29 +128,31 @@ export function handleArtifactDragEnd(e) {
  * Handle start of face drag operation
  * @param {DragEvent} e - The drag start event
  * @param {Function} logFn - Logging function
+ * 
+ * For Nexus Graph Control v17.5.0:
+ * - Face drops are differentiated from file drops by the isFaceDrop flag
+ * - When isFaceDrop=true and dropped on a node, the node's imageUrl is set to dataUrl
+ * - This makes the face image fill the entire node
  */
 export function handleFaceDragStart(e, logFn = console.log) {
     e.target.classList.add('dragging');
     
     const faceData = JSON.parse(e.target.dataset.faceData);
     
-    // Use node drag format as per NODE_DRAG_DROP_GUIDE.md
+    // v17.5.0 Requirements for face drops:
+    // 1. isFaceDrop: true - Required flag to differentiate from file drops
+    // 2. dataUrl - The image data URL that will become the node's imageUrl
+    // 3. Target must be a node (not an edge) for face drops to work
     const dragData = {
-        dragType: 'node',           // REQUIRED: Identifies this as a node drag
-        sourceControl: 'node-list', // REQUIRED: Must be 'node-list' for the drop to work
-        id: `face_${faceData.faceId}_${Date.now()}`,
+        isFaceDrop: true,           // CRITICAL: This flag differentiates face drops from file drops
+        dataUrl: faceData.imageUrl || faceData.dataUrl, // The face image data URL
         name: faceData.fileName || `Face ${faceData.faceIndex + 1}`,
-        type: 'person',             // Faces represent people
-        label: faceData.fileName || `Face ${faceData.faceIndex + 1}`,
-        properties: {
-            ...faceData,
-            source: 'faces-panel'
-        },
-        // Keep original face data for compatibility
-        originalData: {
-            type: 'face',
-            ...faceData
-        }
+        type: 'image/jpeg',         // File type for compatibility
+        // Include other face metadata
+        faceId: faceData.faceId,
+        confidence: faceData.confidence,
+        boundingBox: faceData.boundingBox,
+        source: 'faces-panel'
     };
     
     e.dataTransfer.effectAllowed = 'copy';
