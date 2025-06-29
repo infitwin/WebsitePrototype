@@ -461,17 +461,17 @@ function initializeModalHandlers() {
         }
     });
     
-    // Text modal handlers
+    // Text modal handlers - similar to image modal for consistency
     const textModal = document.getElementById('textModal');
     
-    // Click outside text modal to close
+    // Click outside text modal to close - provides easy dismissal
     textModal?.addEventListener('click', (e) => {
         if (e.target === e.currentTarget) {
             window.closeTextModal();
         }
     });
     
-    // ESC key to close text modal
+    // ESC key to close text modal - keyboard accessibility
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && textModal?.classList.contains('active')) {
             window.closeTextModal();
@@ -906,7 +906,9 @@ window.closeImageModal = function() {
 };
 
 /**
- * Show text file modal
+ * Show text file modal with content viewer
+ * Opens a modal similar to the image viewer but displays text file contents
+ * @param {Object} file - File metadata object containing downloadURL, fileName, etc.
  */
 window.showTextModal = async function(file) {
     const modal = document.getElementById('textModal');
@@ -953,7 +955,8 @@ window.showTextModal = async function(file) {
 };
 
 /**
- * Close text modal
+ * Close text modal and cleanup
+ * Removes the modal from view and clears the current file reference
  */
 window.closeTextModal = function() {
     const modal = document.getElementById('textModal');
@@ -963,6 +966,8 @@ window.closeTextModal = function() {
 
 /**
  * Copy text content to clipboard
+ * Copies the entire text file content to the user's clipboard
+ * Shows success/error notification based on result
  */
 window.copyTextContent = async function() {
     const content = document.getElementById('textModalContent')?.textContent;
@@ -979,6 +984,8 @@ window.copyTextContent = async function() {
 
 /**
  * Download text file
+ * Triggers browser download of the text file using its Firebase Storage URL
+ * Uses the original filename or defaults to 'download.txt'
  */
 window.downloadTextFile = function() {
     if (!window.currentTextFile) return;
@@ -1724,6 +1731,8 @@ function createFileCard(file) {
     }
     
     // Add click handler for text files
+    // When a text file is clicked, open it in the text viewer modal
+    // This provides inline viewing without needing to download the file
     if (file.fileType && (file.fileType === 'text/plain' || file.fileType.includes('text'))) {
         thumbnail.style.cursor = 'pointer';
         thumbnail.onclick = async (e) => {

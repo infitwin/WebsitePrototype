@@ -1334,6 +1334,9 @@
 }
 
 /* Text Modal Styles */
+/* Similar layout to image modal but optimized for text content viewing */
+/* Left side shows text content with monospace font for code/logs */
+/* Right side shows file metadata and actions (copy, download) */
 .text-modal-content {
     max-width: 900px;
     max-height: 90vh;
