@@ -585,6 +585,7 @@
                             type: props.type?.toLowerCase() || 'thing',
                             x: props.x || Math.random() * 800,
                             y: props.y || Math.random() * 600,
+                            imageUrl: props.imageUrl || null,  // Include face image URL
                             properties: props
                         };
                     });
@@ -658,6 +659,48 @@
             }
         }
         
+        // Unified handler for all data changes with face detection
+        async function handleSandboxDataChange(newData) {
+            console.log('📊 Data changed:', {
+                nodesBefore: currentSandboxData.nodes.length,
+                nodesAfter: newData.nodes.length,
+                edgesBefore: currentSandboxData.edges.length,
+                edgesAfter: newData.edges.length
+            });
+            
+            // Check for face updates by comparing nodes
+            for (const newNode of newData.nodes) {
+                const oldNode = currentSandboxData.nodes.find(n => n.id === newNode.id);
+                if (oldNode && newNode.imageUrl && oldNode.imageUrl !== newNode.imageUrl) {
+                    // Face was added/updated on this node
+                    log(`😊 Face updated on node ${newNode.id}: ${newNode.name || newNode.label}`);
+                    
+                    try {
+                        // Update node in database with new face image
+                        const updates = {
+                            imageUrl: newNode.imageUrl,
+                            hasFace: true,
+                            faceUpdatedAt: new Date().toISOString()
+                        };
+                        
+                        await window.Neo4jConnection.updateSandboxNode(
+                            newNode.id,
+                            updates,
+                            []
+                        );
+                        
+                        log('✅ Face saved to database for node: ' + newNode.id);
+                    } catch (error) {
+                        log('❌ Failed to save face update: ' + error.message);
+                        console.error('Face save error:', error);
+                    }
+                }
+            }
+            
+            currentSandboxData = newData;
+            simulateChange();
+        }
+        
         // Create wrapper functions that provide the log function to imported handlers
         function handleSandboxFileDropWrapper(file, target) {
             return window.handleSandboxFileDrop(file, target, log);
@@ -727,10 +770,7 @@
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
-                    onDataChange: (newData) => {
-                        currentSandboxData = newData;
-                        simulateChange();
-                    },
+                    onDataChange: handleSandboxDataChange,
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
@@ -798,18 +838,8 @@
                     useExternalMetadataEditor: true,
                     enableDelete: true,  // Explicitly enable delete functionality
                     
-                    // Data change callback
-                    onDataChange: (newData) => {
-                        console.log('📊 Data changed:', {
-                            nodesBefore: currentSandboxData.nodes.length,
-                            nodesAfter: newData.nodes.length,
-                            edgesBefore: currentSandboxData.edges.length,
-                            edgesAfter: newData.edges.length
-                        });
-                        
-                        currentSandboxData = newData;
-                        simulateChange();
-                    },
+                    // Data change callback - v17.5.0 auto-save trigger
+                    onDataChange: handleSandboxDataChange,
                     
                     // CRUD Callbacks per NEXUS_CRUD_INTERFACE.md
                     onMetaSave: async (metaData) => {
@@ -1280,10 +1310,7 @@
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
-                    onDataChange: (newData) => {
-                        currentSandboxData = newData;
-                        simulateChange();
-                    },
+                    onDataChange: handleSandboxDataChange,
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
@@ -2870,10 +2897,7 @@
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
-                    onDataChange: (newData) => {
-                        currentSandboxData = newData;
-                        simulateChange();
-                    },
+                    onDataChange: handleSandboxDataChange,
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
