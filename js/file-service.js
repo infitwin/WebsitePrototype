@@ -201,6 +201,9 @@ export async function uploadFile(file, onProgress, onError) {
         // Create upload task
         const uploadTask = uploadBytesResumable(storageRef, file);
         
+        // Store upload task for potential cancellation  
+        uploadTask._file = file;
+        
         // Return promise that resolves with file metadata
         return new Promise((resolve, reject) => {
             uploadTask.on('state_changed',
@@ -233,16 +236,18 @@ export async function uploadFile(file, onProgress, onError) {
                             id: fileId,
                             userId: user.uid,
                             fileName: file.name,
-                            fileType: file.type,
+                            fileType: file.type || 'text/plain', // Default to text/plain if type is missing
                             fileSize: file.size,
                             storagePath: storagePath,
                             downloadURL: downloadURL,
                             uploadedAt: new Date().toISOString(),
-                            category: getFileCategory(file.type)
+                            category: getFileCategory(file.type || 'text/plain')
                         };
                         
+                        console.log(`📄 Saved metadata for ${file.name}:`, fileMetadata);
+                        
                         // Add vectorizationStatus for images per data standard
-                        if (file.type.startsWith('image/')) {
+                        if (file.type && file.type.startsWith('image/')) {
                             fileMetadata.vectorizationStatus = {
                                 faces: {
                                     processed: false,
@@ -276,10 +281,6 @@ export async function uploadFile(file, onProgress, onError) {
                     }
                 }
             );
-            
-            // Store upload task for potential cancellation
-            uploadTask._file = file;
-            return uploadTask;
         });
     } catch (error) {
         if (onError) {

@@ -295,17 +295,29 @@ function initializeUploadHandling() {
 /**
  * Handle file upload
  */
-function handleFileUpload(files) {
+async function handleFileUpload(files) {
     console.log('Files selected for upload:', files);
+    // Log file types for debugging
+    files.forEach(file => {
+        console.log(`📄 File: ${file.name}, Type: ${file.type || 'unknown'}, Size: ${file.size}`);
+    });
+    
     // Integration with existing upload system
     const uploadContainer = document.getElementById('uploadQueue') || document.getElementById('filesContainer');
     try {
-        processFilesForUpload(files, uploadContainer);
-        // Show feedback without relying on showNotification if it's not available
+        // Show initial notification
         if (typeof showNotification === 'function') {
-            showNotification(`${files.length} file(s) added to upload queue`, 'success');
+            showNotification(`${files.length} file(s) added to upload queue`, 'info');
+        }
+        
+        // AWAIT the upload process to ensure it completes
+        await processFilesForUpload(files, uploadContainer);
+        
+        // Show success feedback
+        if (typeof showNotification === 'function') {
+            showNotification(`${files.length} file(s) uploaded successfully`, 'success');
         } else {
-            console.log(`✅ ${files.length} file(s) added to upload queue`);
+            console.log(`✅ ${files.length} file(s) uploaded successfully`);
             // Create simple notification fallback
             const notification = document.createElement('div');
             notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10B981; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000;';
@@ -314,18 +326,16 @@ function handleFileUpload(files) {
             setTimeout(() => notification.remove(), 3000);
         }
         
-        // Refresh file list after upload
-        setTimeout(async () => {
-            console.log('🔄 Refreshing file list after upload...');
-            try {
-                await initializeFileBrowser();
-                console.log('✅ File list refreshed successfully');
-            } catch (error) {
-                console.error('❌ Failed to refresh file list:', error);
-                // Force a page reload as fallback
-                window.location.reload();
-            }
-        }, 2000); // Increased timeout to ensure upload completes
+        // Refresh file list immediately after upload completes
+        console.log('🔄 Refreshing file list after upload...');
+        try {
+            await initializeFileBrowser();
+            console.log('✅ File list refreshed successfully');
+        } catch (error) {
+            console.error('❌ Failed to refresh file list:', error);
+            // Force a page reload as fallback
+            window.location.reload();
+        }
         
     } catch (error) {
         console.error('Upload failed:', error);
@@ -1913,6 +1923,7 @@ function renderFiles(files) {
     fileArray.forEach(file => {
         // NO FALLBACKS - use exact data from database or let it break
         console.log('🔍 File data:', file);
+        console.log(`📄 Rendering: ${file.fileName}, Type: ${file.fileType}, Category: ${file.category}`);
         
         const card = createFileCard(file);
         container.appendChild(card);

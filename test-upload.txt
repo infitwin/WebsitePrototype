@@ -1,0 +1,11 @@
+This is a test text file for upload debugging.
+It contains some sample text to verify that text files
+are properly handled by the My Files page.
+
+The file should:
+1. Upload successfully
+2. Show with a 📝 icon
+3. Update the file counter
+4. Appear in the files list
+
+Test timestamp: 2024-01-15

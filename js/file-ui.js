@@ -426,8 +426,8 @@ export async function processFilesForUpload(files, container) {
         }
         
         try {
-            // Upload file
-            const uploadTask = await uploadFile(
+            // Upload file - this returns an upload task that we need to wait for
+            const uploadResult = await uploadFile(
                 file,
                 (progress) => updateUploadProgress(preview, progress),
                 (error) => {
@@ -436,27 +436,16 @@ export async function processFilesForUpload(files, container) {
                 }
             );
             
-            // Store task for cancellation
-            activeUploads.set(file.name, uploadTask);
+            // The uploadFile function should have completed by now
+            console.log(`✅ Upload complete for ${file.name}`);
             
-            // Handle cancel button
-            const cancelBtn = preview.querySelector('.btn-cancel-upload');
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', () => {
-                    if (activeUploads.has(file.name)) {
-                        activeUploads.get(file.name).cancel();
-                        activeUploads.delete(file.name);
-                        preview.remove();
-                    }
-                });
-            }
-            
-            // Mark upload complete when promise resolves
+            // Mark upload complete 
             markUploadComplete(preview);
             activeUploads.delete(file.name);
             successCount++;
             
         } catch (error) {
+            console.error('Upload error for file:', file.name, error);
             markUploadFailed(preview, error.message);
             failCount++;
         }

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Text File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .log-entry {
+            font-family: monospace;
+            font-size: 12px;
+            padding: 5px;
+            margin: 2px 0;
+            background: #f5f5f5;
+        }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Text File Upload</h1>
+    
+    <div class="debug-section">
+        <h2>Upload Test</h2>
+        <input type="file" id="fileInput" accept=".txt,text/plain" />
+        <button onclick="testUpload()">Test Upload</button>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Debug Log</h2>
+        <div id="debugLog"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Current Files</h2>
+        <button onclick="listFiles()">List Files</button>
+        <div id="filesList"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+        
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCs6nlEB2CiqD7li23U-5-cONS-rqAHhKg",
+            authDomain: "memento-mori-ai.firebaseapp.com",
+            projectId: "memento-mori-ai",
+            storageBucket: "memento-mori-ai.appspot.com",
+            messagingSenderId: "450188165166",
+            appId: "1:450188165166:web:ce7b11d4c2f2c7494c8fb8"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
+        const storage = getStorage();
+        
+        window.auth = auth;
+        window.db = db;
+        window.storage = storage;
+        
+        // Debug log function
+        window.log = function(message, type = 'info') {
+            const logDiv = document.getElementById('debugLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            console.log(message);
+        };
+        
+        // Auto-login for testing
+        async function autoLogin() {
+            try {
+                log('Attempting auto-login...');
+                const userCredential = await signInWithEmailAndPassword(auth, 'weezer@yev.com', '123456');
+                log('Login successful: ' + userCredential.user.email, 'success');
+            } catch (error) {
+                log('Login failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Test upload function
+        window.testUpload = async function() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected', 'error');
+                return;
+            }
+            
+            log(`File selected: ${file.name} (${file.size} bytes, type: ${file.type})`);
+            
+            // Validate file
+            if (!file.type || file.type === '') {
+                log('Warning: File type is empty, trying to determine from extension', 'error');
+                if (file.name.endsWith('.txt')) {
+                    log('File appears to be a text file based on extension', 'info');
+                }
+            }
+            
+            if (!auth.currentUser) {
+                log('User not authenticated', 'error');
+                return;
+            }
+            
+            try {
+                // Generate storage path
+                const timestamp = Date.now();
+                const storagePath = `uploads/${auth.currentUser.uid}/${timestamp}_${file.name}`;
+                log(`Storage path: ${storagePath}`);
+                
+                // Create storage reference
+                const storageRef = ref(storage, storagePath);
+                
+                // Start upload
+                log('Starting upload...');
+                const uploadTask = uploadBytesResumable(storageRef, file);
+                
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        log(`Upload progress: ${progress.toFixed(2)}%`);
+                    },
+                    (error) => {
+                        log(`Upload error: ${error.message}`, 'error');
+                    },
+                    async () => {
+                        log('Upload complete!', 'success');
+                        
+                        // Get download URL
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        log(`Download URL: ${downloadURL}`);
+                        
+                        // Save to Firestore
+                        const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        const fileMetadata = {
+                            id: fileId,
+                            userId: auth.currentUser.uid,
+                            fileName: file.name,
+                            fileType: file.type || 'text/plain',
+                            fileSize: file.size,
+                            storagePath: storagePath,
+                            downloadURL: downloadURL,
+                            uploadedAt: new Date().toISOString(),
+                            category: 'documents'
+                        };
+                        
+                        log('Saving metadata to Firestore...');
+                        const docRef = doc(db, 'users', auth.currentUser.uid, 'files', fileId);
+                        await setDoc(docRef, fileMetadata);
+                        log('Metadata saved successfully!', 'success');
+                        
+                        // List files to verify
+                        setTimeout(() => listFiles(), 1000);
+                    }
+                );
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        };
+        
+        // List files function
+        window.listFiles = async function() {
+            if (!auth.currentUser) {
+                log('User not authenticated', 'error');
+                return;
+            }
+            
+            try {
+                log('Fetching files...');
+                const filesRef = collection(db, 'users', auth.currentUser.uid, 'files');
+                const querySnapshot = await getDocs(filesRef);
+                
+                const filesList = document.getElementById('filesList');
+                filesList.innerHTML = '';
+                
+                let count = 0;
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    count++;
+                    
+                    const fileDiv = document.createElement('div');
+                    fileDiv.style.cssText = 'margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 5px;';
+                    fileDiv.innerHTML = `
+                        <strong>${data.fileName}</strong><br>
+                        Type: ${data.fileType}<br>
+                        Size: ${data.fileSize} bytes<br>
+                        Uploaded: ${new Date(data.uploadedAt).toLocaleString()}<br>
+                        ID: ${data.id}
+                    `;
+                    filesList.appendChild(fileDiv);
+                    
+                    log(`Found file: ${data.fileName} (${data.fileType})`);
+                });
+                
+                log(`Total files: ${count}`, 'success');
+            } catch (error) {
+                log(`Error listing files: ${error.message}`, 'error');
+            }
+        };
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            autoLogin();
+        });
+    </script>
+</body>
+</html>
