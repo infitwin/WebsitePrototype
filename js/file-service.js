@@ -244,7 +244,12 @@ export async function uploadFile(file, onProgress, onError) {
                             category: getFileCategory(file.type || 'text/plain')
                         };
                         
-                        console.log(`📄 Saved metadata for ${file.name}:`, fileMetadata);
+                        console.log(`📄 Creating metadata for ${file.name}:`, {
+                            fileName: file.name,
+                            fileType: fileMetadata.fileType,
+                            category: fileMetadata.category,
+                            size: fileMetadata.fileSize
+                        });
                         
                         // Add vectorizationStatus for images per data standard
                         if (file.type && file.type.startsWith('image/')) {

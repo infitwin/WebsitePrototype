@@ -1545,6 +1545,8 @@ function hideLoading() {
  * Create enhanced file card with new design
  */
 function createFileCard(file) {
+    console.log(`🎨 Creating card for: ${file.fileName || file.name}, Type: ${file.fileType || file.type || 'unknown'}`);
+    
     const card = document.createElement('div');
     card.className = 'file-card';
     
@@ -1930,6 +1932,10 @@ function renderFiles(files) {
     });
     
     console.log(`📁 Rendered ${fileArray.length} files`);
+    
+    // Update file counts after rendering all cards
+    updateFileCounts();
+    console.log('📊 Updated file counts after rendering');
 }
 
 function showEmptyState() {
