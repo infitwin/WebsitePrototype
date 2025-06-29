@@ -204,9 +204,10 @@ function getFileType(file) {
  */
 export function getFallbackIcon(mimeType) {
     if (!mimeType || typeof mimeType !== 'string') return '📄'; // Default fallback
-    if (mimeType.startsWith('image/')) return ''; // NO FALLBACK for images
+    if (mimeType.startsWith('image/')) return '🖼️'; // Image icon (for files without thumbnails)
     if (mimeType.includes('pdf')) return '📄';
-    if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+    if (mimeType.includes('text/plain') || mimeType.includes('txt')) return '📝'; // Text files
+    if (mimeType.includes('word') || mimeType.includes('document')) return '📃';
     if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
     if (mimeType.includes('epub')) return '📚';
     if (mimeType.startsWith('video/')) return '🎥';
@@ -256,8 +257,12 @@ export function createThumbnailElement(file) {
         
         container.appendChild(img);
     } else {
-        // NO FALLBACK - just return empty container
-        // This will show nothing if no thumbnail is available
+        // Show file type icon for non-image files
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'file-icon-placeholder';
+        iconDiv.textContent = getFallbackIcon(fileType);
+        iconDiv.style.cssText = 'font-size: 48px; display: flex; align-items: center; justify-content: center; height: 100%; background: #f3f4f6; border-radius: 8px;';
+        container.appendChild(iconDiv);
     }
 
     return container;

@@ -295,6 +295,24 @@
     object-fit: cover;
 }
 
+.file-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* File icon placeholder for non-image files */
+.file-icon-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    background: #f3f4f6;
+    border-radius: 8px;
+}
+
 /* Enhanced Face Badge with Hover */
 .face-indicator {
     position: absolute;
