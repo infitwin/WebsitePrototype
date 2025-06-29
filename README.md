@@ -53,17 +53,24 @@ python3 -m http.server 8358
 - **Test Credentials**: weezer@yev.com / 123456
 
 ### 🆕 Recent Updates (June 2025):
-- **Nexus Graph Control v17.0.0**: Upgraded from v16.3.0 to v17.0.0 with metadata save integration support
-- **Metadata Editor**: Integrated external metadata forms for rich entity editing
+- **NexusMetadataEditor v4.0.4**: Upgraded to latest version with theme system
+  - Theme support for both node and edge forms
+  - Default theme preserves v3.x purple gradient appearance
+  - Edge forms now have complete headers with buttons
+  - CSS variables for runtime customization
+  - Full button architecture preserved (header buttons control hidden form buttons)
+- **Nexus Graph Control v17.2.0**: Latest version with enhanced graph features
+- **Metadata Editor Integration**: 
   - Supports 5 entity types: Person (62 fields), Organization (73 fields), Event (39 fields), Place (45 fields), Thing (58 fields)
   - Schema.org compliant forms with validation
   - Modal and panel integration patterns
+  - Relationship editor with themed UI
 - **Code Refactoring**: Extracted modules from sandbox.html:
   - File handlers: `/js/sandbox/file-handlers.js` (41 lines saved)
   - Drag handlers: `/js/sandbox/drag-handlers.js` (135 lines saved)  
   - Neo4j services: `/js/services/neo4j-data-service.js` (228 lines saved)
   - Metadata integration: `/js/sandbox/metadata-editor-integration.js`
-- **Bundle Management**: Centralized bundle versioning with proper v17.0.0 deployment
+- **Bundle Management**: Centralized bundle versioning with v17.2.0 and v4.0.4
 
 ### ⚠️ Known Issues:
 - **Batch Vectorization Bug**: Second file in batch returns 0 faces (Issue #133)
@@ -312,6 +319,6 @@ The Sandbox page provides a safe environment for editing family graph data durin
 
 ---
 
-**Last Updated**: June 2025 - Nexus Graph Control v17.0.0 deployed with metadata editor integration
-**Status**: ✅ Ready for production with enhanced metadata editing capabilities
+**Last Updated**: June 2025 - NexusMetadataEditor v4.0.4 and Nexus Graph Control v17.2.0 deployed
+**Status**: ✅ Ready for production with fully themed metadata editing for both nodes and relationships
 **Next AI**: Read QUICKSTART.md for immediate context
