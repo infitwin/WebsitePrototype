@@ -578,6 +578,16 @@
                             }
                         }
                         
+                        // Handle attachments deserialization
+                        if (props.attachments && typeof props.attachments === 'string') {
+                            try {
+                                props.attachments = JSON.parse(props.attachments);
+                            } catch (e) {
+                                console.error('Failed to parse node attachments:', e);
+                                props.attachments = [];
+                            }
+                        }
+                        
                         return {
                             id: props.id,
                             name: props.name || 'Unnamed',
@@ -586,6 +596,7 @@
                             x: props.x || Math.random() * 800,
                             y: props.y || Math.random() * 600,
                             imageUrl: props.imageUrl || null,  // Include face image URL
+                            attachments: props.attachments || [],  // Include file attachments
                             properties: props
                         };
                     });
@@ -608,12 +619,23 @@
                             }
                         }
                         
+                        // Handle attachments deserialization
+                        if (props.attachments && typeof props.attachments === 'string') {
+                            try {
+                                props.attachments = JSON.parse(props.attachments);
+                            } catch (e) {
+                                console.error('Failed to parse edge attachments:', e);
+                                props.attachments = [];
+                            }
+                        }
+                        
                         return {
                             id: props.id,
                             source: sourceId,
                             target: targetId,
                             label: relType,
                             type: relType,
+                            attachments: props.attachments || [],  // Include file attachments
                             properties: props
                         };
                     });
@@ -659,7 +681,7 @@
             }
         }
         
-        // Unified handler for all data changes with face detection
+        // Unified handler for all data changes with face and file detection
         async function handleSandboxDataChange(newData) {
             console.log('📊 Data changed:', {
                 nodesBefore: currentSandboxData.nodes.length,
@@ -668,10 +690,13 @@
                 edgesAfter: newData.edges.length
             });
             
-            // Check for face updates by comparing nodes
+            // Check for updates by comparing nodes
             for (const newNode of newData.nodes) {
                 const oldNode = currentSandboxData.nodes.find(n => n.id === newNode.id);
-                if (oldNode && newNode.imageUrl && oldNode.imageUrl !== newNode.imageUrl) {
+                if (!oldNode) continue;
+                
+                // Check for face updates
+                if (newNode.imageUrl && oldNode.imageUrl !== newNode.imageUrl) {
                     // Face was added/updated on this node
                     log(`😊 Face updated on node ${newNode.id}: ${newNode.name || newNode.label}`);
                     
@@ -693,6 +718,75 @@
                     } catch (error) {
                         log('❌ Failed to save face update: ' + error.message);
                         console.error('Face save error:', error);
+                    }
+                }
+                
+                // Check for file attachment updates
+                const oldAttachments = oldNode.attachments || [];
+                const newAttachments = newNode.attachments || [];
+                
+                if (newAttachments.length > oldAttachments.length) {
+                    // Files were added
+                    const addedFiles = newAttachments.slice(oldAttachments.length);
+                    log(`📎 ${addedFiles.length} file(s) attached to node ${newNode.id}: ${newNode.name || newNode.label}`);
+                    
+                    try {
+                        // Update node in database with new attachments
+                        const updates = {
+                            attachments: newAttachments,
+                            hasAttachments: true,
+                            attachmentsUpdatedAt: new Date().toISOString()
+                        };
+                        
+                        await window.Neo4jConnection.updateSandboxNode(
+                            newNode.id,
+                            updates,
+                            []
+                        );
+                        
+                        log('✅ File attachments saved to database for node: ' + newNode.id);
+                    } catch (error) {
+                        log('❌ Failed to save file attachments: ' + error.message);
+                        console.error('File attachment save error:', error);
+                    }
+                }
+            }
+            
+            // Check for file attachments on edges
+            for (const newEdge of newData.edges) {
+                const oldEdge = currentSandboxData.edges.find(e => e.id === newEdge.id);
+                if (!oldEdge) continue;
+                
+                const oldAttachments = oldEdge.attachments || [];
+                const newAttachments = newEdge.attachments || [];
+                
+                if (newAttachments.length > oldAttachments.length) {
+                    // Files were added to edge
+                    const addedFiles = newAttachments.slice(oldAttachments.length);
+                    log(`📎 ${addedFiles.length} file(s) attached to edge ${newEdge.id}: ${newEdge.label}`);
+                    
+                    try {
+                        // Update edge in database with new attachments
+                        const updates = {
+                            attachments: newAttachments,
+                            hasAttachments: true,
+                            attachmentsUpdatedAt: new Date().toISOString()
+                        };
+                        
+                        // Need to update relationship in Neo4j
+                        await window.Neo4jConnection.updateSandboxRelationship(
+                            newEdge.id,
+                            updates,
+                            newEdge.source,
+                            newEdge.target,
+                            newEdge.type || newEdge.label,
+                            currentInterviewId
+                        );
+                        
+                        log('✅ File attachments saved to database for edge: ' + newEdge.id);
+                    } catch (error) {
+                        log('❌ Failed to save edge file attachments: ' + error.message);
+                        console.error('Edge file attachment save error:', error);
                     }
                 }
             }
