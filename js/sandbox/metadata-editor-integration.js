@@ -102,6 +102,30 @@ export class MetadataEditorIntegration {
     }
 
     /**
+     * Sanitize attachments array to ensure all required properties exist
+     * @param {Array} attachments - Raw attachments array
+     * @returns {Array} Sanitized attachments with all required properties
+     */
+    sanitizeAttachments(attachments) {
+        if (!Array.isArray(attachments)) {
+            return [];
+        }
+        
+        return attachments.map((att, index) => {
+            // Ensure all required properties exist with defaults
+            return {
+                id: att.id || `att_${index}`,
+                name: att.name || 'Unnamed file',
+                type: att.type || 'application/octet-stream',
+                size: att.size || 0,
+                url: att.url || '#',
+                uploadDate: att.uploadDate || new Date().toISOString(),
+                description: att.description || ''
+            };
+        });
+    }
+
+    /**
      * Convert graph node data to entity format for the editor
      * @param {Object} node - Graph node data
      * @returns {Object} Entity data for the editor
@@ -116,7 +140,7 @@ export class MetadataEditorIntegration {
             type: this.getEntityType(node.type),
             description: props.description || '',
             // Include attachments from root level or properties
-            attachments: node.attachments || props.attachments || [],
+            attachments: this.sanitizeAttachments(node.attachments || props.attachments || []),
             // Include imageUrl for face images
             imageUrl: node.imageUrl || props.imageUrl || '',
             // Spread any additional properties
@@ -221,6 +245,16 @@ export class MetadataEditorIntegration {
             console.log('📦 Mounting editor with entity:', entity);
             console.log('📎 Attachments:', entity.attachments);
             console.log('🖼️ ImageUrl:', entity.imageUrl);
+            
+            // Validate attachments array
+            if (entity.attachments && Array.isArray(entity.attachments)) {
+                entity.attachments.forEach((att, index) => {
+                    console.log(`Attachment ${index}:`, att);
+                    if (!att.type) {
+                        console.warn(`⚠️ Attachment ${index} missing 'type' property`);
+                    }
+                });
+            }
             
             // Use v5.0.0 mount API with default theme
             try {
