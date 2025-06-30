@@ -695,6 +695,31 @@
                 const oldNode = currentSandboxData.nodes.find(n => n.id === newNode.id);
                 if (!oldNode) continue;
                 
+                // Check for position changes (node moved)
+                if ((oldNode.x !== newNode.x || oldNode.y !== newNode.y) && newNode.x !== undefined && newNode.y !== undefined) {
+                    log(`📍 Node position changed: ${newNode.id} - ${newNode.name || newNode.label}`);
+                    
+                    try {
+                        // Update node position in database
+                        const updates = {
+                            x: newNode.x,
+                            y: newNode.y,
+                            positionUpdatedAt: new Date().toISOString()
+                        };
+                        
+                        await window.Neo4jConnection.updateSandboxNode(
+                            newNode.id,
+                            updates,
+                            []
+                        );
+                        
+                        log('✅ Node position saved to database: ' + newNode.id);
+                    } catch (error) {
+                        log('❌ Failed to save node position: ' + error.message);
+                        console.error('Node position save error:', error);
+                    }
+                }
+                
                 // Check for face updates
                 if (newNode.imageUrl && oldNode.imageUrl !== newNode.imageUrl) {
                     // Face was added/updated on this node
