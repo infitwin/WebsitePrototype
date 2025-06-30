@@ -681,95 +681,79 @@
             }
         }
         
-        // Unified handler for all data changes with face and file detection
+        /**
+         * Auto-save handler for all sandbox data changes
+         * Detects and saves: position changes, face updates, file attachments
+         * Works with Nexus Graph Control v17.5.0 onDataChange callback
+         */
         async function handleSandboxDataChange(newData) {
-            console.log('📊 Data changed:', {
+            console.log('📊 Sandbox data changed:', {
                 nodesBefore: currentSandboxData.nodes.length,
                 nodesAfter: newData.nodes.length,
                 edgesBefore: currentSandboxData.edges.length,
                 edgesAfter: newData.edges.length
             });
             
-            // Check for updates by comparing nodes
+            // Process node updates - check for position, face, and attachment changes
             for (const newNode of newData.nodes) {
                 const oldNode = currentSandboxData.nodes.find(n => n.id === newNode.id);
-                if (!oldNode) continue;
+                if (!oldNode) continue; // Skip new nodes (handled by onNodeDrop/onEdgeCreate callbacks)
                 
-                // Check for position changes (node moved)
+                // Auto-save node position changes when dragged
                 if ((oldNode.x !== newNode.x || oldNode.y !== newNode.y) && newNode.x !== undefined && newNode.y !== undefined) {
                     log(`📍 Node position changed: ${newNode.id} - ${newNode.name || newNode.label}`);
                     
                     try {
-                        // Update node position in database
                         const updates = {
                             x: newNode.x,
                             y: newNode.y,
                             positionUpdatedAt: new Date().toISOString()
                         };
                         
-                        await window.Neo4jConnection.updateSandboxNode(
-                            newNode.id,
-                            updates,
-                            []
-                        );
-                        
-                        log('✅ Node position saved to database: ' + newNode.id);
+                        await window.Neo4jConnection.updateSandboxNode(newNode.id, updates, []);
+                        log('✅ Node position auto-saved to Neo4j: ' + newNode.id);
                     } catch (error) {
                         log('❌ Failed to save node position: ' + error.message);
                         console.error('Node position save error:', error);
                     }
                 }
                 
-                // Check for face updates
+                // Auto-save face image updates when dropped on nodes
                 if (newNode.imageUrl && oldNode.imageUrl !== newNode.imageUrl) {
-                    // Face was added/updated on this node
                     log(`😊 Face updated on node ${newNode.id}: ${newNode.name || newNode.label}`);
                     
                     try {
-                        // Update node in database with new face image
                         const updates = {
                             imageUrl: newNode.imageUrl,
                             hasFace: true,
                             faceUpdatedAt: new Date().toISOString()
                         };
                         
-                        await window.Neo4jConnection.updateSandboxNode(
-                            newNode.id,
-                            updates,
-                            []
-                        );
-                        
-                        log('✅ Face saved to database for node: ' + newNode.id);
+                        await window.Neo4jConnection.updateSandboxNode(newNode.id, updates, []);
+                        log('✅ Face image auto-saved to Neo4j: ' + newNode.id);
                     } catch (error) {
                         log('❌ Failed to save face update: ' + error.message);
                         console.error('Face save error:', error);
                     }
                 }
                 
-                // Check for file attachment updates
+                // Auto-save file attachments when files dropped on nodes
                 const oldAttachments = oldNode.attachments || [];
                 const newAttachments = newNode.attachments || [];
                 
                 if (newAttachments.length > oldAttachments.length) {
-                    // Files were added
                     const addedFiles = newAttachments.slice(oldAttachments.length);
                     log(`📎 ${addedFiles.length} file(s) attached to node ${newNode.id}: ${newNode.name || newNode.label}`);
                     
                     try {
-                        // Update node in database with new attachments
                         const updates = {
                             attachments: newAttachments,
                             hasAttachments: true,
                             attachmentsUpdatedAt: new Date().toISOString()
                         };
                         
-                        await window.Neo4jConnection.updateSandboxNode(
-                            newNode.id,
-                            updates,
-                            []
-                        );
-                        
-                        log('✅ File attachments saved to database for node: ' + newNode.id);
+                        await window.Neo4jConnection.updateSandboxNode(newNode.id, updates, []);
+                        log('✅ File attachments auto-saved to Neo4j: ' + newNode.id);
                     } catch (error) {
                         log('❌ Failed to save file attachments: ' + error.message);
                         console.error('File attachment save error:', error);
@@ -820,49 +804,47 @@
             simulateChange();
         }
         
-        // Create wrapper functions that handle Nexus onFileDrop callback format
+        /**
+         * File drop handler for sandbox - creates attachment objects and updates graph
+         * Called by Nexus onFileDrop callback with (targetId, fileData, isNode)
+         * Supports: Firebase artifacts, real files (future), test data
+         */
         async function handleSandboxFileDrop(targetId, fileData, isNode) {
             log(`📎 File drop on ${isNode ? 'node' : 'edge'} ${targetId}`);
             
-            // Convert to the format our handler expects
+            // Convert to the format our file handlers expect
             const target = {
                 id: targetId,
                 type: isNode ? 'node' : 'edge'
             };
             
-            // Call our handler and get the attachment object
+            // Process file and create attachment object (with proper metadata structure)
             const attachment = await window.handleSandboxFileDrop(fileData, target, log);
             
             if (attachment && isNode) {
-                // Find the node and add the attachment
+                // Add attachment to node and trigger auto-save
                 const node = currentSandboxData.nodes.find(n => n.id === targetId);
                 if (node) {
-                    // Initialize attachments array if needed
-                    if (!node.attachments) {
-                        node.attachments = [];
-                    }
+                    if (!node.attachments) node.attachments = [];
                     
-                    // Add the new attachment
                     node.attachments.push(attachment);
                     log(`✅ Added attachment to node ${targetId}: ${attachment.name}`);
                     
-                    // Trigger data change to save
+                    // Update graph data - triggers onDataChange which auto-saves to Neo4j
                     if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
                         sandboxGraphRef.current.updateData(currentSandboxData);
                     }
-                    
-                    // The onDataChange will detect the attachment update and save to Neo4j
                 }
             } else if (attachment && !isNode) {
-                // Handle edge attachments
+                // Add attachment to edge and trigger auto-save
                 const edge = currentSandboxData.edges.find(e => e.id === targetId);
                 if (edge) {
-                    if (!edge.attachments) {
-                        edge.attachments = [];
-                    }
+                    if (!edge.attachments) edge.attachments = [];
+                    
                     edge.attachments.push(attachment);
                     log(`✅ Added attachment to edge ${targetId}: ${attachment.name}`);
                     
+                    // Update graph data - triggers onDataChange which auto-saves to Neo4j
                     if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
                         sandboxGraphRef.current.updateData(currentSandboxData);
                     }
