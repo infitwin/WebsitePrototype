@@ -938,7 +938,11 @@
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
-                        // Show metadata editor in modal
+                        // Single click - just select/highlight
+                        console.log('🖱️ Node selected:', node.id, node.name || node.label);
+                    },
+                    onNodeDoubleClick: (node) => {
+                        // Double click - show metadata editor
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
                             log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
@@ -1302,19 +1306,27 @@
                         simulateChange();
                     },
                     onNodeClick: (node) => {
+                        // Single click - just log for debugging, no editor
+                        console.log('🖱️ Node single-clicked:', node.id, node.name || node.label);
+                    },
+                    onNodeDoubleClick: (node) => {
                         // Debug node data
-                        console.log('=== NODE CLICK DEBUG ===');
+                        console.log('=== NODE DOUBLE-CLICK DEBUG ===');
                         console.log('Node data:', node);
                         console.log('Node attachments:', node.attachments);
                         console.log('Node imageUrl:', node.imageUrl);
                         console.log('Node properties:', node.properties);
-                        console.log('========================');
+                        console.log('================================');
                         
                         // Show metadata editor in modal with graphRef for handleMetaSave
                         window.metadataEditor.showEditorModal(node, null, sandboxGraphRef);
                     },
                     onEdgeClick: (edgeData) => {
-                        console.log('=== EDGE CLICK DEBUG ===');
+                        // Single click - just log for debugging, no editor
+                        console.log('🖱️ Edge single-clicked:', edgeData.id, edgeData.label);
+                    },
+                    onEdgeDoubleClick: (edgeData) => {
+                        console.log('=== EDGE DOUBLE-CLICK DEBUG ===');
                         console.log('Received edgeData:', edgeData);
                         console.log('edgeData keys:', Object.keys(edgeData || {}));
                         console.log('edgeData.id:', edgeData?.id);
@@ -1322,7 +1334,7 @@
                         console.log('edgeData.target:', edgeData?.target);
                         console.log('edgeData.label:', edgeData?.label);
                         console.log('edgeData.data:', edgeData?.data);
-                        console.log('========================');
+                        console.log('===============================');
                         
                         // Show relationship editor for edges
                         const edge = edgeData;
@@ -1486,7 +1498,11 @@
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
-                        // Show metadata editor in modal
+                        // Single click - just select/highlight
+                        console.log('🖱️ Node selected:', node.id, node.name || node.label);
+                    },
+                    onNodeDoubleClick: (node) => {
+                        // Double click - show metadata editor
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
                             log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
@@ -1840,8 +1856,12 @@
                     onCopyClick: handleProductionCopyToSandbox,
                     onFileDrop: handleProductionFileDrop,
                     onNodeClick: (node) => {
-                        // Show metadata editor in modal
-                        log('🖱️ Node clicked:', node);
+                        // Single click - just select/highlight
+                        log('🖱️ Production node selected:', node.id, node.name || node.label);
+                    },
+                    onNodeDoubleClick: (node) => {
+                        // Double click - show metadata editor
+                        log('🖱️ Production node double-clicked:', node);
                         if (!window.metadataEditor) {
                             log('❌ Metadata editor not initialized!');
                             return;
@@ -3073,7 +3093,11 @@
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
-                        // Show metadata editor in modal
+                        // Single click - just select/highlight
+                        console.log('🖱️ Node selected:', node.id, node.name || node.label);
+                    },
+                    onNodeDoubleClick: (node) => {
+                        // Double click - show metadata editor
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
                             log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
