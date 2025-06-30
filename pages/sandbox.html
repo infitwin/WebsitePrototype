@@ -1257,6 +1257,14 @@
                         simulateChange();
                     },
                     onNodeClick: (node) => {
+                        // Debug node data
+                        console.log('=== NODE CLICK DEBUG ===');
+                        console.log('Node data:', node);
+                        console.log('Node attachments:', node.attachments);
+                        console.log('Node imageUrl:', node.imageUrl);
+                        console.log('Node properties:', node.properties);
+                        console.log('========================');
+                        
                         // Show metadata editor in modal with graphRef for handleMetaSave
                         window.metadataEditor.showEditorModal(node, null, sandboxGraphRef);
                     },

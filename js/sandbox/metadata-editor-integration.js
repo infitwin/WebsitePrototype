@@ -115,6 +115,10 @@ export class MetadataEditorIntegration {
             name: node.label || node.name || props.name || 'Unnamed',
             type: this.getEntityType(node.type),
             description: props.description || '',
+            // Include attachments from root level or properties
+            attachments: node.attachments || props.attachments || [],
+            // Include imageUrl for face images
+            imageUrl: node.imageUrl || props.imageUrl || '',
             // Spread any additional properties
             ...props
         };
@@ -143,12 +147,15 @@ export class MetadataEditorIntegration {
      */
     prepareNodeUpdate(entity, originalNode) {
         // Extract type and create node properties
-        const { type, id, name, ...properties } = entity;
+        const { type, id, name, attachments, imageUrl, ...properties } = entity;
         
         // Create updated node maintaining original structure
         const updatedNode = {
             ...originalNode,
             label: name,
+            // Ensure attachments and imageUrl are at root level
+            attachments: attachments || originalNode.attachments || [],
+            imageUrl: imageUrl || originalNode.imageUrl || '',
             // Update nested properties if that's the structure
             ...(originalNode.properties ? {
                 properties: {
@@ -212,8 +219,10 @@ export class MetadataEditorIntegration {
             }
             
             console.log('📦 Mounting editor with entity:', entity);
+            console.log('📎 Attachments:', entity.attachments);
+            console.log('🖼️ ImageUrl:', entity.imageUrl);
             
-            // Use v4.0.0 mount API with default theme
+            // Use v5.0.0 mount API with default theme
             try {
                 this.currentHandle = window.NexusMetadataEditor.mount(container, {
                     entity: entity,
