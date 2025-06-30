@@ -15,17 +15,17 @@ export function handleSandboxFileDrop(file, target, logFn = console.log) {
     if (file._file) {
         // Real file from file system
         logFn(`📁 Real file dropped: ${file.name} (${file.type})`);
-        handleRealFile(file._file, target, logFn);
+        return handleRealFile(file._file, target, logFn);
         
     } else if (file.url) {
         // Artifact from panel (URL-based)
         logFn(`📎 Artifact dropped: ${file.name} (${file.url})`);
-        handleArtifactFile(file, target, logFn);
+        return handleArtifactFile(file, target, logFn);
         
     } else {
         // Legacy test data
         logFn('Test data dropped:', file);
-        handleTestData(file, target, logFn);
+        return handleTestData(file, target, logFn);
     }
 }
 
@@ -35,17 +35,26 @@ export function handleSandboxFileDrop(file, target, logFn = console.log) {
  * @param {Object} target - Target element
  * @param {Function} logFn - Logging function
  */
-export function handleRealFile(fileObject, target, logFn = console.log) {
+export async function handleRealFile(fileObject, target, logFn = console.log) {
     logFn(`📁 Processing real file: ${fileObject.name} on ${target.type} ${target.id}`);
     
-    if (fileObject.type.startsWith('image/')) {
-        logFn(`🖼️ Real image file - you could: read as data URL, set as node background`);
-        // Example: const reader = new FileReader(); reader.readAsDataURL(fileObject);
-    } else if (fileObject.type === 'application/pdf') {
-        logFn(`📑 Real PDF file - you could: extract text, store reference`);
-    } else {
-        logFn(`📄 Real file - you could: upload to server, store metadata`);
-    }
+    // For real files, we need to upload them first or convert to data URL
+    // For now, we'll create a placeholder attachment
+    // In production, you would upload to Firebase Storage first
+    
+    const attachment = {
+        id: `att_${Date.now()}`,
+        name: fileObject.name,
+        type: fileObject.type || 'application/octet-stream',
+        size: fileObject.size,
+        url: '#', // This would be the uploaded file URL
+        uploadDate: new Date().toISOString(),
+        description: `Local file: ${fileObject.name}`
+    };
+    
+    logFn(`⚠️ Real file uploads not implemented yet. Would need to upload to Firebase Storage.`);
+    
+    return attachment;
 }
 
 /**
@@ -59,13 +68,19 @@ export function handleArtifactFile(artifactData, target, logFn = console.log) {
     logFn(`📍 Artifact URL: ${artifactData.url}`);
     logFn(`📊 Source: ${artifactData.source}, File ID: ${artifactData.fileId}`);
     
-    if (artifactData.type.startsWith('image/')) {
-        logFn(`🖼️ Artifact image - you could: set as node background using URL`);
-    } else if (artifactData.type === 'application/pdf') {
-        logFn(`📑 Artifact PDF - you could: link to document, show preview`);
-    } else {
-        logFn(`📄 Artifact file - you could: create attachment, download link`);
-    }
+    // Create attachment object in the format expected by NexusMetadataEditor
+    const attachment = {
+        id: artifactData.fileId || `att_${Date.now()}`,
+        name: artifactData.name,
+        type: artifactData.type || 'application/octet-stream',
+        size: artifactData.size || 0,
+        url: artifactData.url,
+        uploadDate: artifactData.uploadDate || new Date().toISOString(),
+        description: artifactData.description || ''
+    };
+    
+    // Return the attachment object for the Nexus control to handle
+    return attachment;
 }
 
 /**

@@ -820,18 +820,63 @@
             simulateChange();
         }
         
-        // Create wrapper functions that provide the log function to imported handlers
-        function handleSandboxFileDropWrapper(file, target) {
-            return window.handleSandboxFileDrop(file, target, log);
+        // Create wrapper functions that handle Nexus onFileDrop callback format
+        async function handleSandboxFileDrop(targetId, fileData, isNode) {
+            log(`📎 File drop on ${isNode ? 'node' : 'edge'} ${targetId}`);
+            
+            // Convert to the format our handler expects
+            const target = {
+                id: targetId,
+                type: isNode ? 'node' : 'edge'
+            };
+            
+            // Call our handler and get the attachment object
+            const attachment = await window.handleSandboxFileDrop(fileData, target, log);
+            
+            if (attachment && isNode) {
+                // Find the node and add the attachment
+                const node = currentSandboxData.nodes.find(n => n.id === targetId);
+                if (node) {
+                    // Initialize attachments array if needed
+                    if (!node.attachments) {
+                        node.attachments = [];
+                    }
+                    
+                    // Add the new attachment
+                    node.attachments.push(attachment);
+                    log(`✅ Added attachment to node ${targetId}: ${attachment.name}`);
+                    
+                    // Trigger data change to save
+                    if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
+                        sandboxGraphRef.current.updateData(currentSandboxData);
+                    }
+                    
+                    // The onDataChange will detect the attachment update and save to Neo4j
+                }
+            } else if (attachment && !isNode) {
+                // Handle edge attachments
+                const edge = currentSandboxData.edges.find(e => e.id === targetId);
+                if (edge) {
+                    if (!edge.attachments) {
+                        edge.attachments = [];
+                    }
+                    edge.attachments.push(attachment);
+                    log(`✅ Added attachment to edge ${targetId}: ${attachment.name}`);
+                    
+                    if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
+                        sandboxGraphRef.current.updateData(currentSandboxData);
+                    }
+                }
+            }
         }
         
-        function handleProductionFileDropWrapper(file, target) {
-            return window.handleProductionFileDrop(file, target, log);
+        async function handleProductionFileDrop(targetId, fileData, isNode) {
+            const target = {
+                id: targetId,
+                type: isNode ? 'node' : 'edge'
+            };
+            return window.handleProductionFileDrop(fileData, target, log);
         }
-        
-        // Use the wrapper functions for Nexus callbacks
-        const handleSandboxFileDrop = handleSandboxFileDropWrapper;
-        const handleProductionFileDrop = handleProductionFileDropWrapper;
         
         
         // Handle face drops from the faces panel
