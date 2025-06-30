@@ -30,24 +30,25 @@ export class MetadataEditorIntegration {
             
             // Load the bundle
             const script = document.createElement('script');
-            script.src = '../bundles/nexus-metadata-editor-v4.0.4.bundle.js';
+            script.src = '../bundles/nexus-metadata-editor-v5.0.0.bundle.js';
             script.onload = () => {
-                // v4.0.4 exports as NexusMetadataEditor
+                // v5.0.0 exports as NexusMetadataEditor
                 if (window.NexusMetadataEditor) {
                     // Create alias for backward compatibility
                     window.NexusMetadataControl = window.NexusMetadataEditor;
                     this.isLoaded = true;
-                    console.log('✅ Nexus Metadata Editor v4.0.4 loaded');
+                    console.log('✅ Nexus Metadata Editor v5.0.0 loaded');
                     console.log('📦 NexusMetadataEditor type:', typeof window.NexusMetadataEditor);
                     console.log('📦 NexusMetadataEditor keys:', Object.keys(window.NexusMetadataEditor));
                     console.log('📦 Has mount method?', typeof window.NexusMetadataEditor.mount);
                     console.log('📦 Has themes system?', !!window.NexusMetadataEditor.themes);
                     console.log('📦 Has NexusRelationshipEditorWrapper?', !!window.NexusMetadataEditor.NexusRelationshipEditorWrapper);
-                    console.log('🎉 v4.0.4 features:');
+                    console.log('🎉 v5.0.0 features:');
+                    console.log('  - NEW: Programmatic form control (updateField, updateFields, getFormData, clearField, save)');
                     console.log('  - Theme system with default and minimal presets');
                     console.log('  - CSS variables for runtime customization');
                     console.log('  - Unstyled mode for custom styling');
-                    console.log('  - All v3.x functionality preserved');
+                    console.log('  - All v4.x functionality preserved');
                     console.log('  - Header buttons architecture maintained');
                     console.log('  - 🐛 v4.0.1: Relationship forms now properly themed');
                     console.log('  - 🐛 v4.0.2: NexusRelationshipEditorWrapper supports theme props');
@@ -273,6 +274,63 @@ export class MetadataEditorIntegration {
                 console.warn('⚠️ No unmount method found on handle:', this.currentHandle);
             }
             this.currentHandle = null;
+        }
+    }
+
+    /**
+     * Get the current form handle for programmatic control (v5.0.0)
+     * @returns {Object|null} The current form handle with updateField, updateFields, getFormData, clearField, save methods
+     */
+    getCurrentHandle() {
+        return this.currentHandle;
+    }
+
+    /**
+     * Update a field in the current form (v5.0.0)
+     * @param {string} fieldName - The field name to update
+     * @param {any} value - The new value
+     */
+    updateField(fieldName, value) {
+        if (this.currentHandle && typeof this.currentHandle.updateField === 'function') {
+            this.currentHandle.updateField(fieldName, value);
+        } else {
+            console.warn('⚠️ No active form or updateField method not available');
+        }
+    }
+
+    /**
+     * Update multiple fields in the current form (v5.0.0)
+     * @param {Object} updates - Object with field names as keys and new values
+     */
+    updateFields(updates) {
+        if (this.currentHandle && typeof this.currentHandle.updateFields === 'function') {
+            this.currentHandle.updateFields(updates);
+        } else {
+            console.warn('⚠️ No active form or updateFields method not available');
+        }
+    }
+
+    /**
+     * Get current form data (v5.0.0)
+     * @returns {Object|null} The current form data
+     */
+    getFormData() {
+        if (this.currentHandle && typeof this.currentHandle.getFormData === 'function') {
+            return this.currentHandle.getFormData();
+        } else {
+            console.warn('⚠️ No active form or getFormData method not available');
+            return null;
+        }
+    }
+
+    /**
+     * Programmatically save the current form (v5.0.0)
+     */
+    saveForm() {
+        if (this.currentHandle && typeof this.currentHandle.save === 'function') {
+            this.currentHandle.save();
+        } else {
+            console.warn('⚠️ No active form or save method not available');
         }
     }
 

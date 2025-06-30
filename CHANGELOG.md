@@ -2,6 +2,27 @@
 
 All notable changes to the WebsitePrototype project will be documented in this file.
 
+## [1.2.0] - 2025-06-30 - Metadata Editor v5.0.0 & Auto-Save Enhancements
+
+### Added
+- **NexusMetadataEditor v5.0.0** - Programmatic form control capabilities
+  - `updateField(fieldName, value)` - Update single form fields
+  - `updateFields(updates)` - Update multiple fields at once
+  - `getFormData()` - Retrieve current form data
+  - `clearField(fieldName)` - Clear specific fields
+  - `save()` - Programmatically trigger form save
+- **Auto-save for node positions** - Node x,y coordinates automatically saved to Neo4j when dragged
+- **Integration methods** in metadata-editor-integration.js for v5.0.0 features
+
+### Changed
+- Updated NexusMetadataEditor from v4.0.4 to v5.0.0
+- Enhanced handleSandboxDataChange to detect and save node position changes
+
+### Technical Details
+- Position updates saved with `positionUpdatedAt` timestamp
+- All v4.x functionality preserved in v5.0.0
+- Programmatic control available for both node and relationship forms
+
 ## [1.1.0] - 2025-06-26 - Neo4j Production Posting
 
 ### Added
