@@ -3,6 +3,16 @@
 ## Overview
 This guide provides everything needed to cold start the AI Interview Workflow testing environment and continue implementation of the todo list items.
 
+### What We're Testing
+The AI Interview Workflow is a system where an AI assistant helps users build knowledge graphs through natural conversation. Users mention entities (people, organizations, events) and the AI should automatically:
+- Check if they exist in sandbox/production
+- Create or copy them as needed
+- Build relationships between entities
+- All without interrupting the conversation flow
+
+### What We Found
+Through 5 phases of testing, we discovered the AI is missing critical WebSocket commands, doesn't have entity schemas, and lacks proper system knowledge. The comprehensive system prompt we created addresses these gaps.
+
 ## Key Files to Reference
 - **Todo List**: Check current implementation status with `TodoRead` tool
 - **System Prompt**: `/home/tim/WebsitePrototype/playwright-testing/ai-system-prompt-complete.md`
@@ -24,23 +34,25 @@ PORT=8357 npm start
 # Check if already running
 curl http://localhost:3003
 
-# If not running, check the interview service directory
-# The service should auto-start or may need:
-# cd [interview-service-directory]
-# npm start
+# NOTE: This service appears to be already running in the environment
+# If you need to restart it, you'll need to find the service directory
+# The service handles interview sessions and WebSocket connections
 ```
 
 ### 1.3 Orchestrator WebSocket Server
 ```bash
-# The WebSocket server that bridges AI and UI
-# This handles all WebSocket messages between components
-# Check if running - it should be on the expected port
+# IMPORTANT: We don't have the exact startup command for this
+# The WebSocket server bridges AI and UI communication
+# It should be running as part of the interview service on port 3003
+# Check WebSocket connection in browser DevTools (see Step 3)
 ```
 
 ### 1.4 AI Server/Bridge
 ```bash
-# The AI service that processes interview requests
+# CRITICAL: Location and startup command unknown
 # This is where the system prompt needs to be updated (Todo item #1)
+# You'll need to investigate where this service runs
+# Look for AI/orchestrator configuration files or ask the team
 ```
 
 ## Step 2: Access Test Page
@@ -88,7 +100,25 @@ npm test tests/ai-workflow-validation.spec.js
 ### Check Todo List:
 ```
 Use TodoRead tool to see current implementation tasks
+(This is a Claude AI tool - if not using Claude, the todo items are listed below)
 ```
+
+### Todo List Items (if not using Claude):
+1. Apply comprehensive system prompt to AI backend
+2. Implement RequestClarification WebSocket command
+3. Implement ConfirmWithUser WebSocket command
+4. Implement GetEntityTypes WebSocket command
+5. Implement GetFormSchema WebSocket command
+6. Implement SendUserMessage WebSocket command
+7. Document SandboxStatus response format
+8. Document ProductionSearchResults format
+9. Create Person entity schema
+10. Create Organization entity schema
+11. Create Event/Place/Thing entity schemas
+12. Run validation tests on updated system
+13. Create real interview test scenarios
+14. Deploy to staging environment
+15. Production deployment
 
 ### Current Focus Areas:
 1. **Apply System Prompt** (Todo #1)
