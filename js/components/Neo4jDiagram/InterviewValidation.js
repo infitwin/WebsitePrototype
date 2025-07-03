@@ -265,12 +265,33 @@ const InterviewValidation = ({ width = window.innerWidth, height = window.innerH
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <button 
             onClick={() => {
-              const newNode = mockDataService.addNode({
-                id: `node_${Date.now()}`,
-                name: `Test Node ${operations.length + 1}`,
-                type: 'person'
-              });
-              handleNodeAdd(newNode);
+              // Updated to work with AI workflow testing
+              const entityName = window.prompt("Enter entity name:") || `Test Node ${operations.length + 1}`;
+              
+              // Use existing WebSocket if available (from interview.js)
+              if (window.orchestratorWebSocket && window.orchestratorWebSocket.readyState === WebSocket.OPEN) {
+                // Send message that triggers AI workflow
+                window.orchestratorWebSocket.send(JSON.stringify({
+                  type: 'UserMessage',
+                  payload: {
+                    transcript: `Add ${entityName} to my graph`,
+                    interviewId: window.currentInterviewId || 'test_interview_123',
+                    userId: window.currentUserId || 'test_user',
+                    twinId: window.currentTwinId || 'test_twin'
+                  }
+                }));
+                
+                // Log for testing
+                addOperation('WEBSOCKET_SENT', entityName, 'Triggered AI workflow');
+              } else {
+                // Fallback for testing without WebSocket
+                const newNode = mockDataService.addNode({
+                  id: `node_${Date.now()}`,
+                  name: entityName,
+                  type: 'person'
+                });
+                handleNodeAdd(newNode);
+              }
             }}
             style={{
               padding: '4px 8px',
