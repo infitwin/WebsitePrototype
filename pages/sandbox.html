@@ -721,6 +721,30 @@
                             log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
                         });
+                    },
+                    onEdgeClick: (edge) => {
+                        // Single click - just select/highlight edge
+                        log('🔗 Edge selected:', edge.id);
+                    },
+                    onEdgeDoubleClick: (edge) => {
+                        // Double click - show edge metadata editor
+                        log('🔗 Edge double-clicked:', edge.id);
+                        
+                        // Find source and target nodes for context
+                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        
+                        if (sourceNode && targetNode) {
+                            window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
+                                (updatedEdge) => {
+                                    log('📝 Edge updated in sandbox:', updatedEdge);
+                                    // The graph should auto-update when data changes
+                                },
+                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                            );
+                        } else {
+                            log('❌ Could not find source or target nodes for edge:', edge.id);
+                        }
                     }
                 });
                 
@@ -1195,6 +1219,30 @@
                             log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
                         });
+                    },
+                    onEdgeClick: (edge) => {
+                        // Single click - just select/highlight edge
+                        log('🔗 Edge selected:', edge.id);
+                    },
+                    onEdgeDoubleClick: (edge) => {
+                        // Double click - show edge metadata editor
+                        log('🔗 Edge double-clicked:', edge.id);
+                        
+                        // Find source and target nodes for context
+                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        
+                        if (sourceNode && targetNode) {
+                            window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
+                                (updatedEdge) => {
+                                    log('📝 Edge updated in sandbox:', updatedEdge);
+                                    // The graph should auto-update when data changes
+                                },
+                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                            );
+                        } else {
+                            log('❌ Could not find source or target nodes for edge:', edge.id);
+                        }
                     }
                 });
                 
@@ -2411,6 +2459,30 @@
                             log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
                         });
+                    },
+                    onEdgeClick: (edge) => {
+                        // Single click - just select/highlight edge
+                        log('🔗 Edge selected:', edge.id);
+                    },
+                    onEdgeDoubleClick: (edge) => {
+                        // Double click - show edge metadata editor
+                        log('🔗 Edge double-clicked:', edge.id);
+                        
+                        // Find source and target nodes for context
+                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        
+                        if (sourceNode && targetNode) {
+                            window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
+                                (updatedEdge) => {
+                                    log('📝 Edge updated in sandbox:', updatedEdge);
+                                    // The graph should auto-update when data changes
+                                },
+                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                            );
+                        } else {
+                            log('❌ Could not find source or target nodes for edge:', edge.id);
+                        }
                     }
                 });
                 
