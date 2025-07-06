@@ -160,78 +160,78 @@ body {
     position: relative; /* Establish positioning context */
 }
 
-/* Stage 1: Common Utility Classes */
+/* Stage 1: Common Utility Classes - Using Design System */
 .flex-center-gap {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-sm);
 }
 
 .flex-center-gap-10 {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 10px; /* Custom spacing not in design system */
 }
 
 .text-muted {
-    color: #666;
+    color: var(--color-text-secondary);
     font-size: 14px;
 }
 
 .text-bold-primary {
     font-weight: 600;
-    color: #007bff;
+    color: var(--color-info);
 }
 
 .text-bold-purple {
     font-weight: 600;
-    color: #6f42c1;
+    color: var(--color-primary);
 }
 
 .loading-state {
     text-align: center;
-    padding: 20px;
-    color: #666;
+    padding: var(--spacing-lg);
+    color: var(--color-text-secondary);
 }
 
-/* Stage 2: Panel Content Areas */
+/* Stage 2: Panel Content Areas - Using Design System */
 .panel-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #f8f9fa;
+    background: var(--color-background-hover);
     border-radius: 6px;
-    padding: 15px;
+    padding: var(--spacing-md);
 }
 
 .panel-content-scroll {
     flex: 1;
     overflow-y: auto;
-    background: #f8f9fa;
+    background: var(--color-background-hover);
     border-radius: 6px;
-    padding: 15px;
+    padding: var(--spacing-md);
 }
 
 .filter-section {
     display: none;
-    margin-bottom: 15px;
-    padding: 10px;
-    background: white;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: var(--color-background-card);
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px var(--color-shadow-medium);
 }
 
 .filter-label {
-    color: #333;
+    color: var(--color-text-primary);
     font-size: 12px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-sm);
 }
 
 .filter-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--spacing-xs);
 }
 
 .content-list {
@@ -239,22 +239,22 @@ body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-sm);
 }
 
 .content-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 10px;
+    gap: var(--spacing-sm);
 }
 
 .content-grid-files {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
+    gap: var(--spacing-sm);
 }
 
-/* Stage 3: Headers, Typography, and Utilities */
+/* Stage 3: Headers, Typography, and Utilities - Using Design System */
 .header-icon {
     font-size: 20px;
 }
@@ -265,24 +265,24 @@ body {
 }
 
 .section-title {
-    margin: 0 0 15px 0;
-    color: #007bff;
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--color-info);
 }
 
 .text-bold-orange {
     font-weight: 600;
-    color: #fd7e14;
+    color: #fd7e14; /* Orange not in design system */
 }
 
 .empty-state {
-    background: white;
-    padding: 15px;
+    background: var(--color-background-card);
+    padding: var(--spacing-md);
     border-radius: 4px;
     text-align: center;
-    color: #666;
+    color: var(--color-text-secondary);
 }
 
 .empty-state-icon {
     font-size: 20px;
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-xs);
 }
