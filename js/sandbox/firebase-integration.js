@@ -216,7 +216,7 @@ export class FirebaseIntegration {
         console.log('🔍 DEBUG: Current user:', user ? user.email : 'null');
         
         if (!user) {
-            this.log('❌ No user logged in for faces');
+            console.log('❌ No user logged in for faces');
             const loadingEl = document.getElementById('facesLoading');
             if (loadingEl) {
                 loadingEl.innerHTML = '<div style="color: #666;">Please log in to see faces</div>';
@@ -224,27 +224,30 @@ export class FirebaseIntegration {
             return;
         }
         
-        this.log('👤 Loading faces for user:', user.email, 'UID:', user.uid);
+        console.log('👤 Loading faces for user:', user.email, 'UID:', user.uid);
         
         const gridEl = document.getElementById('facesGrid');
         const loadingEl = document.getElementById('facesLoading');
         
+        console.log('🔍 DEBUG: DOM elements - gridEl:', !!gridEl, 'loadingEl:', !!loadingEl);
+        
         if (!gridEl || !loadingEl) {
-            this.log('❌ Missing DOM elements for faces');
+            console.log('❌ Missing DOM elements for faces');
             return;
         }
         
         try {
+            console.log('🔍 DEBUG: Starting Firestore query...');
             // Get user's files from Firestore (use the same approach as the original)
             const db = firebase.firestore();
             const filesRef = db.collection('users').doc(user.uid).collection('files');
-            this.log('🔍 DEBUG: Querying for files with faces: users/' + user.uid + '/files');
+            console.log('🔍 DEBUG: Querying for files with faces: users/' + user.uid + '/files');
             
             // Query for files that have extracted faces (same as original approach)
             const snapshot = await filesRef.limit(100).get();
             
-            this.log('📊 DEBUG: Files query completed. Size:', snapshot.size);
-            this.log('📊 DEBUG: Query empty?', snapshot.empty);
+            console.log('📊 DEBUG: Files query completed. Size:', snapshot.size);
+            console.log('📊 DEBUG: Query empty?', snapshot.empty);
             
             if (snapshot.empty) {
                 this.log('❌ DEBUG: No files found at all for user');
