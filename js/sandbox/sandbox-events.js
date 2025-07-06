@@ -113,7 +113,7 @@ export class SandboxEvents {
      */
     handleNodeListPanel() {
         // Initialize Firebase first if needed for authentication
-        if (!this.firebaseIntegration.isInitialized()) {
+        if (!this.firebaseIntegration.initialized) {
             this.firebaseIntegration.initialize();
             setTimeout(() => {
                 if (firebase.auth().currentUser) {
@@ -138,7 +138,7 @@ export class SandboxEvents {
      * Handle artifacts panel opening
      */
     handleArtifactsPanel() {
-        if (!this.firebaseIntegration.isInitialized()) {
+        if (!this.firebaseIntegration.initialized) {
             this.firebaseIntegration.initialize();
             setTimeout(() => {
                 if (firebase.auth().currentUser) {
@@ -163,7 +163,7 @@ export class SandboxEvents {
      * Handle faces panel opening
      */
     handleFacesPanel() {
-        if (!this.firebaseIntegration.isInitialized()) {
+        if (!this.firebaseIntegration.initialized) {
             this.firebaseIntegration.initialize();
             setTimeout(() => {
                 if (firebase.auth().currentUser) {
