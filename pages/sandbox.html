@@ -40,7 +40,7 @@
         import { createArtifactThumbnail, createFaceThumbnail, createDraggableNodeElement, createFilterButton, createReviewFormContent, createNodeTypeFilters } from '../js/sandbox/ui-builders.js';
         import { sandboxState } from '../js/sandbox/sandbox-state.js';
         import { createSandboxEvents } from '../js/sandbox/sandbox-events.js';
-        import { FirebaseIntegrationStub } from '../js/sandbox/firebase-integration-stub.js';
+        import { createFirebaseIntegration } from '../js/sandbox/firebase-integration.js';
         import { createSandboxNeo4jIntegration } from '../js/sandbox/neo4j-integration.js';
         import { getNexusComponent, createSandboxComponent, createSimpleSandboxComponent, createProductionComponent, createSandboxWrapper, renderComponent } from '../js/sandbox/sandbox-components.js';
         window.Button = Button;
@@ -80,9 +80,9 @@
         // Make state management available globally
         window.sandboxState = sandboxState;
         
-        // Initialize Firebase stub and event system
-        const firebaseStub = new FirebaseIntegrationStub();
-        window.sandboxEvents = createSandboxEvents(sandboxState, firebaseStub);
+        // Initialize Firebase integration and event system
+        window.firebaseIntegration = createFirebaseIntegration(sandboxState);
+        window.sandboxEvents = createSandboxEvents(sandboxState, window.firebaseIntegration);
         
         // Initialize Neo4j integration and link to state
         window.sandboxNeo4j = createSandboxNeo4jIntegration(sandboxState);
@@ -739,269 +739,14 @@
         
         // Remove backward compatibility wrappers - direct module access only
         
-        // Firebase Integration Functions
-        let firebaseInitialized = false;
-        
-        function initializeFirebase() {
-            if (firebaseInitialized) return;
-            
-            try {
-                // Initialize Firebase with configuration
-                if (!firebase.apps.length) {
-                    const firebaseConfig = {
-                        apiKey: "AIzaSyB0SdtkO7ngsXP7B0geafpDv_xEBAujel8",
-                        authDomain: "infitwin.firebaseapp.com",
-                        projectId: "infitwin",
-                        storageBucket: "infitwin.firebasestorage.app",
-                        messagingSenderId: "833139648849",
-                        appId: "1:833139648849:web:2768d8e37cf2a318018b70",
-                        measurementId: "G-PEJN4ZMCZ6"
-                    };
-                    firebase.initializeApp(firebaseConfig);
-                }
-                firebaseInitialized = true;
-                updateFirebaseStatus(true);
-                window.sandboxState.log('🔥 Firebase initialized');
-                
-                // Set up auth state listener
-                firebase.auth().onAuthStateChanged(async (user) => {
-                    if (user) {
-                        window.sandboxState.log('👤 User logged in:', user.email);
-                        updateFirebaseStatus(true);
-                    } else {
-                        window.sandboxState.log('❌ No user logged in, attempting test login...');
-                        // Try to login with test credentials
-                        try {
-                            await firebase.auth().signInWithEmailAndPassword('weezer@yev.com', '123456');
-                            window.sandboxState.log('✅ Test user logged in');
-                        } catch (error) {
-                            window.sandboxState.log('❌ Login failed:', error.message);
-                            updateFirebaseStatus(false);
-                        }
-                    }
-                });
-            } catch (error) {
-                window.sandboxState.log('❌ Firebase initialization error:', error);
-                updateFirebaseStatus(false);
-            }
-        }
-        
-        function updateFirebaseStatus(connected) {
-            const statusEl = document.getElementById('firebaseStatus');
-            const statusText = document.getElementById('firebaseStatusText');
-            if (statusEl && statusText) {
-                if (connected) {
-                    statusEl.classList.add('connected');
-                    const user = firebase.auth().currentUser;
-                    if (user) {
-                        statusText.textContent = 'Connected: ' + user.email;
-                    } else {
-                        statusText.textContent = 'Connected';
-                    }
-                    statusEl.querySelector('span').style.background = '#28a745';
-                } else {
-                    statusEl.classList.remove('connected');
-                    statusText.textContent = 'Disconnected';
-                    statusEl.querySelector('span').style.background = '#dc3545';
-                }
-            }
-        }
-        
-        function getCurrentSandboxData() {
-            // Get current sandbox state
-            const nodes = [];
-            const edges = [];
-            
-            // In a real implementation, we'd get this from the Nexus control
-            if (window.sandboxState.sandboxRoot) {
-                // Simulate getting data
-                nodes.push({
-                    id: 'sandbox_node_1',
-                    label: 'Sample Node',
-                    type: 'person',
-                    _isSandbox: true,
-                    interviewId: 'interview_' + Date.now(),
-                    sessionId: 'session_' + Date.now()
-                });
-            }
-            
-            return { nodes, edges, changesCount: window.sandboxState.changesCount };
-        }
+        // Firebase integration now handled by module
         
         
-        // Load user artifacts from Firebase
-        async function loadUserArtifacts() {
-            if (!firebaseInitialized) {
-                window.sandboxState.log('⏳ Firebase not initialized yet for artifacts');
-                return;
-            }
-            
-            const user = firebase.auth().currentUser;
-            if (!user) {
-                window.sandboxState.log('❌ No user logged in for artifacts');
-                const loadingEl = document.getElementById('artifactsLoading');
-                if (loadingEl) {
-                    loadingEl.innerHTML = '<div style="color: #666;">Please log in to see files</div>';
-                }
-                return;
-            }
-            
-            window.sandboxState.log('📎 Loading artifacts for user:', user.email, 'UID:', user.uid);
-            
-            const gridEl = document.getElementById('artifactsGrid');
-            const loadingEl = document.getElementById('artifactsLoading');
-            
-            if (!gridEl || !loadingEl) {
-                window.sandboxState.log('❌ Missing DOM elements for artifacts');
-                return;
-            }
-            
-            try {
-                // Get user's files from Firestore
-                const db = firebase.firestore();
-                const filesRef = db.collection('users').doc(user.uid).collection('files');
-                window.sandboxState.log('🔍 Querying path: users/' + user.uid + '/files');
-                
-                // Try a simpler query first
-                const snapshot = await filesRef.limit(50).get();
-                
-                window.sandboxState.log('📊 Query completed. Empty:', snapshot.empty, 'Size:', snapshot.size);
-                
-                if (snapshot.empty) {
-                    loadingEl.innerHTML = '<div style="color: #666;">No files uploaded yet. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload files</a></div>';
-                    return;
-                }
-                
-                loadingEl.style.display = 'none';
-                gridEl.innerHTML = '';
-                
-                snapshot.forEach(doc => {
-                    const file = doc.data();
-                    window.sandboxState.log('📄 File:', doc.id, file.fileName || 'Unnamed');
-                    const thumbnail = createArtifactThumbnail(doc.id, file);
-                    gridEl.appendChild(thumbnail);
-                });
-                
-                window.sandboxState.log('✅ Loaded', snapshot.size, 'artifacts');
-            } catch (error) {
-                window.sandboxState.log('❌ Error loading artifacts:', error.message);
-                console.error('Full error:', error);
-                loadingEl.innerHTML = '<div style="color: #EF4444;">Error: ' + error.message + '</div>';
-                
-                // Check if it's a permission error
-                if (error.code === 'permission-denied') {
-                    loadingEl.innerHTML = '<div style="color: #EF4444;">Permission denied. Please check Firestore rules.</div>';
-                } else if (error.message && error.message.includes('index')) {
-                    // Try without orderBy if it's an index issue
-                    try {
-                        window.sandboxState.log('🔄 Retrying without orderBy...');
-                        const snapshot = await firebase.firestore()
-                            .collection('users').doc(user.uid).collection('files')
-                            .limit(50).get();
-                        
-                        if (!snapshot.empty) {
-                            loadingEl.style.display = 'none';
-                            gridEl.innerHTML = '';
-                            
-                            snapshot.forEach(doc => {
-                                const file = doc.data();
-                                const thumbnail = createArtifactThumbnail(doc.id, file);
-                                gridEl.appendChild(thumbnail);
-                            });
-                            
-                            window.sandboxState.log('✅ Loaded', snapshot.size, 'artifacts (without orderBy)');
-                        }
-                    } catch (retryError) {
-                        window.sandboxState.log('❌ Retry also failed:', retryError.message);
-                    }
-                }
-            }
-        }
-        
-        // Create draggable thumbnail for artifact
-        // createArtifactThumbnail moved to ui-builders.js
         
         
-        // Load user faces from Firebase
-        async function loadUserFaces() {
-            if (!firebaseInitialized) {
-                window.sandboxState.log('⏳ Firebase not initialized yet for faces');
-                return;
-            }
-            
-            const user = firebase.auth().currentUser;
-            if (!user) {
-                window.sandboxState.log('❌ No user logged in for faces');
-                const loadingEl = document.getElementById('facesLoading');
-                if (loadingEl) {
-                    loadingEl.innerHTML = '<div style="color: #666;">Please log in to see faces</div>';
-                }
-                return;
-            }
-            
-            window.sandboxState.log('👤 Loading faces for user:', user.email, 'UID:', user.uid);
-            
-            const gridEl = document.getElementById('facesGrid');
-            const loadingEl = document.getElementById('facesLoading');
-            
-            if (!gridEl || !loadingEl) {
-                window.sandboxState.log('❌ Missing DOM elements for faces');
-                return;
-            }
-            
-            try {
-                // Get user's files from Firestore
-                const db = firebase.firestore();
-                const filesRef = db.collection('users').doc(user.uid).collection('files');
-                window.sandboxState.log('🔍 Querying for files with faces: users/' + user.uid + '/files');
-                
-                // Query for files that have extracted faces
-                const snapshot = await filesRef.limit(100).get();
-                
-                window.sandboxState.log('📊 Files query completed. Size:', snapshot.size);
-                
-                loadingEl.style.display = 'none';
-                gridEl.innerHTML = '';
-                
-                let totalFaces = 0;
-                
-                // Iterate through files and extract faces
-                snapshot.forEach(doc => {
-                    const fileData = doc.data();
-                    
-                    // Check if file has extracted faces
-                    if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces) && fileData.extractedFaces.length > 0) {
-                        window.sandboxState.log('📷 Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
-                        
-                        // Log first face structure to understand the data
-                        if (fileData.extractedFaces[0]) {
-                            window.sandboxState.log('🔍 First face structure:', JSON.stringify(fileData.extractedFaces[0]));
-                        }
-                        
-                        // Create face thumbnails for each extracted face
-                        fileData.extractedFaces.forEach((face, index) => {
-                            const faceThumbnail = createFaceThumbnail(doc.id, fileData, face, index);
-                            gridEl.appendChild(faceThumbnail);
-                            totalFaces++;
-                        });
-                    }
-                });
-                
-                window.sandboxState.log('✅ Loaded', totalFaces, 'faces from', snapshot.size, 'files');
-                
-                if (totalFaces === 0) {
-                    loadingEl.style.display = 'block';
-                    loadingEl.innerHTML = '<div style="color: #666;">No faces found. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload and vectorize photos</a></div>';
-                }
-                
-            } catch (error) {
-                window.sandboxState.log('❌ Error loading faces:', error.message);
-                console.error('Full error:', error);
-                loadingEl.innerHTML = '<div style="color: #EF4444;">Error: ' + error.message + '</div>';
-            }
-        }
+        // Firebase functions moved to firebase-integration.js module
         
-        // createFaceThumbnail moved to ui-builders.js
+        
         
         
         // Load node list using the service and handle UI
@@ -1457,7 +1202,7 @@
             window.sandboxState.log('📦 Page loaded, checking scripts...');
             
             // Initialize Firebase first
-            initializeFirebase();
+            window.firebaseIntegration.initialize();
             
             // Initialize Post to Production button
             setTimeout(() => {

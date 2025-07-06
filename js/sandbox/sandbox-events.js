@@ -270,18 +270,18 @@ export class SandboxEvents {
     }
 
     loadUserArtifacts() {
-        if (window.loadUserArtifacts) {
-            window.loadUserArtifacts();
+        if (this.firebaseIntegration && this.firebaseIntegration.loadUserArtifacts) {
+            this.firebaseIntegration.loadUserArtifacts();
         } else {
-            this.log('⚠️ loadUserArtifacts function not available');
+            this.log('⚠️ Firebase integration not available');
         }
     }
 
     loadUserFaces() {
-        if (window.loadUserFaces) {
-            window.loadUserFaces();
+        if (this.firebaseIntegration && this.firebaseIntegration.loadUserFaces) {
+            this.firebaseIntegration.loadUserFaces();
         } else {
-            this.log('⚠️ loadUserFaces function not available');
+            this.log('⚠️ Firebase integration not available');
         }
     }
 
