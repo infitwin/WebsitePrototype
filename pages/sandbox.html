@@ -1322,13 +1322,6 @@
                         }
                         
                         // Create in Neo4j
-                            newNode,
-                            userId,
-                            twinId,
-                            currentInterviewId,
-                            hasNeo4jConnection: !!window.Neo4jConnection,
-                            hasCreateMethod: !!window.Neo4jConnection?.createSandboxNode
-                        });
                         
                         const createdNode = await window.Neo4jConnection.createSandboxNode(
                             newNode,
