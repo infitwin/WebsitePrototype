@@ -333,10 +333,8 @@
             console.log('📋 Using existing interview ID from localStorage:', currentInterviewId);
         }
         
-        
         function log(message) {
             // Logging disabled for production
-            // console.log(message);
         }
         
         // Test delete function - accessible from console
@@ -406,7 +404,6 @@
             log('🔄 Loading existing sandbox data...');
             
             try {
-                // Ensure connection
                 if (!window.Neo4jConnection.isConnected) {
                     await window.Neo4jConnection.connect();
                 }
@@ -424,7 +421,6 @@
                 const session = window.Neo4jConnection.getSession();
                 
                 try {
-                    // Query for ALL sandbox nodes for this user/twin
                     log(`📊 Loading ALL sandbox items for userId: ${userId}, twinId: ${twinId}`);
                     const nodesResult = await session.run(`
                         MATCH (n:Sandbox)
@@ -439,7 +435,6 @@
                     
                     log(`📊 Node query returned ${nodesResult.records.length} records`);
                     
-                    // Query for ALL sandbox relationships between nodes owned by this user/twin
                     const relsResult = await session.run(`
                         MATCH (source:Sandbox)-[r]->(target:Sandbox)
                         WHERE r._isSandbox = true
@@ -454,12 +449,10 @@
                         twinId: twinId
                     });
                     
-                    // Process nodes
                     const nodes = nodesResult.records.map(record => {
                         const node = record.get('n');
                         const props = node.properties;
                         
-                        // Handle stateMaps deserialization
                         if (props.stateMaps && typeof props.stateMaps === 'string') {
                             try {
                                 props.stateMaps = JSON.parse(props.stateMaps);
@@ -469,7 +462,6 @@
                             }
                         }
                         
-                        // Handle attachments deserialization
                         if (props.attachments && typeof props.attachments === 'string') {
                             try {
                                 props.attachments = JSON.parse(props.attachments);
@@ -486,13 +478,12 @@
                             type: props.type?.toLowerCase() || 'thing',
                             x: props.x || Math.random() * 800,
                             y: props.y || Math.random() * 600,
-                            imageUrl: props.imageUrl || null,  // Include face image URL
-                            attachments: props.attachments || [],  // Include file attachments
+                            imageUrl: props.imageUrl || null,
+                            attachments: props.attachments || [],
                             properties: props
                         };
                     });
                     
-                    // Process relationships
                     const edges = relsResult.records.map(record => {
                         const rel = record.get('r');
                         const props = rel.properties;
@@ -500,7 +491,6 @@
                         const targetId = record.get('targetId');
                         const relType = record.get('relType');
                         
-                        // Handle stateMaps deserialization
                         if (props.stateMaps && typeof props.stateMaps === 'string') {
                             try {
                                 props.stateMaps = JSON.parse(props.stateMaps);
@@ -510,7 +500,6 @@
                             }
                         }
                         
-                        // Handle attachments deserialization
                         if (props.attachments && typeof props.attachments === 'string') {
                             try {
                                 props.attachments = JSON.parse(props.attachments);
@@ -526,12 +515,11 @@
                             target: targetId,
                             label: relType,
                             type: relType,
-                            attachments: props.attachments || [],  // Include file attachments
+                            attachments: props.attachments || [],
                             properties: props
                         };
                     });
                     
-                    // Update current sandbox data
                     currentSandboxData = {
                         nodes: nodes,
                         edges: edges
@@ -539,7 +527,6 @@
                     
                     log(`✅ Loaded ${nodes.length} nodes and ${edges.length} relationships from sandbox`);
                     
-                    // Re-render if already initialized
                     if (sandboxRoot && sandboxGraphRef.current) {
                         log('🔄 Updating Nexus control with loaded data...');
                         if (sandboxGraphRef.current.updateData) {
@@ -572,11 +559,8 @@
             }
         }
         
-        /**
-         * Auto-save handler for all sandbox data changes
-         * Detects and saves: position changes, face updates, file attachments
-         * Works with Nexus Graph Control v17.5.0 onDataChange callback
-         */
+        // Auto-save handler for all sandbox data changes
+        // Detects and saves: position changes, face updates, file attachments
         async function handleSandboxDataChange(newData) {
             console.log('📊 Sandbox data changed:', {
                 nodesBefore: currentSandboxData.nodes.length,
@@ -590,7 +574,7 @@
                 const oldNode = currentSandboxData.nodes.find(n => n.id === newNode.id);
                 if (!oldNode) continue; // Skip new nodes (handled by onNodeDrop/onEdgeCreate callbacks)
                 
-                // Auto-save node position changes when dragged
+                // Auto-save position changes
                 if ((oldNode.x !== newNode.x || oldNode.y !== newNode.y) && newNode.x !== undefined && newNode.y !== undefined) {
                     log(`📍 Node position changed: ${newNode.id} - ${newNode.name || newNode.label}`);
                     
@@ -609,7 +593,7 @@
                     }
                 }
                 
-                // Auto-save face image updates when dropped on nodes
+                // Auto-save face updates
                 if (newNode.imageUrl && oldNode.imageUrl !== newNode.imageUrl) {
                     log(`😊 Face updated on node ${newNode.id}: ${newNode.name || newNode.label}`);
                     
@@ -628,7 +612,7 @@
                     }
                 }
                 
-                // Auto-save file attachments when files dropped on nodes
+                // Auto-save file attachments
                 const oldAttachments = oldNode.attachments || [];
                 const newAttachments = newNode.attachments || [];
                 
@@ -661,19 +645,16 @@
                 const newAttachments = newEdge.attachments || [];
                 
                 if (newAttachments.length > oldAttachments.length) {
-                    // Files were added to edge
                     const addedFiles = newAttachments.slice(oldAttachments.length);
                     log(`📎 ${addedFiles.length} file(s) attached to edge ${newEdge.id}: ${newEdge.label}`);
                     
                     try {
-                        // Update edge in database with new attachments
                         const updates = {
                             attachments: newAttachments,
                             hasAttachments: true,
                             attachmentsUpdatedAt: new Date().toISOString()
                         };
                         
-                        // Need to update relationship in Neo4j
                         await window.Neo4jConnection.updateSandboxRelationship(
                             newEdge.id,
                             updates,
@@ -695,25 +676,19 @@
             simulateChange();
         }
         
-        /**
-         * File drop handler for sandbox - creates attachment objects and updates graph
-         * Called by Nexus onFileDrop callback with (targetId, fileData, isNode)
-         * Supports: Firebase artifacts, real files (future), test data
-         */
+        // File drop handler for sandbox - creates attachment objects and updates graph
+        // Called by Nexus onFileDrop callback with (targetId, fileData, isNode)
         async function handleSandboxFileDrop(targetId, fileData, isNode) {
             log(`📎 File drop on ${isNode ? 'node' : 'edge'} ${targetId}`);
             
-            // Convert to the format our file handlers expect
             const target = {
                 id: targetId,
                 type: isNode ? 'node' : 'edge'
             };
             
-            // Process file and create attachment object (with proper metadata structure)
             const attachment = await window.handleSandboxFileDrop(fileData, target, log);
             
             if (attachment && isNode) {
-                // Add attachment to node and trigger auto-save
                 const node = currentSandboxData.nodes.find(n => n.id === targetId);
                 if (node) {
                     if (!node.attachments) node.attachments = [];
@@ -721,13 +696,12 @@
                     node.attachments.push(attachment);
                     log(`✅ Added attachment to node ${targetId}: ${attachment.name}`);
                     
-                    // Update graph data - triggers onDataChange which auto-saves to Neo4j
+                    // Trigger onDataChange to auto-save to Neo4j
                     if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
                         sandboxGraphRef.current.updateData(currentSandboxData);
                     }
                 }
             } else if (attachment && !isNode) {
-                // Add attachment to edge and trigger auto-save
                 const edge = currentSandboxData.edges.find(e => e.id === targetId);
                 if (edge) {
                     if (!edge.attachments) edge.attachments = [];
@@ -735,7 +709,7 @@
                     edge.attachments.push(attachment);
                     log(`✅ Added attachment to edge ${targetId}: ${attachment.name}`);
                     
-                    // Update graph data - triggers onDataChange which auto-saves to Neo4j
+                    // Trigger onDataChange to auto-save to Neo4j
                     if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
                         sandboxGraphRef.current.updateData(currentSandboxData);
                     }
@@ -751,14 +725,12 @@
             return window.handleProductionFileDrop(fileData, target, log);
         }
         
-        
         // Handle face drops from the faces panel
         function handleFaceDropOnSandbox(targetId, faceNodeData, dropType, position) {
             log(`😊 Face drop: ${faceNodeData.name} on ${dropType}`);
             const faceData = faceNodeData.originalData;
             
             if (dropType === 'onto-canvas') {
-                // Create a new person node with the face
                 const newNode = {
                     id: faceNodeData.id,
                     name: faceNodeData.name,
@@ -771,7 +743,6 @@
                     }
                 };
                 
-                // Add position if provided
                 if (position) {
                     newNode.x = position.x;
                     newNode.y = position.y;
@@ -785,7 +756,6 @@
                 log(`✅ Created person node from face: ${newNode.name}`);
                 
             } else if (dropType === 'onto-node' && targetId) {
-                // Attach face to existing node (e.g., assign face to person)
                 const targetNode = currentSandboxData.nodes.find(n => n.id === targetId);
                 if (targetNode) {
                     targetNode.properties = {
@@ -799,7 +769,6 @@
                 }
             }
             
-            // Re-render the sandbox
             if (sandboxRoot) {
                 // Debug: Check what's available
                 console.log('window.NexusGraphControl:', window.NexusGraphControl);
@@ -844,7 +813,6 @@
                 
                 sandboxRoot.render(controlElement);
                 
-                // Track the change
                 changesCount++;
                 updateChangesDisplay();
                 
@@ -867,7 +835,6 @@
                     sandboxRoot = null;
                 }
                 
-                // Initialize with empty sandbox data
                 if (!currentSandboxData) {
                     currentSandboxData = {
                         nodes: [],
@@ -875,18 +842,14 @@
                     };
                 }
                 
-                // Load existing sandbox items and wait for completion
                 await loadExistingSandboxData();
                 
-                // Create element with ref support
                 const NexusControl = window.NexusGraphControl.NexusGraphControl;
                 
-                // Create wrapper component to handle ref
                 const SandboxWrapper = React.forwardRef((props, ref) => {
                     return React.createElement(NexusControl, { ...props, ref });
                 });
                 
-                // Create ref
                 sandboxGraphRef = React.createRef();
                 
                 const controlElement = React.createElement(SandboxWrapper, {
@@ -896,12 +859,9 @@
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
-                    enableDelete: true,  // Explicitly enable delete functionality
-                    
-                    // Data change callback - v17.5.0 auto-save trigger
+                    enableDelete: true,
                     onDataChange: handleSandboxDataChange,
                     
-                    // CRUD Callbacks per NEXUS_CRUD_INTERFACE.md
                     onMetaSave: async (metaData) => {
                         log('📝 Meta save triggered:', metaData);
                         
@@ -916,7 +876,6 @@
                             
                             if (metaData.entityType === 'node') {
                                 if (metaData.action === 'create') {
-                                    // Create new sandbox node
                                     const newNode = await window.Neo4jConnection.createSandboxNode(
                                         metaData.updates,
                                         userId,
@@ -925,7 +884,6 @@
                                     );
                                     log('✅ Created sandbox node:', newNode);
                                 } else {
-                                    // Update existing sandbox node (MERGE will create if doesn't exist)
                                     const updatedNode = await window.Neo4jConnection.updateSandboxNode(
                                         metaData.entityId,
                                         metaData.updates,
@@ -937,22 +895,19 @@
                                     log('✅ Updated/created sandbox node:', updatedNode);
                                 }
                             } else if (metaData.entityType === 'edge' || metaData.entityType === 'relationship') {
-                                // Handle actual relationships - create proper graph edges, not nodes
                                 console.log('=== RELATIONSHIP SAVE ===');
                                 console.log('Relationship updates:', metaData.updates);
                                 console.log('Updates can be stringified:', JSON.stringify(metaData.updates));
                                 
-                                // Extract relationship data
                                 const { sourceId, targetId, type, category, stateMaps, ...otherProps } = metaData.updates;
                                 
                                 if (!sourceId || !targetId) {
                                     throw new Error('Relationship missing sourceId or targetId');
                                 }
                                 
-                                // Use proper relationship method to create actual Neo4j relationships
                                 const updatedRel = await window.Neo4jConnection.updateSandboxRelationship(
                                     metaData.entityId,
-                                    metaData.updates,  // Full relationship data
+                                    metaData.updates,
                                     sourceId,
                                     targetId,
                                     type || 'RELATED_TO',
@@ -982,7 +937,6 @@
                             const userId = firebase.auth().currentUser?.uid;
                             const twinId = `${userId}-1`;
                             
-                            // Add sandbox properties
                             const sandboxNode = {
                                 ...nodeData,
                                 _isSandbox: true,
@@ -990,7 +944,6 @@
                                 sessionId: currentInterviewId
                             };
                             
-                            // Create in Neo4j
                             const createdNode = await window.Neo4jConnection.createSandboxNode(
                                 sandboxNode,
                                 userId,
@@ -998,7 +951,6 @@
                                 currentInterviewId
                             );
                             
-                            // Update local data
                             currentSandboxData.nodes.push(createdNode);
                             simulateChange();
                             
@@ -1036,18 +988,15 @@
                         }
                     },
                     
-                    // v17.2.0 uses plural delete callbacks
                     onNodesDelete: async (nodeIds) => {
                         log('🗑️ Nodes delete triggered:', nodeIds);
                         console.log('DELETE CALLBACK CALLED with nodeIds:', nodeIds);
                         
                         try {
-                            // Ensure connection
                             if (!window.Neo4jConnection.isConnected) {
                                 await window.Neo4jConnection.connect();
                             }
                             
-                            // Delete each node
                             for (const nodeId of nodeIds) {
                                 try {
                                     const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
@@ -1064,7 +1013,6 @@
                                 }
                             }
                             
-                            // Remove from local data
                             currentSandboxData.nodes = currentSandboxData.nodes.filter(n => !nodeIds.includes(n.id));
                             currentSandboxData.edges = currentSandboxData.edges.filter(
                                 e => !nodeIds.includes(e.source) && !nodeIds.includes(e.target)
@@ -1090,7 +1038,6 @@
                                 currentInterviewId
                             );
                             
-                            // Update local data
                             currentSandboxData.edges.push({
                                 ...edgeData,
                                 id: createdRel.id
@@ -1104,18 +1051,15 @@
                         }
                     },
                     
-                    // v17.2.0 uses plural delete callbacks
                     onEdgesDelete: async (edgeIds) => {
                         log('🗑️ Edges delete triggered:', edgeIds);
                         console.log('EDGES DELETE CALLBACK CALLED with edgeIds:', edgeIds);
                         
                         try {
-                            // Ensure connection
                             if (!window.Neo4jConnection.isConnected) {
                                 await window.Neo4jConnection.connect();
                             }
                             
-                            // Delete each edge
                             for (const edgeId of edgeIds) {
                                 try {
                                     const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
@@ -1132,7 +1076,6 @@
                                 }
                             }
                             
-                            // Remove from local data
                             currentSandboxData.edges = currentSandboxData.edges.filter(e => !edgeIds.includes(e.id));
                             simulateChange();
                             
@@ -1159,14 +1102,12 @@
                             return;
                         }
                         
-                        // Find the node and update its imageUrl
                         const nodeIndex = currentSandboxData.nodes.findIndex(n => n.id === nodeId);
                         if (nodeIndex === -1) {
                             console.log('❌ Node not found:', nodeId);
                             return;
                         }
                         
-                        // Extract the image URL from imageData
                         let imageUrl = null;
                         if (typeof imageData === 'string') {
                             imageUrl = imageData;
@@ -1184,10 +1125,8 @@
                             imageUrl: imageUrl.substring(0, 50) + '...'
                         });
                         
-                        // Update the node
                         currentSandboxData.nodes[nodeIndex].imageUrl = imageUrl;
                         
-                        // Force update the graph
                         if (sandboxGraphRef && sandboxGraphRef.current) {
                             if (sandboxGraphRef.current.updateData) {
                                 sandboxGraphRef.current.updateData(currentSandboxData);
@@ -1198,11 +1137,9 @@
                         simulateChange();
                     },
                     onNodeClick: (node) => {
-                        // Single click - just log for debugging, no editor
                         console.log('🖱️ Node single-clicked:', node.id, node.name || node.label);
                     },
                     onNodeDoubleClick: (node) => {
-                        // Debug node data
                         console.log('=== NODE DOUBLE-CLICK DEBUG ===');
                         console.log('Node data:', node);
                         console.log('Node attachments:', node.attachments);
@@ -1210,11 +1147,9 @@
                         console.log('Node properties:', node.properties);
                         console.log('================================');
                         
-                        // Show metadata editor in modal with graphRef for handleMetaSave
                         window.metadataEditor.showEditorModal(node, null, sandboxGraphRef);
                     },
                     onEdgeClick: (edgeData) => {
-                        // Single click - just log for debugging, no editor
                         console.log('🖱️ Edge single-clicked:', edgeData.id, edgeData.label);
                     },
                     onEdgeDoubleClick: (edgeData) => {
@@ -1228,14 +1163,11 @@
                         console.log('edgeData.data:', edgeData?.data);
                         console.log('===============================');
                         
-                        // Show relationship editor for edges
                         const edge = edgeData;
                         
-                        // Debug: Check what's in currentSandboxData
                         console.log('Current nodes count:', currentSandboxData.nodes.length);
                         console.log('Current edges count:', currentSandboxData.edges.length);
                         
-                        // Get nodes from the graph ref if available
                         let nodes = currentSandboxData.nodes;
                         if (sandboxGraphRef.current && sandboxGraphRef.current.getData) {
                             const graphData = sandboxGraphRef.current.getData();
@@ -1246,7 +1178,6 @@
                             }
                         }
                         
-                        // Get source and target nodes
                         const sourceNode = nodes.find(n => n.id === edge.source);
                         const targetNode = nodes.find(n => n.id === edge.target);
                         
@@ -1282,7 +1213,6 @@
                 
                 log('✅ Sandbox control mounted with CRUD interface');
                 
-                // Mark initial data as loaded - don't count as change
                 initialDataLoaded = true;
                 
                 setTimeout(() => {
@@ -1291,7 +1221,6 @@
                                      container.innerHTML.includes('nexus');
                     log('🔍 Sandbox content: ' + (hasContent ? 'Found ✅' : 'Missing ❌'));
                     
-                    // Check if ref is properly connected
                     if (sandboxGraphRef.current) {
                         log('✅ Sandbox ref connected - handleMetaSave available:', 
                             typeof sandboxGraphRef.current.handleMetaSave === 'function');
@@ -1303,7 +1232,6 @@
             }
         }
         
-        // Observe panel resize and update Nexus control
         function observePanelResize(panelId) {
             const panel = document.getElementById(panelId + 'Panel');
             if (!panel || !window.ResizeObserver) return;
@@ -1311,7 +1239,6 @@
             const resizeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
                     if (panelId === 'production' && productionRoot) {
-                        // Re-initialize production control on resize
                         setTimeout(() => {
                             log('📏 Production panel resized, updating control');
                             initializeProduction();
@@ -1323,7 +1250,6 @@
             resizeObserver.observe(panel);
         }
         
-        // Handle copying nodes from production to sandbox
         function handleProductionCopyToSandbox(selectedNodes) {
             log(`📋 Copying nodes from production to sandbox`);
             log('🔍 Selected nodes:', selectedNodes);
@@ -1333,22 +1259,18 @@
                 return;
             }
             
-            // Make sure sandbox is open
             const sandboxPanel = document.querySelector('.sandbox-panel');
             if (!sandboxPanel) {
                 log('❌ Sandbox panel not found');
                 return;
             }
             
-            // Handle both single node and array of nodes
             const nodesToCopy = Array.isArray(selectedNodes) ? selectedNodes : [selectedNodes];
             log(`📊 Copying ${nodesToCopy.length} nodes`);
             
-            // Prepare the copied nodes with new IDs
             const copiedNodes = nodesToCopy.map((node, index) => {
                 const newId = `${node.id}_copy_${Date.now()}_${index}`;
                 
-                // Extract the actual node data - handle different possible structures
                 const nodeData = node.data || node;
                 const nodeName = nodeData.label || nodeData.name || node.label || node.name || 'Unnamed';
                 const nodeType = nodeData.type || node.type || 'default';
@@ -1368,7 +1290,6 @@
             
             log('📝 Prepared nodes:', copiedNodes);
             
-            // Update sandbox data
             if (!currentSandboxData) {
                 currentSandboxData = { nodes: [], edges: [] };
             }
@@ -1378,7 +1299,6 @@
                 edges: currentSandboxData.edges
             };
             
-            // Re-render the sandbox with new data
             if (sandboxRoot) {
                 // Get the component using v17.12.0 pattern
                 let NexusComponent;
@@ -1413,7 +1333,6 @@
                 
                 sandboxRoot.render(controlElement);
                 
-                // Track the change
                 changesCount += copiedNodes.length;
                 updateChangesDisplay();
                 
@@ -1424,7 +1343,6 @@
             }
         }
         
-        // Handle node drops on sandbox
         async function handleSandboxNodeDrop(targetId, nodeData, dropType, position) {
             console.log('🎯 handleSandboxNodeDrop called with arguments:', {
                 targetId,
@@ -1436,13 +1354,11 @@
             });
             
             try {
-                // Enhanced validation for node data
                 if (!nodeData) {
                     console.error('❌ nodeData is null or undefined');
                     throw new Error('No node data provided');
                 }
                 
-                // Check if nodeData is a string that needs parsing
                 if (typeof nodeData === 'string') {
                     console.log('📝 nodeData is string, attempting to parse...');
                     try {
@@ -1454,14 +1370,12 @@
                     }
                 }
                 
-                // Validate nodeData is an object
                 if (typeof nodeData !== 'object') {
                     console.error('❌ nodeData is not an object, type:', typeof nodeData);
                     console.error('nodeData value:', nodeData);
                     throw new Error(`Expected node data to be an object, got ${typeof nodeData}`);
                 }
                 
-                // Log the structure of nodeData for debugging
                 console.log('📊 nodeData structure:', {
                     keys: Object.keys(nodeData),
                     type: nodeData.type,
@@ -1521,7 +1435,6 @@
                             currentInterviewId
                         );
                         
-                        // Add position if provided
                         if (position) {
                             copiedNode.x = position.x;
                             copiedNode.y = position.y;
@@ -1544,7 +1457,6 @@
                             }
                         };
                         
-                        // Add position if provided
                         if (position) {
                             newNode.x = position.x;
                             newNode.y = position.y;
@@ -1645,7 +1557,6 @@
                     simulateChange();
                 }
                 
-                // Re-render sandbox
                 await initializeSandbox();
                 
             } catch (error) {
@@ -1845,7 +1756,6 @@
                     // Initialize Firebase first if needed for authentication
                     if (!firebaseInitialized) {
                         initializeFirebase();
-                        // Wait for auth state to be established
                         setTimeout(() => {
                             if (firebase.auth().currentUser) {
                                 loadNodeList();
@@ -1867,10 +1777,8 @@
                 
                 // Load artifacts when panel is opened
                 if (panelId === 'artifacts') {
-                    // Initialize Firebase first if needed
                     if (!firebaseInitialized) {
                         initializeFirebase();
-                        // Wait for auth state to be established
                         setTimeout(() => {
                             if (firebase.auth().currentUser) {
                                 loadUserArtifacts();
@@ -1892,10 +1800,8 @@
                 
                 // Load faces when panel is opened
                 if (panelId === 'faces') {
-                    // Initialize Firebase first if needed
                     if (!firebaseInitialized) {
                         initializeFirebase();
-                        // Wait for auth state to be established
                         setTimeout(() => {
                             if (firebase.auth().currentUser) {
                                 loadUserFaces();
@@ -1976,7 +1882,6 @@
                 firebase.auth().onAuthStateChanged(async (user) => {
                     if (user) {
                         log('👤 User logged in:', user.email);
-                        // Update Firebase status
                         updateFirebaseStatus(true);
                     } else {
                         log('❌ No user logged in, attempting test login...');
@@ -2322,7 +2227,7 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
-                    // Check if boundingBox exists
+
                     if (!boundingBox) {
                         reject(new Error('BoundingBox is undefined'));
                         return;
@@ -2399,7 +2304,7 @@
                 return;
             }
             
-            // Close any existing review modal first
+
             if (activeReviewModal) {
                 console.log('🔒 Closing existing review modal');
                 activeReviewModal.hide();
@@ -2632,8 +2537,6 @@
                 return false;
             }
         }
-
-
         // Function to add test data to sandbox (for testing only)
         window.addTestData = function() {
             currentSandboxData = {
