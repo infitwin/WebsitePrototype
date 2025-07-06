@@ -416,11 +416,43 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Nexus Graph Control v17.5.0 - Updated Dec 29, 2024
-         New features: Auto-save, floating labels, face drops with isFaceDrop flag -->
-    <script src="../bundles/nexus-graph-v17.5.0.bundle.js"></script>
+    <!-- Nexus Graph Control v17.12.0 - External CSS Version -->
+    <link rel="stylesheet" href="../css/nexus-graph-v17.12.0.bundle.css">
+    <script src="../bundles/nexus-graph-v17.12.0.bundle.js" 
+            onload="console.log('✅ Nexus v17.12.0 bundle loaded successfully'); console.log('Available:', Object.keys(window.NexusGraphControl || {}));" 
+            onerror="console.error('❌ Failed to load Nexus v17.12.0 bundle:', event)"></script>
     <!-- NexusMetadataEditor v5.0.0 bundle - NEW: Programmatic form control -->
     <script src="../bundles/nexus-metadata-editor-v5.0.0.bundle.js"></script>
+
+    <script>
+        // Immediate debug after scripts load
+        console.log('=== Nexus Bundle Debug (Immediate) ===');
+        console.log('window.NexusGraphControl exists?', !!window.NexusGraphControl);
+        console.log('window.NexusGraphControl type:', typeof window.NexusGraphControl);
+        
+        if (window.NexusGraphControl) {
+            console.log('Properties of window.NexusGraphControl:', Object.keys(window.NexusGraphControl));
+            
+            // Check various possible exports
+            console.log('NexusGraphControl.NexusGraphControl:', window.NexusGraphControl.NexusGraphControl);
+            console.log('NexusGraphControl.default:', window.NexusGraphControl.default);
+            
+            // Check if it's a direct component
+            if (typeof window.NexusGraphControl === 'function') {
+                console.log('window.NexusGraphControl is a function/component directly');
+            }
+            
+            // Try to find the actual component
+            const possibleComponent = window.NexusGraphControl.NexusGraphControl || 
+                                    window.NexusGraphControl.default || 
+                                    window.NexusGraphControl;
+            console.log('Found component type:', typeof possibleComponent);
+            console.log('Component name:', possibleComponent?.name || 'no name');
+        } else {
+            console.error('window.NexusGraphControl is not available!');
+        }
+        console.log('=====================================');
+    </script>
 
     <script>
         let sandboxRoot = null;
@@ -910,7 +942,26 @@
             
             // Re-render the sandbox
             if (sandboxRoot) {
-                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                // Debug: Check what's available
+                console.log('window.NexusGraphControl:', window.NexusGraphControl);
+                console.log('Type of window.NexusGraphControl:', typeof window.NexusGraphControl);
+                
+                // v17.12.0 uses destructuring pattern: const { NexusGraphControl } = window.NexusGraphControl;
+                let NexusComponent;
+                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
+                    // v17.12.0 and later pattern
+                    const { NexusGraphControl } = window.NexusGraphControl;
+                    NexusComponent = NexusGraphControl;
+                } else if (window.NexusGraphControl && window.NexusGraphControl.default) {
+                    NexusComponent = window.NexusGraphControl.default;
+                } else if (typeof window.NexusGraphControl === 'function') {
+                    NexusComponent = window.NexusGraphControl;
+                } else {
+                    console.error('Could not find NexusGraphControl component');
+                    return;
+                }
+                
+                const controlElement = React.createElement(NexusComponent, {
                     data: currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
@@ -1470,7 +1521,16 @@
             
             // Re-render the sandbox with new data
             if (sandboxRoot) {
-                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                // Get the component using v17.12.0 pattern
+                let NexusComponent;
+                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
+                    const { NexusGraphControl } = window.NexusGraphControl;
+                    NexusComponent = NexusGraphControl;
+                } else {
+                    NexusComponent = window.NexusGraphControl?.default || window.NexusGraphControl;
+                }
+                
+                const controlElement = React.createElement(NexusComponent, {
                     data: currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
@@ -1826,7 +1886,16 @@
                 container.style.width = '100%';
                 container.style.height = '100%';
                 
-                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                // Get the component using v17.12.0 pattern
+                let NexusComponent;
+                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
+                    const { NexusGraphControl } = window.NexusGraphControl;
+                    NexusComponent = NexusGraphControl;
+                } else {
+                    NexusComponent = window.NexusGraphControl?.default || window.NexusGraphControl;
+                }
+                
+                const controlElement = React.createElement(NexusComponent, {
                     data: productionData,
                     title: "Production",
                     hidePageHeader: true,
@@ -3065,7 +3134,16 @@
             
             // Re-render sandbox with test data
             if (sandboxRoot) {
-                const controlElement = React.createElement(window.NexusGraphControl.NexusGraphControl, {
+                // Get the component using v17.12.0 pattern
+                let NexusComponent;
+                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
+                    const { NexusGraphControl } = window.NexusGraphControl;
+                    NexusComponent = NexusGraphControl;
+                } else {
+                    NexusComponent = window.NexusGraphControl?.default || window.NexusGraphControl;
+                }
+                
+                const controlElement = React.createElement(NexusComponent, {
                     data: currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
