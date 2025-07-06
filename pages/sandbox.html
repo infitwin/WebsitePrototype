@@ -988,13 +988,32 @@
                 const result = await window.sandboxNeo4j.handleSandboxNodeDrop(nodeData, dropType, position, targetId);
                 
                 // Update local state and UI
-                const state = window.sandboxState.getState();
-                if (window.sandboxState.sandboxGraphRef.current && window.sandboxState.sandboxGraphRef.current.onNodeCreate) {
-                    // Trigger through the Nexus control's callback
+                if (result && window.sandboxState.sandboxGraphRef.current) {
+                    // If we got a new node, add it to the current data
+                    if (result.id && !window.sandboxState.currentSandboxData.nodes.find(n => n.id === result.id)) {
+                        window.sandboxState.currentSandboxData.nodes.push(result);
+                    }
+                    
+                    // If we got a relationship, add it too
+                    if (result.relationshipId) {
+                        const newRel = {
+                            id: result.relationshipId,
+                            source: result.nodeId,
+                            target: targetId,
+                            label: 'RELATED_TO',
+                            type: 'RELATED_TO'
+                        };
+                        window.sandboxState.currentSandboxData.edges.push(newRel);
+                    }
+                    
+                    // Update the Nexus control with the new data
+                    if (window.sandboxState.sandboxGraphRef.current.updateData) {
+                        window.sandboxState.sandboxGraphRef.current.updateData(window.sandboxState.currentSandboxData);
+                    }
+                    
+                    // Trigger change count update
                     window.sandboxState.simulateChange();
                 }
-                
-                await initializeSandbox();
                 
                 return result;
                 
