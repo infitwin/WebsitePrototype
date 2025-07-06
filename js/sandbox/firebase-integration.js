@@ -203,12 +203,18 @@ export class FirebaseIntegration {
      * Load user faces from Firebase
      */
     async loadUserFaces() {
+        this.log('🔍 DEBUG: loadUserFaces called');
+        this.log('🔍 DEBUG: Firebase initialized?', this.initialized);
+        
         if (!this.initialized) {
             this.log('⏳ Firebase not initialized yet for faces');
             return;
         }
         
+        this.log('🔍 DEBUG: Checking Firebase auth...');
         const user = firebase.auth().currentUser;
+        this.log('🔍 DEBUG: Current user:', user ? user.email : 'null');
+        
         if (!user) {
             this.log('❌ No user logged in for faces');
             const loadingEl = document.getElementById('facesLoading');
@@ -232,47 +238,85 @@ export class FirebaseIntegration {
             // Get user's files from Firestore (use the same approach as the original)
             const db = firebase.firestore();
             const filesRef = db.collection('users').doc(user.uid).collection('files');
-            this.log('🔍 Querying for files with faces: users/' + user.uid + '/files');
+            this.log('🔍 DEBUG: Querying for files with faces: users/' + user.uid + '/files');
             
             // Query for files that have extracted faces (same as original approach)
             const snapshot = await filesRef.limit(100).get();
             
-            this.log('📊 Files query completed. Size:', snapshot.size);
+            this.log('📊 DEBUG: Files query completed. Size:', snapshot.size);
+            this.log('📊 DEBUG: Query empty?', snapshot.empty);
+            
+            if (snapshot.empty) {
+                this.log('❌ DEBUG: No files found at all for user');
+                loadingEl.innerHTML = '<div style="color: #EF4444;">No files found in Firestore for this user</div>';
+                return;
+            }
             
             loadingEl.style.display = 'none';
             gridEl.innerHTML = '';
             
             let totalFaces = 0;
+            let filesWithFaces = 0;
+            let totalFiles = 0;
             
             // Iterate through files and extract faces (same as original)
             snapshot.forEach(doc => {
                 const fileData = doc.data();
+                totalFiles++;
+                
+                this.log('🔍 DEBUG: File', totalFiles, ':', doc.id, fileData.fileName || 'Unnamed');
+                this.log('🔍 DEBUG: Has extractedFaces?', !!fileData.extractedFaces);
+                this.log('🔍 DEBUG: extractedFaces type:', typeof fileData.extractedFaces);
+                if (fileData.extractedFaces) {
+                    this.log('🔍 DEBUG: extractedFaces length:', fileData.extractedFaces.length);
+                }
                 
                 // Check if file has extracted faces
                 if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces) && fileData.extractedFaces.length > 0) {
-                    this.log('📷 Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
+                    filesWithFaces++;
+                    this.log('📷 DEBUG: Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
                     
                     // Log first face structure to understand the data
                     if (fileData.extractedFaces[0]) {
-                        this.log('🔍 First face structure:', JSON.stringify(fileData.extractedFaces[0]));
+                        this.log('🔍 DEBUG: First face structure:', JSON.stringify(fileData.extractedFaces[0]));
                     }
                     
                     // Create face thumbnails for each extracted face
                     fileData.extractedFaces.forEach((face, index) => {
+                        this.log('🔍 DEBUG: Processing face', index, 'URLs:', {
+                            imageUrl: !!face.imageUrl,
+                            dataUrl: !!face.dataUrl, 
+                            url: !!face.url
+                        });
+                        
                         if (face && (face.imageUrl || face.dataUrl || face.url)) {
+                            this.log('🔍 DEBUG: Creating thumbnail for face', index);
                             const thumbnail = window.createFaceThumbnail(doc.id, fileData, face, index);
-                            gridEl.appendChild(thumbnail);
-                            totalFaces++;
+                            if (thumbnail) {
+                                gridEl.appendChild(thumbnail);
+                                totalFaces++;
+                                this.log('✅ DEBUG: Successfully added face thumbnail', totalFaces);
+                            } else {
+                                this.log('❌ DEBUG: createFaceThumbnail returned null');
+                            }
+                        } else {
+                            this.log('❌ DEBUG: Face has no valid image URL');
                         }
                     });
                 }
             });
             
-            this.log('✅ Loaded', totalFaces, 'faces from', snapshot.size, 'files');
+            this.log('✅ DEBUG: Processing complete. Files:', totalFiles, 'Files with faces:', filesWithFaces, 'Total faces:', totalFaces);
             
             if (totalFaces === 0) {
                 loadingEl.style.display = 'block';
-                loadingEl.innerHTML = '<div style="color: #666;">No faces found. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload and vectorize photos</a></div>';
+                if (totalFiles === 0) {
+                    loadingEl.innerHTML = '<div style="color: #666;">No files found. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload photos</a></div>';
+                } else if (filesWithFaces === 0) {
+                    loadingEl.innerHTML = '<div style="color: #666;">Found ' + totalFiles + ' files but none have extracted faces. <a href="../pages/my-files.html" style="color: #6B46C1;">Process photos for face extraction</a></div>';
+                } else {
+                    loadingEl.innerHTML = '<div style="color: #666;">Found faces in ' + filesWithFaces + ' files but could not display them. Check console for errors.</div>';
+                }
             }
         } catch (error) {
             this.log('❌ Error loading faces:', error.message);
