@@ -283,35 +283,6 @@
     <!-- NexusMetadataEditor v5.0.0 bundle - NEW: Programmatic form control -->
     <script src="../bundles/nexus-metadata-editor-v5.0.0.bundle.js"></script>
 
-    <script>
-        // Immediate debug after scripts load
-        console.log('=== Nexus Bundle Debug (Immediate) ===');
-        console.log('window.NexusGraphControl exists?', !!window.NexusGraphControl);
-        console.log('window.NexusGraphControl type:', typeof window.NexusGraphControl);
-        
-        if (window.NexusGraphControl) {
-            console.log('Properties of window.NexusGraphControl:', Object.keys(window.NexusGraphControl));
-            
-            // Check various possible exports
-            console.log('NexusGraphControl.NexusGraphControl:', window.NexusGraphControl.NexusGraphControl);
-            console.log('NexusGraphControl.default:', window.NexusGraphControl.default);
-            
-            // Check if it's a direct component
-            if (typeof window.NexusGraphControl === 'function') {
-                console.log('window.NexusGraphControl is a function/component directly');
-            }
-            
-            // Try to find the actual component
-            const possibleComponent = window.NexusGraphControl.NexusGraphControl || 
-                                    window.NexusGraphControl.default || 
-                                    window.NexusGraphControl;
-            console.log('Found component type:', typeof possibleComponent);
-            console.log('Component name:', possibleComponent?.name || 'no name');
-        } else {
-            console.error('window.NexusGraphControl is not available!');
-        }
-        console.log('=====================================');
-    </script>
 
     <script>
         let sandboxRoot = null;
@@ -328,48 +299,13 @@
         if (!currentInterviewId) {
             currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             localStorage.setItem('currentInterviewId', currentInterviewId);
-            console.log('📝 Created new interview ID:', currentInterviewId);
         } else {
-            console.log('📋 Using existing interview ID from localStorage:', currentInterviewId);
         }
         
         function log(message) {
             // Logging disabled for production
         }
         
-        // Test delete function - accessible from console
-        window.testDeleteSelected = async function() {
-            console.log('🧪 Testing delete functionality...');
-            
-            if (!sandboxGraphRef || !sandboxGraphRef.current) {
-                console.log('❌ No graph reference available');
-                return;
-            }
-            
-            // Try to get selected nodes
-            const graphData = sandboxGraphRef.current.getData();
-            console.log('Graph data:', graphData);
-            
-            // If no selection method, delete the first node as a test
-            if (graphData && graphData.nodes && graphData.nodes.length > 0) {
-                const nodeToDelete = graphData.nodes[0];
-                console.log('🗑️ Attempting to delete node:', nodeToDelete);
-                
-                // Call the delete callback directly
-                if (sandboxGraphRef.current.onNodeDelete) {
-                    try {
-                        const result = await sandboxGraphRef.current.onNodeDelete(nodeToDelete.id);
-                        console.log('Delete result:', result);
-                    } catch (error) {
-                        console.error('Delete error:', error);
-                    }
-                } else {
-                    console.log('❌ No onNodeDelete callback found');
-                }
-            } else {
-                console.log('❌ No nodes found to delete');
-            }
-        };
         
         function updateChangesDisplay() {
             const shouldShow = initialDataLoaded && changesCount > 0;
@@ -562,12 +498,6 @@
         // Auto-save handler for all sandbox data changes
         // Detects and saves: position changes, face updates, file attachments
         async function handleSandboxDataChange(newData) {
-            console.log('📊 Sandbox data changed:', {
-                nodesBefore: currentSandboxData.nodes.length,
-                nodesAfter: newData.nodes.length,
-                edgesBefore: currentSandboxData.edges.length,
-                edgesAfter: newData.edges.length
-            });
             
             // Process node updates - check for position, face, and attachment changes
             for (const newNode of newData.nodes) {
@@ -770,9 +700,6 @@
             }
             
             if (sandboxRoot) {
-                // Debug: Check what's available
-                console.log('window.NexusGraphControl:', window.NexusGraphControl);
-                console.log('Type of window.NexusGraphControl:', typeof window.NexusGraphControl);
                 
                 // v17.12.0 uses destructuring pattern: const { NexusGraphControl } = window.NexusGraphControl;
                 let NexusComponent;
@@ -800,7 +727,6 @@
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
                         // Single click - just select/highlight
-                        console.log('🖱️ Node selected:', node.id, node.name || node.label);
                     },
                     onNodeDoubleClick: (node) => {
                         // Double click - show metadata editor
@@ -895,9 +821,6 @@
                                     log('✅ Updated/created sandbox node:', updatedNode);
                                 }
                             } else if (metaData.entityType === 'edge' || metaData.entityType === 'relationship') {
-                                console.log('=== RELATIONSHIP SAVE ===');
-                                console.log('Relationship updates:', metaData.updates);
-                                console.log('Updates can be stringified:', JSON.stringify(metaData.updates));
                                 
                                 const { sourceId, targetId, type, category, stateMaps, ...otherProps } = metaData.updates;
                                 
@@ -990,7 +913,6 @@
                     
                     onNodesDelete: async (nodeIds) => {
                         log('🗑️ Nodes delete triggered:', nodeIds);
-                        console.log('DELETE CALLBACK CALLED with nodeIds:', nodeIds);
                         
                         try {
                             if (!window.Neo4jConnection.isConnected) {
@@ -1000,7 +922,6 @@
                             for (const nodeId of nodeIds) {
                                 try {
                                     const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
-                                    console.log(`Delete result for ${nodeId}:`, deleted);
                                     
                                     if (deleted) {
                                         log('✅ Node deleted from database: ' + nodeId);
@@ -1053,7 +974,6 @@
                     
                     onEdgesDelete: async (edgeIds) => {
                         log('🗑️ Edges delete triggered:', edgeIds);
-                        console.log('EDGES DELETE CALLBACK CALLED with edgeIds:', edgeIds);
                         
                         try {
                             if (!window.Neo4jConnection.isConnected) {
@@ -1063,7 +983,6 @@
                             for (const edgeId of edgeIds) {
                                 try {
                                     const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
-                                    console.log(`Delete result for edge ${edgeId}:`, deleted);
                                     
                                     if (deleted) {
                                         log('✅ Edge deleted from database: ' + edgeId);
@@ -1089,7 +1008,6 @@
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onFaceDrop: (nodeId, imageData, isNode) => {
-                        console.log('😊 onFaceDrop callback fired!', {
                             nodeId: nodeId,
                             imageData: imageData,
                             isNode: isNode,
@@ -1120,7 +1038,6 @@
                             return;
                         }
                         
-                        console.log('✅ Updating node with imageUrl:', {
                             nodeId: nodeId,
                             imageUrl: imageUrl.substring(0, 50) + '...'
                         });
@@ -1130,63 +1047,38 @@
                         if (sandboxGraphRef && sandboxGraphRef.current) {
                             if (sandboxGraphRef.current.updateData) {
                                 sandboxGraphRef.current.updateData(currentSandboxData);
-                                console.log('📊 Graph updated with face image');
                             }
                         }
                         
                         simulateChange();
                     },
                     onNodeClick: (node) => {
-                        console.log('🖱️ Node single-clicked:', node.id, node.name || node.label);
                     },
                     onNodeDoubleClick: (node) => {
-                        console.log('=== NODE DOUBLE-CLICK DEBUG ===');
-                        console.log('Node data:', node);
-                        console.log('Node attachments:', node.attachments);
-                        console.log('Node imageUrl:', node.imageUrl);
-                        console.log('Node properties:', node.properties);
-                        console.log('================================');
                         
                         window.metadataEditor.showEditorModal(node, null, sandboxGraphRef);
                     },
                     onEdgeClick: (edgeData) => {
-                        console.log('🖱️ Edge single-clicked:', edgeData.id, edgeData.label);
                     },
                     onEdgeDoubleClick: (edgeData) => {
-                        console.log('=== EDGE DOUBLE-CLICK DEBUG ===');
-                        console.log('Received edgeData:', edgeData);
-                        console.log('edgeData keys:', Object.keys(edgeData || {}));
-                        console.log('edgeData.id:', edgeData?.id);
-                        console.log('edgeData.source:', edgeData?.source);
-                        console.log('edgeData.target:', edgeData?.target);
-                        console.log('edgeData.label:', edgeData?.label);
-                        console.log('edgeData.data:', edgeData?.data);
-                        console.log('===============================');
                         
                         const edge = edgeData;
                         
-                        console.log('Current nodes count:', currentSandboxData.nodes.length);
-                        console.log('Current edges count:', currentSandboxData.edges.length);
                         
                         let nodes = currentSandboxData.nodes;
                         if (sandboxGraphRef.current && sandboxGraphRef.current.getData) {
                             const graphData = sandboxGraphRef.current.getData();
-                            console.log('GraphRef getData result:', graphData);
                             if (graphData && graphData.nodes) {
                                 nodes = graphData.nodes;
-                                console.log('Using nodes from graphRef, count:', nodes.length);
                             }
                         }
                         
                         const sourceNode = nodes.find(n => n.id === edge.source);
                         const targetNode = nodes.find(n => n.id === edge.target);
                         
-                        console.log('Source node:', sourceNode);
-                        console.log('Target node:', targetNode);
                         
                         if (sourceNode && targetNode) {
                             try {
-                                console.log('Calling showRelationshipEditorModal...');
                                 window.metadataEditor.showRelationshipEditorModal(
                                     edge,
                                     sourceNode,
@@ -1194,7 +1086,6 @@
                                     null,
                                     sandboxGraphRef
                                 );
-                                console.log('showRelationshipEditorModal called successfully');
                             } catch (error) {
                                 console.error('❌ Error showing relationship editor:', error.message);
                                 console.error('Full error:', error);
@@ -1320,7 +1211,6 @@
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
                         // Single click - just select/highlight
-                        console.log('🖱️ Node selected:', node.id, node.name || node.label);
                     },
                     onNodeDoubleClick: (node) => {
                         // Double click - show metadata editor
@@ -1344,7 +1234,6 @@
         }
         
         async function handleSandboxNodeDrop(targetId, nodeData, dropType, position) {
-            console.log('🎯 handleSandboxNodeDrop called with arguments:', {
                 targetId,
                 nodeData,
                 dropType,
@@ -1360,10 +1249,8 @@
                 }
                 
                 if (typeof nodeData === 'string') {
-                    console.log('📝 nodeData is string, attempting to parse...');
                     try {
                         nodeData = JSON.parse(nodeData);
-                        console.log('✅ Successfully parsed nodeData:', nodeData);
                     } catch (parseError) {
                         console.error('❌ Failed to parse nodeData string:', parseError);
                         throw new Error('Invalid node data format');
@@ -1376,7 +1263,6 @@
                     throw new Error(`Expected node data to be an object, got ${typeof nodeData}`);
                 }
                 
-                console.log('📊 nodeData structure:', {
                     keys: Object.keys(nodeData),
                     type: nodeData.type,
                     dragType: nodeData.dragType,
@@ -1463,7 +1349,6 @@
                         }
                         
                         // Create in Neo4j
-                        console.log('Creating sandbox node with:', {
                             newNode,
                             userId,
                             twinId,
@@ -1561,14 +1446,6 @@
                 
             } catch (error) {
                 console.error('❌ Error handling node drop:', error);
-                console.error('Error stack:', error.stack);
-                console.error('Error details:', {
-                    message: error.message,
-                    name: error.name,
-                    nodeData: nodeData,
-                    dropType: dropType,
-                    targetId: targetId
-                });
                 
                 // Check for specific error types
                 let errorMessage = 'Failed to add node: ';
@@ -2278,7 +2155,6 @@
 
         // Post to Production function
         async function postToProduction() {
-            console.log('🚀 postToProduction called');
             console.log('📊 Current sandbox data:', currentSandboxData);
             console.log('🔢 Changes count:', changesCount);
             
@@ -2361,7 +2237,6 @@
         
         // Perform the actual post to production
         async function performPostToProduction(reviewNotes) {
-            console.log('🚀 performPostToProduction called');
             console.log('📝 Review notes:', reviewNotes);
             
             try {
@@ -2576,7 +2451,6 @@
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
                         // Single click - just select/highlight
-                        console.log('🖱️ Node selected:', node.id, node.name || node.label);
                     },
                     onNodeDoubleClick: (node) => {
                         // Double click - show metadata editor
@@ -2611,7 +2485,6 @@
                             icon: '📋',
                             disabled: true, // Start disabled since no changes initially
                             onClick: () => {
-                                console.log('🔘 Review & Post button clicked!');
                                 postToProduction();
                             }
                         });
@@ -2621,7 +2494,6 @@
                         
                         // Also add direct event listener as backup
                         button.element.addEventListener('click', () => {
-                            console.log('🔘 Direct click event!');
                             postToProduction();
                         });
                         
