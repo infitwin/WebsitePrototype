@@ -431,43 +431,20 @@ class Neo4jConnection {
     async copyProductionNodeToSandbox(productionNodeId, interviewId) {
         const session = this.getSession();
         try {
-            // First check if ANY node with this ID already exists (regardless of labels)
-            const checkExistingQuery = `
-                MATCH (n {id: $productionNodeId})
-                RETURN n, labels(n) as nodeLabels
+            // First check if this node already exists in sandbox
+            const checkExistingSandboxQuery = `
+                MATCH (s:Sandbox {id: $productionNodeId})
+                RETURN s
             `;
             
-            const existingResult = await session.run(checkExistingQuery, {
+            const existingSandboxResult = await session.run(checkExistingSandboxQuery, {
                 productionNodeId
             });
             
-            if (existingResult.records.length > 0) {
-                const existingNode = existingResult.records[0].get('n');
-                const labels = existingResult.records[0].get('nodeLabels');
-                
-                if (labels.includes('Sandbox')) {
-                    // Node already exists in sandbox, return it
-                    console.log(`⚠️ Node ${productionNodeId} already exists in sandbox, returning existing`);
-                    return existingNode.properties;
-                } else {
-                    // Node exists but not in sandbox - add Sandbox label
-                    console.log(`⚠️ Node ${productionNodeId} exists but not in sandbox, adding Sandbox label`);
-                    const addLabelQuery = `
-                        MATCH (n {id: $productionNodeId})
-                        SET n:Sandbox
-                        SET n._isSandbox = true
-                        SET n.interviewId = $interviewId
-                        SET n.sessionId = $interviewId
-                        RETURN n
-                    `;
-                    
-                    const updateResult = await session.run(addLabelQuery, {
-                        productionNodeId,
-                        interviewId
-                    });
-                    
-                    return updateResult.records[0].get('n').properties;
-                }
+            if (existingSandboxResult.records.length > 0) {
+                // Node already exists in sandbox, return it
+                console.log(`✅ Node ${productionNodeId} already exists in sandbox, returning existing`);
+                return existingSandboxResult.records[0].get('s').properties;
             }
             
             // Get the production node and its labels
@@ -492,7 +469,7 @@ class Neo4jConnection {
             const labelString = labels.filter(l => l !== 'Sandbox').join(':');
             const fullLabelString = labelString ? `:Sandbox:${labelString}` : ':Sandbox';
             
-            // Create the sandbox node with all labels
+            // Create the sandbox node with same ID as production (for merging back)
             const createQuery = `
                 CREATE (s${fullLabelString})
                 SET s = $properties
