@@ -32,6 +32,8 @@ export class SandboxEvents {
      * @param {string} panelId - The ID of the panel to toggle
      */
     togglePanel(panelId) {
+        this.log('🔍 DEBUG: togglePanel called with panelId:', panelId);
+        
         const panel = document.getElementById(panelId + 'Panel');
         if (!panel) {
             this.log('❌ Panel not found: ' + panelId);
@@ -39,10 +41,13 @@ export class SandboxEvents {
         }
         
         const isOpen = panel.classList.contains('open');
+        this.log('🔍 DEBUG: Panel is currently open?', isOpen);
         
         if (isOpen) {
+            this.log('🔍 DEBUG: Closing panel:', panelId);
             this.closePanelHandler(panelId, panel);
         } else {
+            this.log('🔍 DEBUG: Opening panel:', panelId);
             this.openPanelHandler(panelId, panel);
         }
         
@@ -73,6 +78,7 @@ export class SandboxEvents {
      * @param {HTMLElement} panel - Panel element
      */
     openPanelHandler(panelId, panel) {
+        this.log('🔍 DEBUG: openPanelHandler called with panelId:', panelId);
         panel.classList.add('open');
         this.log('📋 ' + panelId + ' panel opened');
         
@@ -163,6 +169,10 @@ export class SandboxEvents {
      * Handle faces panel opening
      */
     handleFacesPanel() {
+        this.log('🔍 DEBUG: handleFacesPanel called');
+        this.log('🔍 DEBUG: Firebase integration available?', !!this.firebaseIntegration);
+        this.log('🔍 DEBUG: Firebase initialized?', this.firebaseIntegration ? this.firebaseIntegration.initialized : 'N/A');
+        
         if (!this.firebaseIntegration.initialized) {
             this.firebaseIntegration.initialize();
             setTimeout(() => {
@@ -278,7 +288,12 @@ export class SandboxEvents {
     }
 
     loadUserFaces() {
+        this.log('🔍 DEBUG: loadUserFaces called in events module');
+        this.log('🔍 DEBUG: firebaseIntegration exists?', !!this.firebaseIntegration);
+        this.log('🔍 DEBUG: loadUserFaces method exists?', !!(this.firebaseIntegration && this.firebaseIntegration.loadUserFaces));
+        
         if (this.firebaseIntegration && this.firebaseIntegration.loadUserFaces) {
+            this.log('🔍 DEBUG: Calling firebaseIntegration.loadUserFaces()');
             this.firebaseIntegration.loadUserFaces();
         } else {
             this.log('⚠️ Firebase integration not available');
