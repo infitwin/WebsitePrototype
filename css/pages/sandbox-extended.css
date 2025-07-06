@@ -156,6 +156,8 @@ body {
     border: 2px solid var(--color-info);
     border-radius: 6px;
     background: var(--color-background-hover);
+    overflow: hidden; /* Prevent Nexus control from overflowing */
+    position: relative; /* Establish positioning context */
 }
 
 /* Stage 1: Common Utility Classes */
