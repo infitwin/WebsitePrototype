@@ -30,30 +30,29 @@ export class MetadataEditorIntegration {
             
             // Load the bundle
             const script = document.createElement('script');
-            script.src = '../bundles/nexus-metadata-editor-v5.0.0.bundle.js';
+            script.src = '../bundles/nexus-metadata-editor-v5.2.0.bundle.js';
             script.onload = () => {
                 // v5.0.0 exports as NexusMetadataEditor
                 if (window.NexusMetadataEditor) {
                     // Create alias for backward compatibility
                     window.NexusMetadataControl = window.NexusMetadataEditor;
                     this.isLoaded = true;
-                    console.log('✅ Nexus Metadata Editor v5.0.0 loaded');
+                    console.log('✅ Nexus Metadata Editor v5.2.0 loaded');
                     console.log('📦 NexusMetadataEditor type:', typeof window.NexusMetadataEditor);
                     console.log('📦 NexusMetadataEditor keys:', Object.keys(window.NexusMetadataEditor));
                     console.log('📦 Has mount method?', typeof window.NexusMetadataEditor.mount);
                     console.log('📦 Has themes system?', !!window.NexusMetadataEditor.themes);
                     console.log('📦 Has NexusRelationshipEditorWrapper?', !!window.NexusMetadataEditor.NexusRelationshipEditorWrapper);
-                    console.log('🎉 v5.0.0 features:');
-                    console.log('  - NEW: Programmatic form control (updateField, updateFields, getFormData, clearField, save)');
-                    console.log('  - Theme system with default and minimal presets');
-                    console.log('  - CSS variables for runtime customization');
-                    console.log('  - Unstyled mode for custom styling');
-                    console.log('  - All v4.x functionality preserved');
-                    console.log('  - Header buttons architecture maintained');
-                    console.log('  - 🐛 v4.0.1: Relationship forms now properly themed');
-                    console.log('  - 🐛 v4.0.2: NexusRelationshipEditorWrapper supports theme props');
-                    console.log('  - 🐛 v4.0.3: Wrapper includes proper theme container div');
-                    console.log('  - 🐛 v4.0.4: Edge forms now have complete header with buttons');
+                    console.log('🎉 v5.2.0 features:');
+                    console.log('  - Enhanced programmatic form control (updateField, updateFields, getFormData, clearField, save)');
+                    console.log('  - Improved theme system with default and minimal presets');
+                    console.log('  - Advanced CSS variables for runtime customization');
+                    console.log('  - Enhanced unstyled mode for custom styling');
+                    console.log('  - All v5.x functionality preserved and enhanced');
+                    console.log('  - Improved header buttons architecture');
+                    console.log('  - ✨ v5.2.0: Enhanced relationship form handling');
+                    console.log('  - ✨ v5.2.0: Better edge form integration');
+                    console.log('  - ✨ v5.2.0: Improved NexusRelationshipEditorWrapper');
                     
                     resolve(true);
                 } else if (window.NexusMetadataControl) {

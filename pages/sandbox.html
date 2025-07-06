@@ -285,8 +285,8 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- Nexus Graph Control v17.13.0 - Fixed React Component Export -->
     <script src="../bundles/nexus-graph-v17.13.0.bundle.js"></script>
-    <!-- NexusMetadataEditor v5.0.0 bundle - NEW: Programmatic form control -->
-    <script src="../bundles/nexus-metadata-editor-v5.0.0.bundle.js"></script>
+    <!-- NexusMetadataEditor v5.2.0 bundle - Enhanced: Better edge form integration -->
+    <script src="../bundles/nexus-metadata-editor-v5.2.0.bundle.js"></script>
 
 
     <script>
@@ -724,10 +724,12 @@
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
+                        console.log('🔗 Edge selected:', edge.id);
                         log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
+                        console.log('🔗 Edge double-clicked:', edge.id);
                         log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
@@ -1222,10 +1224,12 @@
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
+                        console.log('🔗 Edge selected:', edge.id);
                         log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
+                        console.log('🔗 Edge double-clicked:', edge.id);
                         log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
@@ -2462,10 +2466,12 @@
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
+                        console.log('🔗 Edge selected:', edge.id);
                         log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
+                        console.log('🔗 Edge double-clicked:', edge.id);
                         log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
