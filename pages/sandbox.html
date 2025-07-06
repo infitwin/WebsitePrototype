@@ -1224,13 +1224,6 @@
         }
         
         async function handleSandboxNodeDrop(targetId, nodeData, dropType, position) {
-                targetId,
-                nodeData,
-                dropType,
-                position,
-                argumentsLength: arguments.length,
-                allArguments: Array.from(arguments)
-            });
             
             try {
                 if (!nodeData) {
@@ -1252,16 +1245,6 @@
                     console.error('nodeData value:', nodeData);
                     throw new Error(`Expected node data to be an object, got ${typeof nodeData}`);
                 }
-                
-                    keys: Object.keys(nodeData),
-                    type: nodeData.type,
-                    dragType: nodeData.dragType,
-                    sourceControl: nodeData.sourceControl,
-                    id: nodeData.id,
-                    name: nodeData.name,
-                    label: nodeData.label,
-                    originalData: nodeData.originalData
-                });
                 
                 if (!currentSandboxData) {
                     currentSandboxData = { nodes: [], edges: [] };
