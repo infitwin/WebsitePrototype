@@ -229,34 +229,35 @@ export class FirebaseIntegration {
         }
         
         try {
-            // Get user's files that have extractedFaces
+            // Get user's files from Firestore (use the same approach as the original)
             const db = firebase.firestore();
-            const filesQuery = db.collection('users').doc(user.uid).collection('files')
-                .where('hasExtractedFaces', '==', true)
-                .limit(50);
+            const filesRef = db.collection('users').doc(user.uid).collection('files');
+            this.log('🔍 Querying for files with faces: users/' + user.uid + '/files');
             
-            this.log('🔍 Querying files with faces for user:', user.uid);
-            const snapshot = await filesQuery.get();
+            // Query for files that have extracted faces (same as original approach)
+            const snapshot = await filesRef.limit(100).get();
             
-            this.log('📊 Face query completed. Empty:', snapshot.empty, 'Size:', snapshot.size);
-            
-            if (snapshot.empty) {
-                loadingEl.innerHTML = '<div style="color: #666;">No faces found. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload photos</a></div>';
-                return;
-            }
+            this.log('📊 Files query completed. Size:', snapshot.size);
             
             loadingEl.style.display = 'none';
             gridEl.innerHTML = '';
             
             let totalFaces = 0;
             
+            // Iterate through files and extract faces (same as original)
             snapshot.forEach(doc => {
                 const fileData = doc.data();
-                this.log('📸 File with faces:', doc.id, fileData.fileName);
                 
-                if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces)) {
-                    this.log('🔍 First face structure:', JSON.stringify(fileData.extractedFaces[0]));
+                // Check if file has extracted faces
+                if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces) && fileData.extractedFaces.length > 0) {
+                    this.log('📷 Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
                     
+                    // Log first face structure to understand the data
+                    if (fileData.extractedFaces[0]) {
+                        this.log('🔍 First face structure:', JSON.stringify(fileData.extractedFaces[0]));
+                    }
+                    
+                    // Create face thumbnails for each extracted face
                     fileData.extractedFaces.forEach((face, index) => {
                         if (face && (face.imageUrl || face.dataUrl || face.url)) {
                             const thumbnail = window.createFaceThumbnail(doc.id, fileData, face, index);
@@ -268,6 +269,11 @@ export class FirebaseIntegration {
             });
             
             this.log('✅ Loaded', totalFaces, 'faces from', snapshot.size, 'files');
+            
+            if (totalFaces === 0) {
+                loadingEl.style.display = 'block';
+                loadingEl.innerHTML = '<div style="color: #666;">No faces found. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload and vectorize photos</a></div>';
+            }
         } catch (error) {
             this.log('❌ Error loading faces:', error.message);
             console.error('Full error:', error);
