@@ -8,6 +8,7 @@
 
 export class SandboxState {
     constructor() {
+        this.neo4jIntegration = null; // Will be set after initialization
         // Core state variables
         this.sandboxRoot = null;
         this.productionRoot = null;
@@ -25,6 +26,13 @@ export class SandboxState {
             this.currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             localStorage.setItem('currentInterviewId', this.currentInterviewId);
         }
+    }
+
+    /**
+     * Set the Neo4j integration instance
+     */
+    setNeo4jIntegration(integration) {
+        this.neo4jIntegration = integration;
     }
 
     /**

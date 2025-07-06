@@ -41,6 +41,7 @@
         import { sandboxState } from '../js/sandbox/sandbox-state.js';
         import { createSandboxEvents } from '../js/sandbox/sandbox-events.js';
         import { FirebaseIntegrationStub } from '../js/sandbox/firebase-integration-stub.js';
+        import { createSandboxNeo4jIntegration } from '../js/sandbox/neo4j-integration.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -86,6 +87,10 @@
         // Initialize Firebase stub and event system
         const firebaseStub = new FirebaseIntegrationStub();
         window.sandboxEvents = createSandboxEvents(sandboxState, firebaseStub);
+        
+        // Initialize Neo4j integration and link to state
+        window.sandboxNeo4j = createSandboxNeo4jIntegration(sandboxState);
+        sandboxState.setNeo4jIntegration(window.sandboxNeo4j);
     </script>
 </head>
 <body>
@@ -326,157 +331,8 @@
         }
         
         async function loadExistingSandboxData() {
-            await window.sandboxState.loadExistingSandboxData();
+            await window.sandboxNeo4j.loadExistingSandboxData();
             initializeStateAliases(); // Update local aliases
-            return; // Original function content moved to module
-            log('🔄 Loading existing sandbox data...');
-            
-            try {
-                if (!window.Neo4jConnection.isConnected) {
-                    await window.Neo4jConnection.connect();
-                }
-                
-                const userId = firebase.auth().currentUser?.uid;
-                const twinId = `${userId}-1`;
-                
-                log(`🔍 Loading ALL sandbox items for User: ${userId}, Twin: ${twinId}`);
-                
-                if (!userId) {
-                    log('⚠️ No user ID, skipping sandbox load');
-                    return;
-                }
-                
-                const session = window.Neo4jConnection.getSession();
-                
-                try {
-                    log(`📊 Loading ALL sandbox items for userId: ${userId}, twinId: ${twinId}`);
-                    const nodesResult = await session.run(`
-                        MATCH (n:Sandbox)
-                        WHERE n.userId = $userId
-                        AND n.twinId = $twinId
-                        RETURN n
-                        ORDER BY n.createdAt DESC
-                    `, {
-                        userId: userId,
-                        twinId: twinId
-                    });
-                    
-                    log(`📊 Node query returned ${nodesResult.records.length} records`);
-                    
-                    const relsResult = await session.run(`
-                        MATCH (source:Sandbox)-[r]->(target:Sandbox)
-                        WHERE r._isSandbox = true
-                        AND source.userId = $userId
-                        AND source.twinId = $twinId
-                        AND target.userId = $userId
-                        AND target.twinId = $twinId
-                        RETURN r, source.id as sourceId, target.id as targetId, type(r) as relType
-                        ORDER BY r.createdAt DESC
-                    `, {
-                        userId: userId,
-                        twinId: twinId
-                    });
-                    
-                    const nodes = nodesResult.records.map(record => {
-                        const node = record.get('n');
-                        const props = node.properties;
-                        
-                        if (props.stateMaps && typeof props.stateMaps === 'string') {
-                            try {
-                                props.stateMaps = JSON.parse(props.stateMaps);
-                            } catch (e) {
-                                console.error('Failed to parse node stateMaps:', e);
-                                props.stateMaps = [];
-                            }
-                        }
-                        
-                        if (props.attachments && typeof props.attachments === 'string') {
-                            try {
-                                props.attachments = JSON.parse(props.attachments);
-                            } catch (e) {
-                                console.error('Failed to parse node attachments:', e);
-                                props.attachments = [];
-                            }
-                        }
-                        
-                        return {
-                            id: props.id,
-                            name: props.name || 'Unnamed',
-                            label: props.name || 'Unnamed',
-                            type: props.type?.toLowerCase() || 'thing',
-                            x: props.x || Math.random() * 800,
-                            y: props.y || Math.random() * 600,
-                            imageUrl: props.imageUrl || null,
-                            attachments: props.attachments || [],
-                            properties: props
-                        };
-                    });
-                    
-                    const edges = relsResult.records.map(record => {
-                        const rel = record.get('r');
-                        const props = rel.properties;
-                        const sourceId = record.get('sourceId');
-                        const targetId = record.get('targetId');
-                        const relType = record.get('relType');
-                        
-                        if (props.stateMaps && typeof props.stateMaps === 'string') {
-                            try {
-                                props.stateMaps = JSON.parse(props.stateMaps);
-                            } catch (e) {
-                                console.error('Failed to parse relationship stateMaps:', e);
-                                props.stateMaps = [];
-                            }
-                        }
-                        
-                        if (props.attachments && typeof props.attachments === 'string') {
-                            try {
-                                props.attachments = JSON.parse(props.attachments);
-                            } catch (e) {
-                                console.error('Failed to parse edge attachments:', e);
-                                props.attachments = [];
-                            }
-                        }
-                        
-                        return {
-                            id: props.id,
-                            source: sourceId,
-                            target: targetId,
-                            label: relType,
-                            type: relType,
-                            attachments: props.attachments || [],
-                            properties: props
-                        };
-                    });
-                    
-                    currentSandboxData = {
-                        nodes: nodes,
-                        edges: edges
-                    };
-                    
-                    log(`✅ Loaded ${nodes.length} nodes and ${edges.length} relationships from sandbox`);
-                    
-                    if (sandboxRoot && sandboxGraphRef.current) {
-                        log('🔄 Updating Nexus control with loaded data...');
-                        if (sandboxGraphRef.current.updateData) {
-                            sandboxGraphRef.current.updateData(currentSandboxData);
-                        } else if (sandboxGraphRef.current.setData) {
-                            sandboxGraphRef.current.setData(currentSandboxData);
-                        } else {
-                            log('⚠️ No update method found on Nexus control, re-initializing...');
-                            initializeSandbox();
-                        }
-                    } else {
-                        log('⚠️ Nexus control not ready yet, data will be loaded on initialization');
-                    }
-                    
-                } finally {
-                    await session.close();
-                }
-                
-            } catch (error) {
-                log('❌ Failed to load sandbox data: ' + error.message);
-                console.error('Load sandbox error:', error);
-            }
         }
         
         function simulateChange() {
@@ -489,113 +345,6 @@
         async function handleSandboxDataChange(newData) {
             await window.sandboxState.handleSandboxDataChange(newData);
             initializeStateAliases(); // Update local aliases
-            return; // Original function content moved to module
-            
-            // Process node updates - check for position, face, and attachment changes
-            for (const newNode of newData.nodes) {
-                const oldNode = currentSandboxData.nodes.find(n => n.id === newNode.id);
-                if (!oldNode) continue; // Skip new nodes (handled by onNodeDrop/onEdgeCreate callbacks)
-                
-                // Auto-save position changes
-                if ((oldNode.x !== newNode.x || oldNode.y !== newNode.y) && newNode.x !== undefined && newNode.y !== undefined) {
-                    log(`📍 Node position changed: ${newNode.id} - ${newNode.name || newNode.label}`);
-                    
-                    try {
-                        const updates = {
-                            x: newNode.x,
-                            y: newNode.y,
-                            positionUpdatedAt: new Date().toISOString()
-                        };
-                        
-                        await window.Neo4jConnection.updateSandboxNode(newNode.id, updates, []);
-                        log('✅ Node position auto-saved to Neo4j: ' + newNode.id);
-                    } catch (error) {
-                        log('❌ Failed to save node position: ' + error.message);
-                        console.error('Node position save error:', error);
-                    }
-                }
-                
-                // Auto-save face updates
-                if (newNode.imageUrl && oldNode.imageUrl !== newNode.imageUrl) {
-                    log(`😊 Face updated on node ${newNode.id}: ${newNode.name || newNode.label}`);
-                    
-                    try {
-                        const updates = {
-                            imageUrl: newNode.imageUrl,
-                            hasFace: true,
-                            faceUpdatedAt: new Date().toISOString()
-                        };
-                        
-                        await window.Neo4jConnection.updateSandboxNode(newNode.id, updates, []);
-                        log('✅ Face image auto-saved to Neo4j: ' + newNode.id);
-                    } catch (error) {
-                        log('❌ Failed to save face update: ' + error.message);
-                        console.error('Face save error:', error);
-                    }
-                }
-                
-                // Auto-save file attachments
-                const oldAttachments = oldNode.attachments || [];
-                const newAttachments = newNode.attachments || [];
-                
-                if (newAttachments.length > oldAttachments.length) {
-                    const addedFiles = newAttachments.slice(oldAttachments.length);
-                    log(`📎 ${addedFiles.length} file(s) attached to node ${newNode.id}: ${newNode.name || newNode.label}`);
-                    
-                    try {
-                        const updates = {
-                            attachments: newAttachments,
-                            hasAttachments: true,
-                            attachmentsUpdatedAt: new Date().toISOString()
-                        };
-                        
-                        await window.Neo4jConnection.updateSandboxNode(newNode.id, updates, []);
-                        log('✅ File attachments auto-saved to Neo4j: ' + newNode.id);
-                    } catch (error) {
-                        log('❌ Failed to save file attachments: ' + error.message);
-                        console.error('File attachment save error:', error);
-                    }
-                }
-            }
-            
-            // Check for file attachments on edges
-            for (const newEdge of newData.edges) {
-                const oldEdge = currentSandboxData.edges.find(e => e.id === newEdge.id);
-                if (!oldEdge) continue;
-                
-                const oldAttachments = oldEdge.attachments || [];
-                const newAttachments = newEdge.attachments || [];
-                
-                if (newAttachments.length > oldAttachments.length) {
-                    const addedFiles = newAttachments.slice(oldAttachments.length);
-                    log(`📎 ${addedFiles.length} file(s) attached to edge ${newEdge.id}: ${newEdge.label}`);
-                    
-                    try {
-                        const updates = {
-                            attachments: newAttachments,
-                            hasAttachments: true,
-                            attachmentsUpdatedAt: new Date().toISOString()
-                        };
-                        
-                        await window.Neo4jConnection.updateSandboxRelationship(
-                            newEdge.id,
-                            updates,
-                            newEdge.source,
-                            newEdge.target,
-                            newEdge.type || newEdge.label,
-                            currentInterviewId
-                        );
-                        
-                        log('✅ File attachments saved to database for edge: ' + newEdge.id);
-                    } catch (error) {
-                        log('❌ Failed to save edge file attachments: ' + error.message);
-                        console.error('Edge file attachment save error:', error);
-                    }
-                }
-            }
-            
-            currentSandboxData = newData;
-            simulateChange();
         }
         
         // File drop handler for sandbox - creates attachment objects and updates graph
@@ -1268,191 +1017,26 @@
         }
         
         async function handleSandboxNodeDrop(targetId, nodeData, dropType, position) {
-            
             try {
-                if (!nodeData) {
-                    console.error('❌ nodeData is null or undefined');
-                    throw new Error('No node data provided');
-                }
-                
-                if (typeof nodeData === 'string') {
-                    try {
-                        nodeData = JSON.parse(nodeData);
-                    } catch (parseError) {
-                        console.error('❌ Failed to parse nodeData string:', parseError);
-                        throw new Error('Invalid node data format');
-                    }
-                }
-                
-                if (typeof nodeData !== 'object') {
-                    console.error('❌ nodeData is not an object, type:', typeof nodeData);
-                    console.error('nodeData value:', nodeData);
-                    throw new Error(`Expected node data to be an object, got ${typeof nodeData}`);
-                }
-                
-                if (!currentSandboxData) {
-                    currentSandboxData = { nodes: [], edges: [] };
-                }
-                
                 // Check if this is a face drop (from the faces panel)
                 if (nodeData.originalData && nodeData.originalData.type === 'face') {
                     handleFaceDropOnSandbox(targetId, nodeData, dropType, position);
                     return;
                 }
-            } catch (validationError) {
-                console.error('❌ Validation error in handleSandboxNodeDrop:', validationError);
-                console.error('Full error:', validationError.stack);
                 
-                // Show user-friendly error
-                if (window.Modal) {
-                    const modal = new window.Modal({
-                        title: 'Drop Error',
-                        content: `Cannot process this drop: ${validationError.message}`,
-                        type: 'danger'
-                    });
-                    modal.show();
-                } else {
-                    alert(`Cannot process this drop: ${validationError.message}`);
-                }
-                return;
-            }
-            
-            try {
-                const userId = firebase.auth().currentUser?.uid;
-                const twinId = `${userId}-1`;
+                // Delegate to Neo4j integration module
+                const result = await window.sandboxNeo4j.handleSandboxNodeDrop(nodeData, dropType, position, targetId);
                 
-                // Ensure Neo4j connection
-                if (!window.Neo4jConnection.isConnected) {
-                    await window.Neo4jConnection.connect();
-                }
-                
-                if (dropType === 'onto-canvas') {
-                    // Check if this is an existing production node
-                    const isExistingNode = nodeData.id && !nodeData.id.includes('_drop_');
-                    
-                    if (isExistingNode) {
-                        // Copy existing production node to sandbox
-                        log(`📋 Copying production node ${nodeData.id} to sandbox`);
-                        const copiedNode = await window.Neo4jConnection.copyProductionNodeToSandbox(
-                            nodeData.id,
-                            currentInterviewId
-                        );
-                        
-                        if (position) {
-                            copiedNode.x = position.x;
-                            copiedNode.y = position.y;
-                        }
-                        
-                        currentSandboxData.nodes.push(copiedNode);
-                        log(`✅ Copied production node to sandbox: ${copiedNode.id}`);
-                    } else {
-                        // Create new sandbox node
-                        const newNode = {
-                            id: `${nodeData.type || 'node'}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                            name: nodeData.name || nodeData.label || 'Unnamed',
-                            label: nodeData.label || nodeData.name || 'Unnamed',
-                            type: nodeData.type || 'default',
-                            properties: {
-                                ...nodeData.properties,
-                                sourceId: nodeData.id,
-                                droppedAt: new Date().toISOString(),
-                                dropType: 'canvas'
-                            }
-                        };
-                        
-                        if (position) {
-                            newNode.x = position.x;
-                            newNode.y = position.y;
-                        }
-                        
-                        // Create in Neo4j
-                        
-                        const createdNode = await window.Neo4jConnection.createSandboxNode(
-                            newNode,
-                            userId,
-                            twinId,
-                            currentInterviewId
-                        );
-                        
-                        currentSandboxData.nodes.push(createdNode);
-                        log(`✅ Created new sandbox node: ${createdNode.id}`);
-                    }
-                    
-                } else if (dropType === 'onto-node' && targetId) {
-                    // Similar logic for node-to-node drops
-                    const isExistingNode = nodeData.id && !nodeData.id.includes('_drop_');
-                    let newNodeId;
-                    
-                    if (isExistingNode) {
-                        const copiedNode = await window.Neo4jConnection.copyProductionNodeToSandbox(
-                            nodeData.id,
-                            currentInterviewId
-                        );
-                        newNodeId = copiedNode.id;
-                        
-                        if (position) {
-                            copiedNode.x = position.x;
-                            copiedNode.y = position.y;
-                        }
-                        
-                        currentSandboxData.nodes.push(copiedNode);
-                    } else {
-                        const newNode = {
-                            id: `${nodeData.type || 'node'}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                            name: nodeData.name || nodeData.label || 'Unnamed',
-                            label: nodeData.label || nodeData.name || 'Unnamed',
-                            type: nodeData.type || 'default',
-                            properties: {
-                                ...nodeData.properties,
-                                sourceId: nodeData.id,
-                                droppedAt: new Date().toISOString(),
-                                dropType: 'node',
-                                linkedTo: targetId
-                            }
-                        };
-                        
-                        if (position) {
-                            newNode.x = position.x;
-                            newNode.y = position.y;
-                        }
-                        
-                        const createdNode = await window.Neo4jConnection.createSandboxNode(
-                            newNode,
-                            userId,
-                            twinId,
-                            currentInterviewId
-                        );
-                        
-                        newNodeId = createdNode.id;
-                        currentSandboxData.nodes.push(createdNode);
-                    }
-                    
-                    // Create relationship in Neo4j
-                    const newRel = await window.Neo4jConnection.createSandboxRelationship(
-                        newNodeId,
-                        targetId,
-                        'RELATED_TO',
-                        {},
-                        currentInterviewId
-                    );
-                    
-                    currentSandboxData.edges.push({
-                        id: newRel.id,
-                        source: newNodeId,
-                        target: targetId,
-                        label: 'RELATED_TO'
-                    });
-                    
-                    log(`✅ Created node ${newNodeId} with edge to ${targetId}`);
-                }
-                
-                // Use the onNodeCreate callback to trigger Nexus update
+                // Update local state and UI
+                const state = window.sandboxState.getState();
                 if (sandboxGraphRef.current && sandboxGraphRef.current.onNodeCreate) {
                     // Trigger through the Nexus control's callback
                     simulateChange();
                 }
                 
                 await initializeSandbox();
+                
+                return result;
                 
             } catch (error) {
                 console.error('❌ Error handling node drop:', error);
