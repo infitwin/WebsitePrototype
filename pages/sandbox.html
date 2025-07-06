@@ -88,7 +88,7 @@
         <!-- App Header -->
         <div class="sandbox-header">
             <div class="header-left">
-                <span style="font-size: 20px;">🧪</span>
+                <span class="header-icon">🧪</span>
                 <h1>Sandbox - Graph Editor</h1>
             </div>
             <div class="header-right">
@@ -106,7 +106,7 @@
                 <span>✨</span>
                 <span id="changesText">0 changes pending in sandbox</span>
             </div>
-            <span style="font-size: 12px; opacity: 0.9;">
+            <span class="text-small-muted">
                 Review changes before posting to production
             </span>
         </div>
@@ -126,7 +126,7 @@
                 
                 <div class="content-area">
                     <div class="sandbox-panel">
-                        <h3 style="margin: 0 0 15px 0; color: #007bff;">🔧 Sandbox Control</h3>
+                        <h3 class="section-title">🔧 Sandbox Control</h3>
                         <div id="sandboxContainer" class="sandbox-container"></div>
                     </div>
                 </div>
@@ -152,8 +152,8 @@
                         </div>
                         
                         <div id="nodeListContainer" class="content-list">
-                            <div style="background: white; padding: 15px; border-radius: 4px; text-align: center; color: #666;">
-                                <div style="font-size: 20px; margin-bottom: 5px;">⏳</div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">⏳</div>
                                 <div>Loading nodes from Neo4j...</div>
                             </div>
                         </div>
@@ -185,7 +185,7 @@
                     <div class="panel-header" id="artifactsHeader">
                         <div class="flex-center-gap">
                             <span>📎</span>
-                            <span style="font-weight: 600; color: #fd7e14;">Artifacts</span>
+                            <span class="text-bold-orange">Artifacts</span>
                         </div>
                         <button onclick="togglePanel('artifacts')" class="panel-close">×</button>
                     </div>
@@ -194,7 +194,7 @@
                         <div id="artifactsLoading" class="loading-state">
                             <div>Loading files...</div>
                         </div>
-                        <div id="artifactsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;">
+                        <div id="artifactsGrid" class="content-grid-files">
                             <!-- Thumbnails will be loaded here -->
                         </div>
                     </div>
@@ -1981,8 +1981,8 @@
                 
                 if (Object.keys(nodesByType).length === 0) {
                     container.innerHTML = `
-                        <div style="background: white; padding: 15px; border-radius: 4px; text-align: center; color: #666;">
-                            <div style="font-size: 20px; margin-bottom: 5px;">📭</div>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
                             <div>No nodes found in your graph</div>
                             <small style="color: #999;">Use the Admin page to generate test data</small>
                         </div>

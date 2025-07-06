@@ -247,3 +247,42 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 10px;
 }
+
+.content-grid-files {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+/* Stage 3: Headers, Typography, and Utilities */
+.header-icon {
+    font-size: 20px;
+}
+
+.text-small-muted {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.section-title {
+    margin: 0 0 15px 0;
+    color: #007bff;
+}
+
+.text-bold-orange {
+    font-weight: 600;
+    color: #fd7e14;
+}
+
+.empty-state {
+    background: white;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    color: #666;
+}
+
+.empty-state-icon {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
