@@ -291,13 +291,22 @@ export class FirebaseIntegration {
                         
                         if (face && (face.imageUrl || face.dataUrl || face.url)) {
                             this.log('🔍 DEBUG: Creating thumbnail for face', index);
-                            const thumbnail = window.createFaceThumbnail(doc.id, fileData, face, index);
-                            if (thumbnail) {
-                                gridEl.appendChild(thumbnail);
-                                totalFaces++;
-                                this.log('✅ DEBUG: Successfully added face thumbnail', totalFaces);
-                            } else {
-                                this.log('❌ DEBUG: createFaceThumbnail returned null');
+                            this.log('🔍 DEBUG: window.createFaceThumbnail available?', typeof window.createFaceThumbnail);
+                            
+                            try {
+                                const thumbnail = window.createFaceThumbnail(doc.id, fileData, face, index);
+                                this.log('🔍 DEBUG: createFaceThumbnail returned:', thumbnail);
+                                
+                                if (thumbnail) {
+                                    gridEl.appendChild(thumbnail);
+                                    totalFaces++;
+                                    this.log('✅ DEBUG: Successfully added face thumbnail', totalFaces);
+                                } else {
+                                    this.log('❌ DEBUG: createFaceThumbnail returned null/undefined');
+                                }
+                            } catch (error) {
+                                this.log('❌ DEBUG: Error calling createFaceThumbnail:', error.message);
+                                console.error('createFaceThumbnail error:', error);
                             }
                         } else {
                             this.log('❌ DEBUG: Face has no valid image URL');
