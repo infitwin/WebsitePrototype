@@ -1008,12 +1008,6 @@
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onFaceDrop: (nodeId, imageData, isNode) => {
-                            nodeId: nodeId,
-                            imageData: imageData,
-                            isNode: isNode,
-                            imageDataType: typeof imageData,
-                            imageDataKeys: imageData ? Object.keys(imageData) : 'null'
-                        });
                         
                         if (!isNode || !nodeId) {
                             console.log('❌ Face not dropped on a node');
