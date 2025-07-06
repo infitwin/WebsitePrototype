@@ -140,18 +140,18 @@
                         </div>
                         <button onclick="togglePanel('node-list')" class="panel-close">×</button>
                     </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; background: #f8f9fa; border-radius: 6px; padding: 15px;">
+                    <div class="panel-content">
                         <div class="text-muted" style="margin-bottom: 10px;">Drag actual nodes from your graph:</div>
                         
                         <!-- Node Type Filters -->
-                        <div id="nodeTypeFilters" style="display: none; margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                            <div style="color: #333; font-size: 12px; font-weight: 600; margin-bottom: 8px;">FILTER BY TYPE:</div>
-                            <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="nodeTypeFilterButtons">
+                        <div id="nodeTypeFilters" class="filter-section">
+                            <div class="filter-label">FILTER BY TYPE:</div>
+                            <div class="filter-buttons" id="nodeTypeFilterButtons">
                                 <!-- Filter buttons will be dynamically added here -->
                             </div>
                         </div>
                         
-                        <div id="nodeListContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                        <div id="nodeListContainer" class="content-list">
                             <div style="background: white; padding: 15px; border-radius: 4px; text-align: center; color: #666;">
                                 <div style="font-size: 20px; margin-bottom: 5px;">⏳</div>
                                 <div>Loading nodes from Neo4j...</div>
@@ -169,12 +169,12 @@
                         </div>
                         <button onclick="togglePanel('faces')" class="panel-close">×</button>
                     </div>
-                    <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag faces to assign to people:</div>
+                    <div class="panel-content-scroll">
+                        <div class="text-muted" style="margin-bottom: 10px;">Drag faces to assign to people:</div>
                         <div id="facesLoading" class="loading-state">
                             <div>Loading faces...</div>
                         </div>
-                        <div id="facesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;">
+                        <div id="facesGrid" class="content-grid">
                             <!-- Face thumbnails will be loaded here -->
                         </div>
                     </div>
@@ -183,16 +183,16 @@
                 <!-- Artifacts Panel -->
                 <div id="artifactsPanel" class="floating-panel artifacts-panel">
                     <div class="panel-header" id="artifactsHeader">
-                        <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="flex-center-gap">
                             <span>📎</span>
                             <span style="font-weight: 600; color: #fd7e14;">Artifacts</span>
                         </div>
                         <button onclick="togglePanel('artifacts')" class="panel-close">×</button>
                     </div>
-                    <div style="flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 6px; padding: 15px;">
-                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Drag files to the graph:</div>
-                        <div id="artifactsLoading" style="text-align: center; padding: 20px;">
-                            <div style="color: #666;">Loading files...</div>
+                    <div class="panel-content-scroll">
+                        <div class="text-muted" style="margin-bottom: 10px;">Drag files to the graph:</div>
+                        <div id="artifactsLoading" class="loading-state">
+                            <div>Loading files...</div>
                         </div>
                         <div id="artifactsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;">
                             <!-- Thumbnails will be loaded here -->
