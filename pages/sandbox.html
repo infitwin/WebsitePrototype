@@ -316,6 +316,11 @@
         
         // Direct access to modules - no backward compatibility wrappers
         
+        // Node drop handler - delegates to neo4j integration
+        async function handleSandboxNodeDrop(nodeData, dropType, position, targetId = null) {
+            return window.sandboxNeo4j.handleSandboxNodeDrop(nodeData, dropType, position, targetId);
+        }
+        
         // File drop handler for sandbox - creates attachment objects and updates graph
         // Called by Nexus onFileDrop callback with (targetId, fileData, isNode)
         async function handleSandboxFileDrop(targetId, fileData, isNode) {
