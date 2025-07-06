@@ -1,0 +1,159 @@
+/**
+ * Extended styles for sandbox page
+ * Extracted from inline styles to reduce HTML file size
+ */
+
+body {
+    font-family: var(--font-family-primary, 'Inter', sans-serif);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Main layout container */
+.symphony-dashboard {
+    display: flex;
+    height: 100vh;
+}
+
+/* Shared Navigation Sidebar - handled by navigation.css */
+.sidebar-nav-container {
+    width: 80px;
+    flex-shrink: 0;
+    z-index: 200;
+}
+
+/* Main content wrapper */
+.main-content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* App Header */
+.sandbox-header {
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-left h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 14px;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.container {
+    height: 100%;
+    position: relative;
+}
+
+/* Smart Context Bar */
+.context-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    z-index: 999;
+    transform: translateY(40px);
+    opacity: 0;
+    transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.context-bar.visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Toolbar */
+.toolbar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    display: flex;
+    gap: 5px;
+    padding: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1100;
+}
+
+.toolbar-btn {
+    width: 45px;
+    height: 45px;
+    border: 2px solid var(--color-border);
+    background: var(--color-background-hover);
+    color: var(--color-text-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.toolbar-btn.active {
+    background: var(--color-info);
+    color: var(--color-text-inverse);
+    border-color: var(--color-info);
+}
+
+/* Content Area */
+.content-area {
+    padding: 20px;
+    height: 100%;
+}
+
+.sandbox-panel {
+    width: 100%;
+    height: calc(100% - 40px);
+    background: var(--color-background-card);
+    border-radius: 8px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 4px var(--color-shadow-medium);
+}
+
+.sandbox-container {
+    width: 100%;
+    height: calc(100% - 50px);
+    border: 2px solid var(--color-info);
+    border-radius: 6px;
+    background: var(--color-background-hover);
+}

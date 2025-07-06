@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../css/components/modal.css">
     <link rel="stylesheet" href="../css/components/button.css">
     <link rel="stylesheet" href="../css/pages/sandbox.css">
+    <link rel="stylesheet" href="../css/pages/sandbox-extended.css">
     <!-- Nexus Graph Control v17.13.0 External CSS -->
     <link rel="stylesheet" href="../css/nexus-graph-v17.13.0.bundle.css">
     
@@ -36,6 +37,7 @@
         import { initializeDragFunctionality, handleArtifactDragStart, handleArtifactDragEnd, handleFaceDragStart, handleFaceDragEnd } from '../js/sandbox/drag-handlers.js';
         import { Neo4jDataService } from '../js/services/neo4j-data-service.js';
         import { MetadataEditorIntegration } from '../js/sandbox/metadata-editor-integration.js';
+        import { createArtifactThumbnail, createFaceThumbnail, createDraggableNodeElement, createFilterButton, createReviewFormContent, createNodeTypeFilters } from '../js/sandbox/ui-builders.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -55,168 +57,26 @@
         window.handleFaceDragStart = (e) => handleFaceDragStart(e, log);
         window.handleFaceDragEnd = handleFaceDragEnd;
         window.Neo4jDataService = Neo4jDataService;
+        // UI Builder functions with backward compatibility
+        window.createArtifactThumbnail = (fileId, fileData) => {
+            return createArtifactThumbnail(fileId, fileData, {
+                dragstart: window.handleArtifactDragStart,
+                dragend: window.handleArtifactDragEnd
+            });
+        };
+        window.createFaceThumbnail = (fileId, fileData, face, faceIndex) => {
+            return createFaceThumbnail(fileId, fileData, face, faceIndex, {
+                dragstart: window.handleFaceDragStart,
+                dragend: window.handleFaceDragEnd
+            });
+        };
+        window.createDraggableNodeElement = createDraggableNodeElement;
+        window.createFilterButton = createFilterButton;
+        window.createReviewFormContent = createReviewFormContent;
+        window.createNodeTypeFilters = createNodeTypeFilters;
         // Initialize metadata editor
         window.metadataEditor = new MetadataEditorIntegration();
     </script>
-    
-    <style>
-
-        body {
-            font-family: var(--font-family-primary, 'Inter', sans-serif);
-            background: var(--color-background);
-            color: var(--color-text-primary);
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        /* Main layout container */
-        .symphony-dashboard {
-            display: flex;
-            height: 100vh;
-        }
-
-        /* Shared Navigation Sidebar - handled by navigation.css */
-        .sidebar-nav-container {
-            width: 80px;
-            flex-shrink: 0;
-            z-index: 200;
-        }
-
-        /* Main content wrapper */
-        .main-content-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* App Header */
-        .sandbox-header {
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-left h1 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            font-size: 14px;
-        }
-        
-        
-        /* Main Content Area */
-        .main-content {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .container {
-            height: 100%;
-            position: relative;
-        }
-        
-        /* Smart Context Bar */
-        .context-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-            z-index: 999;
-            transform: translateY(40px);
-            opacity: 0;
-            transition: transform 200ms ease, opacity 200ms ease;
-        }
-        
-        .context-bar.visible {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        /* Toolbar */
-        .toolbar {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: white;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
-            display: flex;
-            gap: 5px;
-            padding: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 1100;
-        }
-        
-        .toolbar-btn {
-            width: 45px;
-            height: 45px;
-            border: 2px solid var(--color-border);
-            background: var(--color-background-hover);
-            color: var(--color-text-primary);
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-        
-        .toolbar-btn.active {
-            background: var(--color-info);
-            color: var(--color-text-inverse);
-            border-color: var(--color-info);
-        }
-        
-        /* Content Area */
-        .content-area {
-            padding: 20px;
-            height: 100%;
-        }
-        
-        .sandbox-panel {
-            width: 100%;
-            height: calc(100% - 40px);
-            background: var(--color-background-card);
-            border-radius: 8px;
-            padding: var(--spacing-lg);
-            box-shadow: 0 2px 4px var(--color-shadow-medium);
-        }
-        
-        .sandbox-container {
-            width: 100%;
-            height: calc(100% - 50px);
-            border: 2px solid var(--color-info);
-            border-radius: 6px;
-            background: var(--color-background-hover);
-        }
-    </style>
 </head>
 <body>
     <div class="symphony-dashboard">
@@ -476,7 +336,7 @@
         
         function log(message) {
             // Logging disabled for production
-            console.log(message);
+            // console.log(message);
         }
         
         // Test delete function - accessible from console
@@ -2269,44 +2129,7 @@
         }
         
         // Create draggable thumbnail for artifact
-        function createArtifactThumbnail(fileId, fileData) {
-            const div = document.createElement('div');
-            div.className = 'artifact-thumbnail';
-            div.draggable = true;
-            div.dataset.fileId = fileId;
-            div.dataset.fileName = fileData.fileName || fileData.name || 'Unnamed';
-            div.dataset.fileType = fileData.fileType || 'document';
-            div.dataset.downloadUrl = fileData.downloadURL || '';
-            div.dataset.fileSize = fileData.fileSize || fileData.size || '0';
-            
-            // Determine content based on file type
-            if (fileData.thumbnailURL) {
-                // Use thumbnail if available
-                div.innerHTML = `
-                    <img src="${fileData.thumbnailURL}" alt="${fileData.fileName}" />
-                    <div class="artifact-thumbnail-name">${fileData.fileName || 'Unnamed'}</div>
-                `;
-            } else if (fileData.fileType && fileData.fileType.startsWith('image/')) {
-                // Use download URL for images without thumbnails
-                div.innerHTML = `
-                    <img src="${fileData.downloadURL}" alt="${fileData.fileName}" />
-                    <div class="artifact-thumbnail-name">${fileData.fileName || 'Unnamed'}</div>
-                `;
-            } else {
-                // Use icon for non-image files
-                const icon = getFileIcon(fileData.fileType);
-                div.innerHTML = `
-                    <div class="artifact-thumbnail-icon">${icon}</div>
-                    <div class="artifact-thumbnail-name">${fileData.fileName || 'Unnamed'}</div>
-                `;
-            }
-            
-            // Add drag event handlers
-            div.addEventListener('dragstart', handleArtifactDragStart);
-            div.addEventListener('dragend', handleArtifactDragEnd);
-            
-            return div;
-        }
+        // createArtifactThumbnail moved to ui-builders.js
         
         
         // Load user faces from Firebase
@@ -2388,94 +2211,7 @@
             }
         }
         
-        // Create draggable face thumbnail
-        function createFaceThumbnail(fileId, fileData, face, faceIndex) {
-            const div = document.createElement('div');
-            div.className = 'face-thumbnail';
-            div.draggable = true;
-            div.dataset.fileId = fileId;
-            div.dataset.fileName = fileData.fileName || 'Unnamed';
-            div.dataset.faceId = face.faceId || `face_${faceIndex}`;
-            div.dataset.confidence = face.confidence || 0;
-            
-            // Create loading placeholder
-            const loadingDiv = document.createElement('div');
-            loadingDiv.style.width = '100%';
-            loadingDiv.style.height = '100%';
-            loadingDiv.style.background = '#f0f0f0';
-            loadingDiv.style.display = 'flex';
-            loadingDiv.style.alignItems = 'center';
-            loadingDiv.style.justifyContent = 'center';
-            loadingDiv.style.fontSize = '24px';
-            loadingDiv.textContent = '😊';
-            div.appendChild(loadingDiv);
-            
-            // Extract face using bounding box if available
-            const boundingBox = face.boundingBox || face.BoundingBox;
-            if (fileData.downloadURL && boundingBox) {
-                log('📐 Extracting face with bounding box:', JSON.stringify(boundingBox));
-                extractFaceFromImage(fileData.downloadURL, boundingBox)
-                    .then(faceDataUrl => {
-                        // Replace loading placeholder with extracted face
-                        div.innerHTML = '';
-                        const img = document.createElement('img');
-                        img.src = faceDataUrl;
-                        img.alt = `Face ${faceIndex + 1}`;
-                        img.draggable = false; // CRITICAL: Prevent default image drag behavior
-                        div.appendChild(img);
-                        
-                        // Add confidence badge
-                        const confidence = face.confidence || face.Confidence;
-                        if (confidence) {
-                            const confidenceBadge = document.createElement('div');
-                            confidenceBadge.className = 'face-thumbnail-confidence';
-                            confidenceBadge.textContent = Math.round(confidence) + '%';
-                            div.appendChild(confidenceBadge);
-                        }
-                        
-                        // Add name/label
-                        const nameLabel = document.createElement('div');
-                        nameLabel.className = 'face-thumbnail-name';
-                        nameLabel.textContent = face.name || `Face ${faceIndex + 1}`;
-                        div.appendChild(nameLabel);
-                        
-                        // CRITICAL: Update the stored face data to include the extracted image URL
-                        const existingData = JSON.parse(div.dataset.faceData || '{}');
-                        div.dataset.faceData = JSON.stringify({
-                            ...existingData,
-                            imageUrl: faceDataUrl,  // Add the extracted face image URL
-                            dataUrl: faceDataUrl    // Also store as dataUrl for compatibility
-                        });
-                    })
-                    .catch(error => {
-                        log('❌ Failed to extract face:', error.message);
-                        console.error('Face extraction error:', error);
-                        // Show error state instead of placeholder
-                        div.innerHTML = '<div style="color: red; font-size: 10px; padding: 5px;">Error</div>';
-                    });
-            } else {
-                log('⚠️ No bounding box for face:', JSON.stringify(face));
-                div.innerHTML = '<div style="color: orange; font-size: 10px; padding: 5px;">No box</div>';
-            }
-            
-            // Store face data for drag operation
-            div.dataset.faceData = JSON.stringify({
-                fileId: fileId,
-                fileName: fileData.fileName,
-                faceId: face.faceId,
-                faceIndex: faceIndex,
-                confidence: face.confidence,
-                boundingBox: face.boundingBox,
-                emotions: face.emotions,
-                ageRange: face.ageRange
-            });
-            
-            // Add drag event handlers
-            div.addEventListener('dragstart', handleFaceDragStart);
-            div.addEventListener('dragend', handleFaceDragEnd);
-            
-            return div;
-        }
+        // createFaceThumbnail moved to ui-builders.js
         
         
         // Load node list using the service and handle UI
@@ -2521,81 +2257,6 @@
             }
         }
         
-        function createDraggableNodeElement(node) {
-            const div = document.createElement('div');
-            div.className = 'node-list-item';
-            div.draggable = true;
-            div.dataset.nodeId = node.id;
-            div.dataset.nodeType = node.type;
-            div.dataset.nodeData = JSON.stringify(node);
-            
-            const color = getNodeColor(node.type);
-            
-            div.style.cssText = `
-                background: white; 
-                padding: 10px; 
-                border-radius: 4px; 
-                border-left: 4px solid ${color}; 
-                cursor: grab; 
-                transition: all 0.2s;
-                margin-bottom: 5px;
-            `;
-            
-            div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 16px;">${getNodeTypeIcon(node.type)}</span>
-                    <div style="flex: 1;">
-                        <strong style="color: #333; font-size: 14px;">${node.label}</strong><br>
-                        <small style="color: #666;">${node.id}</small>
-                    </div>
-                </div>
-            `;
-            
-            // Add hover effects
-            div.addEventListener('mouseenter', () => {
-                div.style.transform = 'translateX(5px)';
-                div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-            });
-            
-            div.addEventListener('mouseleave', () => {
-                div.style.transform = 'translateX(0)';
-                div.style.boxShadow = 'none';
-            });
-            
-            // Add drag event handlers
-            div.addEventListener('dragstart', (e) => {
-                div.style.cursor = 'grabbing';
-                
-                // Use the drag data format from NODE_DRAG_DROP_GUIDE
-                const dragData = {
-                    dragType: 'node',           // REQUIRED: Identifies this as a node (not file)
-                    sourceControl: 'node-list', // REQUIRED: Must be 'node-list' for the drop to work
-                    id: node.id,                // Neo4j node ID
-                    name: node.label,           // Display name
-                    type: node.type,            // Node type (person, organization, etc.)
-                    label: node.label,          // Display label
-                    properties: node.props || {}, // All Neo4j properties
-                    metadata: {
-                        source: 'neo4j',
-                        nodeType: node.type,
-                        draggedAt: new Date().toISOString(),
-                        sourcePanel: 'node-list'
-                    },
-                    originalData: node          // Complete original node data
-                };
-                
-                e.dataTransfer.effectAllowed = 'copy';
-                e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
-                log(`🏃 Dragging node: ${node.label} (${node.id}) with type: ${node.type}`);
-            });
-            
-            div.addEventListener('dragend', () => {
-                div.style.cursor = 'grab';
-            });
-            
-            return div;
-        }
-        
         function showNodeListError(message) {
             const container = document.getElementById('nodeListContainer');
             container.innerHTML = `
@@ -2606,91 +2267,6 @@
             `;
         }
         
-        function createNodeTypeFilters(nodesByType) {
-            const filterContainer = document.getElementById('nodeTypeFilterButtons');
-            const filtersDiv = document.getElementById('nodeTypeFilters');
-            
-            if (!filterContainer || !filtersDiv) return;
-            
-            filterContainer.innerHTML = '';
-            
-            // Add "All" button
-            const allButton = createFilterButton('all', '🔄', 'All', Object.values(nodesByType).reduce((sum, arr) => sum + arr.length, 0), true);
-            filterContainer.appendChild(allButton);
-            
-            // Add buttons for each node type
-            Object.keys(nodesByType).forEach(nodeType => {
-                const count = nodesByType[nodeType].length;
-                const icon = getNodeTypeIcon(nodeType);
-                const label = nodeType.charAt(0).toUpperCase() + nodeType.slice(1) + 's';
-                
-                const button = createFilterButton(nodeType, icon, label, count, false);
-                filterContainer.appendChild(button);
-            });
-            
-            // Show the filters section
-            filtersDiv.style.display = 'block';
-        }
-        
-        function createFilterButton(type, icon, label, count, isActive) {
-            const button = document.createElement('button');
-            button.className = 'node-filter-btn';
-            button.dataset.nodeType = type;
-            
-            const color = type === 'all' ? '#6c757d' : getNodeColor(type);
-            const activeClass = isActive ? 'active' : '';
-            
-            button.style.cssText = `
-                padding: 6px 12px;
-                border: 1px solid ${color};
-                background: ${isActive ? color : 'white'};
-                color: ${isActive ? 'white' : color};
-                border-radius: 20px;
-                cursor: pointer;
-                font-size: 12px;
-                font-weight: 500;
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                transition: all 0.2s;
-                user-select: none;
-            `;
-            
-            button.innerHTML = `${icon} ${label} (${count})`;
-            
-            // Add click handler
-            button.addEventListener('click', () => {
-                // Remove active state from all buttons
-                document.querySelectorAll('.node-filter-btn').forEach(btn => {
-                    const btnType = btn.dataset.nodeType;
-                    const btnColor = btnType === 'all' ? '#6c757d' : getNodeColor(btnType);
-                    btn.style.background = 'white';
-                    btn.style.color = btnColor;
-                });
-                
-                // Add active state to clicked button
-                button.style.background = color;
-                button.style.color = 'white';
-                
-                // Filter nodes
-                filterNodesByType(type);
-            });
-            
-            // Add hover effects
-            button.addEventListener('mouseenter', () => {
-                if (button.style.background === 'white' || button.style.background === '') {
-                    button.style.background = color + '20'; // 20% opacity
-                }
-            });
-            
-            button.addEventListener('mouseleave', () => {
-                if (button.style.color !== 'white') {
-                    button.style.background = 'white';
-                }
-            });
-            
-            return button;
-        }
         
         function filterNodesByType(selectedType) {
             if (!window.nodeListData) return;
@@ -2793,63 +2369,7 @@
         }
         
         
-        // Create review form content
-        function createReviewFormContent() {
-            const container = document.createElement('div');
-            container.style.cssText = 'padding: 20px;';
-            
-            // Summary section
-            const summary = document.createElement('div');
-            summary.style.cssText = 'margin-bottom: 20px;';
-            summary.innerHTML = `
-                <h3 style="margin-bottom: 10px; color: #374151;">Changes Summary</h3>
-                <div style="background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: #6B7280;">Total Changes:</span>
-                        <span style="font-weight: 600; color: #374151;">${changesCount}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: #6B7280;">Nodes Added:</span>
-                        <span style="font-weight: 600; color: #10B981;">${currentSandboxData.nodes.length || 0}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #6B7280;">Edges Added:</span>
-                        <span style="font-weight: 600; color: #3B82F6;">${currentSandboxData.edges.length || 0}</span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(summary);
-            
-            // Review notes section
-            const notesSection = document.createElement('div');
-            notesSection.style.cssText = 'margin-bottom: 20px;';
-            notesSection.innerHTML = `
-                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
-                    Review Notes (Optional)
-                </label>
-                <textarea 
-                    id="reviewNotes" 
-                    placeholder="Add any notes about these changes..."
-                    style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #E5E7EB; border-radius: 6px; font-family: inherit; font-size: 14px; resize: vertical;"
-                ></textarea>
-            `;
-            container.appendChild(notesSection);
-            
-            // Warning section
-            const warning = document.createElement('div');
-            warning.style.cssText = 'background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 6px; padding: 12px; margin-bottom: 20px;';
-            warning.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color: #F59E0B;">⚠️</span>
-                    <span style="color: #92400E; font-size: 14px;">
-                        This action will update the production graph. All changes will be immediately visible to users.
-                    </span>
-                </div>
-            `;
-            container.appendChild(warning);
-            
-            return container;
-        }
+        // createReviewFormContent moved to ui-builders.js
 
         // Post to Production function
         async function postToProduction() {
