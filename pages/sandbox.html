@@ -38,6 +38,7 @@
         import { Neo4jDataService } from '../js/services/neo4j-data-service.js';
         import { MetadataEditorIntegration } from '../js/sandbox/metadata-editor-integration.js';
         import { createArtifactThumbnail, createFaceThumbnail, createDraggableNodeElement, createFilterButton, createReviewFormContent, createNodeTypeFilters } from '../js/sandbox/ui-builders.js';
+        import { sandboxState } from '../js/sandbox/sandbox-state.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -75,7 +76,11 @@
         window.createReviewFormContent = createReviewFormContent;
         window.createNodeTypeFilters = createNodeTypeFilters;
         // Initialize metadata editor
+        // Initialize metadata editor
         window.metadataEditor = new MetadataEditorIntegration();
+        
+        // Make state management available globally
+        window.sandboxState = sandboxState;
     </script>
 </head>
 <body>
@@ -285,58 +290,40 @@
 
 
     <script>
-        let sandboxRoot = null;
-        let productionRoot = null;
-        let sandboxGraphRef = null; // Reference to access Nexus control methods
-        let debugMessages = [];
-        let openPanels = [];
-        let changesCount = 0;
-        let initialDataLoaded = false;
-        let currentSandboxData = { nodes: [], edges: [] };
-        let activeReviewModal = null; // Track active review modal
-        // Check localStorage for existing interview ID, or create a new one
-        let currentInterviewId = localStorage.getItem('currentInterviewId');
-        if (!currentInterviewId) {
-            currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            localStorage.setItem('currentInterviewId', currentInterviewId);
-        } else {
+        // State management now handled by sandboxState module
+        // Access state via: sandboxState.variableName
+        
+        // Convenience aliases for backward compatibility
+        let sandboxRoot, productionRoot, sandboxGraphRef, debugMessages, openPanels;
+        let changesCount, initialDataLoaded, currentSandboxData, activeReviewModal, currentInterviewId;
+        
+        function initializeStateAliases() {
+            const state = window.sandboxState.getState();
+            sandboxRoot = state.sandboxRoot;
+            productionRoot = state.productionRoot;
+            sandboxGraphRef = state.sandboxGraphRef;
+            debugMessages = state.debugMessages;
+            openPanels = state.openPanels;
+            changesCount = state.changesCount;
+            initialDataLoaded = state.initialDataLoaded;
+            currentSandboxData = state.currentSandboxData;
+            activeReviewModal = state.activeReviewModal;
+            currentInterviewId = state.currentInterviewId;
         }
         
         function log(message) {
-            // Logging disabled for production
+            return window.sandboxState.log(message);
         }
         
         
         function updateChangesDisplay() {
-            const shouldShow = initialDataLoaded && changesCount > 0;
-            const contextBar = document.getElementById('contextBar');
-            const changesText = document.getElementById('changesText');
-            
-            if (contextBar) {
-                if (shouldShow) {
-                    contextBar.classList.add('visible');
-                } else {
-                    contextBar.classList.remove('visible');
-                }
-            }
-            
-            if (changesText) {
-                changesText.textContent = changesCount + ' ' + (changesCount === 1 ? 'change' : 'changes') + ' pending in sandbox';
-            }
-            
-            // Update Review & Post button state
-            const button = document.querySelector('#postToProductionButton button');
-            if (button && button._buttonInstance) {
-                button._buttonInstance.setDisabled(changesCount === 0);
-            } else if (button) {
-                // Fallback for simple button
-                button.disabled = changesCount === 0;
-                button.style.opacity = changesCount === 0 ? '0.5' : '1';
-                button.style.cursor = changesCount === 0 ? 'not-allowed' : 'pointer';
-            }
+            return window.sandboxState.updateChangesDisplay();
         }
         
         async function loadExistingSandboxData() {
+            await window.sandboxState.loadExistingSandboxData();
+            initializeStateAliases(); // Update local aliases
+            return; // Original function content moved to module
             log('🔄 Loading existing sandbox data...');
             
             try {
@@ -488,16 +475,16 @@
         }
         
         function simulateChange() {
-            if (initialDataLoaded) {
-                changesCount++;
-                updateChangesDisplay();
-                log('Change recorded: ' + changesCount + ' total');
-            }
+            window.sandboxState.simulateChange();
+            initializeStateAliases(); // Update local aliases
         }
         
         // Auto-save handler for all sandbox data changes
         // Detects and saves: position changes, face updates, file attachments
         async function handleSandboxDataChange(newData) {
+            await window.sandboxState.handleSandboxDataChange(newData);
+            initializeStateAliases(); // Update local aliases
+            return; // Original function content moved to module
             
             // Process node updates - check for position, face, and attachment changes
             for (const newNode of newData.nodes) {
@@ -2492,6 +2479,8 @@
             
             setTimeout(async () => {
                 if (checkBundle()) {
+                    // Initialize state aliases from the module
+                    initializeStateAliases();
                     log('✅ Ready for testing');
                     await initializeSandbox();
                     
