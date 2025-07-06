@@ -65,10 +65,23 @@
             });
         };
         window.createFaceThumbnail = (fileId, fileData, face, faceIndex) => {
-            return createFaceThumbnail(fileId, fileData, face, faceIndex, {
-                dragstart: window.handleFaceDragStart,
-                dragend: window.handleFaceDragEnd
-            });
+            try {
+                return createFaceThumbnail(fileId, fileData, face, faceIndex, {
+                    dragstart: window.handleFaceDragStart || null,
+                    dragend: window.handleFaceDragEnd || null
+                });
+            } catch (error) {
+                console.error('createFaceThumbnail error:', error);
+                // Return a simple fallback thumbnail
+                const div = document.createElement('div');
+                div.className = 'face-thumbnail';
+                div.style.cssText = 'width: 80px; height: 80px; padding: 20px; text-align: center; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9; cursor: pointer;';
+                div.innerHTML = `😊<br><small>Face ${faceIndex + 1}</small>`;
+                div.draggable = true;
+                div.dataset.fileId = fileId;
+                div.dataset.faceIndex = faceIndex;
+                return div;
+            }
         };
         window.createDraggableNodeElement = createDraggableNodeElement;
         window.createFilterButton = createFilterButton;
@@ -143,7 +156,7 @@
                 <!-- Toolbar -->
                 <div class="toolbar">
                     <button class="toolbar-btn" title="Node List" onclick="window.sandboxEvents.togglePanel('node-list')">👤</button>
-                    <button class="toolbar-btn" title="Faces" onclick="window.sandboxEvents.togglePanel('faces')">😊</button>
+                    <button class="toolbar-btn" title="Faces" onclick="console.log('FACES BUTTON CLICKED'); window.sandboxEvents.togglePanel('faces')">😊</button>
                     <button class="toolbar-btn" title="Artifacts" onclick="window.sandboxEvents.togglePanel('artifacts')">📎</button>
                     <button class="toolbar-btn" title="Production Graph" onclick="window.sandboxEvents.togglePanel('production')">🔵</button>
                     <button class="toolbar-btn" title="AI Assistant" onclick="window.sandboxEvents.togglePanel('ai-assistant')">🤖</button>
