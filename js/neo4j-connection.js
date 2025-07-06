@@ -431,7 +431,23 @@ class Neo4jConnection {
     async copyProductionNodeToSandbox(productionNodeId, interviewId) {
         const session = this.getSession();
         try {
-            // First query: Get the production node and its labels
+            // First check if this node already exists in sandbox
+            const checkExistingQuery = `
+                MATCH (s:Sandbox {id: $productionNodeId})
+                RETURN s
+            `;
+            
+            const existingResult = await session.run(checkExistingQuery, {
+                productionNodeId
+            });
+            
+            if (existingResult.records.length > 0) {
+                // Node already exists in sandbox, return it
+                console.log(`⚠️ Node ${productionNodeId} already exists in sandbox, returning existing`);
+                return existingResult.records[0].get('s').properties;
+            }
+            
+            // Get the production node and its labels
             const getNodeQuery = `
                 MATCH (p {id: $productionNodeId})
                 WHERE NOT p:Sandbox
@@ -453,7 +469,7 @@ class Neo4jConnection {
             const labelString = labels.filter(l => l !== 'Sandbox').join(':');
             const fullLabelString = labelString ? `:Sandbox:${labelString}` : ':Sandbox';
             
-            // Second query: Create the sandbox node with all labels
+            // Create the sandbox node with all labels
             const createQuery = `
                 CREATE (s${fullLabelString})
                 SET s = $properties
