@@ -54,11 +54,11 @@
         window.handleArtifactFile = handleArtifactFile;
         window.handleTestData = handleTestData;
         window.handleProductionFileDrop = handleProductionFileDrop;
-        // Wrapper functions for drag handlers with dependencies
-        window.initializeDragFunctionality = (panelId) => initializeDragFunctionality(panelId, log, togglePanel);
-        window.handleArtifactDragStart = (e) => handleArtifactDragStart(e, log);
+        // Drag handlers with direct module dependencies
+        window.initializeDragFunctionality = (panelId) => initializeDragFunctionality(panelId, window.sandboxState.log, window.sandboxEvents.togglePanel);
+        window.handleArtifactDragStart = (e) => handleArtifactDragStart(e, window.sandboxState.log);
         window.handleArtifactDragEnd = handleArtifactDragEnd;
-        window.handleFaceDragStart = (e) => handleFaceDragStart(e, log);
+        window.handleFaceDragStart = (e) => handleFaceDragStart(e, window.sandboxState.log);
         window.handleFaceDragEnd = handleFaceDragEnd;
         window.Neo4jDataService = Neo4jDataService;
         // UI Builder functions with backward compatibility
@@ -131,12 +131,12 @@
             <div class="container">
                 <!-- Toolbar -->
                 <div class="toolbar">
-                    <button class="toolbar-btn" title="Node List" onclick="togglePanel('node-list')">👤</button>
-                    <button class="toolbar-btn" title="Faces" onclick="togglePanel('faces')">😊</button>
-                    <button class="toolbar-btn" title="Artifacts" onclick="togglePanel('artifacts')">📎</button>
-                    <button class="toolbar-btn" title="Production Graph" onclick="togglePanel('production')">🔵</button>
-                    <button class="toolbar-btn" title="AI Assistant" onclick="togglePanel('ai-assistant')">🤖</button>
-                    <button class="toolbar-btn" title="Tools" onclick="togglePanel('tools')">🛠️</button>
+                    <button class="toolbar-btn" title="Node List" onclick="window.sandboxEvents.togglePanel('node-list')">👤</button>
+                    <button class="toolbar-btn" title="Faces" onclick="window.sandboxEvents.togglePanel('faces')">😊</button>
+                    <button class="toolbar-btn" title="Artifacts" onclick="window.sandboxEvents.togglePanel('artifacts')">📎</button>
+                    <button class="toolbar-btn" title="Production Graph" onclick="window.sandboxEvents.togglePanel('production')">🔵</button>
+                    <button class="toolbar-btn" title="AI Assistant" onclick="window.sandboxEvents.togglePanel('ai-assistant')">🤖</button>
+                    <button class="toolbar-btn" title="Tools" onclick="window.sandboxEvents.togglePanel('tools')">🛠️</button>
                 </div>
                 
                 <div class="content-area">
@@ -153,7 +153,7 @@
                             <span>👤</span>
                             <span class="text-bold-primary">Node List</span>
                         </div>
-                        <button onclick="togglePanel('node-list')" class="panel-close">×</button>
+                        <button onclick="window.sandboxEvents.togglePanel('node-list')" class="panel-close">×</button>
                     </div>
                     <div class="panel-content">
                         <div class="text-muted" style="margin-bottom: 10px;">Drag actual nodes from your graph:</div>
@@ -182,7 +182,7 @@
                             <span>😊</span>
                             <span class="text-bold-purple">Faces</span>
                         </div>
-                        <button onclick="togglePanel('faces')" class="panel-close">×</button>
+                        <button onclick="window.sandboxEvents.togglePanel('faces')" class="panel-close">×</button>
                     </div>
                     <div class="panel-content-scroll">
                         <div class="text-muted" style="margin-bottom: 10px;">Drag faces to assign to people:</div>
@@ -202,7 +202,7 @@
                             <span>📎</span>
                             <span class="text-bold-orange">Artifacts</span>
                         </div>
-                        <button onclick="togglePanel('artifacts')" class="panel-close">×</button>
+                        <button onclick="window.sandboxEvents.togglePanel('artifacts')" class="panel-close">×</button>
                     </div>
                     <div class="panel-content-scroll">
                         <div class="text-muted" style="margin-bottom: 10px;">Drag files to the graph:</div>
@@ -222,7 +222,7 @@
                             <span>🔵</span>
                             <span style="font-weight: 600; color: #28a745;">Production Graph</span>
                         </div>
-                        <button onclick="togglePanel('production')" class="panel-close">×</button>
+                        <button onclick="window.sandboxEvents.togglePanel('production')" class="panel-close">×</button>
                     </div>
                     <div id="productionContainer" style="flex: 1; overflow: hidden; background: #fafafa; border-radius: 6px; position: relative; min-height: 0; width: 100%; height: calc(100% - 60px); pointer-events: auto;"></div>
                 </div>
@@ -234,16 +234,16 @@
                             <span>🤖</span>
                             <span style="font-weight: 600; color: #007bff;">AI Assistant</span>
                         </div>
-                        <button onclick="togglePanel('ai-assistant')" class="panel-close">×</button>
+                        <button onclick="window.sandboxEvents.togglePanel('ai-assistant')" class="panel-close">×</button>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
                         <div style="background: #f8f9fa; border-radius: 6px; padding: 15px;">
                             <div style="font-weight: 600; margin-bottom: 8px;">Quick Actions:</div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔍 Analyze</button>
-                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">✓ Validate</button>
-                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔗 Auto-Link</button>
-                                <button onclick="simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">💡 Suggest</button>
+                                <button onclick="window.sandboxState.simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔍 Analyze</button>
+                                <button onclick="window.sandboxState.simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">✓ Validate</button>
+                                <button onclick="window.sandboxState.simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">🔗 Auto-Link</button>
+                                <button onclick="window.sandboxState.simulateChange()" style="padding: 8px; font-size: 12px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 4px; cursor: pointer;">💡 Suggest</button>
                             </div>
                         </div>
                         <div style="background: #f8f9fa; border-radius: 6px; padding: 15px; flex: 1;">
@@ -262,7 +262,7 @@
                             <span>🛠️</span>
                             <span style="font-weight: 600; color: #6c757d;">Tools</span>
                         </div>
-                        <button onclick="togglePanel('tools')" class="panel-close">×</button>
+                        <button onclick="window.sandboxEvents.togglePanel('tools')" class="panel-close">×</button>
                     </div>
                     <div style="flex: 1; background: #f8f9fa; border-radius: 6px; padding: 15px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -303,54 +303,12 @@
         // State management now handled by sandboxState module
         // Access state via: sandboxState.variableName
         
-        // Convenience aliases for backward compatibility
-        let sandboxRoot, productionRoot, sandboxGraphRef, debugMessages, openPanels;
-        let changesCount, initialDataLoaded, currentSandboxData, activeReviewModal, currentInterviewId;
-        
-        function initializeStateAliases() {
-            const state = window.sandboxState.getState();
-            sandboxRoot = state.sandboxRoot;
-            productionRoot = state.productionRoot;
-            sandboxGraphRef = state.sandboxGraphRef;
-            debugMessages = state.debugMessages;
-            openPanels = state.openPanels;
-            changesCount = state.changesCount;
-            initialDataLoaded = state.initialDataLoaded;
-            currentSandboxData = state.currentSandboxData;
-            activeReviewModal = state.activeReviewModal;
-            currentInterviewId = state.currentInterviewId;
-        }
-        
-        function log(message) {
-            return window.sandboxState.log(message);
-        }
-        
-        
-        function updateChangesDisplay() {
-            return window.sandboxState.updateChangesDisplay();
-        }
-        
-        async function loadExistingSandboxData() {
-            await window.sandboxNeo4j.loadExistingSandboxData();
-            initializeStateAliases(); // Update local aliases
-        }
-        
-        function simulateChange() {
-            window.sandboxState.simulateChange();
-            initializeStateAliases(); // Update local aliases
-        }
-        
-        // Auto-save handler for all sandbox data changes
-        // Detects and saves: position changes, face updates, file attachments
-        async function handleSandboxDataChange(newData) {
-            await window.sandboxState.handleSandboxDataChange(newData);
-            initializeStateAliases(); // Update local aliases
-        }
+        // Direct access to modules - no backward compatibility wrappers
         
         // File drop handler for sandbox - creates attachment objects and updates graph
         // Called by Nexus onFileDrop callback with (targetId, fileData, isNode)
         async function handleSandboxFileDrop(targetId, fileData, isNode) {
-            log(`📎 File drop on ${isNode ? 'node' : 'edge'} ${targetId}`);
+            window.sandboxState.window.sandboxState.log(`📎 File drop on ${isNode ? 'node' : 'edge'} ${targetId}`);
             
             const target = {
                 id: targetId,
@@ -360,29 +318,29 @@
             const attachment = await window.handleSandboxFileDrop(fileData, target, log);
             
             if (attachment && isNode) {
-                const node = currentSandboxData.nodes.find(n => n.id === targetId);
+                const node = window.sandboxState.currentSandboxData.nodes.find(n => n.id === targetId);
                 if (node) {
                     if (!node.attachments) node.attachments = [];
                     
                     node.attachments.push(attachment);
-                    log(`✅ Added attachment to node ${targetId}: ${attachment.name}`);
+                    window.sandboxState.log(`✅ Added attachment to node ${targetId}: ${attachment.name}`);
                     
                     // Trigger onDataChange to auto-save to Neo4j
-                    if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
-                        sandboxGraphRef.current.updateData(currentSandboxData);
+                    if (window.sandboxState.sandboxGraphRef && window.sandboxState.sandboxGraphRef.current && window.sandboxState.sandboxGraphRef.current.updateData) {
+                        window.sandboxState.sandboxGraphRef.current.updateData(window.sandboxState.currentSandboxData);
                     }
                 }
             } else if (attachment && !isNode) {
-                const edge = currentSandboxData.edges.find(e => e.id === targetId);
+                const edge = window.sandboxState.currentSandboxData.edges.find(e => e.id === targetId);
                 if (edge) {
                     if (!edge.attachments) edge.attachments = [];
                     
                     edge.attachments.push(attachment);
-                    log(`✅ Added attachment to edge ${targetId}: ${attachment.name}`);
+                    window.sandboxState.log(`✅ Added attachment to edge ${targetId}: ${attachment.name}`);
                     
                     // Trigger onDataChange to auto-save to Neo4j
-                    if (sandboxGraphRef && sandboxGraphRef.current && sandboxGraphRef.current.updateData) {
-                        sandboxGraphRef.current.updateData(currentSandboxData);
+                    if (window.sandboxState.sandboxGraphRef && window.sandboxState.sandboxGraphRef.current && window.sandboxState.sandboxGraphRef.current.updateData) {
+                        window.sandboxState.sandboxGraphRef.current.updateData(window.sandboxState.currentSandboxData);
                     }
                 }
             }
@@ -398,7 +356,7 @@
         
         // Handle face drops from the faces panel
         function handleFaceDropOnSandbox(targetId, faceNodeData, dropType, position) {
-            log(`😊 Face drop: ${faceNodeData.name} on ${dropType}`);
+            window.sandboxState.log(`😊 Face drop: ${faceNodeData.name} on ${dropType}`);
             const faceData = faceNodeData.originalData;
             
             if (dropType === 'onto-canvas') {
@@ -419,15 +377,15 @@
                     newNode.y = position.y;
                 }
                 
-                currentSandboxData = {
-                    ...currentSandboxData,
-                    nodes: [...currentSandboxData.nodes, newNode]
+                window.sandboxState.currentSandboxData = {
+                    ...window.sandboxState.currentSandboxData,
+                    nodes: [...window.sandboxState.currentSandboxData.nodes, newNode]
                 };
                 
-                log(`✅ Created person node from face: ${newNode.name}`);
+                window.sandboxState.log(`✅ Created person node from face: ${newNode.name}`);
                 
             } else if (dropType === 'onto-node' && targetId) {
-                const targetNode = currentSandboxData.nodes.find(n => n.id === targetId);
+                const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === targetId);
                 if (targetNode) {
                     targetNode.properties = {
                         ...targetNode.properties,
@@ -436,11 +394,11 @@
                         assignedAt: new Date().toISOString()
                     };
                     
-                    log(`✅ Assigned face to node ${targetNode.label || targetId}`);
+                    window.sandboxState.log(`✅ Assigned face to node ${targetNode.label || targetId}`);
                 }
             }
             
-            if (sandboxRoot) {
+            if (window.sandboxState.sandboxRoot) {
                 
                 // v17.12.0 uses destructuring pattern: const { NexusGraphControl } = window.NexusGraphControl;
                 let NexusComponent;
@@ -458,12 +416,12 @@
                 }
                 
                 const controlElement = React.createElement(NexusComponent, {
-                    data: currentSandboxData,
+                    data: window.sandboxState.currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
-                    onDataChange: handleSandboxDataChange,
+                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
@@ -472,70 +430,70 @@
                     onNodeDoubleClick: (node) => {
                         // Double click - show metadata editor
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            log('📝 Node updated in sandbox:', updatedNode);
+                            window.sandboxState.log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
                         });
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
-                        console.log('🔗 Edge selected:', edge.id);
-                        log('🔗 Edge selected:', edge.id);
+                        console.window.sandboxState.log('🔗 Edge selected:', edge.id);
+                        window.sandboxState.log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
-                        console.log('🔗 Edge double-clicked:', edge.id);
-                        log('🔗 Edge double-clicked:', edge.id);
+                        console.window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
+                        window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        const sourceNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
                         
                         if (sourceNode && targetNode) {
                             window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
                                 (updatedEdge) => {
-                                    log('📝 Edge updated in sandbox:', updatedEdge);
+                                    window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
                                     // The graph should auto-update when data changes
                                 },
-                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                                window.sandboxState.window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
                             );
                         } else {
-                            log('❌ Could not find source or target nodes for edge:', edge.id);
+                            window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
                         }
                     }
                 });
                 
-                sandboxRoot.render(controlElement);
+                window.sandboxState.sandboxRoot.render(controlElement);
                 
-                changesCount++;
-                updateChangesDisplay();
+                window.sandboxState.changesCount++;
+                window.sandboxState.updateChangesDisplay();
                 
-                log('🔄 Sandbox re-rendered with face assignment');
+                window.sandboxState.log('🔄 Sandbox re-rendered with face assignment');
             }
         }
 
         async function initializeSandbox() {
             if (!checkBundle()) {
-                log('❌ Bundle not ready for sandbox');
+                window.sandboxState.log('❌ Bundle not ready for sandbox');
                 return;
             }
             
-            log('🚀 Initializing sandbox control...');
+            window.sandboxState.log('🚀 Initializing sandbox control...');
             const container = document.getElementById('sandboxContainer');
             
             try {
-                if (sandboxRoot) {
-                    sandboxRoot.unmount();
-                    sandboxRoot = null;
+                if (window.sandboxState.sandboxRoot) {
+                    window.sandboxState.sandboxRoot.unmount();
+                    window.sandboxState.sandboxRoot = null;
                 }
                 
-                if (!currentSandboxData) {
-                    currentSandboxData = {
+                if (!window.sandboxState.currentSandboxData) {
+                    window.sandboxState.currentSandboxData = {
                         nodes: [],
                         edges: []
                     };
                 }
                 
-                await loadExistingSandboxData();
+                await window.sandboxNeo4j.loadExistingSandboxData();
                 
                 const NexusControl = window.NexusGraphControl.NexusGraphControl;
                 
@@ -543,20 +501,20 @@
                     return React.createElement(NexusControl, { ...props, ref });
                 });
                 
-                sandboxGraphRef = React.createRef();
+                window.sandboxState.sandboxGraphRef = React.createRef();
                 
                 const controlElement = React.createElement(SandboxWrapper, {
-                    ref: sandboxGraphRef,
-                    data: currentSandboxData,
+                    ref: window.sandboxState.sandboxGraphRef,
+                    data: window.sandboxState.currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
                     enableDelete: true,
-                    onDataChange: handleSandboxDataChange,
+                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
                     
                     onMetaSave: async (metaData) => {
-                        log('📝 Meta save triggered:', metaData);
+                        window.sandboxState.log('📝 Meta save triggered:', metaData);
                         
                         try {
                             // Ensure connection
@@ -573,9 +531,9 @@
                                         metaData.updates,
                                         userId,
                                         twinId,
-                                        currentInterviewId
+                                        window.sandboxState.currentInterviewId
                                     );
-                                    log('✅ Created sandbox node:', newNode);
+                                    window.sandboxState.log('✅ Created sandbox node:', newNode);
                                 } else {
                                     const updatedNode = await window.Neo4jConnection.updateSandboxNode(
                                         metaData.entityId,
@@ -583,9 +541,9 @@
                                         metaData.deletedFields,
                                         userId,
                                         twinId,
-                                        currentInterviewId
+                                        window.sandboxState.currentInterviewId
                                     );
-                                    log('✅ Updated/created sandbox node:', updatedNode);
+                                    window.sandboxState.log('✅ Updated/created sandbox node:', updatedNode);
                                 }
                             } else if (metaData.entityType === 'edge' || metaData.entityType === 'relationship') {
                                 
@@ -601,14 +559,14 @@
                                     sourceId,
                                     targetId,
                                     type || 'RELATED_TO',
-                                    currentInterviewId
+                                    window.sandboxState.currentInterviewId
                                 );
-                                log('✅ Updated/created sandbox relationship as actual graph edge:', updatedRel);
+                                window.sandboxState.log('✅ Updated/created sandbox relationship as actual graph edge:', updatedRel);
                             }
                             
-                            simulateChange();
+                            window.sandboxState.simulateChange();
                         } catch (error) {
-                            log('❌ Meta save error:', error.message);
+                            window.sandboxState.log('❌ Meta save error:', error.message);
                             console.error('Full error details:', error);
                             if (window.Modal) {
                                 new window.Modal({
@@ -621,7 +579,7 @@
                     },
                     
                     onNodeCreate: async (nodeData) => {
-                        log('➕ Node create triggered:', nodeData);
+                        window.sandboxState.log('➕ Node create triggered:', nodeData);
                         
                         try {
                             const userId = firebase.auth().currentUser?.uid;
@@ -630,29 +588,29 @@
                             const sandboxNode = {
                                 ...nodeData,
                                 _isSandbox: true,
-                                interviewId: currentInterviewId,
-                                sessionId: currentInterviewId
+                                interviewId: window.sandboxState.currentInterviewId,
+                                sessionId: window.sandboxState.currentInterviewId
                             };
                             
                             const createdNode = await window.Neo4jConnection.createSandboxNode(
                                 sandboxNode,
                                 userId,
                                 twinId,
-                                currentInterviewId
+                                window.sandboxState.currentInterviewId
                             );
                             
-                            currentSandboxData.nodes.push(createdNode);
-                            simulateChange();
+                            window.sandboxState.currentSandboxData.nodes.push(createdNode);
+                            window.sandboxState.simulateChange();
                             
                             return createdNode;
                         } catch (error) {
-                            log('❌ Node create error:', error);
+                            window.sandboxState.log('❌ Node create error:', error);
                             throw error;
                         }
                     },
                     
                     onNodeUpdate: async (nodeId, updates) => {
-                        log('📝 Node update triggered:', nodeId, updates);
+                        window.sandboxState.log('📝 Node update triggered:', nodeId, updates);
                         
                         try {
                             const updatedNode = await window.Neo4jConnection.updateSandboxNode(
@@ -662,24 +620,24 @@
                             );
                             
                             // Update local data
-                            const nodeIndex = currentSandboxData.nodes.findIndex(n => n.id === nodeId);
+                            const nodeIndex = window.sandboxState.currentSandboxData.nodes.findIndex(n => n.id === nodeId);
                             if (nodeIndex >= 0) {
-                                currentSandboxData.nodes[nodeIndex] = {
-                                    ...currentSandboxData.nodes[nodeIndex],
+                                window.sandboxState.currentSandboxData.nodes[nodeIndex] = {
+                                    ...window.sandboxState.currentSandboxData.nodes[nodeIndex],
                                     ...updates
                                 };
                             }
                             
-                            simulateChange();
+                            window.sandboxState.simulateChange();
                             return updatedNode;
                         } catch (error) {
-                            log('❌ Node update error:', error);
+                            window.sandboxState.log('❌ Node update error:', error);
                             throw error;
                         }
                     },
                     
                     onNodesDelete: async (nodeIds) => {
-                        log('🗑️ Nodes delete triggered:', nodeIds);
+                        window.sandboxState.log('🗑️ Nodes delete triggered:', nodeIds);
                         
                         try {
                             if (!window.Neo4jConnection.isConnected) {
@@ -691,31 +649,31 @@
                                     const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
                                     
                                     if (deleted) {
-                                        log('✅ Node deleted from database: ' + nodeId);
+                                        window.sandboxState.log('✅ Node deleted from database: ' + nodeId);
                                     } else {
-                                        log('⚠️ Node not found in database: ' + nodeId);
+                                        window.sandboxState.log('⚠️ Node not found in database: ' + nodeId);
                                     }
                                 } catch (error) {
                                     console.error(`Failed to delete node ${nodeId}:`, error);
-                                    log('❌ Failed to delete node ' + nodeId + ': ' + error.message);
+                                    window.sandboxState.log('❌ Failed to delete node ' + nodeId + ': ' + error.message);
                                 }
                             }
                             
-                            currentSandboxData.nodes = currentSandboxData.nodes.filter(n => !nodeIds.includes(n.id));
-                            currentSandboxData.edges = currentSandboxData.edges.filter(
+                            window.sandboxState.currentSandboxData.nodes = window.sandboxState.currentSandboxData.nodes.filter(n => !nodeIds.includes(n.id));
+                            window.sandboxState.currentSandboxData.edges = window.sandboxState.currentSandboxData.edges.filter(
                                 e => !nodeIds.includes(e.source) && !nodeIds.includes(e.target)
                             );
-                            simulateChange();
+                            window.sandboxState.simulateChange();
                             
                         } catch (error) {
-                            log('❌ Nodes delete error:', error.message);
+                            window.sandboxState.log('❌ Nodes delete error:', error.message);
                             console.error('Full delete error:', error);
                             throw error;
                         }
                     },
                     
                     onEdgeCreate: async (edgeData) => {
-                        log('🔗 Edge create triggered:', edgeData);
+                        window.sandboxState.log('🔗 Edge create triggered:', edgeData);
                         
                         try {
                             const createdRel = await window.Neo4jConnection.createSandboxRelationship(
@@ -723,24 +681,24 @@
                                 edgeData.target,
                                 edgeData.label || edgeData.type || 'RELATED_TO',
                                 edgeData.properties || {},
-                                currentInterviewId
+                                window.sandboxState.currentInterviewId
                             );
                             
-                            currentSandboxData.edges.push({
+                            window.sandboxState.currentSandboxData.edges.push({
                                 ...edgeData,
                                 id: createdRel.id
                             });
                             
-                            simulateChange();
+                            window.sandboxState.simulateChange();
                             return createdRel;
                         } catch (error) {
-                            log('❌ Edge create error:', error);
+                            window.sandboxState.log('❌ Edge create error:', error);
                             throw error;
                         }
                     },
                     
                     onEdgesDelete: async (edgeIds) => {
-                        log('🗑️ Edges delete triggered:', edgeIds);
+                        window.sandboxState.log('🗑️ Edges delete triggered:', edgeIds);
                         
                         try {
                             if (!window.Neo4jConnection.isConnected) {
@@ -752,21 +710,21 @@
                                     const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
                                     
                                     if (deleted) {
-                                        log('✅ Edge deleted from database: ' + edgeId);
+                                        window.sandboxState.log('✅ Edge deleted from database: ' + edgeId);
                                     } else {
-                                        log('⚠️ Edge not found in database: ' + edgeId);
+                                        window.sandboxState.log('⚠️ Edge not found in database: ' + edgeId);
                                     }
                                 } catch (error) {
                                     console.error(`Failed to delete edge ${edgeId}:`, error);
-                                    log('❌ Failed to delete edge ' + edgeId + ': ' + error.message);
+                                    window.sandboxState.log('❌ Failed to delete edge ' + edgeId + ': ' + error.message);
                                 }
                             }
                             
-                            currentSandboxData.edges = currentSandboxData.edges.filter(e => !edgeIds.includes(e.id));
-                            simulateChange();
+                            window.sandboxState.currentSandboxData.edges = window.sandboxState.currentSandboxData.edges.filter(e => !edgeIds.includes(e.id));
+                            window.sandboxState.simulateChange();
                             
                         } catch (error) {
-                            log('❌ Edges delete error:', error.message);
+                            window.sandboxState.log('❌ Edges delete error:', error.message);
                             console.error('Full delete error:', error);
                             throw error;
                         }
@@ -777,13 +735,13 @@
                     onFaceDrop: (nodeId, imageData, isNode) => {
                         
                         if (!isNode || !nodeId) {
-                            console.log('❌ Face not dropped on a node');
+                            console.window.sandboxState.log('❌ Face not dropped on a node');
                             return;
                         }
                         
-                        const nodeIndex = currentSandboxData.nodes.findIndex(n => n.id === nodeId);
+                        const nodeIndex = window.sandboxState.currentSandboxData.nodes.findIndex(n => n.id === nodeId);
                         if (nodeIndex === -1) {
-                            console.log('❌ Node not found:', nodeId);
+                            console.window.sandboxState.log('❌ Node not found:', nodeId);
                             return;
                         }
                         
@@ -795,25 +753,25 @@
                         }
                         
                         if (!imageUrl) {
-                            console.log('❌ No image URL found in imageData:', imageData);
+                            console.window.sandboxState.log('❌ No image URL found in imageData:', imageData);
                             return;
                         }
                         
-                        currentSandboxData.nodes[nodeIndex].imageUrl = imageUrl;
+                        window.sandboxState.currentSandboxData.nodes[nodeIndex].imageUrl = imageUrl;
                         
-                        if (sandboxGraphRef && sandboxGraphRef.current) {
-                            if (sandboxGraphRef.current.updateData) {
-                                sandboxGraphRef.current.updateData(currentSandboxData);
+                        if (window.sandboxState.sandboxGraphRef && window.sandboxState.sandboxGraphRef.current) {
+                            if (window.sandboxState.sandboxGraphRef.current.updateData) {
+                                window.sandboxState.sandboxGraphRef.current.updateData(window.sandboxState.currentSandboxData);
                             }
                         }
                         
-                        simulateChange();
+                        window.sandboxState.simulateChange();
                     },
                     onNodeClick: (node) => {
                     },
                     onNodeDoubleClick: (node) => {
                         
-                        window.metadataEditor.showEditorModal(node, null, sandboxGraphRef);
+                        window.metadataEditor.showEditorModal(node, null, window.sandboxState.sandboxGraphRef);
                     },
                     onEdgeClick: (edgeData) => {
                     },
@@ -822,9 +780,9 @@
                         const edge = edgeData;
                         
                         
-                        let nodes = currentSandboxData.nodes;
-                        if (sandboxGraphRef.current && sandboxGraphRef.current.getData) {
-                            const graphData = sandboxGraphRef.current.getData();
+                        let nodes = window.sandboxState.currentSandboxData.nodes;
+                        if (window.sandboxState.sandboxGraphRef.current && window.sandboxState.sandboxGraphRef.current.getData) {
+                            const graphData = window.sandboxState.sandboxGraphRef.current.getData();
                             if (graphData && graphData.nodes) {
                                 nodes = graphData.nodes;
                             }
@@ -841,42 +799,42 @@
                                     sourceNode,
                                     targetNode,
                                     null,
-                                    sandboxGraphRef
+                                    window.sandboxState.sandboxGraphRef
                                 );
                             } catch (error) {
                                 console.error('❌ Error showing relationship editor:', error.message);
                                 console.error('Full error:', error);
                             }
                         } else {
-                            console.log('❌ Could not find source or target node for edge');
-                            console.log('Looking for source:', edge.source);
-                            console.log('Looking for target:', edge.target);
-                            console.log('Available node IDs:', nodes.map(n => n.id));
+                            console.window.sandboxState.log('❌ Could not find source or target node for edge');
+                            console.window.sandboxState.log('Looking for source:', edge.source);
+                            console.window.sandboxState.log('Looking for target:', edge.target);
+                            console.window.sandboxState.log('Available node IDs:', nodes.map(n => n.id));
                         }
                     }
                 });
                 
-                sandboxRoot = ReactDOM.createRoot(container);
-                sandboxRoot.render(controlElement);
+                window.sandboxState.sandboxRoot = ReactDOM.createRoot(container);
+                window.sandboxState.sandboxRoot.render(controlElement);
                 
-                log('✅ Sandbox control mounted with CRUD interface');
+                window.sandboxState.log('✅ Sandbox control mounted with CRUD interface');
                 
-                initialDataLoaded = true;
+                window.sandboxState.initialDataLoaded = true;
                 
                 setTimeout(() => {
                     const hasContent = container.querySelector('svg') || 
                                      container.querySelector('canvas') ||
                                      container.innerHTML.includes('nexus');
-                    log('🔍 Sandbox content: ' + (hasContent ? 'Found ✅' : 'Missing ❌'));
+                    window.sandboxState.log('🔍 Sandbox content: ' + (hasContent ? 'Found ✅' : 'Missing ❌'));
                     
-                    if (sandboxGraphRef.current) {
-                        log('✅ Sandbox ref connected - handleMetaSave available:', 
-                            typeof sandboxGraphRef.current.handleMetaSave === 'function');
+                    if (window.sandboxState.sandboxGraphRef.current) {
+                        window.sandboxState.log('✅ Sandbox ref connected - handleMetaSave available:', 
+                            typeof window.sandboxState.sandboxGraphRef.current.handleMetaSave === 'function');
                     }
                 }, 1000);
                 
             } catch (error) {
-                log('❌ Sandbox error: ' + error.message);
+                window.sandboxState.log('❌ Sandbox error: ' + error.message);
             }
         }
         
@@ -886,9 +844,9 @@
             
             const resizeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
-                    if (panelId === 'production' && productionRoot) {
+                    if (panelId === 'production' && window.sandboxState.productionRoot) {
                         setTimeout(() => {
-                            log('📏 Production panel resized, updating control');
+                            window.sandboxState.log('📏 Production panel resized, updating control');
                             initializeProduction();
                         }, 100);
                     }
@@ -899,22 +857,22 @@
         }
         
         function handleProductionCopyToSandbox(selectedNodes) {
-            log(`📋 Copying nodes from production to sandbox`);
-            log('🔍 Selected nodes:', selectedNodes);
+            window.sandboxState.log(`📋 Copying nodes from production to sandbox`);
+            window.sandboxState.log('🔍 Selected nodes:', selectedNodes);
             
             if (!selectedNodes || selectedNodes.length === 0) {
-                log('⚠️ No nodes selected to copy');
+                window.sandboxState.log('⚠️ No nodes selected to copy');
                 return;
             }
             
             const sandboxPanel = document.querySelector('.sandbox-panel');
             if (!sandboxPanel) {
-                log('❌ Sandbox panel not found');
+                window.sandboxState.log('❌ Sandbox panel not found');
                 return;
             }
             
             const nodesToCopy = Array.isArray(selectedNodes) ? selectedNodes : [selectedNodes];
-            log(`📊 Copying ${nodesToCopy.length} nodes`);
+            window.sandboxState.log(`📊 Copying ${nodesToCopy.length} nodes`);
             
             const copiedNodes = nodesToCopy.map((node, index) => {
                 const newId = `${node.id}_copy_${Date.now()}_${index}`;
@@ -936,18 +894,18 @@
                 };
             });
             
-            log('📝 Prepared nodes:', copiedNodes);
+            window.sandboxState.log('📝 Prepared nodes:', copiedNodes);
             
-            if (!currentSandboxData) {
-                currentSandboxData = { nodes: [], edges: [] };
+            if (!window.sandboxState.currentSandboxData) {
+                window.sandboxState.currentSandboxData = { nodes: [], edges: [] };
             }
             
-            currentSandboxData = {
-                nodes: [...currentSandboxData.nodes, ...copiedNodes],
-                edges: currentSandboxData.edges
+            window.sandboxState.currentSandboxData = {
+                nodes: [...window.sandboxState.currentSandboxData.nodes, ...copiedNodes],
+                edges: window.sandboxState.currentSandboxData.edges
             };
             
-            if (sandboxRoot) {
+            if (window.sandboxState.sandboxRoot) {
                 // Get the component using v17.12.0 pattern
                 let NexusComponent;
                 if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
@@ -958,12 +916,12 @@
                 }
                 
                 const controlElement = React.createElement(NexusComponent, {
-                    data: currentSandboxData,
+                    data: window.sandboxState.currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
-                    onDataChange: handleSandboxDataChange,
+                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
@@ -972,47 +930,47 @@
                     onNodeDoubleClick: (node) => {
                         // Double click - show metadata editor
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            log('📝 Node updated in sandbox:', updatedNode);
+                            window.sandboxState.log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
                         });
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
-                        console.log('🔗 Edge selected:', edge.id);
-                        log('🔗 Edge selected:', edge.id);
+                        console.window.sandboxState.log('🔗 Edge selected:', edge.id);
+                        window.sandboxState.log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
-                        console.log('🔗 Edge double-clicked:', edge.id);
-                        log('🔗 Edge double-clicked:', edge.id);
+                        console.window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
+                        window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        const sourceNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
                         
                         if (sourceNode && targetNode) {
                             window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
                                 (updatedEdge) => {
-                                    log('📝 Edge updated in sandbox:', updatedEdge);
+                                    window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
                                     // The graph should auto-update when data changes
                                 },
-                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                                window.sandboxState.window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
                             );
                         } else {
-                            log('❌ Could not find source or target nodes for edge:', edge.id);
+                            window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
                         }
                     }
                 });
                 
-                sandboxRoot.render(controlElement);
+                window.sandboxState.sandboxRoot.render(controlElement);
                 
-                changesCount += copiedNodes.length;
-                updateChangesDisplay();
+                window.sandboxState.changesCount += copiedNodes.length;
+                window.sandboxState.updateChangesDisplay();
                 
-                log(`✅ Successfully copied ${copiedNodes.length} nodes to sandbox`);
-                log(`📊 Sandbox now has ${currentSandboxData.nodes.length} nodes`);
+                window.sandboxState.log(`✅ Successfully copied ${copiedNodes.length} nodes to sandbox`);
+                window.sandboxState.log(`📊 Sandbox now has ${window.sandboxState.currentSandboxData.nodes.length} nodes`);
             } else {
-                log('❌ Sandbox not initialized');
+                window.sandboxState.log('❌ Sandbox not initialized');
             }
         }
         
@@ -1029,9 +987,9 @@
                 
                 // Update local state and UI
                 const state = window.sandboxState.getState();
-                if (sandboxGraphRef.current && sandboxGraphRef.current.onNodeCreate) {
+                if (window.sandboxState.sandboxGraphRef.current && window.sandboxState.sandboxGraphRef.current.onNodeCreate) {
                     // Trigger through the Nexus control's callback
-                    simulateChange();
+                    window.sandboxState.simulateChange();
                 }
                 
                 await initializeSandbox();
@@ -1076,17 +1034,17 @@
         
         async function initializeProduction() {
             if (!checkBundle()) {
-                log('❌ Bundle not ready for production');
+                window.sandboxState.log('❌ Bundle not ready for production');
                 return;
             }
             
-            log('🎯 Initializing production control...');
+            window.sandboxState.log('🎯 Initializing production control...');
             const container = document.getElementById('productionContainer');
             
             try {
-                if (productionRoot) {
-                    productionRoot.unmount();
-                    productionRoot = null;
+                if (window.sandboxState.productionRoot) {
+                    window.sandboxState.productionRoot.unmount();
+                    window.sandboxState.productionRoot = null;
                 }
                 
                 // Get current user and twin ID
@@ -1096,14 +1054,14 @@
                     const userId = firebase.auth().currentUser.uid;
                     const twinId = `${userId}-1`; // Using twin ID format from analysis
                     
-                    log(`🔍 Loading production data for user ${userId}, twin ${twinId}`);
+                    window.sandboxState.log(`🔍 Loading production data for user ${userId}, twin ${twinId}`);
                     productionData = await Neo4jDataService.loadProductionData(userId, twinId, log, getNodeColor);
                 }
                 
                 // If no data found, suggest generating test data
                 if (productionData.nodes.length === 0) {
-                    log('📊 No production data found');
-                    log('💡 Tip: Generate test data using the Admin page to see relationships');
+                    window.sandboxState.log('📊 No production data found');
+                    window.sandboxState.log('💡 Tip: Generate test data using the Admin page to see relationships');
                     productionData = {
                         nodes: [{
                             id: 'empty_message',
@@ -1114,12 +1072,12 @@
                         edges: []
                     };
                 } else {
-                    log(`🎯 Production data structure:`, productionData);
-                    log(`📊 Nodes: ${productionData.nodes.length}, Edges: ${productionData.edges.length}`);
+                    window.sandboxState.log(`🎯 Production data structure:`, productionData);
+                    window.sandboxState.log(`📊 Nodes: ${productionData.nodes.length}, Edges: ${productionData.edges.length}`);
                     
                     // If we have nodes but no edges, show a message
                     if (productionData.edges.length === 0 && productionData.nodes.length > 0) {
-                        log('⚠️ Found nodes but no relationships - this may be expected for some graphs');
+                        window.sandboxState.log('⚠️ Found nodes but no relationships - this may be expected for some graphs');
                     }
                 }
                 
@@ -1149,17 +1107,17 @@
                     onFileDrop: handleProductionFileDrop,
                     onNodeClick: (node) => {
                         // Single click - just select/highlight
-                        log('🖱️ Production node selected:', node.id, node.name || node.label);
+                        window.sandboxState.log('🖱️ Production node selected:', node.id, node.name || node.label);
                     },
                     onNodeDoubleClick: (node) => {
                         // Double click - show metadata editor
-                        log('🖱️ Production node double-clicked:', node);
+                        window.sandboxState.log('🖱️ Production node double-clicked:', node);
                         if (!window.metadataEditor) {
-                            log('❌ Metadata editor not initialized!');
+                            window.sandboxState.log('❌ Metadata editor not initialized!');
                             return;
                         }
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            log('📝 Node updated:', updatedNode);
+                            window.sandboxState.log('📝 Node updated:', updatedNode);
                             // The graph should auto-update when data changes
                             // If not, we may need to trigger a refresh
                         });
@@ -1169,26 +1127,26 @@
                     style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
                 });
                 
-                productionRoot = ReactDOM.createRoot(container);
-                productionRoot.render(controlElement);
+                window.sandboxState.productionRoot = ReactDOM.createRoot(container);
+                window.sandboxState.productionRoot.render(controlElement);
                 
-                log('✅ Production control mounted');
+                window.sandboxState.log('✅ Production control mounted');
                 
                 setTimeout(() => {
                     const hasContent = container.querySelector('svg') || 
                                      container.querySelector('canvas') ||
                                      container.innerHTML.includes('nexus');
-                    log('🔍 Production content: ' + (hasContent ? 'Found ✅' : 'Missing ❌'));
+                    window.sandboxState.log('🔍 Production content: ' + (hasContent ? 'Found ✅' : 'Missing ❌'));
                 }, 1000);
                 
             } catch (error) {
-                log('❌ Production error: ' + error.message);
+                window.sandboxState.log('❌ Production error: ' + error.message);
             }
         }
         
-        function togglePanel(panelId) {
+        function window.sandboxEvents.togglePanel(panelId) {
             if (window.sandboxEvents) {
-                return window.sandboxEvents.togglePanel(panelId);
+                return window.sandboxEvents.window.sandboxEvents.togglePanel(panelId);
             } else {
                 console.warn('⚠️ Sandbox events not initialized yet, using fallback');
                 // Fallback for early calls before events system is ready
@@ -1199,17 +1157,7 @@
             }
         }
         
-        function updateToolbarStates() {
-            if (window.sandboxEvents) {
-                return window.sandboxEvents.updateToolbarStates();
-            } else {
-                // Fallback for early calls
-                console.warn('⚠️ Sandbox events not initialized yet, skipping toolbar update');
-            }
-        }
-        
-        // Make togglePanel globally accessible
-        window.togglePanel = togglePanel;
+        // Remove backward compatibility wrappers - direct module access only
         
         // Firebase Integration Functions
         let firebaseInitialized = false;
@@ -1233,27 +1181,27 @@
                 }
                 firebaseInitialized = true;
                 updateFirebaseStatus(true);
-                log('🔥 Firebase initialized');
+                window.sandboxState.log('🔥 Firebase initialized');
                 
                 // Set up auth state listener
                 firebase.auth().onAuthStateChanged(async (user) => {
                     if (user) {
-                        log('👤 User logged in:', user.email);
+                        window.sandboxState.log('👤 User logged in:', user.email);
                         updateFirebaseStatus(true);
                     } else {
-                        log('❌ No user logged in, attempting test login...');
+                        window.sandboxState.log('❌ No user logged in, attempting test login...');
                         // Try to login with test credentials
                         try {
                             await firebase.auth().signInWithEmailAndPassword('weezer@yev.com', '123456');
-                            log('✅ Test user logged in');
+                            window.sandboxState.log('✅ Test user logged in');
                         } catch (error) {
-                            log('❌ Login failed:', error.message);
+                            window.sandboxState.log('❌ Login failed:', error.message);
                             updateFirebaseStatus(false);
                         }
                     }
                 });
             } catch (error) {
-                log('❌ Firebase initialization error:', error);
+                window.sandboxState.log('❌ Firebase initialization error:', error);
                 updateFirebaseStatus(false);
             }
         }
@@ -1285,7 +1233,7 @@
             const edges = [];
             
             // In a real implementation, we'd get this from the Nexus control
-            if (sandboxRoot) {
+            if (window.sandboxState.sandboxRoot) {
                 // Simulate getting data
                 nodes.push({
                     id: 'sandbox_node_1',
@@ -1297,20 +1245,20 @@
                 });
             }
             
-            return { nodes, edges, changesCount };
+            return { nodes, edges, window.sandboxState.changesCount };
         }
         
         
         // Load user artifacts from Firebase
         async function loadUserArtifacts() {
             if (!firebaseInitialized) {
-                log('⏳ Firebase not initialized yet for artifacts');
+                window.sandboxState.log('⏳ Firebase not initialized yet for artifacts');
                 return;
             }
             
             const user = firebase.auth().currentUser;
             if (!user) {
-                log('❌ No user logged in for artifacts');
+                window.sandboxState.log('❌ No user logged in for artifacts');
                 const loadingEl = document.getElementById('artifactsLoading');
                 if (loadingEl) {
                     loadingEl.innerHTML = '<div style="color: #666;">Please log in to see files</div>';
@@ -1318,13 +1266,13 @@
                 return;
             }
             
-            log('📎 Loading artifacts for user:', user.email, 'UID:', user.uid);
+            window.sandboxState.log('📎 Loading artifacts for user:', user.email, 'UID:', user.uid);
             
             const gridEl = document.getElementById('artifactsGrid');
             const loadingEl = document.getElementById('artifactsLoading');
             
             if (!gridEl || !loadingEl) {
-                log('❌ Missing DOM elements for artifacts');
+                window.sandboxState.log('❌ Missing DOM elements for artifacts');
                 return;
             }
             
@@ -1332,12 +1280,12 @@
                 // Get user's files from Firestore
                 const db = firebase.firestore();
                 const filesRef = db.collection('users').doc(user.uid).collection('files');
-                log('🔍 Querying path: users/' + user.uid + '/files');
+                window.sandboxState.log('🔍 Querying path: users/' + user.uid + '/files');
                 
                 // Try a simpler query first
                 const snapshot = await filesRef.limit(50).get();
                 
-                log('📊 Query completed. Empty:', snapshot.empty, 'Size:', snapshot.size);
+                window.sandboxState.log('📊 Query completed. Empty:', snapshot.empty, 'Size:', snapshot.size);
                 
                 if (snapshot.empty) {
                     loadingEl.innerHTML = '<div style="color: #666;">No files uploaded yet. <a href="../pages/my-files.html" style="color: #6B46C1;">Upload files</a></div>';
@@ -1349,14 +1297,14 @@
                 
                 snapshot.forEach(doc => {
                     const file = doc.data();
-                    log('📄 File:', doc.id, file.fileName || 'Unnamed');
+                    window.sandboxState.log('📄 File:', doc.id, file.fileName || 'Unnamed');
                     const thumbnail = createArtifactThumbnail(doc.id, file);
                     gridEl.appendChild(thumbnail);
                 });
                 
-                log('✅ Loaded', snapshot.size, 'artifacts');
+                window.sandboxState.log('✅ Loaded', snapshot.size, 'artifacts');
             } catch (error) {
-                log('❌ Error loading artifacts:', error.message);
+                window.sandboxState.log('❌ Error loading artifacts:', error.message);
                 console.error('Full error:', error);
                 loadingEl.innerHTML = '<div style="color: #EF4444;">Error: ' + error.message + '</div>';
                 
@@ -1366,7 +1314,7 @@
                 } else if (error.message && error.message.includes('index')) {
                     // Try without orderBy if it's an index issue
                     try {
-                        log('🔄 Retrying without orderBy...');
+                        window.sandboxState.log('🔄 Retrying without orderBy...');
                         const snapshot = await firebase.firestore()
                             .collection('users').doc(user.uid).collection('files')
                             .limit(50).get();
@@ -1381,10 +1329,10 @@
                                 gridEl.appendChild(thumbnail);
                             });
                             
-                            log('✅ Loaded', snapshot.size, 'artifacts (without orderBy)');
+                            window.sandboxState.log('✅ Loaded', snapshot.size, 'artifacts (without orderBy)');
                         }
                     } catch (retryError) {
-                        log('❌ Retry also failed:', retryError.message);
+                        window.sandboxState.log('❌ Retry also failed:', retryError.message);
                     }
                 }
             }
@@ -1397,13 +1345,13 @@
         // Load user faces from Firebase
         async function loadUserFaces() {
             if (!firebaseInitialized) {
-                log('⏳ Firebase not initialized yet for faces');
+                window.sandboxState.log('⏳ Firebase not initialized yet for faces');
                 return;
             }
             
             const user = firebase.auth().currentUser;
             if (!user) {
-                log('❌ No user logged in for faces');
+                window.sandboxState.log('❌ No user logged in for faces');
                 const loadingEl = document.getElementById('facesLoading');
                 if (loadingEl) {
                     loadingEl.innerHTML = '<div style="color: #666;">Please log in to see faces</div>';
@@ -1411,13 +1359,13 @@
                 return;
             }
             
-            log('👤 Loading faces for user:', user.email, 'UID:', user.uid);
+            window.sandboxState.log('👤 Loading faces for user:', user.email, 'UID:', user.uid);
             
             const gridEl = document.getElementById('facesGrid');
             const loadingEl = document.getElementById('facesLoading');
             
             if (!gridEl || !loadingEl) {
-                log('❌ Missing DOM elements for faces');
+                window.sandboxState.log('❌ Missing DOM elements for faces');
                 return;
             }
             
@@ -1425,12 +1373,12 @@
                 // Get user's files from Firestore
                 const db = firebase.firestore();
                 const filesRef = db.collection('users').doc(user.uid).collection('files');
-                log('🔍 Querying for files with faces: users/' + user.uid + '/files');
+                window.sandboxState.log('🔍 Querying for files with faces: users/' + user.uid + '/files');
                 
                 // Query for files that have extracted faces
                 const snapshot = await filesRef.limit(100).get();
                 
-                log('📊 Files query completed. Size:', snapshot.size);
+                window.sandboxState.log('📊 Files query completed. Size:', snapshot.size);
                 
                 loadingEl.style.display = 'none';
                 gridEl.innerHTML = '';
@@ -1443,11 +1391,11 @@
                     
                     // Check if file has extracted faces
                     if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces) && fileData.extractedFaces.length > 0) {
-                        log('📷 Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
+                        window.sandboxState.log('📷 Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
                         
                         // Log first face structure to understand the data
                         if (fileData.extractedFaces[0]) {
-                            log('🔍 First face structure:', JSON.stringify(fileData.extractedFaces[0]));
+                            window.sandboxState.log('🔍 First face structure:', JSON.stringify(fileData.extractedFaces[0]));
                         }
                         
                         // Create face thumbnails for each extracted face
@@ -1459,7 +1407,7 @@
                     }
                 });
                 
-                log('✅ Loaded', totalFaces, 'faces from', snapshot.size, 'files');
+                window.sandboxState.log('✅ Loaded', totalFaces, 'faces from', snapshot.size, 'files');
                 
                 if (totalFaces === 0) {
                     loadingEl.style.display = 'block';
@@ -1467,7 +1415,7 @@
                 }
                 
             } catch (error) {
-                log('❌ Error loading faces:', error.message);
+                window.sandboxState.log('❌ Error loading faces:', error.message);
                 console.error('Full error:', error);
                 loadingEl.innerHTML = '<div style="color: #EF4444;">Error: ' + error.message + '</div>';
             }
@@ -1514,7 +1462,7 @@
                 renderFilteredNodes(nodesByType);
                 
             } catch (error) {
-                log(`❌ Error loading node list: ${error.message}`);
+                window.sandboxState.log(`❌ Error loading node list: ${error.message}`);
                 showNodeListError(`Error: ${error.message}`);
             }
         }
@@ -1541,7 +1489,7 @@
                 renderFilteredNodes(filteredData);
             }
             
-            log(`🔍 Filtered node list to show: ${selectedType === 'all' ? 'all types' : selectedType}`);
+            window.sandboxState.log(`🔍 Filtered node list to show: ${selectedType === 'all' ? 'all types' : selectedType}`);
         }
         
         function renderFilteredNodes(nodesByType) {
@@ -1597,7 +1545,7 @@
                     const width = (boundingBox.Width || boundingBox.width || boundingBox.w || 0) * img.width;
                     const height = (boundingBox.Height || boundingBox.height || boundingBox.h || 0) * img.height;
                     
-                    log('📏 Face extraction coords - X:', x, 'Y:', y, 'W:', width, 'H:', height);
+                    window.sandboxState.log('📏 Face extraction coords - X:', x, 'Y:', y, 'W:', width, 'H:', height);
                     
                     // Set canvas size to extracted face dimensions (80x80 for thumbnails)
                     const thumbnailSize = 80;
@@ -1635,11 +1583,11 @@
 
         // Post to Production function
         async function postToProduction() {
-            console.log('📊 Current sandbox data:', currentSandboxData);
-            console.log('🔢 Changes count:', changesCount);
+            console.window.sandboxState.log('📊 Current sandbox data:', window.sandboxState.currentSandboxData);
+            console.window.sandboxState.log('🔢 Changes count:', window.sandboxState.changesCount);
             
             // Double-check we have changes to post
-            if (changesCount === 0 || !currentSandboxData.nodes.length) {
+            if (window.sandboxState.changesCount === 0 || !window.sandboxState.currentSandboxData.nodes.length) {
                 if (window.Modal) {
                     const modal = new window.Modal({
                         title: 'No Changes to Post',
@@ -1662,7 +1610,7 @@
             
 
             if (activeReviewModal) {
-                console.log('🔒 Closing existing review modal');
+                console.window.sandboxState.log('🔒 Closing existing review modal');
                 activeReviewModal.hide();
                 activeReviewModal = null;
             }
@@ -1686,20 +1634,20 @@
                             type: 'success',
                             icon: '📤',
                             action: () => {
-                                console.log('🔘 Modal Post to Production clicked!');
+                                console.window.sandboxState.log('🔘 Modal Post to Production clicked!');
                                 
                                 // Get review notes
                                 const reviewNotes = document.getElementById('reviewNotes')?.value || '';
-                                console.log('📝 Review notes:', reviewNotes);
+                                console.window.sandboxState.log('📝 Review notes:', reviewNotes);
                                 
                                 // Hide the review modal immediately
-                                console.log('🔒 Hiding review modal...');
+                                console.window.sandboxState.log('🔒 Hiding review modal...');
                                 activeReviewModal.hide();
                                 activeReviewModal = null;
                                 
                                 // Proceed with posting after modal is hidden
                                 setTimeout(() => {
-                                    console.log('📤 Calling performPostToProduction...');
+                                    console.window.sandboxState.log('📤 Calling performPostToProduction...');
                                     performPostToProduction(reviewNotes);
                                 }, 100);
                             }
@@ -1709,7 +1657,7 @@
                 activeReviewModal.show();
             } else {
                 // Fallback to simple confirm
-                const confirmPost = confirm(`Are you sure you want to post ${changesCount} ${changesCount === 1 ? 'change' : 'changes'} to production?`);
+                const confirmPost = confirm(`Are you sure you want to post ${window.sandboxState.changesCount} ${window.sandboxState.changesCount === 1 ? 'change' : 'changes'} to production?`);
                 if (!confirmPost) return;
                 await performPostToProduction('');
             }
@@ -1717,7 +1665,7 @@
         
         // Perform the actual post to production
         async function performPostToProduction(reviewNotes) {
-            console.log('📝 Review notes:', reviewNotes);
+            console.window.sandboxState.log('📝 Review notes:', reviewNotes);
             
             try {
                 // Disable button during processing
@@ -1744,21 +1692,21 @@
                 }
                 
                 // Post to production
-                log('📤 Posting changes to production...');
-                log('📝 Review notes:', reviewNotes);
-                log('📊 Nodes to save:', currentSandboxData.nodes.length);
-                log('🔗 Edges to save:', currentSandboxData.edges.length);
+                window.sandboxState.log('📤 Posting changes to production...');
+                window.sandboxState.log('📝 Review notes:', reviewNotes);
+                window.sandboxState.log('📊 Nodes to save:', window.sandboxState.currentSandboxData.nodes.length);
+                window.sandboxState.log('🔗 Edges to save:', window.sandboxState.currentSandboxData.edges.length);
                 
                 // Save to Neo4j
-                const success = await saveToNeo4j(currentSandboxData);
+                const success = await saveToNeo4j(window.sandboxState.currentSandboxData);
                 
                 if (!success) {
                     throw new Error('Failed to save to Neo4j');
                 }
                 
                 // Reset changes count
-                changesCount = 0;
-                updateChangesDisplay();
+                window.sandboxState.changesCount = 0;
+                window.sandboxState.updateChangesDisplay();
                 
                 // Hide loading modal
                 if (loadingModal) {
@@ -1767,7 +1715,7 @@
                 
                 // Ensure review modal is closed
                 if (activeReviewModal) {
-                    console.log('🔒 Ensuring review modal is closed after success');
+                    console.window.sandboxState.log('🔒 Ensuring review modal is closed after success');
                     activeReviewModal.hide();
                     activeReviewModal = null;
                 }
@@ -1792,7 +1740,7 @@
                     alert('✅ Changes successfully posted to production!');
                 }
                 
-                log('✅ Production update complete');
+                window.sandboxState.log('✅ Production update complete');
                 
                 // Re-enable button
                 if (button && window.Button) {
@@ -1803,7 +1751,7 @@
                 }
                 
             } catch (error) {
-                log('❌ Error posting to production:', error);
+                window.sandboxState.log('❌ Error posting to production:', error);
                 
                 // Show error modal or alert
                 if (window.Modal) {
@@ -1858,19 +1806,19 @@
                 
                 // Use the new commit method that removes :Sandbox labels
                 const result = await window.Neo4jConnection.commitSandboxToProduction(
-                    currentInterviewId,
+                    window.sandboxState.currentInterviewId,
                     userId,
                     twinId
                 );
                 
                 if (result.success) {
-                    log(`✅ Committed to production: ${result.newNodes} new nodes, ${result.updatedNodes} updated nodes, ${result.relationships} relationships`);
+                    window.sandboxState.log(`✅ Committed to production: ${result.newNodes} new nodes, ${result.updatedNodes} updated nodes, ${result.relationships} relationships`);
                     
                     // Clear sandbox data
-                    currentSandboxData = { nodes: [], edges: [] };
+                    window.sandboxState.currentSandboxData = { nodes: [], edges: [] };
                     
                     // Generate new interview ID for next session
-                    currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    window.sandboxState.currentInterviewId = `interview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                     
                     // Re-render empty sandbox
                     await initializeSandbox();
@@ -1878,7 +1826,7 @@
                     // Refresh production panel if open
                     const productionPanel = document.getElementById('productionPanel');
                     if (productionPanel && productionPanel.classList.contains('open')) {
-                        log('🔄 Refreshing production panel...');
+                        window.sandboxState.log('🔄 Refreshing production panel...');
                         await initializeProduction();
                     }
                     
@@ -1888,13 +1836,13 @@
                 }
                 
             } catch (error) {
-                log('❌ Error saving to Neo4j:', error);
+                window.sandboxState.log('❌ Error saving to Neo4j:', error);
                 return false;
             }
         }
         // Function to add test data to sandbox (for testing only)
         window.addTestData = function() {
-            currentSandboxData = {
+            window.sandboxState.currentSandboxData = {
                 nodes: [
                     { id: 'test_person_1', label: 'Test Person 1', type: 'person', name: 'Test Person 1' },
                     { id: 'test_person_2', label: 'Test Person 2', type: 'person', name: 'Test Person 2' },
@@ -1906,11 +1854,11 @@
                 ]
             };
             
-            changesCount = 5;
-            updateChangesDisplay();
+            window.sandboxState.changesCount = 5;
+            window.sandboxState.updateChangesDisplay();
             
             // Re-render sandbox with test data
-            if (sandboxRoot) {
+            if (window.sandboxState.sandboxRoot) {
                 // Get the component using v17.12.0 pattern
                 let NexusComponent;
                 if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
@@ -1921,12 +1869,12 @@
                 }
                 
                 const controlElement = React.createElement(NexusComponent, {
-                    data: currentSandboxData,
+                    data: window.sandboxState.currentSandboxData,
                     title: "Sandbox",
                     hidePageHeader: true,
                     hideStatusBar: true,
                     useExternalMetadataEditor: true,
-                    onDataChange: handleSandboxDataChange,
+                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
                     onNodeDrop: handleSandboxNodeDrop,
                     onFileDrop: handleSandboxFileDrop,
                     onNodeClick: (node) => {
@@ -1935,46 +1883,46 @@
                     onNodeDoubleClick: (node) => {
                         // Double click - show metadata editor
                         window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            log('📝 Node updated in sandbox:', updatedNode);
+                            window.sandboxState.log('📝 Node updated in sandbox:', updatedNode);
                             // The graph should auto-update when data changes
                         });
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
-                        console.log('🔗 Edge selected:', edge.id);
-                        log('🔗 Edge selected:', edge.id);
+                        console.window.sandboxState.log('🔗 Edge selected:', edge.id);
+                        window.sandboxState.log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
-                        console.log('🔗 Edge double-clicked:', edge.id);
-                        log('🔗 Edge double-clicked:', edge.id);
+                        console.window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
+                        window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        const sourceNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
                         
                         if (sourceNode && targetNode) {
                             window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
                                 (updatedEdge) => {
-                                    log('📝 Edge updated in sandbox:', updatedEdge);
+                                    window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
                                     // The graph should auto-update when data changes
                                 },
-                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                                window.sandboxState.window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
                             );
                         } else {
-                            log('❌ Could not find source or target nodes for edge:', edge.id);
+                            window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
                         }
                     }
                 });
                 
-                sandboxRoot.render(controlElement);
+                window.sandboxState.sandboxRoot.render(controlElement);
             }
             
-            log('✅ Test data added to sandbox');
+            window.sandboxState.log('✅ Test data added to sandbox');
         };
 
         window.addEventListener('load', () => {
-            log('📦 Page loaded, checking scripts...');
+            window.sandboxState.log('📦 Page loaded, checking scripts...');
             
             // Initialize Firebase first
             initializeFirebase();
@@ -2003,7 +1951,7 @@
                             postToProduction();
                         });
                         
-                        log('✅ Post to Production button initialized with centralized component');
+                        window.sandboxState.log('✅ Post to Production button initialized with centralized component');
                     } else {
                         // Fallback to simple button
                         const button = document.createElement('button');
@@ -2025,21 +1973,19 @@
                             gap: 6px;
                         `;
                         buttonContainer.appendChild(button);
-                        log('✅ Post to Production button initialized with fallback');
+                        window.sandboxState.log('✅ Post to Production button initialized with fallback');
                     }
                 }
             }, 100);
             
             setTimeout(async () => {
                 if (checkBundle()) {
-                    // Initialize state aliases from the module
-                    initializeStateAliases();
-                    log('✅ Ready for testing');
+                    window.sandboxState.log('✅ Ready for testing');
                     await initializeSandbox();
                     
-                    updateToolbarStates();
+                    window.sandboxEvents.updateToolbarStates();
                 } else {
-                    log('❌ Scripts not loaded properly');
+                    window.sandboxState.log('❌ Scripts not loaded properly');
                 }
             }, 500);
         });
