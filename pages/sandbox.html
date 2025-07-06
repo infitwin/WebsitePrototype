@@ -42,6 +42,7 @@
         import { createSandboxEvents } from '../js/sandbox/sandbox-events.js';
         import { FirebaseIntegrationStub } from '../js/sandbox/firebase-integration-stub.js';
         import { createSandboxNeo4jIntegration } from '../js/sandbox/neo4j-integration.js';
+        import { getNexusComponent, createSandboxComponent, createSimpleSandboxComponent, createProductionComponent, createSandboxWrapper, renderComponent } from '../js/sandbox/sandbox-components.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -93,6 +94,14 @@
         window.handleArtifactDragEnd = handleArtifactDragEnd;
         window.handleFaceDragStart = (e) => handleFaceDragStart(e, window.sandboxState.log);
         window.handleFaceDragEnd = handleFaceDragEnd;
+        
+        // Make React component functions available globally
+        window.getNexusComponent = getNexusComponent;
+        window.createSandboxComponent = createSandboxComponent;
+        window.createSimpleSandboxComponent = createSimpleSandboxComponent;
+        window.createProductionComponent = createProductionComponent;
+        window.createSandboxWrapper = createSandboxWrapper;
+        window.renderComponent = renderComponent;
     </script>
 </head>
 <body>
@@ -402,66 +411,12 @@
             
             if (window.sandboxState.sandboxRoot) {
                 
-                // v17.12.0 uses destructuring pattern: const { NexusGraphControl } = window.NexusGraphControl;
-                let NexusComponent;
-                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
-                    // v17.12.0 and later pattern
-                    const { NexusGraphControl } = window.NexusGraphControl;
-                    NexusComponent = NexusGraphControl;
-                } else if (window.NexusGraphControl && window.NexusGraphControl.default) {
-                    NexusComponent = window.NexusGraphControl.default;
-                } else if (typeof window.NexusGraphControl === 'function') {
-                    NexusComponent = window.NexusGraphControl;
-                } else {
-                    console.error('Could not find NexusGraphControl component');
-                    return;
-                }
-                
-                const controlElement = React.createElement(NexusComponent, {
+                const controlElement = window.createSimpleSandboxComponent({
                     data: window.sandboxState.currentSandboxData,
-                    title: "Sandbox",
-                    hidePageHeader: true,
-                    hideStatusBar: true,
-                    useExternalMetadataEditor: true,
-                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
-                    onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop,
-                    onNodeClick: (node) => {
-                        // Single click - just select/highlight
-                    },
-                    onNodeDoubleClick: (node) => {
-                        // Double click - show metadata editor
-                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            window.sandboxState.log('📝 Node updated in sandbox:', updatedNode);
-                            // The graph should auto-update when data changes
-                        });
-                    },
-                    onEdgeClick: (edge) => {
-                        // Single click - just select/highlight edge
-                        console.log('🔗 Edge selected:', edge.id);
-                        window.sandboxState.log('🔗 Edge selected:', edge.id);
-                    },
-                    onEdgeDoubleClick: (edge) => {
-                        // Double click - show edge metadata editor
-                        console.log('🔗 Edge double-clicked:', edge.id);
-                        window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
-                        
-                        // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
-                        
-                        if (sourceNode && targetNode) {
-                            window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
-                                (updatedEdge) => {
-                                    window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
-                                    // The graph should auto-update when data changes
-                                },
-                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
-                            );
-                        } else {
-                            window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
-                        }
-                    }
+                    state: window.sandboxState,
+                    metadataEditor: window.metadataEditor,
+                    handleSandboxNodeDrop: handleSandboxNodeDrop,
+                    handleSandboxFileDrop: handleSandboxFileDrop
                 });
                 
                 window.sandboxState.sandboxRoot.render(controlElement);
@@ -497,323 +452,17 @@
                 
                 await window.sandboxNeo4j.loadExistingSandboxData();
                 
-                const NexusControl = window.NexusGraphControl.NexusGraphControl;
-                
-                const SandboxWrapper = React.forwardRef((props, ref) => {
-                    return React.createElement(NexusControl, { ...props, ref });
-                });
-                
                 window.sandboxState.sandboxGraphRef = React.createRef();
                 
-                const controlElement = React.createElement(SandboxWrapper, {
+                const controlElement = window.createSandboxComponent({
                     ref: window.sandboxState.sandboxGraphRef,
                     data: window.sandboxState.currentSandboxData,
-                    title: "Sandbox",
-                    hidePageHeader: true,
-                    hideStatusBar: true,
-                    useExternalMetadataEditor: true,
-                    enableDelete: true,
-                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
-                    
-                    onMetaSave: async (metaData) => {
-                        window.sandboxState.log('📝 Meta save triggered:', metaData);
-                        
-                        try {
-                            // Ensure connection
-                            if (!window.Neo4jConnection.isConnected) {
-                                await window.Neo4jConnection.connect();
-                            }
-                            
-                            const userId = firebase.auth().currentUser?.uid;
-                            const twinId = `${userId}-1`;
-                            
-                            if (metaData.entityType === 'node') {
-                                if (metaData.action === 'create') {
-                                    const newNode = await window.Neo4jConnection.createSandboxNode(
-                                        metaData.updates,
-                                        userId,
-                                        twinId,
-                                        window.sandboxState.currentInterviewId
-                                    );
-                                    window.sandboxState.log('✅ Created sandbox node:', newNode);
-                                } else {
-                                    const updatedNode = await window.Neo4jConnection.updateSandboxNode(
-                                        metaData.entityId,
-                                        metaData.updates,
-                                        metaData.deletedFields,
-                                        userId,
-                                        twinId,
-                                        window.sandboxState.currentInterviewId
-                                    );
-                                    window.sandboxState.log('✅ Updated/created sandbox node:', updatedNode);
-                                }
-                            } else if (metaData.entityType === 'edge' || metaData.entityType === 'relationship') {
-                                
-                                const { sourceId, targetId, type, category, stateMaps, ...otherProps } = metaData.updates;
-                                
-                                if (!sourceId || !targetId) {
-                                    throw new Error('Relationship missing sourceId or targetId');
-                                }
-                                
-                                const updatedRel = await window.Neo4jConnection.updateSandboxRelationship(
-                                    metaData.entityId,
-                                    metaData.updates,
-                                    sourceId,
-                                    targetId,
-                                    type || 'RELATED_TO',
-                                    window.sandboxState.currentInterviewId
-                                );
-                                window.sandboxState.log('✅ Updated/created sandbox relationship as actual graph edge:', updatedRel);
-                            }
-                            
-                            window.sandboxState.simulateChange();
-                        } catch (error) {
-                            window.sandboxState.log('❌ Meta save error:', error.message);
-                            console.error('Full error details:', error);
-                            if (window.Modal) {
-                                new window.Modal({
-                                    title: 'Save Error',
-                                    content: `Failed to save changes: ${error.message}`,
-                                    type: 'danger'
-                                }).show();
-                            }
-                        }
-                    },
-                    
-                    onNodeCreate: async (nodeData) => {
-                        window.sandboxState.log('➕ Node create triggered:', nodeData);
-                        
-                        try {
-                            const userId = firebase.auth().currentUser?.uid;
-                            const twinId = `${userId}-1`;
-                            
-                            const sandboxNode = {
-                                ...nodeData,
-                                _isSandbox: true,
-                                interviewId: window.sandboxState.currentInterviewId,
-                                sessionId: window.sandboxState.currentInterviewId
-                            };
-                            
-                            const createdNode = await window.Neo4jConnection.createSandboxNode(
-                                sandboxNode,
-                                userId,
-                                twinId,
-                                window.sandboxState.currentInterviewId
-                            );
-                            
-                            window.sandboxState.currentSandboxData.nodes.push(createdNode);
-                            window.sandboxState.simulateChange();
-                            
-                            return createdNode;
-                        } catch (error) {
-                            window.sandboxState.log('❌ Node create error:', error);
-                            throw error;
-                        }
-                    },
-                    
-                    onNodeUpdate: async (nodeId, updates) => {
-                        window.sandboxState.log('📝 Node update triggered:', nodeId, updates);
-                        
-                        try {
-                            const updatedNode = await window.Neo4jConnection.updateSandboxNode(
-                                nodeId,
-                                updates,
-                                []
-                            );
-                            
-                            // Update local data
-                            const nodeIndex = window.sandboxState.currentSandboxData.nodes.findIndex(n => n.id === nodeId);
-                            if (nodeIndex >= 0) {
-                                window.sandboxState.currentSandboxData.nodes[nodeIndex] = {
-                                    ...window.sandboxState.currentSandboxData.nodes[nodeIndex],
-                                    ...updates
-                                };
-                            }
-                            
-                            window.sandboxState.simulateChange();
-                            return updatedNode;
-                        } catch (error) {
-                            window.sandboxState.log('❌ Node update error:', error);
-                            throw error;
-                        }
-                    },
-                    
-                    onNodesDelete: async (nodeIds) => {
-                        window.sandboxState.log('🗑️ Nodes delete triggered:', nodeIds);
-                        
-                        try {
-                            if (!window.Neo4jConnection.isConnected) {
-                                await window.Neo4jConnection.connect();
-                            }
-                            
-                            for (const nodeId of nodeIds) {
-                                try {
-                                    const deleted = await window.Neo4jConnection.deleteSandboxNode(nodeId);
-                                    
-                                    if (deleted) {
-                                        window.sandboxState.log('✅ Node deleted from database: ' + nodeId);
-                                    } else {
-                                        window.sandboxState.log('⚠️ Node not found in database: ' + nodeId);
-                                    }
-                                } catch (error) {
-                                    console.error(`Failed to delete node ${nodeId}:`, error);
-                                    window.sandboxState.log('❌ Failed to delete node ' + nodeId + ': ' + error.message);
-                                }
-                            }
-                            
-                            window.sandboxState.currentSandboxData.nodes = window.sandboxState.currentSandboxData.nodes.filter(n => !nodeIds.includes(n.id));
-                            window.sandboxState.currentSandboxData.edges = window.sandboxState.currentSandboxData.edges.filter(
-                                e => !nodeIds.includes(e.source) && !nodeIds.includes(e.target)
-                            );
-                            window.sandboxState.simulateChange();
-                            
-                        } catch (error) {
-                            window.sandboxState.log('❌ Nodes delete error:', error.message);
-                            console.error('Full delete error:', error);
-                            throw error;
-                        }
-                    },
-                    
-                    onEdgeCreate: async (edgeData) => {
-                        window.sandboxState.log('🔗 Edge create triggered:', edgeData);
-                        
-                        try {
-                            const createdRel = await window.Neo4jConnection.createSandboxRelationship(
-                                edgeData.source,
-                                edgeData.target,
-                                edgeData.label || edgeData.type || 'RELATED_TO',
-                                edgeData.properties || {},
-                                window.sandboxState.currentInterviewId
-                            );
-                            
-                            window.sandboxState.currentSandboxData.edges.push({
-                                ...edgeData,
-                                id: createdRel.id
-                            });
-                            
-                            window.sandboxState.simulateChange();
-                            return createdRel;
-                        } catch (error) {
-                            window.sandboxState.log('❌ Edge create error:', error);
-                            throw error;
-                        }
-                    },
-                    
-                    onEdgesDelete: async (edgeIds) => {
-                        window.sandboxState.log('🗑️ Edges delete triggered:', edgeIds);
-                        
-                        try {
-                            if (!window.Neo4jConnection.isConnected) {
-                                await window.Neo4jConnection.connect();
-                            }
-                            
-                            for (const edgeId of edgeIds) {
-                                try {
-                                    const deleted = await window.Neo4jConnection.deleteSandboxRelationship(edgeId);
-                                    
-                                    if (deleted) {
-                                        window.sandboxState.log('✅ Edge deleted from database: ' + edgeId);
-                                    } else {
-                                        window.sandboxState.log('⚠️ Edge not found in database: ' + edgeId);
-                                    }
-                                } catch (error) {
-                                    console.error(`Failed to delete edge ${edgeId}:`, error);
-                                    window.sandboxState.log('❌ Failed to delete edge ' + edgeId + ': ' + error.message);
-                                }
-                            }
-                            
-                            window.sandboxState.currentSandboxData.edges = window.sandboxState.currentSandboxData.edges.filter(e => !edgeIds.includes(e.id));
-                            window.sandboxState.simulateChange();
-                            
-                        } catch (error) {
-                            window.sandboxState.log('❌ Edges delete error:', error.message);
-                            console.error('Full delete error:', error);
-                            throw error;
-                        }
-                    },
-                    
-                    onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop,
-                    onFaceDrop: (nodeId, imageData, isNode) => {
-                        
-                        if (!isNode || !nodeId) {
-                            console.log('❌ Face not dropped on a node');
-                            return;
-                        }
-                        
-                        const nodeIndex = window.sandboxState.currentSandboxData.nodes.findIndex(n => n.id === nodeId);
-                        if (nodeIndex === -1) {
-                            console.log('❌ Node not found:', nodeId);
-                            return;
-                        }
-                        
-                        let imageUrl = null;
-                        if (typeof imageData === 'string') {
-                            imageUrl = imageData;
-                        } else if (imageData && typeof imageData === 'object') {
-                            imageUrl = imageData.url || imageData.imageUrl || imageData.dataUrl || imageData.src;
-                        }
-                        
-                        if (!imageUrl) {
-                            console.log('❌ No image URL found in imageData:', imageData);
-                            return;
-                        }
-                        
-                        window.sandboxState.currentSandboxData.nodes[nodeIndex].imageUrl = imageUrl;
-                        
-                        if (window.sandboxState.sandboxGraphRef && window.sandboxState.sandboxGraphRef.current) {
-                            if (window.sandboxState.sandboxGraphRef.current.updateData) {
-                                window.sandboxState.sandboxGraphRef.current.updateData(window.sandboxState.currentSandboxData);
-                            }
-                        }
-                        
-                        window.sandboxState.simulateChange();
-                    },
-                    onNodeClick: (node) => {
-                    },
-                    onNodeDoubleClick: (node) => {
-                        
-                        window.metadataEditor.showEditorModal(node, null, window.sandboxState.sandboxGraphRef);
-                    },
-                    onEdgeClick: (edgeData) => {
-                    },
-                    onEdgeDoubleClick: (edgeData) => {
-                        
-                        const edge = edgeData;
-                        
-                        
-                        let nodes = window.sandboxState.currentSandboxData.nodes;
-                        if (window.sandboxState.sandboxGraphRef.current && window.sandboxState.sandboxGraphRef.current.getData) {
-                            const graphData = window.sandboxState.sandboxGraphRef.current.getData();
-                            if (graphData && graphData.nodes) {
-                                nodes = graphData.nodes;
-                            }
-                        }
-                        
-                        const sourceNode = nodes.find(n => n.id === edge.source);
-                        const targetNode = nodes.find(n => n.id === edge.target);
-                        
-                        
-                        if (sourceNode && targetNode) {
-                            try {
-                                window.metadataEditor.showRelationshipEditorModal(
-                                    edge,
-                                    sourceNode,
-                                    targetNode,
-                                    null,
-                                    window.sandboxState.sandboxGraphRef
-                                );
-                            } catch (error) {
-                                console.error('❌ Error showing relationship editor:', error.message);
-                                console.error('Full error:', error);
-                            }
-                        } else {
-                            console.log('❌ Could not find source or target node for edge');
-                            console.log('Looking for source:', edge.source);
-                            console.log('Looking for target:', edge.target);
-                            console.log('Available node IDs:', nodes.map(n => n.id));
-                        }
-                    }
+                    state: window.sandboxState,
+                    neo4jConnection: window.Neo4jConnection,
+                    metadataEditor: window.metadataEditor,
+                    handleSandboxNodeDrop: handleSandboxNodeDrop,
+                    handleSandboxFileDrop: handleSandboxFileDrop,
+                    Modal: window.Modal
                 });
                 
                 window.sandboxState.sandboxRoot = ReactDOM.createRoot(container);
@@ -908,60 +557,13 @@
             };
             
             if (window.sandboxState.sandboxRoot) {
-                // Get the component using v17.12.0 pattern
-                let NexusComponent;
-                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
-                    const { NexusGraphControl } = window.NexusGraphControl;
-                    NexusComponent = NexusGraphControl;
-                } else {
-                    NexusComponent = window.NexusGraphControl?.default || window.NexusGraphControl;
-                }
-                
-                const controlElement = React.createElement(NexusComponent, {
+                const controlElement = window.createSimpleSandboxComponent({
                     data: window.sandboxState.currentSandboxData,
-                    title: "Sandbox",
-                    hidePageHeader: true,
-                    hideStatusBar: true,
-                    useExternalMetadataEditor: true,
-                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
-                    onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop,
-                    onNodeClick: (node) => {
-                        // Single click - just select/highlight
-                    },
-                    onNodeDoubleClick: (node) => {
-                        // Double click - show metadata editor
-                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            window.sandboxState.log('📝 Node updated in sandbox:', updatedNode);
-                            // The graph should auto-update when data changes
-                        });
-                    },
-                    onEdgeClick: (edge) => {
-                        // Single click - just select/highlight edge
-                        console.log('🔗 Edge selected:', edge.id);
-                        window.sandboxState.log('🔗 Edge selected:', edge.id);
-                    },
-                    onEdgeDoubleClick: (edge) => {
-                        // Double click - show edge metadata editor
-                        console.log('🔗 Edge double-clicked:', edge.id);
-                        window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
-                        
-                        // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
-                        
-                        if (sourceNode && targetNode) {
-                            window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
-                                (updatedEdge) => {
-                                    window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
-                                    // The graph should auto-update when data changes
-                                },
-                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
-                            );
-                        } else {
-                            window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
-                        }
-                    }
+                    state: window.sandboxState,
+                    metadataEditor: window.metadataEditor,
+                    handleSandboxNodeDrop: handleSandboxNodeDrop,
+                    handleSandboxFileDrop: handleSandboxFileDrop
+                });
                 });
                 
                 window.sandboxState.sandboxRoot.render(controlElement);
@@ -1106,46 +708,12 @@
                 container.style.width = '100%';
                 container.style.height = '100%';
                 
-                // Get the component using v17.12.0 pattern
-                let NexusComponent;
-                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
-                    const { NexusGraphControl } = window.NexusGraphControl;
-                    NexusComponent = NexusGraphControl;
-                } else {
-                    NexusComponent = window.NexusGraphControl?.default || window.NexusGraphControl;
-                }
-                
-                const controlElement = React.createElement(NexusComponent, {
+                const controlElement = window.createProductionComponent({
                     data: productionData,
-                    title: "Production",
-                    hidePageHeader: true,
-                    hideStatusBar: true,
-                    useExternalMetadataEditor: true,  // Use our metadata editor
-                    readOnly: false,  // Allow editing with the form
-                    hideAddButton: true,
-                    showCopyButton: true,
-                    onCopyClick: handleProductionCopyToSandbox,
-                    onFileDrop: handleProductionFileDrop,
-                    onNodeClick: (node) => {
-                        // Single click - just select/highlight
-                        window.sandboxState.log('🖱️ Production node selected:', node.id, node.name || node.label);
-                    },
-                    onNodeDoubleClick: (node) => {
-                        // Double click - show metadata editor
-                        window.sandboxState.log('🖱️ Production node double-clicked:', node);
-                        if (!window.metadataEditor) {
-                            window.sandboxState.log('❌ Metadata editor not initialized!');
-                            return;
-                        }
-                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            window.sandboxState.log('📝 Node updated:', updatedNode);
-                            // The graph should auto-update when data changes
-                            // If not, we may need to trigger a refresh
-                        });
-                    },
-                    width: '100%',
-                    height: '100%',
-                    style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
+                    state: window.sandboxState,
+                    metadataEditor: window.metadataEditor,
+                    handleProductionCopyToSandbox: handleProductionCopyToSandbox,
+                    handleProductionFileDrop: handleProductionFileDrop
                 });
                 
                 window.sandboxState.productionRoot = ReactDOM.createRoot(container);
@@ -1867,60 +1435,12 @@
             
             // Re-render sandbox with test data
             if (window.sandboxState.sandboxRoot) {
-                // Get the component using v17.12.0 pattern
-                let NexusComponent;
-                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
-                    const { NexusGraphControl } = window.NexusGraphControl;
-                    NexusComponent = NexusGraphControl;
-                } else {
-                    NexusComponent = window.NexusGraphControl?.default || window.NexusGraphControl;
-                }
-                
-                const controlElement = React.createElement(NexusComponent, {
+                const controlElement = window.createSimpleSandboxComponent({
                     data: window.sandboxState.currentSandboxData,
-                    title: "Sandbox",
-                    hidePageHeader: true,
-                    hideStatusBar: true,
-                    useExternalMetadataEditor: true,
-                    onDataChange: window.sandboxState.handleSandboxDataChange.bind(window.sandboxState),
-                    onNodeDrop: handleSandboxNodeDrop,
-                    onFileDrop: handleSandboxFileDrop,
-                    onNodeClick: (node) => {
-                        // Single click - just select/highlight
-                    },
-                    onNodeDoubleClick: (node) => {
-                        // Double click - show metadata editor
-                        window.metadataEditor.showEditorModal(node, (updatedNode) => {
-                            window.sandboxState.log('📝 Node updated in sandbox:', updatedNode);
-                            // The graph should auto-update when data changes
-                        });
-                    },
-                    onEdgeClick: (edge) => {
-                        // Single click - just select/highlight edge
-                        console.log('🔗 Edge selected:', edge.id);
-                        window.sandboxState.log('🔗 Edge selected:', edge.id);
-                    },
-                    onEdgeDoubleClick: (edge) => {
-                        // Double click - show edge metadata editor
-                        console.log('🔗 Edge double-clicked:', edge.id);
-                        window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
-                        
-                        // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
-                        
-                        if (sourceNode && targetNode) {
-                            window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
-                                (updatedEdge) => {
-                                    window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
-                                    // The graph should auto-update when data changes
-                                },
-                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
-                            );
-                        } else {
-                            window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
-                        }
-                    }
+                    state: window.sandboxState,
+                    metadataEditor: window.metadataEditor,
+                    handleSandboxNodeDrop: handleSandboxNodeDrop,
+                    handleSandboxFileDrop: handleSandboxFileDrop
                 });
                 
                 window.sandboxState.sandboxRoot.render(controlElement);
