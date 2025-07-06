@@ -438,12 +438,12 @@
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
-                        console.window.sandboxState.log('🔗 Edge selected:', edge.id);
+                        console.log('🔗 Edge selected:', edge.id);
                         window.sandboxState.log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
-                        console.window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
+                        console.log('🔗 Edge double-clicked:', edge.id);
                         window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
@@ -737,13 +737,13 @@
                     onFaceDrop: (nodeId, imageData, isNode) => {
                         
                         if (!isNode || !nodeId) {
-                            console.window.sandboxState.log('❌ Face not dropped on a node');
+                            console.log('❌ Face not dropped on a node');
                             return;
                         }
                         
                         const nodeIndex = window.sandboxState.currentSandboxData.nodes.findIndex(n => n.id === nodeId);
                         if (nodeIndex === -1) {
-                            console.window.sandboxState.log('❌ Node not found:', nodeId);
+                            console.log('❌ Node not found:', nodeId);
                             return;
                         }
                         
@@ -755,7 +755,7 @@
                         }
                         
                         if (!imageUrl) {
-                            console.window.sandboxState.log('❌ No image URL found in imageData:', imageData);
+                            console.log('❌ No image URL found in imageData:', imageData);
                             return;
                         }
                         
@@ -808,10 +808,10 @@
                                 console.error('Full error:', error);
                             }
                         } else {
-                            console.window.sandboxState.log('❌ Could not find source or target node for edge');
-                            console.window.sandboxState.log('Looking for source:', edge.source);
-                            console.window.sandboxState.log('Looking for target:', edge.target);
-                            console.window.sandboxState.log('Available node IDs:', nodes.map(n => n.id));
+                            console.log('❌ Could not find source or target node for edge');
+                            console.log('Looking for source:', edge.source);
+                            console.log('Looking for target:', edge.target);
+                            console.log('Available node IDs:', nodes.map(n => n.id));
                         }
                     }
                 });
@@ -938,12 +938,12 @@
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
-                        console.window.sandboxState.log('🔗 Edge selected:', edge.id);
+                        console.log('🔗 Edge selected:', edge.id);
                         window.sandboxState.log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
-                        console.window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
+                        console.log('🔗 Edge double-clicked:', edge.id);
                         window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
@@ -1143,19 +1143,6 @@
                 
             } catch (error) {
                 window.sandboxState.log('❌ Production error: ' + error.message);
-            }
-        }
-        
-        function window.sandboxEvents.togglePanel(panelId) {
-            if (window.sandboxEvents) {
-                return window.sandboxEvents.window.sandboxEvents.togglePanel(panelId);
-            } else {
-                console.warn('⚠️ Sandbox events not initialized yet, using fallback');
-                // Fallback for early calls before events system is ready
-                const panel = document.getElementById(panelId + 'Panel');
-                if (panel) {
-                    panel.classList.toggle('open');
-                }
             }
         }
         
@@ -1585,8 +1572,8 @@
 
         // Post to Production function
         async function postToProduction() {
-            console.window.sandboxState.log('📊 Current sandbox data:', window.sandboxState.currentSandboxData);
-            console.window.sandboxState.log('🔢 Changes count:', window.sandboxState.changesCount);
+            console.log('📊 Current sandbox data:', window.sandboxState.currentSandboxData);
+            console.log('🔢 Changes count:', window.sandboxState.changesCount);
             
             // Double-check we have changes to post
             if (window.sandboxState.changesCount === 0 || !window.sandboxState.currentSandboxData.nodes.length) {
@@ -1612,7 +1599,7 @@
             
 
             if (activeReviewModal) {
-                console.window.sandboxState.log('🔒 Closing existing review modal');
+                console.log('🔒 Closing existing review modal');
                 activeReviewModal.hide();
                 activeReviewModal = null;
             }
@@ -1636,20 +1623,20 @@
                             type: 'success',
                             icon: '📤',
                             action: () => {
-                                console.window.sandboxState.log('🔘 Modal Post to Production clicked!');
+                                console.log('🔘 Modal Post to Production clicked!');
                                 
                                 // Get review notes
                                 const reviewNotes = document.getElementById('reviewNotes')?.value || '';
-                                console.window.sandboxState.log('📝 Review notes:', reviewNotes);
+                                console.log('📝 Review notes:', reviewNotes);
                                 
                                 // Hide the review modal immediately
-                                console.window.sandboxState.log('🔒 Hiding review modal...');
+                                console.log('🔒 Hiding review modal...');
                                 activeReviewModal.hide();
                                 activeReviewModal = null;
                                 
                                 // Proceed with posting after modal is hidden
                                 setTimeout(() => {
-                                    console.window.sandboxState.log('📤 Calling performPostToProduction...');
+                                    console.log('📤 Calling performPostToProduction...');
                                     performPostToProduction(reviewNotes);
                                 }, 100);
                             }
@@ -1667,7 +1654,7 @@
         
         // Perform the actual post to production
         async function performPostToProduction(reviewNotes) {
-            console.window.sandboxState.log('📝 Review notes:', reviewNotes);
+            console.log('📝 Review notes:', reviewNotes);
             
             try {
                 // Disable button during processing
@@ -1717,7 +1704,7 @@
                 
                 // Ensure review modal is closed
                 if (activeReviewModal) {
-                    console.window.sandboxState.log('🔒 Ensuring review modal is closed after success');
+                    console.log('🔒 Ensuring review modal is closed after success');
                     activeReviewModal.hide();
                     activeReviewModal = null;
                 }
@@ -1891,12 +1878,12 @@
                     },
                     onEdgeClick: (edge) => {
                         // Single click - just select/highlight edge
-                        console.window.sandboxState.log('🔗 Edge selected:', edge.id);
+                        console.log('🔗 Edge selected:', edge.id);
                         window.sandboxState.log('🔗 Edge selected:', edge.id);
                     },
                     onEdgeDoubleClick: (edge) => {
                         // Double click - show edge metadata editor
-                        console.window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
+                        console.log('🔗 Edge double-clicked:', edge.id);
                         window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
