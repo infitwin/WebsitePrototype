@@ -15,6 +15,9 @@
     
     <!-- Centralized Navigation Styles -->
     <link rel="stylesheet" href="../css/components/navigation.css">
+    
+    <!-- Nexus Graph Control CSS -->
+    <link rel="stylesheet" href="../js/lib/nexus-graph-control.bundle.min.css">
 </head>
 <body>
     <!-- Connection Status Banner -->
@@ -196,6 +199,11 @@
     <div class="toast" id="toast">
         <div id="toastMessage"></div>
     </div>
+    
+    <!-- Metadata Editor Container (hidden by default) -->
+    <div id="metadata-editor-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 2100;">
+        <div id="metadata-editor-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); width: 90%; max-width: 800px; max-height: 90vh; overflow: auto;"></div>
+    </div>
 
     <!-- Load Shared Navigation -->
     <script src="../js/navigation.js"></script>
@@ -242,8 +250,11 @@
     <script crossorigin src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
     <script src="https://unpkg.com/d3@7"></script>
     
-    <!-- Load Nexus Control (Browser Compatible) -->
-    <script src="../js/components/Neo4jCompactControl-browser.js"></script>
+    <!-- Load Nexus Graph Control Bundle v17.13.0 -->
+    <script src="../js/lib/nexus-graph-control.bundle.min.js"></script>
+    
+    <!-- Load Nexus Metadata Editor v5.2.0 -->
+    <script src="../js/lib/nexus-metadata-editor.js"></script>
     
     <!-- Load Firebase Configuration and Services -->
     <script type="module" src="../js/config/firebase-config.js"></script>

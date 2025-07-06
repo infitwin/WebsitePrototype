@@ -60,32 +60,57 @@ document.addEventListener('DOMContentLoaded', function() {
             const containerWidth = graphContainer.offsetWidth;
             const containerHeight = graphContainer.offsetHeight;
             
-            console.log('🚀 Initializing COMPLETE Neo4jCompactControl (not split)');
+            console.log('🚀 Initializing NexusGraphControl v17.13.0');
             console.log(`Container dimensions: ${containerWidth}x${containerHeight}`);
             
-            // Wait for Neo4jCompactControl to be loaded
+            // Wait for NexusGraphControl to be loaded
             setTimeout(() => {
-                if (typeof Neo4jCompactControl !== 'undefined') {
-                    // Create React element for Neo4jCompactControl
-                    const nexusElement = React.createElement(Neo4jCompactControl, {
-                        data: window.currentGraphData || [],
+                if (window.NexusGraphControl && window.NexusGraphControl.NexusGraphControl) {
+                    const { NexusGraphControl } = window.NexusGraphControl;
+                    
+                    // Create React element for NexusGraphControl
+                    const nexusElement = React.createElement(NexusGraphControl, {
+                        title: 'Memory Interview Graph',
+                        data: {
+                            nodes: [],
+                            edges: []
+                        },
                         width: containerWidth,
                         height: containerHeight,
-                        mode: 'interview',
-                        onNodeSelect: (node) => console.log('Node selected:', node),
-                        onEdgeSelect: (edge) => console.log('Edge selected:', edge)
+                        // Disable orchestrator for local development to avoid CORS issues
+                        orchestratorUrl: null,
+                        // Enable for production: orchestratorUrl: window.getBusinessWebSocketUrl ? window.getBusinessWebSocketUrl(false) : null,
+                        useExternalMetadataEditor: true,
+                        onNodeClick: (node) => console.log('Node selected:', node),
+                        onNodeDoubleClick: (node) => {
+                            console.log('Node double-clicked, opening metadata editor:', node);
+                            openMetadataEditor(node, 'node');
+                        },
+                        onEdgeClick: (edge) => console.log('Edge selected:', edge),
+                        onEdgeDoubleClick: (edge) => {
+                            console.log('Edge double-clicked, opening metadata editor:', edge);
+                            openMetadataEditor(edge, 'edge');
+                        },
+                        onDataChange: (newData) => {
+                            console.log('Graph data changed:', newData);
+                            window.currentGraphData = newData;
+                        },
+                        hidePageHeader: true,
+                        hideStatusBar: true,
+                        controlsAlignment: 'right'
                     });
                     
                     // Render React component
                     const root = ReactDOM.createRoot(graphContainer);
                     root.render(nexusElement);
                     
-                    console.log('✅ Interview Neo4j visualization created successfully');
+                    console.log('✅ Interview Nexus Graph Control created successfully');
                     
                     // Store globally for debugging and external access
                     window.interviewNexusViz = root;
+                    window.nexusGraphRef = nexusElement;
                 } else {
-                    console.error('❌ Neo4jCompactControl not loaded');
+                    console.error('❌ NexusGraphControl not loaded');
                     
                     // Fallback: Show placeholder
                     graphContainer.innerHTML = `
@@ -116,13 +141,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             type: mapNeo4jTypeToNexusType(node.labels?.[0]),
                             x: node.properties?.x || Math.random() * 600 + 100,
                             y: node.properties?.y || Math.random() * 600 + 100,
-                            ...node.properties
+                            properties: node.properties || {}
                         })),
-                        links: (graphData.edges || []).map(edge => ({
+                        edges: (graphData.edges || []).map(edge => ({
+                            id: edge.id || `edge_${edge.source || edge.startNode}_${edge.target || edge.endNode}`,
                             source: edge.source || edge.startNode,
                             target: edge.target || edge.endNode,
-                            relationship: edge.type || edge.relationship,
-                            ...edge.properties
+                            label: edge.type || edge.relationship || 'RELATED_TO',
+                            type: edge.relationshipType || 'Personal',
+                            properties: edge.properties || {}
                         }))
                     };
                     
@@ -131,18 +158,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Re-render NexusControl with new data
                     const graphContainer = document.getElementById('interview-neo4j-container');
-                    if (graphContainer) {
+                    if (graphContainer && window.NexusGraphControl) {
+                        const { NexusGraphControl } = window.NexusGraphControl;
                         const root = window.interviewNexusViz;
-                        root.render(React.createElement(Neo4jCompactControl, {
+                        
+                        root.render(React.createElement(NexusGraphControl, {
+                            title: 'Memory Interview Graph',
                             data: nexusData,
                             width: graphContainer.offsetWidth,
                             height: graphContainer.offsetHeight,
-                            mode: 'interview',
-                            onNodeSelect: (node) => console.log('Node selected:', node),
-                            onEdgeSelect: (edge) => console.log('Edge selected:', edge)
+                            // Disable orchestrator for local development to avoid CORS issues
+                        orchestratorUrl: null,
+                        // Enable for production: orchestratorUrl: window.getBusinessWebSocketUrl ? window.getBusinessWebSocketUrl(false) : null,
+                            useExternalMetadataEditor: true,
+                            onNodeClick: (node) => console.log('Node selected:', node),
+                            onNodeDoubleClick: (node) => {
+                                console.log('Node double-clicked, opening metadata editor:', node);
+                                openMetadataEditor(node, 'node');
+                            },
+                            onEdgeClick: (edge) => console.log('Edge selected:', edge),
+                            onEdgeDoubleClick: (edge) => {
+                                console.log('Edge double-clicked, opening metadata editor:', edge);
+                                openMetadataEditor(edge, 'edge');
+                            },
+                            onDataChange: (newData) => {
+                                console.log('Graph data changed:', newData);
+                                window.currentGraphData = newData;
+                            },
+                            hidePageHeader: true,
+                            hideStatusBar: true,
+                            controlsAlignment: 'right'
                         }));
                         
-                        console.log('✅ NexusControl updated with', nexusData.nodes.length, 'nodes and', nexusData.links.length, 'edges');
+                        console.log('✅ NexusControl updated with', nexusData.nodes.length, 'nodes and', nexusData.edges.length, 'edges');
                     }
                 }
             };
@@ -164,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: mapNeo4jTypeToNexusType(node.labels?.[0]),
                         x: node.properties?.x || Math.random() * 600 + 100,
                         y: node.properties?.y || Math.random() * 600 + 100,
-                        ...node.properties
+                        properties: node.properties || {}
                     }));
                     
                     // Add only new nodes (avoid duplicates)
@@ -178,17 +226,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Merge new edges
                 if (updateData.edges && updateData.edges.length > 0) {
                     const newEdges = updateData.edges.map(edge => ({
+                        id: edge.id || `edge_${edge.source || edge.startNode}_${edge.target || edge.endNode}`,
                         source: edge.source || edge.startNode,
                         target: edge.target || edge.endNode,
-                        relationship: edge.type || edge.relationship,
-                        ...edge.properties
+                        label: edge.type || edge.relationship || 'RELATED_TO',
+                        type: edge.relationshipType || 'Personal',
+                        properties: edge.properties || {}
                     }));
                     
                     // Add only new edges (avoid duplicates)
                     newEdges.forEach(newEdge => {
-                        if (!window.currentGraphData.links.find(e => 
+                        if (!window.currentGraphData.edges) {
+                            window.currentGraphData.edges = [];
+                        }
+                        if (!window.currentGraphData.edges.find(e => 
                             e.source === newEdge.source && e.target === newEdge.target)) {
-                            window.currentGraphData.links.push(newEdge);
+                            window.currentGraphData.edges.push(newEdge);
                         }
                     });
                 }
@@ -196,24 +249,160 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Re-render with updated data
                 window.updateInterviewGraph({
                     nodes: window.currentGraphData.nodes,
-                    edges: window.currentGraphData.links
+                    edges: window.currentGraphData.edges
                 });
             };
             
             // Helper function to map Neo4j node types to NexusControl types
             window.mapNeo4jTypeToNexusType = function(neo4jLabel) {
                 const typeMap = {
-                    'Person': 'central',
-                    'Family': 'family',
+                    'Person': 'person',
+                    'Family': 'person',
                     'Event': 'event',
                     'Place': 'place',
-                    'Memory': 'memory',
-                    'Topic': 'memory',
+                    'Memory': 'thing',
+                    'Topic': 'thing',
                     'Experience': 'event',
-                    'Organization': 'event'
+                    'Organization': 'organization'
                 };
-                return typeMap[neo4jLabel] || 'central';
+                return typeMap[neo4jLabel] || 'person';
             };
+            
+            // Metadata Editor Integration
+            let currentMetadataHandle = null;
+            
+            window.openMetadataEditor = function(entity, entityType) {
+                // Show overlay
+                const overlay = document.getElementById('metadata-editor-overlay');
+                const container = document.getElementById('metadata-editor-container');
+                
+                if (!overlay || !container) {
+                    console.error('Metadata editor containers not found');
+                    return;
+                }
+                
+                overlay.style.display = 'block';
+                
+                // Close any existing editor
+                if (currentMetadataHandle) {
+                    currentMetadataHandle.unmount();
+                    currentMetadataHandle = null;
+                }
+                
+                // Prepare entity data
+                let editorData;
+                if (entityType === 'node') {
+                    // Map node type to entity type format
+                    const entityTypeMap = {
+                        'person': 'Person',
+                        'organization': 'Organization',
+                        'event': 'Event',
+                        'place': 'Place',
+                        'thing': 'Thing'
+                    };
+                    
+                    editorData = {
+                        type: entityTypeMap[entity.type] || 'Person',
+                        id: entity.id,
+                        name: entity.name || '',
+                        ...entity.properties
+                    };
+                } else {
+                    // Handle edge/relationship
+                    const { NexusRelationshipEditorWrapper } = window.NexusMetadataEditor;
+                    
+                    if (NexusRelationshipEditorWrapper && window.currentGraphData) {
+                        // Get source and target nodes
+                        const sourceNode = window.currentGraphData.nodes.find(n => n.id === entity.source);
+                        const targetNode = window.currentGraphData.nodes.find(n => n.id === entity.target);
+                        
+                        // Render relationship editor
+                        const root = ReactDOM.createRoot(container);
+                        root.render(
+                            React.createElement(NexusRelationshipEditorWrapper, {
+                                edgeData: entity,
+                                sourceNode: sourceNode,
+                                targetNode: targetNode,
+                                theme: 'minimal',
+                                onSave: (updatedEdge) => {
+                                    console.log('Relationship saved:', updatedEdge);
+                                    
+                                    // Update graph data
+                                    if (window.currentGraphData && window.currentGraphData.edges) {
+                                        const index = window.currentGraphData.edges.findIndex(e => e.id === updatedEdge.id);
+                                        if (index !== -1) {
+                                            window.currentGraphData.edges[index] = updatedEdge;
+                                            window.updateInterviewGraph(window.currentGraphData);
+                                        }
+                                    }
+                                    
+                                    // Close editor
+                                    root.unmount();
+                                    overlay.style.display = 'none';
+                                },
+                                onCancel: () => {
+                                    root.unmount();
+                                    overlay.style.display = 'none';
+                                }
+                            })
+                        );
+                        return;
+                    }
+                }
+                
+                // Mount node editor
+                currentMetadataHandle = window.NexusMetadataEditor.mount(container, {
+                    entity: editorData,
+                    theme: 'minimal',
+                    onSave: (updatedData) => {
+                        console.log('Entity saved:', updatedData);
+                        
+                        // Update node in graph data
+                        if (window.currentGraphData && window.currentGraphData.nodes) {
+                            const index = window.currentGraphData.nodes.findIndex(n => n.id === updatedData.id);
+                            if (index !== -1) {
+                                // Update node maintaining graph structure
+                                window.currentGraphData.nodes[index] = {
+                                    ...window.currentGraphData.nodes[index],
+                                    name: updatedData.name,
+                                    properties: {
+                                        ...updatedData,
+                                        type: undefined,
+                                        id: undefined,
+                                        name: undefined
+                                    }
+                                };
+                                window.updateInterviewGraph(window.currentGraphData);
+                            }
+                        }
+                        
+                        // Close editor
+                        if (currentMetadataHandle) {
+                            currentMetadataHandle.unmount();
+                            currentMetadataHandle = null;
+                        }
+                        overlay.style.display = 'none';
+                    },
+                    onCancel: () => {
+                        if (currentMetadataHandle) {
+                            currentMetadataHandle.unmount();
+                            currentMetadataHandle = null;
+                        }
+                        overlay.style.display = 'none';
+                    }
+                });
+            };
+            
+            // Close metadata editor on overlay click
+            document.getElementById('metadata-editor-overlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    if (currentMetadataHandle) {
+                        currentMetadataHandle.unmount();
+                        currentMetadataHandle = null;
+                    }
+                    this.style.display = 'none';
+                }
+            });
             
         } catch (error) {
             console.error('❌ Failed to initialize interview Nexus visualization:', error);
