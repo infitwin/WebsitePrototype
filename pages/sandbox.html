@@ -54,12 +54,7 @@
         window.handleArtifactFile = handleArtifactFile;
         window.handleTestData = handleTestData;
         window.handleProductionFileDrop = handleProductionFileDrop;
-        // Drag handlers with direct module dependencies
-        window.initializeDragFunctionality = (panelId) => initializeDragFunctionality(panelId, window.sandboxState.log, window.sandboxEvents.togglePanel);
-        window.handleArtifactDragStart = (e) => handleArtifactDragStart(e, window.sandboxState.log);
-        window.handleArtifactDragEnd = handleArtifactDragEnd;
-        window.handleFaceDragStart = (e) => handleFaceDragStart(e, window.sandboxState.log);
-        window.handleFaceDragEnd = handleFaceDragEnd;
+        // Drag handlers will be initialized after modules are ready
         window.Neo4jDataService = Neo4jDataService;
         // UI Builder functions with backward compatibility
         window.createArtifactThumbnail = (fileId, fileData) => {
@@ -91,6 +86,13 @@
         // Initialize Neo4j integration and link to state
         window.sandboxNeo4j = createSandboxNeo4jIntegration(sandboxState);
         sandboxState.setNeo4jIntegration(window.sandboxNeo4j);
+        
+        // Initialize drag handlers now that modules are ready
+        window.initializeDragFunctionality = (panelId) => initializeDragFunctionality(panelId, window.sandboxState.log, window.sandboxEvents.togglePanel);
+        window.handleArtifactDragStart = (e) => handleArtifactDragStart(e, window.sandboxState.log);
+        window.handleArtifactDragEnd = handleArtifactDragEnd;
+        window.handleFaceDragStart = (e) => handleFaceDragStart(e, window.sandboxState.log);
+        window.handleFaceDragEnd = handleFaceDragEnd;
     </script>
 </head>
 <body>
@@ -308,7 +310,7 @@
         // File drop handler for sandbox - creates attachment objects and updates graph
         // Called by Nexus onFileDrop callback with (targetId, fileData, isNode)
         async function handleSandboxFileDrop(targetId, fileData, isNode) {
-            window.sandboxState.window.sandboxState.log(`📎 File drop on ${isNode ? 'node' : 'edge'} ${targetId}`);
+            window.sandboxState.log(`📎 File drop on ${isNode ? 'node' : 'edge'} ${targetId}`);
             
             const target = {
                 id: targetId,
@@ -445,8 +447,8 @@
                         window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
                         
                         if (sourceNode && targetNode) {
                             window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
@@ -454,7 +456,7 @@
                                     window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
                                     // The graph should auto-update when data changes
                                 },
-                                window.sandboxState.window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
                             );
                         } else {
                             window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
@@ -945,8 +947,8 @@
                         window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
                         
                         if (sourceNode && targetNode) {
                             window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
@@ -954,7 +956,7 @@
                                     window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
                                     // The graph should auto-update when data changes
                                 },
-                                window.sandboxState.window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
                             );
                         } else {
                             window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
@@ -1898,8 +1900,8 @@
                         window.sandboxState.log('🔗 Edge double-clicked:', edge.id);
                         
                         // Find source and target nodes for context
-                        const sourceNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
-                        const targetNode = window.sandboxState.window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
+                        const sourceNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.source);
+                        const targetNode = window.sandboxState.currentSandboxData.nodes.find(n => n.id === edge.target);
                         
                         if (sourceNode && targetNode) {
                             window.metadataEditor.showRelationshipEditorModal(edge, sourceNode, targetNode, 
@@ -1907,7 +1909,7 @@
                                     window.sandboxState.log('📝 Edge updated in sandbox:', updatedEdge);
                                     // The graph should auto-update when data changes
                                 },
-                                window.sandboxState.window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
+                                window.sandboxState.sandboxGraphRef  // Pass graph ref for handleMetaSave
                             );
                         } else {
                             window.sandboxState.log('❌ Could not find source or target nodes for edge:', edge.id);
