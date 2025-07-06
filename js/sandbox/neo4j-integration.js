@@ -495,79 +495,90 @@ export class SandboxNeo4jIntegration {
             let newNodeId = null;
             
             if (dropType === 'onto-canvas') {
-                // Check if this is an existing production node
-                const isExistingNode = nodeData.id && !nodeData.id.includes('_drop_');
-                
-                if (isExistingNode) {
-                    // Copy existing production node to sandbox
-                    this.log('📋 Copying existing production node to sandbox:', nodeData.id);
-                    const copiedNode = await window.Neo4jConnection.copyProductionNodeToSandbox(
-                        nodeData.id,
-                        this.sandboxState.currentInterviewId
-                    );
-                    
-                    if (position) {
-                        // Update position of copied node
-                        await this.updateSandboxNode(copiedNode.id, {
-                            x: position.x,
-                            y: position.y
-                        });
+                // All nodes from the node list are production nodes with existing IDs
+                if (nodeData.id) {
+                    // First check if this node already exists in sandbox
+                    const existingNode = this.sandboxState.currentSandboxData.nodes.find(n => n.id === nodeData.id);
+                    if (existingNode) {
+                        this.log('⚠️ Node already exists in sandbox, updating position only:', nodeData.id);
+                        
+                        if (position) {
+                            // Update position of existing node
+                            await this.updateSandboxNode(existingNode.id, {
+                                x: position.x,
+                                y: position.y
+                            });
+                            existingNode.x = position.x;
+                            existingNode.y = position.y;
+                        }
+                        
+                        return existingNode;
                     }
                     
-                    this.log('✅ Production node copied to sandbox: ' + copiedNode.id);
-                    return copiedNode;
+                    // Copy existing production node to sandbox
+                    this.log('📋 Copying production node to sandbox:', nodeData.id);
+                    try {
+                        const copiedNode = await window.Neo4jConnection.copyProductionNodeToSandbox(
+                            nodeData.id,
+                            this.sandboxState.currentInterviewId
+                        );
+                        
+                        if (position) {
+                            // Update position of copied node
+                            await this.updateSandboxNode(copiedNode.id, {
+                                x: position.x,
+                                y: position.y
+                            });
+                        }
+                        
+                        this.log('✅ Production node copied to sandbox: ' + copiedNode.id);
+                        return copiedNode;
+                    } catch (error) {
+                        // If copy fails due to constraint, the node might already exist in sandbox
+                        if (error.message.includes('already exists')) {
+                            this.log('⚠️ Node constraint violation - checking if already in sandbox');
+                            // Reload sandbox data to get the latest state
+                            await this.loadExistingSandboxData();
+                            const existingNode = this.sandboxState.currentSandboxData.nodes.find(n => n.id === nodeData.id);
+                            if (existingNode) {
+                                return existingNode;
+                            }
+                        }
+                        throw error;
+                    }
                 } else {
-                    // Create new sandbox node
-                    const newNode = {
-                        id: nodeData.id || `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        name: nodeData.name || nodeData.label || 'New Node',
-                        type: nodeData.type || 'Person',
-                        x: position?.x || Math.random() * 800,
-                        y: position?.y || Math.random() * 600,
-                        imageUrl: nodeData.imageUrl || null,
-                        ...nodeData.properties
-                    };
-                    
-                    const createdNode = await window.Neo4jConnection.createSandboxNode(
-                        newNode,
-                        userId,
-                        twinId,
-                        this.sandboxState.currentInterviewId
-                    );
-                    
-                    this.log('✅ New sandbox node created: ' + createdNode.id);
-                    return createdNode;
+                    // This should rarely happen - nodes from node list always have IDs
+                    throw new Error('Node data missing ID - cannot drop nodes without IDs from production');
                 }
             } else if (dropType === 'onto-node' && targetId) {
                 // Handle dropping onto another node - create relationship
                 
-                // First, handle the source node
-                if (nodeData.id && !nodeData.id.includes('_drop_')) {
-                    // Copy existing production node
-                    const copiedNode = await window.Neo4jConnection.copyProductionNodeToSandbox(
-                        nodeData.id,
-                        this.sandboxState.currentInterviewId
-                    );
-                    newNodeId = copiedNode.id;
-                } else {
-                    // Create new node
-                    const newNode = {
-                        id: `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        name: nodeData.name || nodeData.label || 'New Node',
-                        type: nodeData.type || 'Person',
-                        x: position?.x || Math.random() * 800,
-                        y: position?.y || Math.random() * 600,
-                        imageUrl: nodeData.imageUrl || null,
-                        ...nodeData.properties
-                    };
+                // First ensure the source node exists in sandbox
+                if (nodeData.id) {
+                    // Check if node already exists in sandbox
+                    let sourceNode = this.sandboxState.currentSandboxData.nodes.find(n => n.id === nodeData.id);
                     
-                    const createdNode = await window.Neo4jConnection.createSandboxNode(
-                        newNode,
-                        userId,
-                        twinId,
-                        this.sandboxState.currentInterviewId
-                    );
-                    newNodeId = createdNode.id;
+                    if (!sourceNode) {
+                        // Copy production node to sandbox
+                        try {
+                            sourceNode = await window.Neo4jConnection.copyProductionNodeToSandbox(
+                                nodeData.id,
+                                this.sandboxState.currentInterviewId
+                            );
+                            this.log('✅ Source node copied to sandbox: ' + sourceNode.id);
+                        } catch (error) {
+                            if (error.message.includes('already exists')) {
+                                // Reload and try to find it
+                                await this.loadExistingSandboxData();
+                                sourceNode = this.sandboxState.currentSandboxData.nodes.find(n => n.id === nodeData.id);
+                            }
+                            if (!sourceNode) throw error;
+                        }
+                    }
+                    
+                    newNodeId = sourceNode.id;
+                } else {
+                    throw new Error('Cannot create relationship - source node missing ID');
                 }
                 
                 // Create relationship between the new/copied node and target
