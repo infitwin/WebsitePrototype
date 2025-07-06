@@ -203,17 +203,17 @@ export class FirebaseIntegration {
      * Load user faces from Firebase
      */
     async loadUserFaces() {
-        this.log('🔍 DEBUG: loadUserFaces called');
-        this.log('🔍 DEBUG: Firebase initialized?', this.initialized);
+        console.log('🔍 DEBUG: loadUserFaces called');
+        console.log('🔍 DEBUG: Firebase initialized?', this.initialized);
         
         if (!this.initialized) {
-            this.log('⏳ Firebase not initialized yet for faces');
+            console.log('⏳ Firebase not initialized yet for faces');
             return;
         }
         
-        this.log('🔍 DEBUG: Checking Firebase auth...');
+        console.log('🔍 DEBUG: Checking Firebase auth...');
         const user = firebase.auth().currentUser;
-        this.log('🔍 DEBUG: Current user:', user ? user.email : 'null');
+        console.log('🔍 DEBUG: Current user:', user ? user.email : 'null');
         
         if (!user) {
             this.log('❌ No user logged in for faces');
