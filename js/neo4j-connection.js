@@ -465,16 +465,18 @@ class Neo4jConnection {
             const productionNode = nodeResult.records[0].get('p');
             const labels = nodeResult.records[0].get('nodeLabels');
             
-            // Build label string for CREATE statement (excluding 'Sandbox' which we'll add)
-            const labelString = labels.filter(l => l !== 'Sandbox').join(':');
-            const fullLabelString = labelString ? `:Sandbox:${labelString}` : ':Sandbox';
+            // Build label string for CREATE statement
+            // IMPORTANT: We only use :Sandbox label to avoid constraint violations
+            // The original labels are stored in _originalLabels for restoration during merge
+            const originalLabels = labels.filter(l => l !== 'Sandbox');
             
-            // Create the sandbox node with same ID as production (for merging back)
+            // Create the sandbox node with ONLY Sandbox label to avoid constraints
             const createQuery = `
-                CREATE (s${fullLabelString})
+                CREATE (s:Sandbox)
                 SET s = $properties
                 SET s._isSandbox = true
                 SET s._originalId = $originalId
+                SET s._originalLabels = $originalLabels
                 SET s.interviewId = $interviewId
                 SET s.sessionId = $interviewId
                 SET s.copiedAt = timestamp()
@@ -484,6 +486,7 @@ class Neo4jConnection {
             const createResult = await session.run(createQuery, {
                 properties: productionNode.properties,
                 originalId: productionNodeId,
+                originalLabels: originalLabels,
                 interviewId
             });
             
