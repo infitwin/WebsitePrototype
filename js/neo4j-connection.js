@@ -431,10 +431,11 @@ class Neo4jConnection {
     async copyProductionNodeToSandbox(productionNodeId, interviewId) {
         const session = this.getSession();
         try {
-            // First check if this node already exists in sandbox
+            // First check if ANY node with this ID already exists (sandbox or not)
             const checkExistingQuery = `
-                MATCH (s:Sandbox {id: $productionNodeId})
-                RETURN s
+                MATCH (n {id: $productionNodeId})
+                WHERE n:Sandbox OR n:Person OR n:Organization OR n:Thing OR n:Place OR n:Event
+                RETURN n, labels(n) as nodeLabels
             `;
             
             const existingResult = await session.run(checkExistingQuery, {
@@ -442,9 +443,32 @@ class Neo4jConnection {
             });
             
             if (existingResult.records.length > 0) {
-                // Node already exists in sandbox, return it
-                console.log(`⚠️ Node ${productionNodeId} already exists in sandbox, returning existing`);
-                return existingResult.records[0].get('s').properties;
+                const existingNode = existingResult.records[0].get('n');
+                const labels = existingResult.records[0].get('nodeLabels');
+                
+                if (labels.includes('Sandbox')) {
+                    // Node already exists in sandbox, return it
+                    console.log(`⚠️ Node ${productionNodeId} already exists in sandbox, returning existing`);
+                    return existingNode.properties;
+                } else {
+                    // Node exists but not in sandbox - add Sandbox label
+                    console.log(`⚠️ Node ${productionNodeId} exists but not in sandbox, adding Sandbox label`);
+                    const addLabelQuery = `
+                        MATCH (n {id: $productionNodeId})
+                        SET n:Sandbox
+                        SET n._isSandbox = true
+                        SET n.interviewId = $interviewId
+                        SET n.sessionId = $interviewId
+                        RETURN n
+                    `;
+                    
+                    const updateResult = await session.run(addLabelQuery, {
+                        productionNodeId,
+                        interviewId
+                    });
+                    
+                    return updateResult.records[0].get('n').properties;
+                }
             }
             
             // Get the production node and its labels
