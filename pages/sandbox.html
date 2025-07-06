@@ -39,6 +39,8 @@
         import { MetadataEditorIntegration } from '../js/sandbox/metadata-editor-integration.js';
         import { createArtifactThumbnail, createFaceThumbnail, createDraggableNodeElement, createFilterButton, createReviewFormContent, createNodeTypeFilters } from '../js/sandbox/ui-builders.js';
         import { sandboxState } from '../js/sandbox/sandbox-state.js';
+        import { createSandboxEvents } from '../js/sandbox/sandbox-events.js';
+        import { FirebaseIntegrationStub } from '../js/sandbox/firebase-integration-stub.js';
         window.Button = Button;
         window.Modal = Modal;
         window.getFileIcon = getFileIcon;
@@ -76,11 +78,14 @@
         window.createReviewFormContent = createReviewFormContent;
         window.createNodeTypeFilters = createNodeTypeFilters;
         // Initialize metadata editor
-        // Initialize metadata editor
         window.metadataEditor = new MetadataEditorIntegration();
         
         // Make state management available globally
         window.sandboxState = sandboxState;
+        
+        // Initialize Firebase stub and event system
+        const firebaseStub = new FirebaseIntegrationStub();
+        window.sandboxEvents = createSandboxEvents(sandboxState, firebaseStub);
     </script>
 </head>
 <body>
@@ -1598,139 +1603,25 @@
         }
         
         function togglePanel(panelId) {
-            const panel = document.getElementById(panelId + 'Panel');
-            if (!panel) {
-                log('❌ Panel not found: ' + panelId);
-                return;
-            }
-            
-            const isOpen = panel.classList.contains('open');
-            
-            if (isOpen) {
-                panel.classList.remove('open');
-                log('📋 ' + panelId + ' panel closed');
-                
-                // Clean up production panel when closing
-                if (panelId === 'production' && productionRoot) {
-                    productionRoot.unmount();
-                    productionRoot = null;
-                    log('🧹 Production panel unmounted');
-                }
+            if (window.sandboxEvents) {
+                return window.sandboxEvents.togglePanel(panelId);
             } else {
-                panel.classList.add('open');
-                log('📋 ' + panelId + ' panel opened');
-                
-                // Initialize drag functionality for any panel
-                initializeDragFunctionality(panelId);
-                
-                // Initialize resize observer for all panels
-                observePanelResize(panelId);
-                
-                // Special handling for production panel
-                if (panelId === 'production') {
-                    setTimeout(async () => {
-                        await initializeProduction();
-                    }, 200);
-                }
-                
-                // Load node list when panel is opened
-                if (panelId === 'node-list') {
-                    // Initialize Firebase first if needed for authentication
-                    if (!firebaseInitialized) {
-                        initializeFirebase();
-                        setTimeout(() => {
-                            if (firebase.auth().currentUser) {
-                                loadNodeList();
-                            }
-                        }, 2000);
-                    } else if (firebase.auth().currentUser) {
-                        loadNodeList();
-                    } else {
-                        // Try to wait for auth
-                        log('⏳ Waiting for authentication...');
-                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-                            if (user) {
-                                loadNodeList();
-                                unsubscribe(); // Stop listening after first auth
-                            }
-                        });
-                    }
-                }
-                
-                // Load artifacts when panel is opened
-                if (panelId === 'artifacts') {
-                    if (!firebaseInitialized) {
-                        initializeFirebase();
-                        setTimeout(() => {
-                            if (firebase.auth().currentUser) {
-                                loadUserArtifacts();
-                            }
-                        }, 2000);
-                    } else if (firebase.auth().currentUser) {
-                        loadUserArtifacts();
-                    } else {
-                        // Try to wait for auth
-                        log('⏳ Waiting for authentication...');
-                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-                            if (user) {
-                                loadUserArtifacts();
-                                unsubscribe(); // Stop listening after first auth
-                            }
-                        });
-                    }
-                }
-                
-                // Load faces when panel is opened
-                if (panelId === 'faces') {
-                    if (!firebaseInitialized) {
-                        initializeFirebase();
-                        setTimeout(() => {
-                            if (firebase.auth().currentUser) {
-                                loadUserFaces();
-                            }
-                        }, 2000);
-                    } else if (firebase.auth().currentUser) {
-                        loadUserFaces();
-                    } else {
-                        // Try to wait for auth
-                        log('⏳ Waiting for authentication...');
-                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-                            if (user) {
-                                loadUserFaces();
-                                unsubscribe(); // Stop listening after first auth
-                            }
-                        });
-                    }
+                console.warn('⚠️ Sandbox events not initialized yet, using fallback');
+                // Fallback for early calls before events system is ready
+                const panel = document.getElementById(panelId + 'Panel');
+                if (panel) {
+                    panel.classList.toggle('open');
                 }
             }
-            
-            // Update toolbar button states
-            updateToolbarStates();
         }
         
         function updateToolbarStates() {
-            document.querySelectorAll('.toolbar-btn').forEach(btn => {
-                const title = btn.getAttribute('title');
-                let panelId = '';
-                
-                // Map button titles to panel IDs
-                switch(title) {
-                    case 'Node List': panelId = 'node-list'; break;
-                    case 'Faces': panelId = 'faces'; break;
-                    case 'Artifacts': panelId = 'artifacts'; break;
-                    case 'Production Graph': panelId = 'production'; break;
-                    case 'AI Assistant': panelId = 'ai-assistant'; break;
-                    case 'Tools': panelId = 'tools'; break;
-                }
-                
-                const panel = document.getElementById(panelId + 'Panel');
-                
-                if (panel && panel.classList.contains('open')) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
+            if (window.sandboxEvents) {
+                return window.sandboxEvents.updateToolbarStates();
+            } else {
+                // Fallback for early calls
+                console.warn('⚠️ Sandbox events not initialized yet, skipping toolbar update');
+            }
         }
         
         // Make togglePanel globally accessible
