@@ -431,10 +431,9 @@ class Neo4jConnection {
     async copyProductionNodeToSandbox(productionNodeId, interviewId) {
         const session = this.getSession();
         try {
-            // First check if ANY node with this ID already exists (sandbox or not)
+            // First check if ANY node with this ID already exists (regardless of labels)
             const checkExistingQuery = `
                 MATCH (n {id: $productionNodeId})
-                WHERE n:Sandbox OR n:Person OR n:Organization OR n:Thing OR n:Place OR n:Event
                 RETURN n, labels(n) as nodeLabels
             `;
             
