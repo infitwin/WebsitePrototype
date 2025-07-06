@@ -317,7 +317,7 @@
                 type: isNode ? 'node' : 'edge'
             };
             
-            const attachment = await window.handleSandboxFileDrop(fileData, target, log);
+            const attachment = await window.handleSandboxFileDrop(fileData, target, window.sandboxState.log);
             
             if (attachment && isNode) {
                 const node = window.sandboxState.currentSandboxData.nodes.find(n => n.id === targetId);
@@ -353,7 +353,7 @@
                 id: targetId,
                 type: isNode ? 'node' : 'edge'
             };
-            return window.handleProductionFileDrop(fileData, target, log);
+            return window.handleProductionFileDrop(fileData, target, window.sandboxState.log);
         }
         
         // Handle face drops from the faces panel
@@ -1057,7 +1057,7 @@
                     const twinId = `${userId}-1`; // Using twin ID format from analysis
                     
                     window.sandboxState.log(`🔍 Loading production data for user ${userId}, twin ${twinId}`);
-                    productionData = await Neo4jDataService.loadProductionData(userId, twinId, log, getNodeColor);
+                    productionData = await Neo4jDataService.loadProductionData(userId, twinId, window.sandboxState.log, getNodeColor);
                 }
                 
                 // If no data found, suggest generating test data
@@ -1425,7 +1425,7 @@
                 const userId = user.uid;
                 const twinId = `${userId}-1`;
                 
-                const nodesByType = await Neo4jDataService.loadNodeList(userId, twinId, log);
+                const nodesByType = await Neo4jDataService.loadNodeList(userId, twinId, window.sandboxState.log);
                 
                 const container = document.getElementById('nodeListContainer');
                 container.innerHTML = '';
