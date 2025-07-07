@@ -6,6 +6,8 @@
  * file loading, face detection data, and Firestore operations.
  */
 
+import { createFaceThumbnail } from './ui-builders.js';
+
 export class FirebaseIntegration {
     constructor(sandboxState) {
         this.sandboxState = sandboxState;
@@ -285,36 +287,11 @@ export class FirebaseIntegration {
                         console.log('🔍 DEBUG: First face structure:', JSON.stringify(fileData.extractedFaces[0]));
                     }
                     
-                    // Create face thumbnails for each extracted face
+                    // Create face thumbnails for each extracted face (ORIGINAL WORKING VERSION)
                     fileData.extractedFaces.forEach((face, index) => {
-                        console.log('🔍 DEBUG: Processing face', index, 'URLs:', {
-                            imageUrl: !!face.imageUrl,
-                            dataUrl: !!face.dataUrl, 
-                            url: !!face.url
-                        });
-                        
-                        if (face && (face.imageUrl || face.dataUrl || face.url)) {
-                            console.log('🔍 DEBUG: Creating thumbnail for face', index);
-                            console.log('🔍 DEBUG: window.createFaceThumbnail available?', typeof window.createFaceThumbnail);
-                            
-                            try {
-                                const thumbnail = window.createFaceThumbnail(doc.id, fileData, face, index);
-                                console.log('🔍 DEBUG: createFaceThumbnail returned:', thumbnail);
-                                
-                                if (thumbnail) {
-                                    gridEl.appendChild(thumbnail);
-                                    totalFaces++;
-                                    console.log('✅ DEBUG: Successfully added face thumbnail', totalFaces);
-                                } else {
-                                    console.log('❌ DEBUG: createFaceThumbnail returned null/undefined');
-                                }
-                            } catch (error) {
-                                console.log('❌ DEBUG: Error calling createFaceThumbnail:', error.message);
-                                console.error('createFaceThumbnail error:', error);
-                            }
-                        } else {
-                            console.log('❌ DEBUG: Face has no valid image URL');
-                        }
+                        const faceThumbnail = createFaceThumbnail(doc.id, fileData, face, index);
+                        gridEl.appendChild(faceThumbnail);
+                        totalFaces++;
                     });
                 }
             });
