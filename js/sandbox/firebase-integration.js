@@ -250,11 +250,12 @@ export class FirebaseIntegration {
             console.log('📊 DEBUG: Query empty?', snapshot.empty);
             
             if (snapshot.empty) {
-                this.log('❌ DEBUG: No files found at all for user');
+                console.log('❌ DEBUG: No files found at all for user');
                 loadingEl.innerHTML = '<div style="color: #EF4444;">No files found in Firestore for this user</div>';
                 return;
             }
             
+            console.log('🔍 DEBUG: Processing files...');
             loadingEl.style.display = 'none';
             gridEl.innerHTML = '';
             
@@ -267,58 +268,58 @@ export class FirebaseIntegration {
                 const fileData = doc.data();
                 totalFiles++;
                 
-                this.log('🔍 DEBUG: File', totalFiles, ':', doc.id, fileData.fileName || 'Unnamed');
-                this.log('🔍 DEBUG: Has extractedFaces?', !!fileData.extractedFaces);
-                this.log('🔍 DEBUG: extractedFaces type:', typeof fileData.extractedFaces);
+                console.log('🔍 DEBUG: File', totalFiles, ':', doc.id, fileData.fileName || 'Unnamed');
+                console.log('🔍 DEBUG: Has extractedFaces?', !!fileData.extractedFaces);
+                console.log('🔍 DEBUG: extractedFaces type:', typeof fileData.extractedFaces);
                 if (fileData.extractedFaces) {
-                    this.log('🔍 DEBUG: extractedFaces length:', fileData.extractedFaces.length);
+                    console.log('🔍 DEBUG: extractedFaces length:', fileData.extractedFaces.length);
                 }
                 
                 // Check if file has extracted faces
                 if (fileData.extractedFaces && Array.isArray(fileData.extractedFaces) && fileData.extractedFaces.length > 0) {
                     filesWithFaces++;
-                    this.log('📷 DEBUG: Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
+                    console.log('📷 DEBUG: Found file with faces:', fileData.fileName, 'Face count:', fileData.extractedFaces.length);
                     
                     // Log first face structure to understand the data
                     if (fileData.extractedFaces[0]) {
-                        this.log('🔍 DEBUG: First face structure:', JSON.stringify(fileData.extractedFaces[0]));
+                        console.log('🔍 DEBUG: First face structure:', JSON.stringify(fileData.extractedFaces[0]));
                     }
                     
                     // Create face thumbnails for each extracted face
                     fileData.extractedFaces.forEach((face, index) => {
-                        this.log('🔍 DEBUG: Processing face', index, 'URLs:', {
+                        console.log('🔍 DEBUG: Processing face', index, 'URLs:', {
                             imageUrl: !!face.imageUrl,
                             dataUrl: !!face.dataUrl, 
                             url: !!face.url
                         });
                         
                         if (face && (face.imageUrl || face.dataUrl || face.url)) {
-                            this.log('🔍 DEBUG: Creating thumbnail for face', index);
-                            this.log('🔍 DEBUG: window.createFaceThumbnail available?', typeof window.createFaceThumbnail);
+                            console.log('🔍 DEBUG: Creating thumbnail for face', index);
+                            console.log('🔍 DEBUG: window.createFaceThumbnail available?', typeof window.createFaceThumbnail);
                             
                             try {
                                 const thumbnail = window.createFaceThumbnail(doc.id, fileData, face, index);
-                                this.log('🔍 DEBUG: createFaceThumbnail returned:', thumbnail);
+                                console.log('🔍 DEBUG: createFaceThumbnail returned:', thumbnail);
                                 
                                 if (thumbnail) {
                                     gridEl.appendChild(thumbnail);
                                     totalFaces++;
-                                    this.log('✅ DEBUG: Successfully added face thumbnail', totalFaces);
+                                    console.log('✅ DEBUG: Successfully added face thumbnail', totalFaces);
                                 } else {
-                                    this.log('❌ DEBUG: createFaceThumbnail returned null/undefined');
+                                    console.log('❌ DEBUG: createFaceThumbnail returned null/undefined');
                                 }
                             } catch (error) {
-                                this.log('❌ DEBUG: Error calling createFaceThumbnail:', error.message);
+                                console.log('❌ DEBUG: Error calling createFaceThumbnail:', error.message);
                                 console.error('createFaceThumbnail error:', error);
                             }
                         } else {
-                            this.log('❌ DEBUG: Face has no valid image URL');
+                            console.log('❌ DEBUG: Face has no valid image URL');
                         }
                     });
                 }
             });
             
-            this.log('✅ DEBUG: Processing complete. Files:', totalFiles, 'Files with faces:', filesWithFaces, 'Total faces:', totalFaces);
+            console.log('✅ DEBUG: Processing complete. Files:', totalFiles, 'Files with faces:', filesWithFaces, 'Total faces:', totalFaces);
             
             if (totalFaces === 0) {
                 loadingEl.style.display = 'block';
