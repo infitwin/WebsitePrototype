@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Loading Debug - Original vs Current</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .debug-section h2 { margin-top: 0; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .code-block { background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Face Loading Debug - Original vs Current Comparison</h1>
+    
+    <div class="debug-section">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Function Call Comparison</h2>
+        <div class="code-block">
+            <strong>Original (working):</strong><br>
+            const faceThumbnail = createFaceThumbnail(doc.id, fileData, face, index);<br>
+            gridEl.appendChild(faceThumbnail);<br>
+            totalFaces++;<br><br>
+            
+            <strong>Current (broken):</strong><br>
+            const thumbnail = window.createFaceThumbnail(doc.id, fileData, face, index);<br>
+            if (thumbnail) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;gridEl.appendChild(thumbnail);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;totalFaces++;<br>
+            }<br>
+        </div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Key Differences Found</h2>
+        <div id="differences"></div>
+    </div>
+
+    <script>
+        const testResults = document.getElementById('testResults');
+        const differences = document.getElementById('differences');
+        
+        // Test function availability
+        function testFunctionAvailability() {
+            const tests = [
+                { name: 'window.createFaceThumbnail', value: typeof window.createFaceThumbnail },
+                { name: 'window.handleFaceDragStart', value: typeof window.handleFaceDragStart },
+                { name: 'window.handleFaceDragEnd', value: typeof window.handleFaceDragEnd },
+                { name: 'window.extractFaceFromImage', value: typeof window.extractFaceFromImage }
+            ];
+            
+            tests.forEach(test => {
+                const div = document.createElement('div');
+                div.className = test.value === 'function' ? 'test-result pass' : 'test-result fail';
+                div.innerHTML = `<strong>${test.name}:</strong> ${test.value}`;
+                testResults.appendChild(div);
+            });
+        }
+        
+        // Display key differences
+        function displayDifferences() {
+            const diffs = [
+                {
+                    title: 'Function Call Method',
+                    original: 'Direct function call: createFaceThumbnail(...)',
+                    current: 'Window wrapper: window.createFaceThumbnail(...)',
+                    impact: 'The wrapper adds drag handlers that may not be available'
+                },
+                {
+                    title: 'Context/Scope',
+                    original: 'Standalone function with direct global access',
+                    current: 'Class method with different "this" context',
+                    impact: 'Different logging and error handling behavior'
+                },
+                {
+                    title: 'Error Handling',
+                    original: 'Simple error handling, functions fail silently',
+                    current: 'Explicit null checks before appending to DOM',
+                    impact: 'Current version may prevent display if createFaceThumbnail returns null'
+                },
+                {
+                    title: 'Drag Handler Dependencies',
+                    original: 'No drag handlers added to faces',
+                    current: 'Attempts to add drag handlers that may not exist',
+                    impact: 'Function may fail if drag handlers are not properly initialized'
+                }
+            ];
+            
+            diffs.forEach(diff => {
+                const div = document.createElement('div');
+                div.className = 'info';
+                div.innerHTML = `
+                    <strong>${diff.title}</strong><br>
+                    <strong>Original:</strong> ${diff.original}<br>
+                    <strong>Current:</strong> ${diff.current}<br>
+                    <strong>Impact:</strong> ${diff.impact}
+                `;
+                differences.appendChild(div);
+            });
+        }
+        
+        // Run tests
+        testFunctionAvailability();
+        displayDifferences();
+        
+        // Log summary
+        console.log('🔍 FACE LOADING DEBUG ANALYSIS');
+        console.log('================================');
+        console.log('The main differences that could cause the faces not to display:');
+        console.log('1. Window wrapper function may fail if drag handlers are not available');
+        console.log('2. Current version has explicit null checks that prevent display');
+        console.log('3. The createFaceThumbnail function in ui-builders.js is complex and depends on extractFaceFromImage');
+        console.log('4. The original version was simpler and more fault-tolerant');
+        console.log('');
+        console.log('RECOMMENDATION: Simplify the face thumbnail creation by removing the dependency on drag handlers');
+        console.log('or ensure drag handlers are properly initialized before loadUserFaces is called.');
+    </script>
+</body>
+</html>
