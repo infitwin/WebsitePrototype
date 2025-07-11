@@ -20,6 +20,11 @@ let activeClouds = [];
 let usedPositions = [];
 let transcriptionTimeout = null;
 
+// AI Commands reference for Nexus control
+let aiCommands = {};
+// Global reference for command execution
+window.aiCommands = aiCommands;
+
 // Idea prompts for floating clouds
 const ideaPrompts = [
     "What was your first job like?",
@@ -80,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Disable orchestrator for local development to avoid CORS issues
                         orchestratorUrl: null,
                         // Enable for production: orchestratorUrl: window.getBusinessWebSocketUrl ? window.getBusinessWebSocketUrl(false) : null,
+                        aiCommands: aiCommands, // Enable AI command handling
                         useExternalMetadataEditor: true,
                         onNodeClick: (node) => console.log('Node selected:', node),
                         onNodeDoubleClick: (node) => {
@@ -94,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         onDataChange: (newData) => {
                             console.log('Graph data changed:', newData);
                             window.currentGraphData = newData;
+                            // Could emit to orchestrator about graph changes
                         },
                         hidePageHeader: true,
                         hideStatusBar: true,
@@ -433,8 +440,8 @@ if (typeof window.getBusinessWebSocketUrl === 'undefined') {
 }
 
 // Initialize Audio WebSocket Service
-function initializeAudioWebSocket() {
-    return new Promise((resolve, reject) => {
+async function initializeAudioWebSocket() {
+    return new Promise(async (resolve, reject) => {
         if (!currentSessionId || !currentInterviewId) {
             console.warn('Cannot initialize audio WebSocket: missing session/interview ID');
             reject(new Error('Missing session/interview ID'));
@@ -442,6 +449,20 @@ function initializeAudioWebSocket() {
         }
         
         console.log('Initializing Audio WebSocket for session:', currentSessionId);
+        
+        // Wait for orchestration endpoints to be available
+        let attempts = 0;
+        while (typeof window.getAudioWebSocketUrl !== 'function' && attempts < 50) {
+            console.log('Waiting for orchestration endpoints to load...');
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+        }
+        
+        if (typeof window.getAudioWebSocketUrl !== 'function') {
+            console.error('Failed to load orchestration endpoints after 5 seconds');
+            reject(new Error('Orchestration endpoints not available'));
+            return;
+        }
         
         // Create audio WebSocket service
         audioWebSocket = new AudioWebSocketService({
@@ -650,6 +671,66 @@ async function initializeServices() {
             showConnectionBanner(false);
         };
         
+        // Add handler for AI graph commands using shared service
+        if (window.AICommandHandler) {
+            const aiCommandHandler = new window.AICommandHandler(aiCommands, showToast);
+            
+            // Handle both old and new command types
+            orchestratorWebSocket.onGraphCommand = (command) => {
+                // Create response callback that sends back via WebSocket
+                const sendResponse = (response) => {
+                    orchestratorWebSocket.sendMessage('graph_command_response', {
+                        ...response,
+                        timestamp: new Date().toISOString()
+                    });
+                };
+                
+                // Use the shared handler
+                aiCommandHandler.handleCommand(command, sendResponse);
+            };
+            
+            // Handle Nexus commands from Winston
+            orchestratorWebSocket.onNexusCommand = (command, metadata) => {
+                console.log('🎯 Nexus command received in interview.js:', command);
+                console.log('📋 Command metadata:', metadata);
+                
+                // Extract commandId from metadata
+                const commandId = metadata?.commandId || `cmd_${Date.now()}`;
+                
+                // Create response callback that sends back via WebSocket
+                const sendResponse = (response) => {
+                    // Format according to WebSocket standard with payload/metadata structure
+                    orchestratorWebSocket.sendMessage('nexus_command_response', {
+                        payload: {
+                            ...response,  // The actual Nexus response (result, nodeId, name, etc.)
+                            commandId: commandId,
+                            timestamp: new Date().toISOString(),
+                            metadata: {
+                                interviewId: orchestratorWebSocket.currentInterviewId,
+                                sessionId: orchestratorWebSocket.currentSessionId,
+                                correlationId: metadata?.correlationId || ''
+                            }
+                        }
+                    });
+                };
+                
+                // Use the shared handler
+                aiCommandHandler.handleCommand(command, sendResponse);
+            };
+            
+            // Also expose executeCommand for direct access
+            window.aiCommands.executeCommand = (command) => {
+                const sendResponse = (response) => {
+                    console.log('📤 Command response:', response);
+                };
+                aiCommandHandler.handleCommand(command, sendResponse);
+            };
+            
+            console.log('✅ AI Command Handler initialized with Nexus support');
+        } else {
+            console.error('❌ AICommandHandler service not loaded');
+        }
+        
         console.log('✅ All WebsitePrototype services initialized successfully');
         return true;
         
@@ -707,23 +788,51 @@ async function startInterviewWithOrchestrator(interviewType = 'new', subject = n
         setWinstonState('thinking');
         console.log('Connecting to interview orchestrator...');
         
-        // Connect to WebSocket first
-        orchestratorWebSocket.connect();
+        // Connect to WebSocket with retry logic for cold starts
+        let connected = false;
+        const retryAttempts = 3;
+        const retryDelays = [3000, 5000, 7000]; // 3s, 5s, 7s - total 15s max
         
-        // Wait longer for cloud service connection (3 seconds instead of 1)
-        let connectionAttempts = 0;
-        const maxAttempts = 6; // 6 attempts * 500ms = 3 seconds
-        
-        while (!orchestratorWebSocket.isConnected() && connectionAttempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            connectionAttempts++;
+        for (let attempt = 0; attempt < retryAttempts && !connected; attempt++) {
+            console.log(`🔄 Connection attempt ${attempt + 1} of ${retryAttempts}...`);
+            
+            // Show user-friendly status
+            if (attempt === 0) {
+                console.log('Connecting to interview service...');
+            } else if (attempt === 1) {
+                console.log('Service is starting up, please wait...');
+                showToast('Starting interview service, this may take a moment...', 'info');
+            } else {
+                console.log('Cold start detected, one more moment...');
+            }
+            
+            orchestratorWebSocket.connect();
+            
+            // Wait for connection with current retry delay
+            const waitTime = retryDelays[attempt];
+            const checkInterval = 100; // Check every 100ms
+            const maxChecks = waitTime / checkInterval;
+            let checks = 0;
+            
+            while (!orchestratorWebSocket.isConnected() && checks < maxChecks) {
+                await new Promise(resolve => setTimeout(resolve, checkInterval));
+                checks++;
+            }
+            
+            connected = orchestratorWebSocket.isConnected();
+            
+            if (connected) {
+                console.log(`✅ Connected successfully on attempt ${attempt + 1}!`);
+                showToast('Connected! Starting your interview...', 'success');
+                break;
+            } else if (attempt < retryAttempts - 1) {
+                console.log(`⏳ Not connected yet, retrying...`);
+            }
         }
         
-        if (!orchestratorWebSocket.isConnected()) {
-            console.warn('WebSocket not connected after 3 seconds, proceeding anyway...');
-            // Silent connection - no notifications
-        } else {
-            console.log('Connected! Starting interview session...');
+        if (!connected) {
+            console.error('❌ Failed to connect after 3 attempts');
+            throw new Error('Unable to connect to interview service. Please check your connection and try again.');
         }
         
         // Get authenticated user data
@@ -772,6 +881,11 @@ async function startInterviewWithOrchestrator(interviewType = 'new', subject = n
                 }
             }
         };
+        
+        // Double-check connection before sending
+        if (!orchestratorWebSocket.isConnected()) {
+            throw new Error('Lost connection to interview service. Please try again.');
+        }
         
         // Send the properly formatted message
         const success = orchestratorWebSocket.startInterview(interviewData);
