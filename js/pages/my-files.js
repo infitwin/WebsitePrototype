@@ -1138,7 +1138,7 @@ async function getVectorizationQuota() {
         const usageDoc = await getDoc(doc(db, 'users', user.uid, 'usage', 'vectorization'));
         const usage = usageDoc.exists() ? usageDoc.data() : { count: 0, lastReset: new Date() };
         
-        // For now, assume free tier with 10/month limit
+        // For now, assume free tier with 1000/month limit for testing
         return {
             used: usage.count || 0,
             limit: 1000,
