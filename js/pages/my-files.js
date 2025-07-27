@@ -1251,13 +1251,11 @@ async function performVectorization(fileIds) {
         // Import V1 orchestration endpoints
         const { ORCHESTRATION_ENDPOINTS, getEndpoints } = await import('../config/orchestration-endpoints.js');
         
-        // 🚨 DEBUG MODE: Use local artifact processor for debugging
-        console.log('🐛 DEBUG MODE: Using local artifact processor');
-        const apiEndpoint = 'http://localhost:8080/process-artifact';
+        // Get the appropriate endpoints (production by default)
+        const endpoints = getEndpoints(false); // false = production
+        const apiEndpoint = endpoints.ARTIFACT_PROCESSOR;
         
-        // Log debug info
-        console.log('🔧 Local server endpoint:', apiEndpoint);
-        console.log('🔬 Debugging face detection issue locally');
+        console.log('🚀 Using production artifact processor:', apiEndpoint);
         
         // Process each file individually (API expects single file format)
         let processedCount = 0;
