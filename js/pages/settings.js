@@ -7,6 +7,8 @@ import { Button } from '../components/ui/button.js';
 import { Modal } from '../components/ui/modal.js';
 import { FormInput, FormValidator } from '../components/ui/form.js';
 import { guardPage } from '../auth-guard.js';
+import { auth } from '../firebase-config.js';
+import { reauthenticateWithCredential, updatePassword, EmailAuthProvider } from 'firebase/auth';
 
 // Settings state management
 let userSettings = {
@@ -116,7 +118,29 @@ function setupEventListeners() {
     // Timezone validation
     const timezoneSelect = document.getElementById('timezone');
     timezoneSelect.addEventListener('change', validateTimezone);
-    
+
+    // Password visibility toggles
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const targetId = toggle.dataset.target;
+            const input = document.getElementById(targetId);
+            const eyeOpen = toggle.querySelector('.eye-open');
+            const eyeClosed = toggle.querySelector('.eye-closed');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOpen.style.display = 'none';
+                eyeClosed.style.display = 'block';
+                toggle.setAttribute('aria-label', 'Hide password');
+            } else {
+                input.type = 'password';
+                eyeOpen.style.display = 'block';
+                eyeClosed.style.display = 'none';
+                toggle.setAttribute('aria-label', 'Show password');
+            }
+        });
+    });
+
     // Warn about unsaved changes
     window.addEventListener('beforeunload', function(e) {
         if (hasUnsavedChanges) {
@@ -305,24 +329,52 @@ async function handleSecurityFormSubmit(e) {
         text: 'Changing...',
         loading: true
     });
-    
+
     const buttonGroup = document.querySelector('#securityForm .button-group');
     const currentBtn = buttonGroup.querySelector('button');
     currentBtn.replaceWith(changeBtn.element);
-    
-    // Simulate API call
-    setTimeout(() => {
-        showSuccessMessage('Password changed successfully!');
-        resetSecurityForm();
-        
-        // Replace with normal button
+
+    // Helper to restore button
+    const restoreButton = () => {
         const newChangeBtn = Button.primary({
             text: 'Change Password',
             icon: '🔒',
             onClick: () => handleSecurityFormSubmit(new Event('submit'))
         });
         changeBtn.element.replaceWith(newChangeBtn.element);
-    }, 2000);
+    };
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            throw { code: 'auth/no-user', message: 'You must be logged in to change your password' };
+        }
+
+        // Reauthenticate with current password
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+
+        // Update to new password
+        await updatePassword(user, newPassword);
+
+        showSuccessMessage('Password changed successfully!');
+        resetSecurityForm();
+    } catch (error) {
+        console.error('Password change error:', error);
+
+        const errorMessages = {
+            'auth/wrong-password': 'Current password is incorrect',
+            'auth/invalid-credential': 'Current password is incorrect',
+            'auth/weak-password': 'New password is too weak. Use at least 6 characters.',
+            'auth/requires-recent-login': 'Session expired. Please sign out and sign back in.',
+            'auth/no-user': 'You must be logged in to change your password'
+        };
+
+        const message = errorMessages[error.code] || error.message || 'Failed to change password';
+        showFieldError('currentPassword', message);
+    } finally {
+        restoreButton();
+    }
 }
 
 // Handle logout
