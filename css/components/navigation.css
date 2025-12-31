@@ -3,7 +3,7 @@
 
 .sidebar-nav {
     width: 80px;
-    background: #6B46C1;
+    background: var(--color-primary);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -32,12 +32,12 @@
 
 .sidebar-nav-item:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: white;
+    color: var(--color-text-inverse);
 }
 
 .sidebar-nav-item.active {
     background: rgba(255, 255, 255, 0.2);
-    color: white;
+    color: var(--color-text-inverse);
 }
 
 .sidebar-footer {
@@ -57,8 +57,8 @@
 .sidebar-tooltip {
     position: absolute;
     left: 70px;
-    background: #2c3e50;
-    color: white;
+    background: var(--color-text-primary);
+    color: var(--color-text-inverse);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     font-size: 0.875rem;
@@ -83,8 +83,8 @@
     position: absolute;
     bottom: 70px;
     left: 80px;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--color-background-card);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 0.5rem 0;
     min-width: 200px;
@@ -100,22 +100,22 @@
 .user-dropdown-item {
     padding: 0.75rem 1rem;
     display: block;
-    color: #374151;
+    color: var(--color-text-primary);
     text-decoration: none;
     transition: background 0.2s;
     cursor: pointer;
 }
 
 .user-dropdown-item:hover {
-    background: #f3f4f6;
+    background: var(--color-background);
 }
 
 .user-dropdown-divider {
     height: 1px;
-    background: #e5e7eb;
+    background: var(--color-border);
     margin: 0.25rem 0;
 }
 
 .logout-item {
-    color: #dc2626;
+    color: var(--color-error);
 }

@@ -265,7 +265,7 @@
 }
 
 .winston-bubble {
-    background: white;
+    background: var(--color-background-card);
     padding: 16px 20px;
     border-radius: 20px 20px 20px 5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -280,7 +280,7 @@
     bottom: 8px;
     width: 16px;
     height: 16px;
-    background: white;
+    background: var(--color-background-card);
     transform: rotate(45deg);
     box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -364,7 +364,7 @@
     font-family: 'Inter', sans-serif;
     resize: none;
     max-height: 100px;
-    background: white;
+    background: var(--color-background-card);
     transition: all 0.3s ease;
 }
 

@@ -2,7 +2,7 @@
 
 /* Base Layout */
 body {
-    background-color: #F9FAFB;
+    background-color: var(--color-background);
     margin: 0;
     padding: 0;
 }
@@ -14,8 +14,8 @@ body {
     left: 0;
     right: 0;
     height: 64px;
-    background: white;
-    border-bottom: 1px solid #E5E7EB;
+    background: var(--color-background-card);
+    border-bottom: 1px solid var(--color-border);
     z-index: 100;
 }
 
@@ -43,7 +43,7 @@ body {
 .nav-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--color-text-primary);
 }
 
 .nav-right {
@@ -68,8 +68,8 @@ body {
     position: absolute;
     top: 0;
     right: 0;
-    background: #EF4444;
-    color: white;
+    background: var(--color-error);
+    color: var(--color-text-inverse);
     font-size: 0.75rem;
     font-weight: 600;
     padding: 2px 6px;
@@ -87,7 +87,7 @@ body {
 }
 
 .user-menu:hover {
-    background: #F3F4F6;
+    background: var(--color-background-hover);
 }
 
 .user-avatar {
@@ -98,13 +98,13 @@ body {
 
 .user-name {
     font-weight: 500;
-    color: #1F2937;
+    color: var(--color-text-primary);
 }
 
 .menu-dropdown {
     background: none;
     border: none;
-    color: #6B7280;
+    color: var(--color-text-secondary);
     font-size: 0.75rem;
 }
 
@@ -118,8 +118,8 @@ body {
 /* Sidebar */
 .dashboard-sidebar {
     width: 250px;
-    background: white;
-    border-right: 1px solid #E5E7EB;
+    background: var(--color-background-card);
+    border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -137,21 +137,21 @@ body {
     align-items: center;
     gap: 0.75rem;
     padding: 0.875rem 1.5rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
     text-decoration: none;
     transition: all 0.2s;
     position: relative;
 }
 
 .nav-item:hover {
-    color: #1F2937;
-    background: #F9FAFB;
+    color: var(--color-text-primary);
+    background: var(--color-background);
 }
 
 .nav-item.active {
-    color: #1F2937;
+    color: var(--color-text-primary);
     font-weight: 600;
-    background: #FEF3C7;
+    background: rgba(107, 70, 193, 0.1);
 }
 
 .nav-item.active::before {
@@ -161,7 +161,7 @@ body {
     top: 0;
     bottom: 0;
     width: 4px;
-    background: #F59E0B;
+    background: var(--color-primary);
 }
 
 .nav-icon {
@@ -174,24 +174,24 @@ body {
 
 .sidebar-footer {
     padding: 1.5rem;
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--color-border);
 }
 
 .storage-info {
-    background: #F9FAFB;
+    background: var(--color-background);
     padding: 1rem;
     border-radius: 8px;
 }
 
 .storage-label {
     font-size: 0.75rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
     margin-bottom: 0.5rem;
 }
 
 .storage-bar {
     height: 8px;
-    background: #E5E7EB;
+    background: var(--color-border);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 0.5rem;
@@ -199,13 +199,13 @@ body {
 
 .storage-used {
     height: 100%;
-    background: linear-gradient(90deg, #F59E0B 0%, #EF4444 100%);
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
     transition: width 0.3s;
 }
 
 .storage-text {
     font-size: 0.75rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
 }
 
 /* Main Content */
@@ -219,25 +219,25 @@ body {
 
 /* Welcome Section */
 .welcome-section {
-    background: white;
+    background: var(--color-background-card);
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--color-shadow-soft);
 }
 
 .welcome-title {
     font-size: 1.875rem;
     font-weight: 700;
-    color: #1F2937;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
 .welcome-subtitle {
-    color: #6B7280;
+    color: var(--color-text-secondary);
     font-size: 1rem;
 }
 
@@ -260,24 +260,24 @@ body {
 }
 
 .action-button.primary {
-    background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
 }
 
 .action-button.primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
 }
 
 .action-button.secondary {
-    background: white;
-    color: #1F2937;
-    border: 2px solid #E5E7EB;
+    background: var(--color-background-card);
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-border);
 }
 
 .action-button.secondary:hover {
-    border-color: #D1D5DB;
-    background: #F9FAFB;
+    border-color: var(--color-border-dark);
+    background: var(--color-background);
 }
 
 .button-icon {
@@ -293,19 +293,19 @@ body {
 }
 
 .stat-card {
-    background: white;
+    background: var(--color-background-card);
     border-radius: 12px;
     padding: 1.5rem;
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--color-shadow-soft);
     transition: transform 0.2s;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--color-shadow-medium);
 }
 
 .stat-icon {
@@ -319,41 +319,41 @@ body {
 }
 
 .stat-icon.memories {
-    background: #FEF3C7;
+    background: rgba(107, 70, 193, 0.1);
 }
 
 .stat-icon.photos {
-    background: #DBEAFE;
+    background: rgba(59, 130, 246, 0.1);
 }
 
 .stat-icon.family {
-    background: #F3E8FF;
+    background: rgba(139, 92, 246, 0.1);
 }
 
 .stat-icon.streak {
-    background: #FEE2E2;
+    background: rgba(16, 185, 129, 0.1);
 }
 
 .stat-number {
     font-size: 2rem;
     font-weight: 700;
-    color: #1F2937;
+    color: var(--color-text-primary);
     margin: 0;
 }
 
 .stat-label {
-    color: #6B7280;
+    color: var(--color-text-secondary);
     font-size: 0.875rem;
     margin: 0.25rem 0;
 }
 
 .stat-trend {
     font-size: 0.75rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
 }
 
 .stat-trend.positive {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 /* Recent Memories */
@@ -371,18 +371,18 @@ body {
 .section-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1F2937;
+    color: var(--color-text-primary);
 }
 
 .view-all-link {
-    color: #F59E0B;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 500;
     font-size: 0.875rem;
 }
 
 .view-all-link:hover {
-    color: #D97706;
+    color: var(--color-primary-dark);
 }
 
 .memories-grid {
@@ -392,17 +392,17 @@ body {
 }
 
 .memory-card {
-    background: white;
+    background: var(--color-background-card);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--color-shadow-soft);
     transition: all 0.2s;
     cursor: pointer;
 }
 
 .memory-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 24px var(--color-shadow-medium);
 }
 
 .memory-image {
@@ -418,19 +418,19 @@ body {
 .memory-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
 .memory-date {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
     margin-bottom: 0.75rem;
 }
 
 .memory-excerpt {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
     line-height: 1.5;
     margin-bottom: 1rem;
 }
@@ -442,8 +442,8 @@ body {
 
 .tag {
     padding: 0.25rem 0.75rem;
-    background: #F3F4F6;
-    color: #6B7280;
+    background: var(--color-background-hover);
+    color: var(--color-text-secondary);
     font-size: 0.75rem;
     border-radius: 12px;
 }
@@ -460,8 +460,8 @@ body {
 }
 
 .quick-action-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--color-background-card);
+    border: 2px solid var(--color-border);
     border-radius: 12px;
     padding: 1.5rem;
     text-align: center;
@@ -470,9 +470,9 @@ body {
 }
 
 .quick-action-card:hover {
-    border-color: #F59E0B;
+    border-color: var(--color-primary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--color-shadow-medium);
 }
 
 .action-icon {
@@ -483,22 +483,22 @@ body {
 .quick-action-card h4 {
     font-size: 1rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .quick-action-card p {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
     margin: 0;
 }
 
 /* Activity Timeline */
 .activity-timeline {
-    background: white;
+    background: var(--color-background-card);
     border-radius: 12px;
     padding: 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--color-shadow-soft);
 }
 
 .timeline {
@@ -509,7 +509,7 @@ body {
     display: flex;
     gap: 1rem;
     padding: 1rem 0;
-    border-bottom: 1px solid #F3F4F6;
+    border-bottom: 1px solid var(--color-background-hover);
     position: relative;
 }
 
@@ -520,7 +520,7 @@ body {
 .timeline-dot {
     width: 12px;
     height: 12px;
-    background: #F59E0B;
+    background: var(--color-primary);
     border-radius: 50%;
     margin-top: 0.25rem;
     flex-shrink: 0;
@@ -528,13 +528,13 @@ body {
 
 .timeline-text {
     font-size: 0.875rem;
-    color: #1F2937;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .timeline-time {
     font-size: 0.75rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
 }
 
 /* Achievement Toast */
@@ -542,10 +542,10 @@ body {
     position: fixed;
     bottom: 2rem;
     right: 2rem;
-    background: white;
+    background: var(--color-background-card);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px var(--color-shadow-heavy);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -565,13 +565,13 @@ body {
 .achievement-content h4 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .achievement-content p {
     font-size: 0.875rem;
-    color: #6B7280;
+    color: var(--color-text-secondary);
     margin: 0;
 }
 

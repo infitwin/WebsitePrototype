@@ -3,7 +3,7 @@
 /* Base Layout */
 .symphony-dashboard {
     min-height: 100vh;
-    background-color: #E8EEF5;
+    background-color: var(--color-background);
     font-family: 'Inter', sans-serif;
     display: flex;
 }
@@ -11,7 +11,7 @@
 /* Sidebar Navigation */
 .sidebar-nav {
     width: 80px;
-    background: #6B46C1;
+    background: var(--color-primary);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -76,8 +76,8 @@
 .sidebar-tooltip {
     position: absolute;
     left: 70px;
-    background: #2C3E50;
-    color: white;
+    background: var(--color-text-primary);
+    color: var(--color-text-inverse);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     font-size: 0.875rem;
@@ -101,9 +101,9 @@
 
 /* Top Navigation */
 .symphony-nav {
-    background: #FFFFFF;
+    background: var(--color-background-card);
     padding: 1rem 2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px var(--color-shadow-soft);
     position: sticky;
     top: 0;
     z-index: 90;
@@ -131,7 +131,7 @@
 .nav-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #2C3E50;
+    color: var(--color-text-primary);
     margin: 0;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .user-info:hover {
-    background-color: #F5F8FA;
+    background-color: var(--color-background-hover);
 }
 
 .user-avatar {
@@ -163,7 +163,7 @@
 
 .user-name {
     font-size: 0.9rem;
-    color: #2C3E50;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
@@ -184,8 +184,8 @@
 }
 
 .graph-container {
-    background: #F8FAFB;
-    border: 1px solid #D1E3F0;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
     border-radius: 20px;
     padding: 1rem;
     height: 100%;
@@ -217,7 +217,7 @@
     position: absolute;
     width: 16px;
     height: 16px;
-    background: #27AE60;
+    background: var(--color-success);
     border-radius: 50%;
     opacity: 0.8;
 }
@@ -237,10 +237,10 @@
 
 /* Category Tiles */
 .category-tile {
-    background: #FFFFFF;
+    background: var(--color-background-card);
     border-radius: 12px;
     padding: 1.5rem 1rem;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px var(--color-shadow-soft);
     transition: all 0.3s ease;
     cursor: pointer;
     display: flex;
@@ -254,7 +254,7 @@
 
 .category-tile:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 20px var(--color-shadow-medium);
 }
 
 .category-icon {
@@ -266,19 +266,19 @@
     width: 60px;
     height: 60px;
     border-radius: 12px;
-    background: #F5F8FA;
+    background: var(--color-background-hover);
 }
 
 .category-title {
     font-size: 1rem;
     font-weight: 600;
-    color: #2C3E50;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .category-subtitle {
     font-size: 0.8rem;
-    color: #7F8C8D;
+    color: var(--color-text-tertiary);
     margin: 0;
 }
 
@@ -286,43 +286,43 @@
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
-    background: #E8EEF5;
-    color: #2C3E50;
+    background: var(--color-background);
+    color: var(--color-text-primary);
     padding: 0.2rem 0.6rem;
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 500;
 }
 
-/* Category-specific colors */
+/* Category-specific colors - using design system */
 .category-tile[data-category="recent"] .category-icon {
-    background: rgba(155, 89, 182, 0.1);
-    color: #9B59B6;
+    background: rgba(107, 70, 193, 0.1);
+    color: var(--color-primary);
 }
 
 .category-tile[data-category="moments"] .category-icon {
-    background: rgba(243, 156, 18, 0.1);
-    color: #F39C12;
+    background: rgba(255, 215, 0, 0.1);
+    color: var(--color-warning);
 }
 
 .category-tile[data-category="people"] .category-icon {
-    background: rgba(41, 128, 185, 0.1);
-    color: #2980B9;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--color-info);
 }
 
 .category-tile[data-category="places"] .category-icon {
-    background: rgba(39, 174, 96, 0.1);
-    color: #27AE60;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
 }
 
 .category-tile[data-category="projects"] .category-icon {
-    background: rgba(231, 76, 60, 0.1);
-    color: #E74C3C;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-error);
 }
 
 .category-tile[data-category="insights"] .category-icon {
-    background: rgba(241, 196, 15, 0.1);
-    color: #F1C40F;
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--color-primary-light);
 }
 
 /* Floating Action Button */
@@ -333,23 +333,23 @@
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #3498DB;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
     border: none;
     font-size: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
     transition: all 0.3s ease;
     z-index: 90;
 }
 
 .fab-add-memory:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-    background: #2980B9;
+    box-shadow: 0 6px 20px rgba(107, 70, 193, 0.4);
+    background: var(--color-primary-dark);
 }
 
 .fab-add-memory:active {
@@ -369,8 +369,8 @@
     left: 50%;
     width: 30px;
     height: 30px;
-    border: 3px solid #E8EEF5;
-    border-top-color: #3498DB;
+    border: 3px solid var(--color-background);
+    border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     transform: translate(-50%, -50%);

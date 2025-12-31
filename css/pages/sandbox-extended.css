@@ -35,8 +35,8 @@ body {
 /* App Header */
 .sandbox-header {
     height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-text-inverse);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -82,8 +82,8 @@ body {
     left: 0;
     right: 0;
     height: 40px;
-    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
-    color: white;
+    background: linear-gradient(90deg, var(--color-success) 0%, var(--color-success-light, #20c997) 100%);
+    color: var(--color-text-inverse);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -105,8 +105,8 @@ body {
     position: absolute;
     top: 20px;
     left: 20px;
-    background: white;
-    border: 2px solid #dee2e6;
+    background: var(--color-background-card);
+    border: 2px solid var(--color-border);
     border-radius: 6px;
     display: flex;
     gap: 5px;
@@ -271,7 +271,7 @@ body {
 
 .text-bold-orange {
     font-weight: 600;
-    color: #fd7e14; /* Orange not in design system */
+    color: var(--color-warning);
 }
 
 .empty-state {

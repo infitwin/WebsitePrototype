@@ -2,9 +2,9 @@
 
 /* Navigation */
 .error-nav {
-    background: white;
+    background: var(--color-background-card);
     padding: 20px 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px var(--color-shadow-soft);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -97,9 +97,9 @@
 }
 
 .btn-secondary {
-    background: white;
-    color: #4285F4;
-    border: 2px solid #4285F4;
+    background: var(--color-background-card);
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
     padding: 12px 24px;
     border-radius: 8px;
     text-decoration: none;
@@ -109,8 +109,8 @@
 }
 
 .btn-secondary:hover {
-    background: #4285F4;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
 }
 
 .btn-text {

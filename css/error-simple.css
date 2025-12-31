@@ -29,7 +29,7 @@
 .error-code {
     font-size: 120px;
     font-weight: 700;
-    color: #87CEEB;
+    color: var(--color-primary);
     margin: 0;
     line-height: 1;
 }
@@ -63,21 +63,21 @@
 }
 
 .error-btn-primary {
-    background: #87CEEB;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
 }
 
 .error-btn-primary:hover {
-    background: #FFD700;
+    background: var(--color-primary-dark);
 }
 
 .error-btn-secondary {
     background: transparent;
-    color: #87CEEB;
-    border: 2px solid #87CEEB;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
 }
 
 .error-btn-secondary:hover {
-    background: #87CEEB;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
 }
