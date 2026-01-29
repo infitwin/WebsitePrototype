@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Curator V2 - Infitwin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/pages/curator.css">
+    <link rel="stylesheet" href="../css/components/navigation.css">
+</head>
+<body>
+    <!-- Connection Status Banner -->
+    <div class="connection-banner" id="connectionBanner">
+        Connection lost. Attempting to reconnect...
+    </div>
+
+    <!-- Privacy Notice Modal -->
+    <div class="privacy-modal active" id="privacyModal">
+        <div class="privacy-content">
+            <h3 class="privacy-title">Welcome to Memory Curator</h3>
+            <div class="privacy-text">
+                Only share what you're comfortable sharing.<br>
+                You can skip any question by saying 'next question'.<br>
+                All memories are private by default.
+            </div>
+            <button class="privacy-btn" onclick="startInterview()">I Understand - Start Curating</button>
+        </div>
+    </div>
+
+    <!-- Shared Sidebar Navigation -->
+    <div class="sidebar-nav-container"></div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <!-- Navigation Header -->
+        <nav class="interview-nav">
+            <div class="nav-left">
+                <a href="../dashboard.html" class="back-btn">← Dashboard</a>
+                <h1 class="interview-title">Memory Curator with Winston</h1>
+            </div>
+            <div class="nav-center">
+                <div class="curation-progress-container">
+                    <div class="progress-info">
+                        <span class="progress-label">Curation Progress</span>
+                        <span class="progress-percentage" id="curationPercentage">15%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="curationProgressFill" style="width: 15%"></div>
+                    </div>
+                    <div class="progress-details">
+                        <span class="progress-count" id="curationCount">3 of 20 memories curated</span>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-right">
+                <button class="nav-btn" id="undoBtn" onclick="undoAction()" disabled title="Undo last action">
+                    <span>↶</span> Undo
+                </button>
+                <button class="nav-btn" id="redoBtn" onclick="redoAction()" disabled title="Redo last undone action">
+                    <span>↷</span> Redo
+                </button>
+                <button class="nav-btn" onclick="saveAndExit()">Save & Exit</button>
+                <button class="nav-btn" onclick="toggleInterviewManager()">Interviews</button>
+                <button class="nav-btn primary" onclick="newInterview()">New Interview</button>
+            </div>
+        </nav>
+
+        <!-- Main Interview Container -->
+        <div class="interview-container">
+            <!-- 1. Floating Idea Clouds Banner -->
+            <div class="idea-clouds-banner" id="ideaClouds">
+                <!-- Clouds will be dynamically inserted here -->
+            </div>
+
+            <!-- 2. Neo4j Graph Container - Dashboard Style -->
+            <div class="graph-container">
+                <!-- Left Side - Neo4j Graph -->
+                <div class="graph-section">
+                    <!-- Graph Header -->
+                    <div class="graph-header">
+                        <div class="graph-title-row">
+                            <h2 class="graph-title">Memory Knowledge Graph</h2>
+                            <div class="graph-controls">
+                                <button class="graph-control" onclick="centerGraph()">Center</button>
+                                <button class="graph-control" onclick="fitGraph()">Fit</button>
+                                <button class="graph-control" onclick="resetGraph()">Reset</button>
+                                <button class="graph-control beautify-btn" onclick="beautifyGraph()">✨ Beautify</button>
+                            </div>
+                        </div>
+
+                        <!-- Search and Data Operations -->
+                        <div class="search-filters-row">
+                            <input type="text" class="search-input" placeholder="Search memories and connections...">
+                            <button class="hamburger-btn" onclick="toggleCuratorPopup()">
+                                <span class="hamburger-line"></span>
+                                <span class="hamburger-line"></span>
+                                <span class="hamburger-line"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Node Type Filters -->
+                    <div class="node-filters">
+                        <button class="filter-btn active">👤 Person</button>
+                        <button class="filter-btn active">📅 Event</button>
+                        <button class="filter-btn active">📍 Place</button>
+                        <button class="filter-btn active">💭 Memory</button>
+                        <button class="filter-btn active">🎨 Story</button>
+                    </div>
+
+                    <!-- Graph Visualization - THE HERO -->
+                    <div class="graph-visualization">
+                        <div class="graph-canvas">
+                            <div id="curator-neo4j-viz">
+                                Memory Graph Loading...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Graph Footer -->
+                    <div class="graph-footer">
+                        <span>Memories: 0 • Connections: 0 • Stories: 0</span>
+                    </div>
+                </div>
+
+                <!-- Right Side - Curation Activity -->
+                <div class="activity-section">
+                    <div class="activity-header">
+                        <h3 class="activity-title">Curation Activity</h3>
+                    </div>
+
+                    <div class="activity-content">
+                        <!-- Active Curation -->
+                        <div class="activity-section-box">
+                            <h4 class="section-title">Active Session</h4>
+                            <div class="queue-content">
+                                <span class="queue-status"></span>
+                                Winston is curating memories
+                            </div>
+                        </div>
+
+                        <!-- Recent Stories -->
+                        <div class="activity-section-box">
+                            <h4 class="section-title">Recent Stories</h4>
+                            <div class="history-list">
+                                <div class="history-item">
+                                    <div class="history-time" id="currentTime"></div>
+                                    <div class="history-action">Childhood memories curated</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo Reference Window (hidden by default) -->
+                <div class="photo-reference" id="photoReference">
+                    <img src="" alt="Interview photo reference" id="photoImg">
+                </div>
+            </div>
+
+            <!-- 3. Winston Chat Interface -->
+            <div class="winston-chat" id="winstonChat">
+                <div class="chat-header">
+                    <div class="chat-controls">
+                        <button class="control-btn" onclick="toggleInterviewManager()">≡ Interview Manager</button>
+                        <button class="control-btn" onclick="stopSession()">|| Stop Session</button>
+                    </div>
+                    <div class="expand-indicator" onclick="expandChat()">
+                        ↑ Click to expand chat
+                    </div>
+                </div>
+
+                <!-- Interview Question Display -->
+                <div class="interview-question-area">
+                    <div class="question-container">
+                        <h3 class="question-label">Current Question:</h3>
+                        <p class="interview-question">What's your earliest childhood memory that still brings you joy?</p>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message">
+                        <div class="winston-orb">🎩</div>
+                        <div class="message-content">
+                            Hello! I'm Winston, your story curator. I'm here to help you capture and organize your precious memories. What would you like to talk about today?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <textarea class="response-area input-field" placeholder="Share your response here..." id="messageInput" rows="3"></textarea>
+                    <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End page-content -->
+
+    <!-- Expanded Chat Modal -->
+    <div class="chat-modal" id="chatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Chat History</h3>
+                <div class="chat-search">
+                    <input type="text" class="search-input" placeholder="🔍 Search chat..." id="searchInput">
+                    <div class="search-nav">
+                        <button class="search-btn">↑</button>
+                        <button class="search-btn">↓</button>
+                    </div>
+                    <span class="search-count">2 of 5</span>
+                </div>
+                <button class="close-btn" onclick="collapseChat()">×</button>
+            </div>
+            <div class="modal-messages" id="modalMessages">
+                <!-- Full chat history will be populated here -->
+            </div>
+            <div class="chat-input">
+                <input type="text" class="input-field" placeholder="Continue the conversation..." id="modalInput">
+                <button class="mic-btn" onclick="toggleRecording()">🎤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Manager Sidebar -->
+    <div class="interview-manager" id="interviewManager">
+        <div class="manager-header">
+            <div class="manager-buttons">
+                <button class="manager-btn" onclick="newInterview()">+ New Interview</button>
+                <button class="manager-btn" onclick="photoInterview()">Interview about Photo</button>
+            </div>
+        </div>
+
+        <div class="interview-section">
+            <h4 class="section-title">OPEN INTERVIEWS</h4>
+            <div class="interview-item">
+                <div class="interview-title">Family Stories (12/25)</div>
+                <div class="interview-meta">2 days ago</div>
+                <button class="resume-btn" onclick="resumeInterview('family')">Resume</button>
+            </div>
+            <div class="interview-item">
+                <div class="interview-title">Career Journey (5/30)</div>
+                <div class="interview-meta">1 week ago</div>
+                <button class="resume-btn" onclick="resumeInterview('career')">Resume</button>
+            </div>
+        </div>
+
+        <div class="interview-section">
+            <h4 class="section-title">COMPLETED</h4>
+            <div class="interview-item completed">
+                <div class="interview-title">Wedding Day ✓</div>
+                <div class="interview-meta">1 month ago</div>
+                <button class="resume-btn view-btn" onclick="viewInterview('wedding')">View</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for sidebar -->
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div id="toastMessage"></div>
+    </div>
+
+    <!-- Data Operations Popup -->
+    <div class="curator-popup-overlay" id="curatorOpsPopup" onclick="closeCuratorPopupOnOverlay(event)">
+        <div class="curator-popup-content">
+            <h2 class="curator-popup-header">Memory Operations</h2>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>📤</span>
+                <div>
+                    <div class="popup-btn-title">Export Stories</div>
+                    <div class="popup-btn-desc">Download your curated memories</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>🔄</span>
+                <div>
+                    <div class="popup-btn-title">Import Memories</div>
+                    <div class="popup-btn-desc">Upload memories to curate</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>👁️‍🗨️</span>
+                <div>
+                    <div class="popup-btn-title">Hide Selected</div>
+                    <div class="popup-btn-desc">Hide selected memories temporarily</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>👁️</span>
+                <div>
+                    <div class="popup-btn-title">Show Hidden</div>
+                    <div class="popup-btn-desc">Reveal previously hidden memories</div>
+                </div>
+            </button>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>🔍</span>
+                <div>
+                    <div class="popup-btn-title">Clear Filters</div>
+                    <div class="popup-btn-desc">Reset all active filters</div>
+                </div>
+            </button>
+            <div class="curator-popup-divider"></div>
+            <button class="curator-popup-btn" onclick="closeCuratorPopup()">
+                <span>💾</span>
+                <div>
+                    <div class="popup-btn-title">Memory Archive</div>
+                    <div class="popup-btn-desc">View and manage archived stories</div>
+                </div>
+            </button>
+            <button class="curator-popup-close" onclick="closeCuratorPopup()">Close</button>
+        </div>
+    </div>
+
+    <!-- Load Shared Navigation -->
+    <script src="../js/navigation.js"></script>
+
+    <!-- Authentication Guard -->
+    <script type="module">
+        import { guardPage } from '../js/auth-guard.js';
+    </script>
+
+    <!-- Load Neo4j BEFORE Firebase modules to avoid conflicts -->
+    <script src="../js/neo4j-unified.js"></script>
+
+    <!-- Load Firebase Configuration and Services -->
+    <script type="module" src="../js/config/firebase-config.js"></script>
+    <script src="../js/services/auth.js"></script>
+
+    <!-- Load Audio and WebSocket Services -->
+    <script src="../js/utils/audio-logger.js"></script>
+    <script src="../js/services/websocket-manager.js"></script>
+    <script src="../js/services/audio-recorder.js"></script>
+    <script src="../js/services/tts-player.js"></script>
+    <script src="../js/services/orchestrator-websocket.js"></script>
+    <script src="../js/config/orchestration-endpoints.js"></script>
+    <script src="../js/utils/message-builder.js"></script>
+
+    <!-- Initialize Curator Module -->
+    <script type="module">
+        import { initializeCurator } from '../js/pages/curator.js';
+        document.addEventListener('DOMContentLoaded', initializeCurator);
+    </script>
+</body>
+</html>
